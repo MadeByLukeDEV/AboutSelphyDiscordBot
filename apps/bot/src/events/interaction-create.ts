@@ -1,0 +1,45 @@
+import { Events, MessageFlags, type Client, type Interaction } from "discord.js";
+import { COMMANDS_BY_NAME } from "../commands";
+import { log } from "../lib/log";
+import { staffLevel } from "../lib/permissions";
+
+async function handle(interaction: Interaction) {
+  if (!interaction.isChatInputCommand()) return;
+
+  const command = COMMANDS_BY_NAME.get(interaction.commandName);
+  if (!command) {
+    log.warn({ command: interaction.commandName }, "unknown command");
+    return;
+  }
+
+  const reply = (content: string) =>
+    interaction.replied || interaction.deferred
+      ? interaction.followUp({ content, flags: MessageFlags.Ephemeral })
+      : interaction.reply({ content, flags: MessageFlags.Ephemeral });
+
+  // Checked on every call, never only through Discord's command permissions.
+  if (command.requires) {
+    const level = staffLevel(interaction.inCachedGuild() ? interaction.member : null);
+    const allowed = level === "admin" || (level === "moderator" && command.requires === "moderator");
+    if (!allowed) {
+      log.warn({ command: command.data.name, user: interaction.user.id }, "command denied");
+      await reply("You don't have permission to use this command.");
+      return;
+    }
+  }
+
+  try {
+    await command.execute(interaction);
+    log.info({ command: command.data.name, user: interaction.user.id }, "command executed");
+  } catch (error) {
+    // Details stay in the log; the user only sees a generic message.
+    log.error({ err: error, command: command.data.name }, "command failed");
+    await reply("Something went wrong. Please try again later.").catch(() => undefined);
+  }
+}
+
+export function registerInteractionCreate(client: Client) {
+  client.on(Events.InteractionCreate, (interaction) => {
+    void handle(interaction);
+  });
+}
