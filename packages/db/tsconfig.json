@@ -1,5 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "types": ["node"] },
-  "include": ["src", "prisma7.config.ts"]
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src",
+    "scripts",
+    "prisma7.config.ts"
+  ]
 }
