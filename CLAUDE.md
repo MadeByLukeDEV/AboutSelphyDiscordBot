@@ -337,15 +337,23 @@ Use plain-hex secrets (`crypto.randomBytes(32).toString("hex")`).
 
 ## Open decisions
 
-- Dashboard domain (proposal: `bot.aboutselphy.com`) and what happens to the
-  **old embedded dashboard** mentioned in `../Auth` (its schema/secret/cookie
-  prefix only matter if its sessions must survive; its source was never
-  available, role logic was rewritten in `../Auth/src/lib/discord-roles.ts`).
+- Dashboard domain (proposal: `bot.aboutselphy.com`, not yet confirmed).
 - Which Discord server and which roles are staff (reuse the Auth env values).
-- Webhooks: outgoing, inbound, or both.
-- Dev isolation: separate dev bot + `bot_dev` schema (assumed).
-- Moderator vs admin split above.
 - Anti-bot patterns and exemptions (user provides).
+
+Decided 2026-10-08:
+- **No old dashboard exists.** This is a fresh build; all authentication goes
+  through `auth.aboutselphy.com` (no session migration needed).
+- **Webhooks: both directions** (outgoing managed webhooks + inbound relay
+  endpoint). Later ideas: provider presets (GitHub, Ko-fi, Stripe-style) and
+  outbound "bot event" webhooks (ban, went live) for other tools.
+- **Dev isolation: yes.** Separate dev Discord application + test guild and
+  `DATABASE_SCHEMA=bot_dev` locally.
+- **Role split confirmed**: moderators = logs, cases, warnings, announcements;
+  admins = everything else.
+- **Git: same workflow as Main/Social.** One branch per piece of work
+  (`feature_`, `fix_`, `chore_`, `docs_`), conventional commits, ff-only merge
+  into `main`, local only until the user says to add a remote.
 
 ## Feature status
 
