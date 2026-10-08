@@ -1,0 +1,20 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  prisma: true
+  esbuild: true
+  '@swc/core': true
+  sharp: false
+  unrs-resolver: false
+  bufferutil: false
+  utf-8-validate: false
+  zlib-sync: false
+
+overrides:
+  # prisma@7.10.0 pins mysql2 3.15.3 (high CVE, only used by Prisma Studio for
+  # MySQL, never by this Postgres app). Remove when Prisma ships a fix.
+  mysql2: ^3.24.4
