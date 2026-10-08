@@ -1,0 +1,52 @@
+{
+  "Shell": {
+    "brand": "AboutSelphy Bot",
+    "nav": {
+      "label": "Main navigation",
+      "overview": "Overview"
+    },
+    "signOut": "Sign out",
+    "signedInAs": "Signed in as {name}",
+    "role": {
+      "admin": "Admin",
+      "moderator": "Moderator"
+    },
+    "skipToContent": "Skip to content"
+  },
+  "ThemeToggle": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "LocaleSwitcher": {
+    "label": "Language"
+  },
+  "Overview": {
+    "title": "Overview",
+    "welcome": "Welcome back, {name}.",
+    "intro": "Live status of the bot. Modules appear here as they are built."
+  },
+  "BotStatus": {
+    "title": "Bot status",
+    "online": "Online",
+    "offline": "Offline",
+    "degraded": "Degraded",
+    "offlineHint": "The dashboard can't reach the bot. It may be restarting.",
+    "gateway": "Discord gateway",
+    "gatewayReady": "Connected",
+    "gatewayDown": "Not connected",
+    "ping": "Ping",
+    "database": "Database",
+    "databaseOk": "Reachable",
+    "databaseDown": "Unreachable",
+    "uptime": "Uptime",
+    "version": "Version",
+    "checkedAt": "Checked {time}"
+  },
+  "Errors": {
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page doesn't exist.",
+    "backToOverview": "Back to overview"
+  }
+}
