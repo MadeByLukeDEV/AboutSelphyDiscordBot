@@ -1,0 +1,20 @@
+// One schema, one commented section per module. The Postgres schema ("bot" in
+// production, "bot_dev" locally) is chosen at runtime / by prisma7.config.ts.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---- core -------------------------------------------------------------
+
+/// Small key/value store for the bot's own bookkeeping (e.g. the hash of the
+/// last registered slash commands, so we only re-register on change).
+model BotSetting {
+  key       String   @id @db.VarChar(64)
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
