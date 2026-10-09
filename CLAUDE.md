@@ -392,7 +392,26 @@ Decided 2026-10-08:
       migration + role script, bot core with `/ping` + health + internal API,
       dashboard shell with central auth). Open: Dockerfiles (unverified, branch
       `chore_dockerfiles`), first live run with the dev bot.
-- [ ] Phase 1 — moderation + logs
+- [~] Phase 1 — moderation + logs
+  - [x] Core (2026-10-09, branch `feature_moderation-core`): `ModCase` /
+        `ModConfig` tables (atomic case counter on the singleton row, hand-written
+        CHECKs), `/warn /timeout /untimeout /kick /ban /unban /note /case
+        /infractions` and admin `/modlog channel|off|dm|status`. Flow in
+        `modules/moderation/service.ts`: bot permission → hierarchy
+        (`hierarchy.ts`, pure, tested) → Discord action → **case only after
+        Discord accepted it** → embed in the log channel. DM to the member
+        before kick/ban, after warn/timeout (config `dmOnAction`). All user text
+        is escaped (`lib/escape.ts`, same rules as Main). Pure parts and the
+        command definitions are unit-tested (21 tests); **the DB and Discord
+        paths are not tested yet** (no dev bot/DB access in the build session).
+        Slash commands are only visible to staff by code check
+        (`requires`), Discord's default permissions are just a UI hint.
+  - [ ] Audit-log capture (`guildAuditLogEntryCreate`, needs the
+        `GuildModeration` intent) so bans/timeouts done in Discord's UI become
+        cases too, deduped against bot-made ones
+  - [ ] `/purge`, warning pardon, escalation config, temp bans (needs a scheduler)
+  - [ ] More log types (message edit/delete, joins/leaves, voice)
+  - [ ] Dashboard: cases list/detail, user history, log settings
 - [ ] Phase 2 — anti-bot
 - [ ] Phase 3 — went live
 - [ ] Phase 4 — temporary voice channels
