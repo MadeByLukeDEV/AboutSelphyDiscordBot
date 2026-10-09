@@ -406,9 +406,16 @@ Decided 2026-10-08:
         paths are not tested yet** (no dev bot/DB access in the build session).
         Slash commands are only visible to staff by code check
         (`requires`), Discord's default permissions are just a UI hint.
-  - [ ] Audit-log capture (`guildAuditLogEntryCreate`, needs the
-        `GuildModeration` intent) so bans/timeouts done in Discord's UI become
-        cases too, deduped against bot-made ones
+  - [x] Audit-log capture (2026-10-09, `feature_moderation-audit-log`):
+        `guildAuditLogEntryCreate` turns kicks, bans, unbans and timeout
+        set/clear done in Discord's UI (or by other tools) into `audit_log`
+        cases and posts them to the log channel. The bot's own actions are
+        skipped by executor id (they already have a case), so there is no
+        dedupe window to get wrong. Needs the `GuildModeration` intent (not
+        privileged, now in `INTENTS`) and the bot's **View Audit Log**
+        permission. Mapping is pure and tested (`caseFromAuditEntry`, 7 tests);
+        the live event is untested. Not captured yet: AutoMod timeouts, and
+        timeouts by Discord itself.
   - [ ] `/purge`, warning pardon, escalation config, temp bans (needs a scheduler)
   - [ ] More log types (message edit/delete, joins/leaves, voice)
   - [ ] Dashboard: cases list/detail, user history, log settings
