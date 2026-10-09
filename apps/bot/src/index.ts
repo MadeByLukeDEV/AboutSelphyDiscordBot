@@ -2,6 +2,7 @@ import { prisma } from "@aboutselphy/db";
 import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
+import { registerAuditLog } from "./modules/moderation";
 import { startInternalApi } from "./internal-api/server";
 import { env, integrationsActive } from "./lib/env";
 import { log } from "./lib/log";
@@ -23,6 +24,7 @@ async function main() {
   const client = getClient();
   registerLifecycle(client);
   registerInteractionCreate(client);
+  registerAuditLog(client);
   await client.login(e.DISCORD_BOT_TOKEN);
 
   let stopping = false;
