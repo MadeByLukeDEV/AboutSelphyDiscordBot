@@ -47,3 +47,13 @@ export { Prisma }
  * last registered slash commands, so we only re-register on change).
  */
 export type BotSetting = Prisma.BotSettingModel
+/**
+ * Model ModConfig
+ * Singleton (id = 1): moderation settings and the case counter.
+ */
+export type ModConfig = Prisma.ModConfigModel
+/**
+ * Model ModCase
+ * 
+ */
+export type ModCase = Prisma.ModCaseModel

@@ -397,7 +397,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  BotSetting: 'BotSetting'
+  BotSetting: 'BotSetting',
+  ModConfig: 'ModConfig',
+  ModCase: 'ModCase'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -413,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "botSetting"
+    modelProps: "botSetting" | "modConfig" | "modCase"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -491,6 +493,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ModConfig: {
+      payload: Prisma.$ModConfigPayload<ExtArgs>
+      fields: Prisma.ModConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ModConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ModConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.ModConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ModConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        findMany: {
+          args: Prisma.ModConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>[]
+        }
+        create: {
+          args: Prisma.ModConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        createMany: {
+          args: Prisma.ModConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ModConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.ModConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        update: {
+          args: Prisma.ModConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.ModConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ModConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ModConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.ModConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.ModConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateModConfig>
+        }
+        groupBy: {
+          args: Prisma.ModConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ModConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    ModCase: {
+      payload: Prisma.$ModCasePayload<ExtArgs>
+      fields: Prisma.ModCaseFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ModCaseFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ModCaseFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        findFirst: {
+          args: Prisma.ModCaseFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ModCaseFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        findMany: {
+          args: Prisma.ModCaseFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>[]
+        }
+        create: {
+          args: Prisma.ModCaseCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        createMany: {
+          args: Prisma.ModCaseCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ModCaseCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>[]
+        }
+        delete: {
+          args: Prisma.ModCaseDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        update: {
+          args: Prisma.ModCaseUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        deleteMany: {
+          args: Prisma.ModCaseDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ModCaseUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ModCaseUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>[]
+        }
+        upsert: {
+          args: Prisma.ModCaseUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ModCasePayload>
+        }
+        aggregate: {
+          args: Prisma.ModCaseAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateModCase>
+        }
+        groupBy: {
+          args: Prisma.ModCaseGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModCaseGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ModCaseCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ModCaseCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -539,6 +689,38 @@ export const BotSettingScalarFieldEnum = {
 export type BotSettingScalarFieldEnum = (typeof BotSettingScalarFieldEnum)[keyof typeof BotSettingScalarFieldEnum]
 
 
+export const ModConfigScalarFieldEnum = {
+  id: 'id',
+  nextCaseNumber: 'nextCaseNumber',
+  logChannelId: 'logChannelId',
+  dmOnAction: 'dmOnAction',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModConfigScalarFieldEnum = (typeof ModConfigScalarFieldEnum)[keyof typeof ModConfigScalarFieldEnum]
+
+
+export const ModCaseScalarFieldEnum = {
+  id: 'id',
+  caseNumber: 'caseNumber',
+  type: 'type',
+  source: 'source',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  moderatorId: 'moderatorId',
+  moderatorName: 'moderatorName',
+  reason: 'reason',
+  durationSeconds: 'durationSeconds',
+  expiresAt: 'expiresAt',
+  active: 'active',
+  logChannelId: 'logChannelId',
+  logMessageId: 'logMessageId',
+  createdAt: 'createdAt'
+} as const
+
+export type ModCaseScalarFieldEnum = (typeof ModCaseScalarFieldEnum)[keyof typeof ModCaseScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -553,6 +735,14 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
 
@@ -600,6 +790,55 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ModCaseType'
+ */
+export type EnumModCaseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ModCaseType'>
+    
+
+
+/**
+ * Reference to a field of type 'ModCaseType[]'
+ */
+export type ListEnumModCaseTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ModCaseType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ModCaseSource'
+ */
+export type EnumModCaseSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ModCaseSource'>
+    
+
+
+/**
+ * Reference to a field of type 'ModCaseSource[]'
+ */
+export type ListEnumModCaseSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ModCaseSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -754,6 +993,8 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   botSetting?: Prisma.BotSettingOmit
+  modConfig?: Prisma.ModConfigOmit
+  modCase?: Prisma.ModCaseOmit
 }
 
 /* Types for Logging */

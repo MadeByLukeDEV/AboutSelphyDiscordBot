@@ -18,3 +18,68 @@ model BotSetting {
   value     String   @db.Text
   updatedAt DateTime @updatedAt
 }
+
+// ---- moderation -------------------------------------------------------
+// Single guild, so case numbers are one global sequence. CHECK constraints
+// (singleton id, digits-only Discord IDs) are added to the migration by hand:
+// Prisma can't express them.
+
+enum ModCaseType {
+  warn
+  timeout
+  untimeout
+  kick
+  ban
+  unban
+  note
+  antibot
+}
+
+/// Where a case came from: a slash command, the dashboard, an action done
+/// directly in Discord's UI (read from the audit log), or an automatic rule.
+enum ModCaseSource {
+  command
+  dashboard
+  audit_log
+  automod
+}
+
+/// Singleton (id = 1): moderation settings and the case counter.
+model ModConfig {
+  id             Int      @id @default(1)
+  /// The number the next case gets. Incremented atomically in the same
+  /// transaction that inserts the case, so numbers are never reused.
+  nextCaseNumber Int      @default(1)
+  /// Channel that receives one embed per case. Null = logging off.
+  logChannelId   String?  @db.VarChar(20)
+  /// Try to DM the member before a kick/ban and on warn/timeout.
+  dmOnAction     Boolean  @default(true)
+  updatedAt      DateTime @updatedAt
+}
+
+model ModCase {
+  id              String        @id @default(cuid())
+  caseNumber      Int           @unique
+  type            ModCaseType
+  source          ModCaseSource
+  /// Discord ID of the member the case is about.
+  targetId        String        @db.VarChar(20)
+  /// Name at the time of the action (members can rename or leave).
+  targetName      String?       @db.VarChar(100)
+  /// Discord ID of the moderator, or "system" for automatic rules.
+  moderatorId     String        @db.VarChar(20)
+  moderatorName   String?       @db.VarChar(100)
+  reason          String?       @db.VarChar(1000)
+  /// Timeouts: how long it lasts. Null for everything else.
+  durationSeconds Int?
+  expiresAt       DateTime?
+  /// Warnings can be pardoned (false) without deleting the history.
+  active          Boolean       @default(true)
+  /// Where the case embed was posted, so edits can update it.
+  logChannelId    String?       @db.VarChar(20)
+  logMessageId    String?       @db.VarChar(20)
+  createdAt       DateTime      @default(now())
+
+  @@index([targetId, createdAt])
+  @@index([type, createdAt])
+}

@@ -9,4 +9,6 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/BotSetting'
+export type * from './models/ModConfig'
+export type * from './models/ModCase'
 export type * from './commonInputTypes'

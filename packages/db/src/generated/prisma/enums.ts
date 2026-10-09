@@ -9,7 +9,25 @@
 * 🟢 You can import this file directly.
 */
 
+export const ModCaseType = {
+  warn: 'warn',
+  timeout: 'timeout',
+  untimeout: 'untimeout',
+  kick: 'kick',
+  ban: 'ban',
+  unban: 'unban',
+  note: 'note',
+  antibot: 'antibot'
+} as const
+
+export type ModCaseType = (typeof ModCaseType)[keyof typeof ModCaseType]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const ModCaseSource = {
+  command: 'command',
+  dashboard: 'dashboard',
+  audit_log: 'audit_log',
+  automod: 'automod'
+} as const
+
+export type ModCaseSource = (typeof ModCaseSource)[keyof typeof ModCaseSource]

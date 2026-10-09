@@ -51,7 +51,9 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  BotSetting: 'BotSetting'
+  BotSetting: 'BotSetting',
+  ModConfig: 'ModConfig',
+  ModCase: 'ModCase'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -79,6 +81,38 @@ export const BotSettingScalarFieldEnum = {
 export type BotSettingScalarFieldEnum = (typeof BotSettingScalarFieldEnum)[keyof typeof BotSettingScalarFieldEnum]
 
 
+export const ModConfigScalarFieldEnum = {
+  id: 'id',
+  nextCaseNumber: 'nextCaseNumber',
+  logChannelId: 'logChannelId',
+  dmOnAction: 'dmOnAction',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ModConfigScalarFieldEnum = (typeof ModConfigScalarFieldEnum)[keyof typeof ModConfigScalarFieldEnum]
+
+
+export const ModCaseScalarFieldEnum = {
+  id: 'id',
+  caseNumber: 'caseNumber',
+  type: 'type',
+  source: 'source',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  moderatorId: 'moderatorId',
+  moderatorName: 'moderatorName',
+  reason: 'reason',
+  durationSeconds: 'durationSeconds',
+  expiresAt: 'expiresAt',
+  active: 'active',
+  logChannelId: 'logChannelId',
+  logMessageId: 'logMessageId',
+  createdAt: 'createdAt'
+} as const
+
+export type ModCaseScalarFieldEnum = (typeof ModCaseScalarFieldEnum)[keyof typeof ModCaseScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -93,4 +127,12 @@ export const QueryMode = {
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
