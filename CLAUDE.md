@@ -355,9 +355,43 @@ Decided 2026-10-08:
   (`feature_`, `fix_`, `chore_`, `docs_`), conventional commits, ff-only merge
   into `main`, local only until the user says to add a remote.
 
+## Lessons so far
+
+- **`@swc/core` is pinned to 1.16.2** (`pnpm-workspace.yaml` overrides). Newer
+  versions refuse to load their native addon when the cache dir or an ancestor
+  is writable by groups like Authenticated Users (`ERR_SWC_NATIVE_CACHE`),
+  which is true for `D:\Work` here. next-intl pulls it in, so `next build` /
+  `next typegen` crash without the pin. Main/Social are on 1.16.2.
+- pnpm adds a `'pkg': set this to true or false` placeholder to `allowBuilds`
+  for ignored build scripts. If the key already exists the file no longer
+  parses (duplicate key) and pnpm **and** the Prisma CLI both fail. Edit the
+  existing entry instead.
+- Prisma's `migrate diff --from-empty` emits `CREATE SCHEMA IF NOT EXISTS
+  "public"`: delete it by hand (see the Prisma note above).
+- Long heredocs in the Bash tool can fail to parse; write files with the Write
+  tool. Never run `git` commands against a sibling repo (`../Main`) by
+  accident: use absolute paths and check `git branch --show-current` first.
+- Dev environment: local Node is v26 (Prisma only warns), images use Node 22.
+
+## Verified so far (2026-10-08, no live Discord/DB/auth available)
+
+- `pnpm typecheck` passes in all four packages; the dashboard builds with no
+  env (lazy clients) and `pnpm lint` is clean.
+- Dashboard on a **production build**: signed-out `/` redirects to the auth
+  login with the right return URL, CSP + nonce and all static headers are on the
+  response, `/api/bot/status` returns 401 without a session, `/api/health` 200.
+- Bot: env validation names missing variables, the token never appears in logs.
+- **Not verified yet**: a real login against Discord (needs the dev bot token
+  and test guild), a real session lookup (needs the auth DB), the migration
+  against the real DB, and **both Dockerfiles** (`chore_dockerfiles`, kept off
+  `main` until a fresh-clone build and run succeeds; Docker is off for now).
+
 ## Feature status
 
-- [ ] Phase 0 — foundation
+- [~] Phase 0 — foundation: code done and merged (monorepo, db package +
+      migration + role script, bot core with `/ping` + health + internal API,
+      dashboard shell with central auth). Open: Dockerfiles (unverified, branch
+      `chore_dockerfiles`), first live run with the dev bot.
 - [ ] Phase 1 — moderation + logs
 - [ ] Phase 2 — anti-bot
 - [ ] Phase 3 — went live
