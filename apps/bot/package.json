@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter @aboutselphy/db ensure-client",
     "dev": "tsx watch src/index.ts",
+    "prestart": "pnpm --filter @aboutselphy/db ensure-client",
     "start": "tsx src/index.ts",
     "commands:register": "tsx scripts/register-commands.ts",
     "typecheck": "tsc --noEmit",

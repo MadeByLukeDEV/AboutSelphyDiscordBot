@@ -6,12 +6,13 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "generate": "prisma generate",
+    "generate": "node scripts/generate.mjs",
     "migrate:deploy": "prisma migrate deploy",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "setup-role": "tsx scripts/setup-db-role.ts",
-    "check": "tsx scripts/check-db.ts"
+    "check": "tsx scripts/check-db.ts",
+    "ensure-client": "node scripts/ensure-client.mjs"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",
