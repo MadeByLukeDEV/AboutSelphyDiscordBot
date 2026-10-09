@@ -381,10 +381,25 @@ Decided 2026-10-08:
   login with the right return URL, CSP + nonce and all static headers are on the
   response, `/api/bot/status` returns 401 without a session, `/api/health` 200.
 - Bot: env validation names missing variables, the token never appears in logs.
-- **Not verified yet**: a real login against Discord (needs the dev bot token
-  and test guild), a real session lookup (needs the auth DB), the migration
-  against the real DB, and **both Dockerfiles** (`chore_dockerfiles`, kept off
-  `main` until a fresh-clone build and run succeeds; Docker is off for now).
+- **Verified live (2026-10-10)**: migrations applied to the real database
+  (schema `bot`, role `aboutselphy_bot`, checked with `pnpm --filter
+  @aboutselphy/db check`); the bot logs in on the real server, registers its 11
+  commands, `/health` is ok; the user tested the moderation commands in Discord
+  and reports everything works. There is **no dev bot and no `bot_dev` schema**
+  (decided 2026-10-10): local runs use the real token and database, so be
+  careful with commands that act on real members. Integration tests refuse the
+  `bot` schema; run them against a throwaway Docker Postgres.
+- **Integration tests** (10, `repository.integration.test.ts`) ran against a
+  Docker Postgres 18.6: gap-free case numbering under parallel inserts, counter
+  rollback on a failed insert, every CHECK constraint.
+- **Docker** (2026-10-10): the bot image builds from a fresh clone and starts
+  (as `node`, env validated, DB reachable). The dashboard image did **not** build
+  yet: npm registry timeouts inside Docker, not a Dockerfile error. A pnpm store
+  cache mount and `.npmrc` retries are on `chore_dockerfiles`, which stays off
+  `main` until a fresh-clone dashboard build succeeds.
+- **Not verified yet**: a real session lookup and the dashboard against the auth
+  DB, the dashboard image, and the audit-log capture event in Discord (user to
+  confirm).
 
 ## Feature status
 
@@ -402,8 +417,8 @@ Decided 2026-10-08:
         Discord accepted it** → embed in the log channel. DM to the member
         before kick/ban, after warn/timeout (config `dmOnAction`). All user text
         is escaped (`lib/escape.ts`, same rules as Main). Pure parts and the
-        command definitions are unit-tested (21 tests); **the DB and Discord
-        paths are not tested yet** (no dev bot/DB access in the build session).
+        command definitions are unit-tested; the DB paths have integration
+        tests and the commands were tried live by the user (2026-10-10).
         Slash commands are only visible to staff by code check
         (`requires`), Discord's default permissions are just a UI hint.
   - [x] Audit-log capture (2026-10-09, `feature_moderation-audit-log`):
