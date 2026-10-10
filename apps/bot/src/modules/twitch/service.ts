@@ -6,6 +6,7 @@ import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { EventSubClient, type SocketLike } from "./eventsub-client";
+import { syncLiveRole } from "./live-role";
 import { getLiveStreams, getUsersByLogin, subscribe, TwitchError, type LiveStream } from "./helix";
 import { endedMessage, liveMessage, type StreamView } from "./notification";
 import type { StreamOfflineEvent, StreamOnlineEvent } from "./protocol";
@@ -95,7 +96,10 @@ async function subscribeAll(sessionId: string): Promise<void> {
     log.info({}, "twitch: module is switched off, staying connected without subscriptions");
     return;
   }
-  const enabledStreamers = (await listStreamers()).filter((s) => s.enabled);
+  const allStreamers = await listStreamers();
+  // A paused channel can't end its stream for us: take the live role off now.
+  for (const paused of allStreamers.filter((s) => !s.enabled)) void syncLiveRole(discord, paused, false);
+  const enabledStreamers = allStreamers.filter((s) => s.enabled);
   if (enabledStreamers.length > MAX_TWITCH_STREAMERS) {
     log.warn({ configured: enabledStreamers.length, max: MAX_TWITCH_STREAMERS }, "twitch: more channels than one connection can subscribe to, the rest are ignored");
   }
@@ -138,6 +142,7 @@ async function onOnline(event: StreamOnlineEvent): Promise<void> {
   }
   const streamer = await activeStreamer(event.broadcaster_user_id);
   if (!streamer) return;
+  void syncLiveRole(discord, streamer, true);
 
   // The event has no title or game: ask Helix, and fall back to bare facts if it lags behind.
   let details: LiveStream | undefined;
@@ -159,6 +164,8 @@ async function onOnline(event: StreamOnlineEvent): Promise<void> {
 }
 
 async function onOffline(event: StreamOfflineEvent): Promise<void> {
+  const linked = (await listStreamers()).find((s) => s.twitchUserId === event.broadcaster_user_id);
+  if (linked) void syncLiveRole(discord, linked, false);
   const open = await openNotificationsFor(event.broadcaster_user_id);
   if (open.length === 0) {
     log.info({ login: event.broadcaster_user_login }, "twitch: went offline, nothing was announced for it");
@@ -258,6 +265,9 @@ async function reconcile(streamers: TwitchStreamer[]): Promise<void> {
   const token = await getAccessToken();
 
   const live = await getLiveStreams(credentials, token, streamers.map((s) => s.twitchUserId));
+  // The live role follows the truth from Helix, so a missed event heals here.
+  const liveUserIds = new Set(live.map((s) => s.userId));
+  for (const streamer of streamers) void syncLiveRole(discord, streamer, liveUserIds.has(streamer.twitchUserId));
   const open = await listOpenNotifications();
   const known = new Set<string>();
   const history = new Set<string>();

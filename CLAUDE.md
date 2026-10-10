@@ -470,6 +470,10 @@ Decided 2026-10-08:
 - **Never put backticks (or `$(...)`) in a shell string**, e.g. a `node -e "..."`
   that writes Markdown: the shell runs them as commands and silently eats the
   text between. Edit docs and code with the editor tool, not with shell one-liners.
+- **The bot's own role** ("managed by an integration") is created by Discord from the permissions in
+  the invite link, the bot can't create it. `pnpm --filter @aboutselphy/bot invite-url` prints the link
+  with every permission the features need; opening it again for a bot already in the server updates
+  the role without kicking anything. Administrator and Mention Everyone are left out on purpose.
 - Moderators' dashboard rights: Settings is hidden from them in the nav, and the
   page and `saveSettingsAction` enforce admin anyway.
 
@@ -634,7 +638,14 @@ Decided 2026-10-08:
   - Lessons: in next-intl catalogs a literal `{name}` must be written `'{name}'`,
     otherwise the key is shown raw. After a schema change restart bot **and**
     dashboard (a stale client throws `PrismaClientValidationError` on save).
-  - [ ] Kick/TikTok, clips, a "Live" role, more than 5 channels (second connection).
+  - **Live role** (2026-10-21, `feature_twitch-live-role`, migration `20261021180000_twitch_live_role`
+    applied; **not tried live yet**): `TwitchConfig.liveRoleId` (one role, picked on `/twitch`) and
+    `TwitchStreamer.discordUserId` (the Discord member linked to a channel, checked to be in the
+    server on save through `GET /internal/guild/member`). The linked member wears the role while the
+    channel is live (`twitch/live-role.ts`, every change through `checkRole`); it is given on
+    `stream.online`, taken off on `stream.offline`, repaired from Helix on every (re)connect, and
+    removed from paused channels. A failure is logged and never blocks the announcement.
+  - [ ] Kick/TikTok, clips, more than 5 channels (second connection).
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and

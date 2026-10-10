@@ -127,6 +127,15 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     return json(res, 200, { results: await deleteRoles(guild, body.data.ids, body.data.by) });
   }
 
+  if (req.method === "GET" && url.pathname === "/internal/guild/member") {
+    const id = url.searchParams.get("id") ?? "";
+    if (!/^\d{17,20}$/.test(id)) return json(res, 400, { error: "invalid id" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const member = await guild.members.fetch(id).catch(() => null);
+    return member ? json(res, 200, { member: { id: member.id, name: member.displayName.slice(0, 100) } }) : json(res, 404, { error: "not found" });
+  }
+
   if (req.method === "POST" && url.pathname === "/internal/roles/create") {
     const body = roleCreateBody.safeParse(await readJsonBody(req));
     if (!body.success) return json(res, 400, { error: "invalid body" });

@@ -188,6 +188,8 @@ model TwitchConfig {
   enabled            Boolean  @default(false)
   /// Edit the message when the stream ends (title struck through, "ended").
   markEndedOnOffline Boolean  @default(true)
+  /// Role worn by a streamer's linked Discord member while they are live; null = off.
+  liveRoleId         String?  @db.VarChar(20)
   updatedAt          DateTime @updatedAt
 }
 
@@ -201,6 +203,8 @@ model TwitchStreamer {
   channelId       String   @db.VarChar(20)
   /// Role to ping, or null for no ping.
   pingRoleId      String?  @db.VarChar(20)
+  /// The streamer's Discord account: it gets the live role while this channel is live.
+  discordUserId   String?  @db.VarChar(20)
   /// Text above the embed; {name} {title} {game} {url} are replaced.
   messageTemplate String   @default("{name} is live: {title}") @db.VarChar(300)
   /// Embed colour as a 24-bit number (default: Twitch purple, 0x9146ff).
