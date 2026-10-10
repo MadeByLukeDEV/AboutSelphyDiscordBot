@@ -94,12 +94,26 @@ model ModCase {
 // Discord channel itself: its permission overwrites and settings are the source
 // of truth, so nothing here can drift from what members actually experience.
 
-/// Singleton (id = 1): how the "join to create" lobby behaves.
+/// Singleton (id = 1): the settings every lobby shares.
 model TempVoiceConfig {
-  id                       Int      @id @default(1)
-  enabled                  Boolean  @default(false)
+  id                  Int      @id @default(1)
+  /// Master switch. Off = joining any lobby does nothing (open rooms are still
+  /// deleted when they empty).
+  enabled             Boolean  @default(false)
+  /// Names containing one of these (case-insensitive) are refused.
+  blockedWords        String[] @default([])
+  /// Also refuse the built-in list of common insults and slurs (English and
+  /// German, defined in packages/shared). On by default.
+  useDefaultBlocklist Boolean  @default(true)
+  updatedAt           DateTime @updatedAt
+}
+
+/// A "join to create" lobby. Each one has its own category, name, limit and
+/// defaults, so a gaming lobby and a chill lobby can behave differently.
+model TempVoiceLobby {
+  id                       String   @id @default(cuid())
   /// The voice channel people join to get their own room.
-  lobbyChannelId           String?  @db.VarChar(20)
+  channelId                String   @unique @db.VarChar(20)
   /// Category the rooms are created in. Null = the lobby's own category.
   categoryId               String?  @db.VarChar(20)
   /// Room name; {user} becomes the owner's display name.
@@ -108,11 +122,9 @@ model TempVoiceConfig {
   defaultUserLimit         Int      @default(0)
   allowVideoByDefault      Boolean  @default(true)
   allowSoundboardByDefault Boolean  @default(true)
-  /// Names containing one of these (case-insensitive) are refused.
-  blockedWords             String[] @default([])
-  /// Also refuse the built-in list of common insults and slurs (English and
-  /// German, defined in packages/shared). On by default.
-  useDefaultBlocklist      Boolean  @default(true)
+  /// Pause just this lobby.
+  enabled                  Boolean  @default(true)
+  createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt
 }
 
@@ -122,6 +134,9 @@ model TempVoiceChannel {
   id             String   @id @default(cuid())
   channelId      String   @unique @db.VarChar(20)
   ownerId        String   @db.VarChar(20)
+  /// The lobby channel the room was created from (for the dashboard). Not a
+  /// foreign key: removing a lobby must not touch rooms people are using.
+  lobbyChannelId String?  @db.VarChar(20)
   /// The control panel message posted in the room, so it can be edited.
   panelMessageId String?  @db.VarChar(20)
   createdAt      DateTime @default(now())
