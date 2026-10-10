@@ -502,6 +502,16 @@ Decided 2026-10-08:
 - **Integration tests** (10, `repository.integration.test.ts`) ran against a
   Docker Postgres 18.6: gap-free case numbering under parallel inserts, counter
   rollback on a failed insert, every CHECK constraint.
+- **Docker / Dokploy** (2026-10-26, `chore_dockerfiles-v2`): `docker-compose.yml` at the repo root starts
+  both services: `dashboard` (applies migrations on start, healthcheck `/api/health`, `expose 3000`, the
+  Dokploy domain goes on this service) and `bot` (waits for a healthy dashboard, no ports, internal API on
+  the compose network at `http://bot:3100`, `BOT_ENV=production`). Required variables fail fast
+  (`${VAR:?}`); everything else is in `.env.example`. The Dockerfiles (`apps/*/Dockerfile`, build context =
+  repo root) come from the earlier `chore_dockerfiles` branch plus: the dashboard also transpiles
+  `@aboutselphy/db` and copies `public/`. **The images were NOT built or run to the end here** (the npm
+  registry was very slow from inside Docker and the user stopped the test): the first Dokploy build is
+  the real test. Things to watch: `@napi-rs/canvas-linux-x64-musl` must install on alpine for the cards,
+  and the dashboard needs `NEXT_PUBLIC_SITE_URL` as a build argument.
 - **Docker** (2026-10-10): the bot image builds from a fresh clone and starts
   (as `node`, env validated, DB reachable). The dashboard image did **not** build
   yet: npm registry timeouts inside Docker, not a Dockerfile error. A pnpm store

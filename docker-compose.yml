@@ -1,0 +1,75 @@
+# Starts both services (the dashboard and the bot) from this one file.
+#
+# Dokploy: create a "Compose" application from this repository (build path "/", compose file
+# "docker-compose.yml"), put the variables of .env.example in its Environment tab, and add the
+# domain (for example bot.aboutselphy.com) to the `dashboard` service, container port 3000.
+# The bot has no domain: its internal API is only reachable from the dashboard over the compose
+# network and must never be published.
+#
+# Locally:   docker compose --env-file .env.local up --build
+#
+# Start order: the dashboard container applies the database migrations when it starts and is
+# the only one that does, so the bot waits until the dashboard is healthy.
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: apps/dashboard/Dockerfile
+      args:
+        # Baked into the client code at build time: change it (and rebuild) for another domain.
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://bot.aboutselphy.com}
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA:-bot}
+      AUTH_URL: ${AUTH_URL:-https://auth.aboutselphy.com}
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL:?set AUTH_DATABASE_URL}
+      AUTH_DATABASE_SCHEMA: ${AUTH_DATABASE_SCHEMA:-auth}
+      AUTH_COOKIE_PREFIX: ${AUTH_COOKIE_PREFIX:-better-auth}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET}
+      # The bot's address on the compose network (the service name below).
+      BOT_API_URL: http://bot:3100
+      BOT_API_SECRET: ${BOT_API_SECRET:?set BOT_API_SECRET}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  bot:
+    build:
+      context: .
+      dockerfile: apps/bot/Dockerfile
+    restart: always
+    depends_on:
+      dashboard:
+        condition: service_healthy
+    environment:
+      BOT_ENV: production
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?set DISCORD_BOT_TOKEN}
+      DISCORD_APP_ID: ${DISCORD_APP_ID:?set DISCORD_APP_ID}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:?set DISCORD_GUILD_ID}
+      DISCORD_ADMIN_ROLE_IDS: ${DISCORD_ADMIN_ROLE_IDS:-}
+      DISCORD_MODERATOR_ROLE_IDS: ${DISCORD_MODERATOR_ROLE_IDS:-}
+      DISCORD_MESSAGE_CONTENT: ${DISCORD_MESSAGE_CONTENT:-false}
+      DATABASE_URL: ${DATABASE_URL:?set DATABASE_URL}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA:-bot}
+      BOT_API_SECRET: ${BOT_API_SECRET:?set BOT_API_SECRET}
+      BOT_API_PORT: "3100"
+      # Reachable by the dashboard over the compose network; the port is not published.
+      BOT_API_HOST: 0.0.0.0
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+      TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      YOUTUBE_CHANNEL_ID: ${YOUTUBE_CHANNEL_ID:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    # No ports and no domain: only the dashboard talks to the bot. The image has its own HEALTHCHECK.
+    stop_grace_period: 20s

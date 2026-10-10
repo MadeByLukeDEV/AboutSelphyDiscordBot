@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
   // The welcome card picture (up to 3 MB) is uploaded through a Server Action; the default limit is 1 MB.
   experimental: { serverActions: { bodySizeLimit: "4mb" } },
   // The workspace packages export TypeScript sources.
-  transpilePackages: ["@aboutselphy/shared"],
+  transpilePackages: ["@aboutselphy/shared", "@aboutselphy/db"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
