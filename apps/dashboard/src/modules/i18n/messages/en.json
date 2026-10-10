@@ -17,7 +17,8 @@
         "youtube": "YouTube",
         "roles": "Roles",
         "welcome": "Welcome",
-        "logs": "Logs"
+        "logs": "Logs",
+        "levels": "Levels"
       }
     },
     "account": {
@@ -912,6 +913,94 @@
       "needsChannel": "Pick a channel before switching a log on.",
       "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
       "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "failed": "Couldn't save the settings. Try again."
+    }
+  },
+  "Levels": {
+    "title": "Levels",
+    "intro": "Members earn XP by chatting and by spending time in voice channels, level up, and can unlock roles. Members check themselves with /rank and /leaderboard.",
+    "noChannel": "Not chosen",
+    "xp": {
+      "title": "Earning XP",
+      "intro": "Message text is never read: the bot only counts that a message was sent.",
+      "enabled": "Turn leveling on",
+      "enabledHelp": "While it is off nobody earns XP and /rank says so.",
+      "min": "Least XP per message",
+      "minHelp": "Each message earns a random amount between the least and the most.",
+      "max": "Most XP per message",
+      "maxHelp": "Up to 100.",
+      "cooldown": "Cooldown (seconds)",
+      "cooldownHelp": "A member earns message XP at most once in this time, so spamming doesn't help. 0 = every message.",
+      "voice": "XP per minute in voice",
+      "voiceHelp": "Only while with someone else, not deafened and not in the AFK channel. 0 = voice earns nothing."
+    },
+    "announce": {
+      "title": "Level-up message",
+      "intro": "What happens when a member reaches a new level.",
+      "mode": "Where",
+      "modes": {
+        "off": "Don't announce",
+        "same": "In the channel where it happened",
+        "channel": "In one channel"
+      },
+      "channel": "Channel",
+      "message": "Message",
+      "messageHelp": "Use '{user}' (mentions the member), '{username}' and '{level}'. Voice level-ups are only announced when a single channel is chosen.",
+      "reset": "Use the default message"
+    },
+    "rewards": {
+      "title": "Role rewards",
+      "intro": "Give a role when a member reaches a level (up to {max}). Only roles without powerful permissions can be offered, and the bot checks again each time.",
+      "stack": "Keep every reward role",
+      "stackHelp": "On: members keep all reward roles they have reached. Off: only the highest one.",
+      "empty": "No rewards yet.",
+      "level": "At level",
+      "role": "Role",
+      "rolePlaceholder": "Pick a role",
+      "remove": "Remove",
+      "add": "Add a reward"
+    },
+    "noXp": {
+      "title": "No XP",
+      "intro": "Channels (or whole categories) and roles that earn nothing, for example a bot-commands channel.",
+      "channels": "Channels and categories",
+      "roles": "Roles",
+      "channelsSelected": "Selected channels",
+      "rolesSelected": "Selected roles",
+      "channelsSearch": "Search channels",
+      "rolesSearch": "Search roles",
+      "none": "None selected",
+      "noMatch": "Nothing found.",
+      "full": "That's the most you can add ({max}).",
+      "offline": "The bot is offline, so the list isn't available.",
+      "remove": "Remove {name}"
+    },
+    "board": {
+      "title": "Leaderboard",
+      "intro": "The top 25 of {count} members with XP.",
+      "empty": {
+        "title": "Nobody has XP yet",
+        "body": "Switch leveling on and the first messages will show up here."
+      },
+      "stats": "{messages} messages · {minutes} voice minutes",
+      "level": "Level {level}"
+    },
+    "form": {
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Some of these values aren't valid.",
+      "xpRange": "The most XP can't be less than the least.",
+      "needsChannel": "Pick a channel for the level-up message.",
+      "rewardsInvalid": "Each reward needs a role, a level from 1 to 500, and every level and role can be used once.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "One of these channels doesn't exist, or the bot can't see it.",
+      "roleNotFound": "One of these roles doesn't exist any more.",
+      "roleNotAllowed": "A reward role can't be handed out: it is above the bot's role, managed by an integration, or has powerful permissions.",
       "failed": "Couldn't save the settings. Try again."
     }
   }

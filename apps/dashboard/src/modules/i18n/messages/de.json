@@ -17,7 +17,8 @@
         "youtube": "YouTube",
         "roles": "Rollen",
         "welcome": "Willkommen",
-        "logs": "Protokolle"
+        "logs": "Protokolle",
+        "levels": "Level"
       }
     },
     "account": {
@@ -912,6 +913,94 @@
       "needsChannel": "Wähle einen Kanal, bevor du ein Protokoll einschaltest.",
       "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
       "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
+  },
+  "Levels": {
+    "title": "Level",
+    "intro": "Mitglieder sammeln XP durch Schreiben und Zeit in Sprachkanälen, steigen auf und können Rollen freischalten. Mitglieder prüfen sich selbst mit /rank und /leaderboard.",
+    "noChannel": "Nicht gewählt",
+    "xp": {
+      "title": "XP sammeln",
+      "intro": "Der Text von Nachrichten wird nie gelesen: Der Bot zählt nur, dass eine Nachricht gesendet wurde.",
+      "enabled": "Level einschalten",
+      "enabledHelp": "Solange es aus ist, sammelt niemand XP und /rank sagt das.",
+      "min": "Mindestens XP pro Nachricht",
+      "minHelp": "Jede Nachricht bringt eine zufällige Menge zwischen dem Minimum und dem Maximum.",
+      "max": "Höchstens XP pro Nachricht",
+      "maxHelp": "Bis zu 100.",
+      "cooldown": "Abklingzeit (Sekunden)",
+      "cooldownHelp": "Ein Mitglied bekommt Nachrichten-XP höchstens einmal in dieser Zeit, Spammen bringt also nichts. 0 = jede Nachricht.",
+      "voice": "XP pro Minute im Sprachkanal",
+      "voiceHelp": "Nur mit jemand anderem zusammen, nicht taubgestellt und nicht im AFK-Kanal. 0 = Sprachkanäle bringen nichts."
+    },
+    "announce": {
+      "title": "Level-Up-Nachricht",
+      "intro": "Was passiert, wenn ein Mitglied ein neues Level erreicht.",
+      "mode": "Wo",
+      "modes": {
+        "off": "Nicht ankündigen",
+        "same": "In dem Kanal, in dem es passierte",
+        "channel": "In einem Kanal"
+      },
+      "channel": "Kanal",
+      "message": "Nachricht",
+      "messageHelp": "Nutze '{user}' (erwähnt das Mitglied), '{username}' und '{level}'. Level-Ups durch Sprachkanäle werden nur angekündigt, wenn ein einzelner Kanal gewählt ist.",
+      "reset": "Standardnachricht verwenden"
+    },
+    "rewards": {
+      "title": "Rollenbelohnungen",
+      "intro": "Gib eine Rolle, wenn ein Mitglied ein Level erreicht (bis zu {max}). Es können nur Rollen ohne mächtige Berechtigungen angeboten werden, und der Bot prüft jedes Mal erneut.",
+      "stack": "Alle Belohnungsrollen behalten",
+      "stackHelp": "An: Mitglieder behalten alle erreichten Belohnungsrollen. Aus: nur die höchste.",
+      "empty": "Noch keine Belohnungen.",
+      "level": "Bei Level",
+      "role": "Rolle",
+      "rolePlaceholder": "Rolle wählen",
+      "remove": "Entfernen",
+      "add": "Belohnung hinzufügen"
+    },
+    "noXp": {
+      "title": "Kein XP",
+      "intro": "Kanäle (oder ganze Kategorien) und Rollen, die nichts einbringen, zum Beispiel ein Kanal für Bot-Befehle.",
+      "channels": "Kanäle und Kategorien",
+      "roles": "Rollen",
+      "channelsSelected": "Ausgewählte Kanäle",
+      "rolesSelected": "Ausgewählte Rollen",
+      "channelsSearch": "Kanäle suchen",
+      "rolesSearch": "Rollen suchen",
+      "none": "Nichts ausgewählt",
+      "noMatch": "Nichts gefunden.",
+      "full": "Mehr kannst du nicht hinzufügen ({max}).",
+      "offline": "Der Bot ist offline, deshalb ist die Liste nicht verfügbar.",
+      "remove": "{name} entfernen"
+    },
+    "board": {
+      "title": "Bestenliste",
+      "intro": "Die Top 25 von {count} Mitgliedern mit XP.",
+      "empty": {
+        "title": "Noch hat niemand XP",
+        "body": "Schalte Level ein, und die ersten Nachrichten erscheinen hier."
+      },
+      "stats": "{messages} Nachrichten · {minutes} Sprachminuten",
+      "level": "Level {level}"
+    },
+    "form": {
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "xpRange": "Das Maximum darf nicht kleiner als das Minimum sein.",
+      "needsChannel": "Wähle einen Kanal für die Level-Up-Nachricht.",
+      "rewardsInvalid": "Jede Belohnung braucht eine Rolle und ein Level von 1 bis 500, und jedes Level und jede Rolle darf nur einmal vorkommen.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
+      "roleNotAllowed": "Eine Belohnungsrolle kann nicht vergeben werden: Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
