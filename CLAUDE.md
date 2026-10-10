@@ -527,6 +527,24 @@ Decided 2026-10-08:
         modals are routed by custom-ID prefix (`events/components.ts`, `tv:...`,
         strict parse). Needs the bot to send messages and embeds in the voice
         channels' chat.
+  - [x] Blocklist (2026-10-11, `feature_tempvoice-blocklist`): room names (new
+        rooms, renames, the `/tempvoice name` template and the dashboard's
+        template) are checked against the admin's own words and a **built-in list
+        of common insults and slurs, English and German** (`packages/shared/src/
+        profanity.ts`, on by default, `TempVoiceConfig.useDefaultBlocklist`).
+        Patterns are built in code from plain words, never from user input; each
+        matches a **whole word** only (no Scunthorpe problem: "assassin", "class",
+        "cockpit", "shiitake", "Niger" are fine, tested), sees through `sh1t`,
+        `f*ck`, `fuuuck`, `f.u.c.k`, invisible characters, fullwidth and
+        look-alike Cyrillic/Greek letters, and `ß`/umlauts; every letter run is
+        one quantified class so hostile input stays linear (tested), input is
+        capped at 500 characters. Admin words stay **literal substrings** (no
+        regex from the dashboard: arbitrary patterns need `re2`, to come with
+        the anti-bot engine). A blocked display name makes the room "Voice room"
+        instead of failing; a refused rename never echoes the word. To extend
+        the list, add an entry to `ENGLISH`/`GERMAN` and a catch + a
+        false-positive case to `profanity.test.ts` (slurs are assembled from
+        fragments there). Mild words (damn, hell, crap) are deliberately out.
   - [x] Dashboard (2026-10-11, `feature_dashboard-tempvoice`, admins only):
         `/voice-rooms` with a **live view** of the open rooms (owner, who is in
         them, locked/open, limit, video and soundboard off, let-in/blocked counts,
