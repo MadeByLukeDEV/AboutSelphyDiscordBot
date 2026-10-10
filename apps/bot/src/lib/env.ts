@@ -33,6 +33,14 @@ const schema = z.object({
   BOT_API_PORT: z.coerce.number().int().min(1).max(65535).default(3100),
   // Optional. Default: loopback locally, all interfaces when BOT_ENV=production.
   BOT_API_HOST: z.string().optional(),
+  // Twitch (went live). All optional: without them the module stays off.
+  TWITCH_CLIENT_ID: z.string().min(1).optional(),
+  TWITCH_CLIENT_SECRET: z.string().min(1).optional(),
+  // 32 bytes as 64 hex characters; decrypts the stored Twitch refresh token.
+  TOKEN_ENCRYPTION_KEY: z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/)
+    .optional(),
   BOT_ENV: z.enum(["local", "production"]).default("local"),
   BOT_INTEGRATIONS_IN_DEV: bool,
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
