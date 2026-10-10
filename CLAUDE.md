@@ -762,6 +762,10 @@ Decided 2026-10-08:
     `GuildMessageReactions` intent (not privileged) and partials (Message, Channel,
     Reaction, User). The dashboard form has a "Server emotes" picker (images from Discord's
     CDN, allowed by the CSP) next to the unicode text field.
+  - **Emoji picker** (`emoji-picker.tsx`, branch `feature_emoji-picker`): search over the
+    server's emotes and the standard emoji, categories as tabs. The standard list is the
+    data-only package `unicode-emoji-json` (pinned 0.9.0), loaded with a dynamic import the
+    first time a picker opens.
   - [ ] Auto-roles on join, welcome/goodbye messages, roles re-applied on rejoin: these
         need the **GuildMembers** privileged intent. Add it behind a flag, the bot refuses
         to log in if the intent isn't enabled in the Developer Portal.
