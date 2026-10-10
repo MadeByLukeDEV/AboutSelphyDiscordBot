@@ -110,6 +110,9 @@ model TempVoiceConfig {
   allowSoundboardByDefault Boolean  @default(true)
   /// Names containing one of these (case-insensitive) are refused.
   blockedWords             String[] @default([])
+  /// Also refuse the built-in list of common insults and slurs (English and
+  /// German, defined in packages/shared). On by default.
+  useDefaultBlocklist      Boolean  @default(true)
   updatedAt                DateTime @updatedAt
 }
 
