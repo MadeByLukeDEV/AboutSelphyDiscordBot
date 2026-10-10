@@ -3,6 +3,7 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  welcomePreviewResponse,
   emojisResponse,
   roleCreateResponse,
   rolePanelDeleteStatus,
@@ -150,4 +151,12 @@ export async function listEmojis(): Promise<GuildEmoji[] | null> {
   if (!res?.ok) return null;
   const parsed = emojisResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data.emojis : null;
+}
+
+/** A sample welcome card drawn by the bot from the saved settings (PNG bytes). Null if the bot can't be reached. */
+export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
+  const res = await botFetch("/internal/welcome/preview", { method: "POST" });
+  if (!res?.ok) return null;
+  const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
 }

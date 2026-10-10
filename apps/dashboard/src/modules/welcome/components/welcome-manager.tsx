@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,16 +25,31 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveWelcomeSettingsAction } from "../actions";
+import type { CardImageView } from "../schema";
+import { CardSettings } from "./card-settings";
 import { RolePicker } from "./role-picker";
+import { TemplateList } from "./template-list";
 
-type TemplateField = "welcomeTemplate" | "dmTemplate" | "goodbyeTemplate";
+type TemplateField = "dmTemplate" | "goodbyeTemplate";
 
 /** All the welcome settings in one form: auto-roles, restoring roles, and the welcome, direct and goodbye messages. */
-export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeSettings; channels: GuildChannel[] | null; roles: GuildRole[] | null }) {
+export function WelcomeManager({
+  initial,
+  channels,
+  roles,
+  cardImage,
+}: {
+  initial: WelcomeSettings;
+  channels: GuildChannel[] | null;
+  roles: GuildRole[] | null;
+  cardImage: CardImageView | null;
+}) {
   const t = useTranslations("Welcome");
   const te = useTranslations("Welcome.errors");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  // Bumped after every save so the card preview is drawn again from the new settings.
+  const [version, setVersion] = useState(0);
   const form = useForm<WelcomeSettings>({ resolver: zodResolver(welcomeSettingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
 
@@ -54,6 +69,7 @@ export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeS
       if (result.ok) {
         toast.success(result.botNotified ? t("form.saved") : t("form.savedBotLater"));
         form.reset(result.settings);
+        setVersion((n) => n + 1);
         router.refresh();
       } else {
         toast.error(te(result.error));
@@ -157,7 +173,12 @@ export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeS
         <>
           {toggle("welcomeEnabled", t("welcome.enabled"))}
           {channelField("welcomeChannelId", t("welcome.channel"))}
-          {templateField("welcomeTemplate", t("welcome.message"), t("welcome.messageHelp", { count: (v.welcomeTemplate ?? "").length, max: MAX_WELCOME_TEMPLATE }))}
+          <Controller
+            control={form.control}
+            name="welcomeTemplates"
+            render={({ field }) => <TemplateList value={field.value} onChange={field.onChange} invalid={Boolean(errors.welcomeTemplates)} />}
+          />
+          {errors.welcomeTemplates && <FieldError>{te("needsText")}</FieldError>}
           {toggle("welcomeAsEmbed", t("welcome.embed"), t("welcome.embedHelp"))}
           {v.welcomeAsEmbed && (
             <>
@@ -189,6 +210,8 @@ export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeS
             </>
           )}
 
+          <CardSettings form={form} cardImage={cardImage} version={version} />
+
           <figure aria-label={t("preview.label")} className="flex flex-col gap-2">
             <figcaption className="text-xs font-medium text-muted-foreground">{t("preview.label")}</figcaption>
             <div className="flex gap-3 rounded-xl bg-[#313338] p-3 text-[#dbdee1]">
@@ -203,7 +226,7 @@ export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeS
                     <div className="flex max-w-[30rem] overflow-hidden rounded bg-[#2b2d31]">
                       <span className="w-1 shrink-0" style={{ backgroundColor: colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR) }} aria-hidden />
                       <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
-                        <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplate)}</p>
+                        <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
                         {(v.welcomeImageUrl ?? "").trim() !== "" && (
                           <div aria-hidden className="mt-1 flex aspect-video w-full items-center justify-center rounded bg-[#1e1f22] text-xs text-[#949ba4]">
                             {t("preview.picture")}
@@ -213,11 +236,11 @@ export function WelcomeManager({ initial, channels, roles }: { initial: WelcomeS
                     </div>
                   </>
                 ) : (
-                  <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplate)}</p>
+                  <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
                 )}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">{t("preview.note")}</p>
+            <p className="text-xs text-muted-foreground">{(v.welcomeTemplates?.length ?? 0) > 1 ? t("preview.variants", { count: v.welcomeTemplates?.length ?? 0 }) : t("preview.note")}</p>
           </figure>
         </>,
       )}

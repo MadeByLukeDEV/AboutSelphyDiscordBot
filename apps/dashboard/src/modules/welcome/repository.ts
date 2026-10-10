@@ -12,7 +12,11 @@ export type ConfigData = {
   restoreRoles: boolean;
   welcomeEnabled: boolean;
   welcomeChannelId: string | null;
-  welcomeTemplate: string;
+  welcomeTemplates: string[];
+  welcomeCardEnabled: boolean;
+  welcomeCardMode: string;
+  welcomeCardTitle: string;
+  welcomeCardSubtitle: string;
   welcomeAsEmbed: boolean;
   welcomeColor: number;
   welcomeImageUrl: string;
@@ -25,4 +29,19 @@ export type ConfigData = {
 
 export function updateConfig(data: ConfigData): Promise<WelcomeConfig> {
   return prisma.welcomeConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
+}
+
+export type CardImageData = { data: Uint8Array<ArrayBuffer>; contentType: string; width: number; height: number; uploadedByName: string };
+
+export function readCardImage() {
+  return prisma.welcomeCardImage.findUnique({ where: { id: 1 } });
+}
+
+export function saveCardImage(data: CardImageData) {
+  const row = { ...data, uploadedByName: data.uploadedByName.slice(0, 100), uploadedAt: new Date() };
+  return prisma.welcomeCardImage.upsert({ where: { id: 1 }, update: row, create: { id: 1, ...row } });
+}
+
+export async function deleteCardImage(): Promise<void> {
+  await prisma.welcomeCardImage.deleteMany({ where: { id: 1 } });
 }

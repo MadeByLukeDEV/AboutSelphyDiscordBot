@@ -1,1 +1,1 @@
-export { listEmojis, createGuildRole, deleteRolePanelMessage, publishRolePanel, deleteAnnouncementMessage, editAnnouncementMessage, getTempVoiceOverview, listChannels, listRoles, refreshCaseLog, reloadBotModule, resolveTwitchChannel } from "./service";
+export { getWelcomePreviewCard, listEmojis, createGuildRole, deleteRolePanelMessage, publishRolePanel, deleteAnnouncementMessage, editAnnouncementMessage, getTempVoiceOverview, listChannels, listRoles, refreshCaseLog, reloadBotModule, resolveTwitchChannel } from "./service";

@@ -14,7 +14,7 @@ export default async function WelcomePage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("Welcome");
-  const { settings, channels, roles } = await getWelcomePage();
+  const { settings, channels, roles, cardImage } = await getWelcomePage();
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function WelcomePage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <WelcomeManager initial={settings} channels={channels} roles={roles} />
+      <WelcomeManager initial={settings} channels={channels} roles={roles} cardImage={cardImage} />
     </>
   );
 }

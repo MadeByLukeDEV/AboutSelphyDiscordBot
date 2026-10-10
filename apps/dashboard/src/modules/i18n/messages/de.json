@@ -778,8 +778,6 @@
       "intro": "Wird in einem Kanal gepostet, wenn ein Mitglied beitritt.",
       "enabled": "Willkommensnachricht posten",
       "channel": "Posten in",
-      "message": "Nachricht",
-      "messageHelp": "{count} von {max} Zeichen. '{user}' erwähnt das neue Mitglied, es wird also gepingt.",
       "embed": "In einer Box anzeigen (Embed)",
       "embedHelp": "Das neue Mitglied wird trotzdem über der Box erwähnt, damit es gepingt wird.",
       "image": "Bild",
@@ -807,7 +805,8 @@
       "botName": "AboutSelphy Bot",
       "server": "Dein Server",
       "picture": "Bild",
-      "note": "Das Bild wird hier nicht geladen. Discord zeigt es, wenn die Nachricht gepostet wird."
+      "note": "Das Bild wird hier nicht geladen. Discord zeigt es, wenn die Nachricht gepostet wird.",
+      "variants": "Vorschau des ersten Textes. Der Bot wählt zufällig einen deiner {count} Texte."
     },
     "form": {
       "insert": "Einfügen:",
@@ -828,7 +827,51 @@
       "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "roleNotAllowed": "Eine dieser Rollen kann nicht vergeben werden: Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
       "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten.",
-      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
+      "needsText": "Füge mindestens einen Text hinzu, bevor du die Willkommensnachricht einschaltest."
+    },
+    "variants": {
+      "title": "Nachrichten",
+      "help": "Füge bis zu {max} verschiedene Texte hinzu. Der Bot wählt für jedes neue Mitglied zufällig einen aus, nie zweimal hintereinander denselben.",
+      "empty": "Noch keine Texte. Füge mindestens einen hinzu, sonst lässt sich die Willkommensnachricht nicht einschalten.",
+      "variant": "Text {number}",
+      "insert": "Einfügen:",
+      "count": "{count} von {max} Zeichen. '{user}' erwähnt das neue Mitglied, es wird also gepingt.",
+      "remove": "Diesen Text entfernen",
+      "add": "Weiteren Text hinzufügen"
+    },
+    "card": {
+      "enabled": "Willkommensbild hinzufügen",
+      "enabledHelp": "Der Bot zeichnet für jedes neue Mitglied ein Bild mit Profilbild, Namen und Mitgliedsnummer auf einem Bild deiner Wahl.",
+      "title": "Überschrift auf dem Bild",
+      "subtitle": "Zeile unter dem Namen",
+      "subtitleHelp": "Nutze '{username}', '{server}' und '{count}' (die Mitgliedsnummer). Leer lassen für keine.",
+      "image": "Dein Bild",
+      "imageHelp": "PNG, JPEG oder WebP, bis zu 3 MB, zwischen 64 und 4096 Pixeln pro Seite. Ohne Bild bekommt das Bild einen einfachen dunklen Hintergrund.",
+      "current": "Hochgeladen: {width} × {height} Pixel, von {name} am {date}.",
+      "remove": "Bild entfernen",
+      "mode": "Wie dein Bild verwendet wird",
+      "modes": {
+        "background": "Als Hintergrund",
+        "sticker": "Als Sticker rechts"
+      },
+      "modeHelp": "Nimm den Hintergrund für ein breites, großes Bild. Nimm einen Sticker für ein kleines Bild wie ein Emote oder ein Maskottchen.",
+      "preview": "Vorschau des Bildes",
+      "previewAlt": "Beispiel-Willkommensbild für ein Mitglied namens NewMember",
+      "previewNote": "Vom Bot aus den gespeicherten Einstellungen mit einem Beispielmitglied gezeichnet. Speichere und aktualisiere, um Änderungen zu sehen.",
+      "previewFailed": "Die Vorschau konnte nicht gezeichnet werden. Vielleicht ist der Bot offline.",
+      "refresh": "Vorschau aktualisieren",
+      "uploaded": "Bild hochgeladen",
+      "removed": "Bild entfernt",
+      "errors": {
+        "forbidden": "Nur Admins können das ändern.",
+        "noFile": "Wähle zuerst eine Bilddatei.",
+        "type": "Das ist kein PNG-, JPEG- oder WebP-Bild.",
+        "size": "Die Datei ist zu groß. Das Limit liegt bei 3 MB.",
+        "dimensions": "Das Bild muss auf jeder Seite zwischen 64 und 4096 Pixel groß sein.",
+        "failed": "Das Bild konnte nicht gespeichert werden. Versuche es erneut.",
+        "invalid": "Das ist nicht gültig."
+      }
     }
   }
 }

@@ -778,8 +778,6 @@
       "intro": "Posted in a channel when a member joins.",
       "enabled": "Post a welcome message",
       "channel": "Post in",
-      "message": "Message",
-      "messageHelp": "{count} of {max} characters. '{user}' mentions the new member, so they are pinged.",
       "embed": "Show it in a box (embed)",
       "embedHelp": "The new member is still mentioned above the box so they get pinged.",
       "image": "Picture",
@@ -807,7 +805,8 @@
       "botName": "AboutSelphy Bot",
       "server": "Your server",
       "picture": "Picture",
-      "note": "The picture isn't loaded here. Discord shows it when the message is posted."
+      "note": "The picture isn't loaded here. Discord shows it when the message is posted.",
+      "variants": "Preview of the first text. The bot picks one of your {count} texts at random."
     },
     "form": {
       "insert": "Insert:",
@@ -828,7 +827,51 @@
       "roleNotFound": "One of these roles doesn't exist any more.",
       "roleNotAllowed": "One of these roles can't be handed out: it is above the bot's role, managed by an integration, or has powerful permissions.",
       "imageInvalid": "The picture address must start with https:// and contain no spaces.",
-      "failed": "Couldn't save the settings. Try again."
+      "failed": "Couldn't save the settings. Try again.",
+      "needsText": "Add at least one text before switching the welcome message on."
+    },
+    "variants": {
+      "title": "Messages",
+      "help": "Add up to {max} different texts. The bot picks one at random for each new member, never the same one twice in a row.",
+      "empty": "No texts yet. Add at least one, or the welcome message can't be switched on.",
+      "variant": "Text {number}",
+      "insert": "Insert:",
+      "count": "{count} of {max} characters. '{user}' mentions the new member, so they are pinged.",
+      "remove": "Remove this text",
+      "add": "Add another text"
+    },
+    "card": {
+      "enabled": "Add a welcome picture",
+      "enabledHelp": "The bot draws a picture for each new member with their profile picture, name and member number, on an image you provide.",
+      "title": "Heading on the picture",
+      "subtitle": "Line under the name",
+      "subtitleHelp": "Use '{username}', '{server}' and '{count}' (the member number). Leave empty for none.",
+      "image": "Your image",
+      "imageHelp": "PNG, JPEG or WebP, up to 3 MB, between 64 and 4096 pixels a side. Without one the picture gets a plain dark background.",
+      "current": "Uploaded: {width} × {height} pixels, by {name} on {date}.",
+      "remove": "Remove image",
+      "mode": "How your image is used",
+      "modes": {
+        "background": "As the background",
+        "sticker": "As a sticker on the right"
+      },
+      "modeHelp": "Use the background for a wide, large picture. Use a sticker for a small image such as an emote or a mascot.",
+      "preview": "Preview of the picture",
+      "previewAlt": "Sample welcome picture for a member called NewMember",
+      "previewNote": "Drawn by the bot from the saved settings, with a sample member. Save, then refresh to see changes.",
+      "previewFailed": "The preview couldn't be drawn. The bot may be offline.",
+      "refresh": "Refresh preview",
+      "uploaded": "Image uploaded",
+      "removed": "Image removed",
+      "errors": {
+        "forbidden": "Only admins can change this.",
+        "noFile": "Choose an image file first.",
+        "type": "That isn't a PNG, JPEG or WebP picture.",
+        "size": "That file is too big. The limit is 3 MB.",
+        "dimensions": "The picture must be between 64 and 4096 pixels on each side.",
+        "failed": "Couldn't save the image. Try again.",
+        "invalid": "That isn't valid."
+      }
     }
   }
 }
