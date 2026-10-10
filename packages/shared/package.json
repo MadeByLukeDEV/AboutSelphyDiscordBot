@@ -18,6 +18,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./token-cipher": "./src/token-cipher.ts"
+    "./token-cipher": "./src/token-cipher.ts",
+    "./twitch-template": "./src/twitch-template.ts"
   }
 }

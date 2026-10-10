@@ -1,11 +1,11 @@
 import { EmbedBuilder } from "discord.js";
+import { DEFAULT_EMBED_COLOR, fillTemplate, twitchChannelUrl } from "@aboutselphy/shared/twitch-template";
 import { escapeText, truncate } from "../../lib/escape";
 
 // The announcement message. Everything Twitch or staff typed (title, game,
 // display name, the template) is user-controlled: escaped, with mentions
 // blocked by allowedMentions at send time, so none of it can ping or link.
 
-const TWITCH_PURPLE = 0x9146ff;
 const ENDED_GREY = 0x6b7280;
 
 export type StreamView = {
@@ -18,9 +18,11 @@ export type StreamView = {
   thumbnailUrl: string;
 };
 
-export function channelUrl(login: string): string {
-  return `https://twitch.tv/${encodeURIComponent(login)}`;
-}
+export const channelUrl = twitchChannelUrl;
+
+/** How one channel's announcement looks (from its settings). */
+export type LookOptions = { color: number; showThumbnail: boolean; showGame: boolean };
+export const DEFAULT_LOOK: LookOptions = { color: DEFAULT_EMBED_COLOR, showThumbnail: true, showGame: true };
 
 /** Twitch's thumbnail template to a real size, cache-busted so Discord doesn't show a stale frame. */
 export function thumbnail(template: string, bust: number): string | undefined {
@@ -31,27 +33,27 @@ export function thumbnail(template: string, bust: number): string | undefined {
   return `${url}${url.includes("?") ? "&" : "?"}t=${bust}`;
 }
 
-/** {name} {title} {game} {url} in the staff template; all values escaped, unknown placeholders left as they are. */
+/** {name} {login} {title} {game} {url} in the staff template; all values escaped, unknown placeholders left as they are. */
 export function renderTemplate(template: string, stream: StreamView): string {
-  const values: Record<string, string> = {
+  return fillTemplate(template, {
     name: escapeText(stream.displayName),
+    login: escapeText(stream.login),
     title: escapeText(stream.title) || "a new stream",
     game: escapeText(stream.game) || "something fun",
     url: channelUrl(stream.login),
-  };
-  return template.replace(/\{(name|title|game|url)\}/g, (_, key: string) => values[key] ?? "");
+  });
 }
 
-export function liveMessage(stream: StreamView, template: string, pingRoleId: string | null, now = Date.now()) {
+export function liveMessage(stream: StreamView, template: string, pingRoleId: string | null, look: LookOptions = DEFAULT_LOOK, now = Date.now()) {
   const ping = pingRoleId ? `<@&${pingRoleId}> ` : "";
   const embed = new EmbedBuilder()
-    .setColor(TWITCH_PURPLE)
+    .setColor(look.color)
     .setAuthor({ name: `${stream.displayName} is live on Twitch` })
     .setTitle(truncate(stream.title || "Live now", 256))
     .setURL(channelUrl(stream.login))
     .setTimestamp(stream.startedAt);
-  if (stream.game) embed.addFields({ name: "Playing", value: truncate(stream.game, 256), inline: true });
-  const image = thumbnail(stream.thumbnailUrl, Math.floor(now / 60_000));
+  if (look.showGame && stream.game) embed.addFields({ name: "Playing", value: truncate(stream.game, 256), inline: true });
+  const image = look.showThumbnail ? thumbnail(stream.thumbnailUrl, Math.floor(now / 60_000)) : undefined;
   if (image) embed.setImage(image);
   return {
     content: truncate(`${ping}${renderTemplate(template, stream)}`, 2000),

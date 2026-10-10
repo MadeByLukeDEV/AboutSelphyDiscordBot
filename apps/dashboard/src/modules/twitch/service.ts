@@ -114,6 +114,9 @@ const toView = (s: {
   channelId: string;
   pingRoleId: string | null;
   messageTemplate: string;
+  embedColor: number;
+  showThumbnail: boolean;
+  showGame: boolean;
   enabled: boolean;
 }): TwitchStreamerView => ({
   id: s.id,
@@ -122,6 +125,9 @@ const toView = (s: {
   channelId: s.channelId,
   pingRoleId: s.pingRoleId,
   messageTemplate: s.messageTemplate,
+  embedColor: s.embedColor,
+  showThumbnail: s.showThumbnail,
+  showGame: s.showGame,
   enabled: s.enabled,
 });
 
@@ -187,7 +193,15 @@ export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerRe
       if (!roles.some((r) => r.id === roleId)) return fail("roleNotFound");
     }
 
-    const data = { channelId: input.channelId, pingRoleId: roleId, messageTemplate: input.messageTemplate, enabled: input.enabled };
+    const data = {
+      channelId: input.channelId,
+      pingRoleId: roleId,
+      messageTemplate: input.messageTemplate,
+      embedColor: input.embedColor,
+      showThumbnail: input.showThumbnail,
+      showGame: input.showGame,
+      enabled: input.enabled,
+    };
 
     let saved;
     if (existing) {

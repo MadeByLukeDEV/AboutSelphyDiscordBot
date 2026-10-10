@@ -51,6 +51,18 @@ describe("liveMessage", () => {
     expect(m.content).not.toMatch(/(?<!\\)<@/);
   });
 
+  it("applies the colour and leaves out the picture and the game when asked", () => {
+    const m = liveMessage(stream, "{name}", null, { color: 0xff0000, showThumbnail: false, showGame: false });
+    const json = m.embeds[0]!.toJSON();
+    expect(json.color).toBe(0xff0000);
+    expect(json.image).toBeUndefined();
+    expect(json.fields).toBeUndefined();
+  });
+
+  it("fills {login} too", () => {
+    expect(renderTemplate("{login}", stream)).toBe("selphy");
+  });
+
   it("stays inside Discord's limits", () => {
     const m = liveMessage({ ...stream, title: "x".repeat(500), game: "y".repeat(500) }, "z".repeat(3000), null);
     expect(m.content.length).toBeLessThanOrEqual(2000);

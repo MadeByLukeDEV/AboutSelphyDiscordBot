@@ -35,7 +35,15 @@ export async function setStreamerEnabled(id: string, enabled: boolean): Promise<
   return (await prisma.twitchStreamer.updateMany({ where: { id }, data: { enabled } })).count;
 }
 
-export type StreamerData = { channelId: string; pingRoleId: string | null; messageTemplate: string; enabled: boolean };
+export type StreamerData = {
+  channelId: string;
+  pingRoleId: string | null;
+  messageTemplate: string;
+  embedColor: number;
+  showThumbnail: boolean;
+  showGame: boolean;
+  enabled: boolean;
+};
 
 export function findStreamer(id: string): Promise<TwitchStreamer | null> {
   return prisma.twitchStreamer.findUnique({ where: { id } });

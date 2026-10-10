@@ -1,17 +1,19 @@
 "use client";
 
-import { useTransition } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useRef, useTransition } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
+import { colorToHex, DEFAULT_EMBED_COLOR, hexToColor, TEMPLATE_PLACEHOLDERS } from "@aboutselphy/shared/twitch-template";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { saveStreamerAction } from "../actions";
 import {
   DEFAULT_STREAMER_FORM,
@@ -20,6 +22,7 @@ import {
   type StreamerFormValues,
   type TwitchStreamerView,
 } from "../schema";
+import { MessagePreview } from "./message-preview";
 
 /** The form inside the add/edit dialog. `streamer` is the one being edited, or null for a new one. */
 export function StreamerForm({
@@ -46,11 +49,16 @@ export function StreamerForm({
           channelId: streamer.channelId,
           pingRoleId: streamer.pingRoleId ?? "",
           messageTemplate: streamer.messageTemplate,
+          embedColor: streamer.embedColor,
+          showThumbnail: streamer.showThumbnail,
+          showGame: streamer.showGame,
           enabled: streamer.enabled,
         }
       : DEFAULT_STREAMER_FORM,
   });
   const { errors } = form.formState;
+  const templateField = form.register("messageTemplate");
+  const templateRef = useRef<HTMLTextAreaElement | null>(null);
 
   // A saved channel or role is always offered, even with the bot offline or the target deleted.
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({
@@ -67,11 +75,33 @@ export function StreamerForm({
     roleOptions.push({ value: streamer.pingRoleId, label: streamer.pingRoleId });
   }
 
+  const [login, channelId, pingRoleId, template, color, showThumbnail, showGame] = useWatch({
+    control: form.control,
+    name: ["login", "channelId", "pingRoleId", "messageTemplate", "embedColor", "showThumbnail", "showGame"],
+  });
+  void channelId;
+  const roleName = pingRoleId ? (roleOptions.find((o) => o.value === pingRoleId)?.label ?? null) : null;
+
+  /** Inserts {placeholder} where the cursor is (or replaces the selection). */
+  function insert(placeholder: string) {
+    const el = templateRef.current;
+    const token = `{${placeholder}}`;
+    const current = form.getValues("messageTemplate");
+    const start = el?.selectionStart ?? current.length;
+    const end = el?.selectionEnd ?? current.length;
+    const next = `${current.slice(0, start)}${token}${current.slice(end)}`;
+    form.setValue("messageTemplate", next.slice(0, MAX_TEMPLATE_LENGTH), { shouldDirty: true, shouldValidate: true });
+    requestAnimationFrame(() => {
+      el?.focus();
+      el?.setSelectionRange(start + token.length, start + token.length);
+    });
+  }
+
   const onSubmit = form.handleSubmit((values) =>
     startTransition(async () => {
-      const { login, ...rest } = values;
+      const { login: loginValue, ...rest } = values;
       // An existing channel is identified by its id (its login is fixed); a new one by the login to look up.
-      const result = await saveStreamerAction(editing ? { id: streamer.id, ...rest } : { login, ...rest });
+      const result = await saveStreamerAction(editing ? { id: streamer.id, ...rest } : { login: loginValue, ...rest });
       if (result.ok) {
         toast.success(result.botNotified ? t(editing ? "saved" : "added") : t("savedBotLater"));
         onDone();
@@ -79,6 +109,22 @@ export function StreamerForm({
         toast.error(te(result.error));
       }
     }),
+  );
+
+  const toggle = (name: "showThumbnail" | "showGame" | "enabled", label: string, help?: string) => (
+    <Field orientation="horizontal">
+      <Controller
+        control={form.control}
+        name={name}
+        render={({ field }) => (
+          <Switch id={`tw-${name}`} checked={field.value} onCheckedChange={field.onChange} aria-describedby={help ? `tw-${name}-help` : undefined} />
+        )}
+      />
+      <div className="flex flex-col gap-1">
+        <FieldLabel htmlFor={`tw-${name}`}>{label}</FieldLabel>
+        {help && <FieldDescription id={`tw-${name}-help`}>{help}</FieldDescription>}
+      </div>
+    </Field>
   );
 
   return (
@@ -123,20 +169,64 @@ export function StreamerForm({
 
         <Field data-invalid={Boolean(errors.messageTemplate) || undefined}>
           <FieldLabel htmlFor="tw-template">{t("message")}</FieldLabel>
-          <Input id="tw-template" maxLength={MAX_TEMPLATE_LENGTH} aria-invalid={Boolean(errors.messageTemplate) || undefined} {...form.register("messageTemplate")} />
-          <FieldDescription>{t("messageHelp")}</FieldDescription>
+          <Textarea
+            id="tw-template"
+            rows={3}
+            maxLength={MAX_TEMPLATE_LENGTH}
+            aria-invalid={Boolean(errors.messageTemplate) || undefined}
+            {...templateField}
+            ref={(el) => {
+              templateField.ref(el);
+              templateRef.current = el;
+            }}
+          />
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("insert")}>
+            <span className="text-xs text-muted-foreground">{t("insert")}</span>
+            {TEMPLATE_PLACEHOLDERS.map((p) => (
+              <Button key={p} type="button" variant="outline" size="xs" onClick={() => insert(p)}>
+                {`{${p}}`}
+              </Button>
+            ))}
+          </div>
+          <FieldDescription>{t("messageHelp", { count: template.length, max: MAX_TEMPLATE_LENGTH })}</FieldDescription>
           {errors.messageTemplate && <FieldError>{te("invalid")}</FieldError>}
         </Field>
 
-        <Field orientation="horizontal">
-          <Controller
-            control={form.control}
-            name="enabled"
-            render={({ field }) => <Switch id="tw-streamer-enabled" checked={field.value} onCheckedChange={field.onChange} />}
-          />
-          <FieldLabel htmlFor="tw-streamer-enabled">{t("enabled")}</FieldLabel>
+        <Field data-invalid={Boolean(errors.embedColor) || undefined}>
+          <FieldLabel htmlFor="tw-color">{t("color")}</FieldLabel>
+          <div className="flex items-center gap-2">
+            <input
+              id="tw-color"
+              type="color"
+              value={colorToHex(color)}
+              onChange={(e) => {
+                const next = hexToColor(e.target.value);
+                if (next !== undefined) form.setValue("embedColor", next, { shouldDirty: true, shouldValidate: true });
+              }}
+              className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
+            />
+            <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(color)}</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("embedColor", DEFAULT_EMBED_COLOR, { shouldDirty: true })}>
+              {t("colorReset")}
+            </Button>
+          </div>
+          <FieldDescription>{t("colorHelp")}</FieldDescription>
         </Field>
+
+        {toggle("showGame", t("showGame"))}
+        {toggle("showThumbnail", t("showThumbnail"), t("showThumbnailHelp"))}
+        {toggle("enabled", t("enabled"))}
       </FieldGroup>
+
+      <MessagePreview
+        template={template}
+        color={color}
+        showThumbnail={showThumbnail}
+        showGame={showGame}
+        roleName={roleName}
+        name={editing ? streamer.displayName : ""}
+        login={login.replace(/^@/, "")}
+      />
 
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>

@@ -385,14 +385,30 @@
       "noRole": "Niemanden",
       "roleHelp": "Diese Rolle wird über der Ankündigung erwähnt. Sonst kann nichts jemanden pingen.",
       "message": "Text über der Ankündigung",
-      "messageHelp": "Du kannst {name}, {title}, {game} und {url} verwenden.",
+      "messageHelp": "Platzhalter wie '{name}' werden ersetzt, wenn der Stream startet. {count} von {max} Zeichen.",
       "enabled": "Diesen Kanal ankündigen",
       "cancel": "Abbrechen",
       "save": "Speichern",
       "saving": "Speichert…",
       "added": "Kanal hinzugefügt",
       "saved": "Kanal gespeichert",
-      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+      "insert": "Einfügen:",
+      "color": "Farbe der Ankündigung",
+      "colorReset": "Twitch-Lila",
+      "colorHelp": "Der Streifen am Rand der Ankündigung.",
+      "showGame": "Spiel anzeigen",
+      "showThumbnail": "Vorschaubild des Streams anzeigen",
+      "showThumbnailHelp": "Twitchs Live-Bild des Streams, aktualisiert beim Posten der Ankündigung."
+    },
+    "preview": {
+      "label": "Vorschau",
+      "botName": "AboutSelphy Bot",
+      "bot": "Bot",
+      "sampleName": "Selphy",
+      "author": "{name} ist live auf Twitch",
+      "playing": "Spielt",
+      "thumbnail": "Stream-Vorschau"
     }
   }
 }

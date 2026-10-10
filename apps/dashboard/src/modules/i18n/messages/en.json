@@ -385,14 +385,30 @@
       "noRole": "Nobody",
       "roleHelp": "This role is mentioned above the announcement. Nothing else can ping anyone.",
       "message": "Message above the announcement",
-      "messageHelp": "You can use {name}, {title}, {game} and {url}.",
+      "messageHelp": "Placeholders such as '{name}' are replaced when the stream starts. {count} of {max} characters.",
       "enabled": "Announce this channel",
       "cancel": "Cancel",
       "save": "Save",
       "saving": "Saving…",
       "added": "Channel added",
       "saved": "Channel saved",
-      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "insert": "Insert:",
+      "color": "Embed colour",
+      "colorReset": "Twitch purple",
+      "colorHelp": "The stripe at the side of the announcement.",
+      "showGame": "Show the game",
+      "showThumbnail": "Show the stream preview picture",
+      "showThumbnailHelp": "Twitch's live picture of the stream, refreshed when the announcement is posted."
+    },
+    "preview": {
+      "label": "Preview",
+      "botName": "AboutSelphy Bot",
+      "bot": "Bot",
+      "sampleName": "Selphy",
+      "author": "{name} is live on Twitch",
+      "playing": "Playing",
+      "thumbnail": "Stream preview"
     }
   }
 }

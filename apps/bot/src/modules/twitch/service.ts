@@ -195,7 +195,11 @@ function announce(streamer: TwitchStreamer, broadcast: Broadcast): Promise<void>
     const channel = await textChannel(streamer.channelId);
     if (!channel) return;
 
-    const message = await channel.send(liveMessage(broadcast, streamer.messageTemplate, streamer.pingRoleId));
+    const message = await channel.send(liveMessage(broadcast, streamer.messageTemplate, streamer.pingRoleId, {
+        color: streamer.embedColor,
+        showThumbnail: streamer.showThumbnail,
+        showGame: streamer.showGame,
+      }));
     await createNotification({
       twitchStreamId: broadcast.id,
       twitchUserId: streamer.twitchUserId,

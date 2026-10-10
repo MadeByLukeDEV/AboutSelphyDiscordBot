@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { DEFAULT_EMBED_COLOR, DEFAULT_TEMPLATE, MAX_TEMPLATE_LENGTH } from "@aboutselphy/shared/twitch-template";
+
+export { DEFAULT_TEMPLATE, MAX_TEMPLATE_LENGTH };
 
 // Types and validation shared by the actions, the service and the client
 // components. No server-only imports here.
@@ -16,6 +19,9 @@ export type TwitchStreamerView = {
   channelId: string;
   pingRoleId: string | null;
   messageTemplate: string;
+  embedColor: number;
+  showThumbnail: boolean;
+  showGame: boolean;
   enabled: boolean;
 };
 
@@ -27,9 +33,6 @@ export type TwitchOverview = {
   streamers: TwitchStreamerView[];
 };
 
-export const MAX_TEMPLATE_LENGTH = 300;
-export const DEFAULT_TEMPLATE = "{name} is live: {title}";
-
 /** The add/edit form. `id` is set when editing; `login` is only used when adding. */
 export const streamerSchema = z.object({
   id: z.string().min(1).max(64).optional(),
@@ -38,6 +41,9 @@ export const streamerSchema = z.object({
   /** "" = nobody is pinged. */
   pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
   messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
+  embedColor: z.number().int().min(0).max(0xffffff),
+  showThumbnail: z.boolean(),
+  showGame: z.boolean(),
   enabled: z.boolean(),
 });
 export type StreamerInput = z.infer<typeof streamerSchema>;
@@ -48,6 +54,9 @@ export const streamerFormSchema = z.object({
   channelId: z.string().regex(/^\d{17,20}$/),
   pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
   messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
+  embedColor: z.number().int().min(0).max(0xffffff),
+  showThumbnail: z.boolean(),
+  showGame: z.boolean(),
   enabled: z.boolean(),
 });
 
@@ -56,6 +65,9 @@ export type StreamerFormValues = {
   channelId: string;
   pingRoleId: string;
   messageTemplate: string;
+  embedColor: number;
+  showThumbnail: boolean;
+  showGame: boolean;
   enabled: boolean;
 };
 
@@ -64,6 +76,9 @@ export const DEFAULT_STREAMER_FORM: StreamerFormValues = {
   channelId: "",
   pingRoleId: "",
   messageTemplate: DEFAULT_TEMPLATE,
+  embedColor: DEFAULT_EMBED_COLOR,
+  showThumbnail: true,
+  showGame: true,
   enabled: true,
 };
 

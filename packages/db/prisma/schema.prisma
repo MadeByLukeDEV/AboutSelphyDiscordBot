@@ -185,6 +185,12 @@ model TwitchStreamer {
   pingRoleId      String?  @db.VarChar(20)
   /// Text above the embed; {name} {title} {game} {url} are replaced.
   messageTemplate String   @default("{name} is live: {title}") @db.VarChar(300)
+  /// Embed colour as a 24-bit number (default: Twitch purple, 0x9146ff).
+  embedColor      Int      @default(9520895)
+  /// Show Twitch's stream preview picture in the announcement.
+  showThumbnail   Boolean  @default(true)
+  /// Show the game field.
+  showGame        Boolean  @default(true)
   enabled         Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
