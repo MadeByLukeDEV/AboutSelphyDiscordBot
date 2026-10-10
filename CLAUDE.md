@@ -737,5 +737,18 @@ Decided 2026-10-08:
     the bot.
   - [ ] Templates, several embeds or fields, recurring announcements, auto-publish
         in announcement channels
-- [ ] Phase 6 — new video upload
+- [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
+      `20261013180000_youtube` applied; the first poll against the real API ran and
+      only remembered the current 10 videos; **no real announcement seen yet**)
+  - Bot (`modules/youtube/`): polls the uploads playlist (`UU` + id) every 5 min and
+    on settings change (2 quota units per round, never `search.list`); `logic.ts`
+    (pure, tested): first run remembers silently, private/live/upcoming videos wait,
+    Shorts (<= 180 s) skipped unless on, nothing older than 48 h is announced as new;
+    unique video id = announced once; the API key goes in an `x-goog-api-key` header;
+    errors are short codes (`quota`, `keyRejected`, `notFound`, `failed`) stored in
+    `YoutubeConfig.lastError`. Needs `YOUTUBE_API_KEY` (plain key, **not** the
+    `GOOGLE_CLIENT_*` OAuth pair) and `YOUTUBE_CHANNEL_ID` (UC..., not the handle).
+  - Dashboard `/youtube` (admins): poller status, settings with preview, latest
+    videos and whether they were announced.
+  - [ ] Several channels, members-only/premieres, a "watch" button
 - [ ] Phase 7 — webhooks
