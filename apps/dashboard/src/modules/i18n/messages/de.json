@@ -23,7 +23,8 @@
         "giveaways": "Gewinnspiele",
         "suggestions": "Vorschläge",
         "polls": "Umfragen",
-        "starboard": "Starboard"
+        "starboard": "Starboard",
+        "birthdays": "Geburtstage"
       }
     },
     "account": {
@@ -1410,6 +1411,51 @@
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
       "badEmoji": "Gib genau ein Emoji ein.",
       "badThreshold": "Gib eine Zahl von {min} bis {max} ein."
+    }
+  },
+  "Birthdays": {
+    "title": "Geburtstage",
+    "intro": "Mitglieder speichern ihren Geburtstag selbst mit /birthday set (nur Tag und Monat, nie das Jahr). Am Tag postet der Bot einen Glückwunsch und kann eine Rolle für den Tag vergeben. Wer den Server verlässt, wird vergessen.",
+    "none": "Nicht gewählt",
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern.",
+      "enabled": "Geburtstage sind an",
+      "channel": "Glückwunsch-Kanal",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin der Glückwunsch gepostet wird. Leer lassen, um nur die Rolle zu vergeben.",
+      "botOffline": "Der Bot ist offline, daher sind die Listen nicht verfügbar. Die gespeicherten Werte bleiben.",
+      "role": "Geburtstagsrolle",
+      "roleHelp": "Wird für den Tag getragen und danach entfernt. Wählbar sind nur Rollen ohne Sonderrechte, und die Rolle des Bots muss darüber stehen.",
+      "message": "Glückwunsch",
+      "messageHelp": "'{user}' wird zur Erwähnung des Mitglieds, '{name}' zu seinem Namen. Alles andere wird als einfacher Text angezeigt.",
+      "timeZone": "Zeitzone",
+      "timeZoneHelp": "Bestimmt, wann ein Tag für alle beginnt, z. B. Europe/Berlin oder UTC.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "list": {
+      "title": "Nächste Geburtstage",
+      "total": "({count} gespeichert)",
+      "today": "Heute",
+      "inDays": "{count, plural, one {morgen} other {in # Tagen}}",
+      "empty": {
+        "title": "Noch keine Geburtstage",
+        "body": "Sie erscheinen hier, sobald Mitglieder /birthday set benutzen."
+      }
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsTarget": "Wähle einen Kanal oder eine Rolle, bevor du Geburtstage einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher können Kanal und Rolle nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "roleNotFound": "Diese Rolle existiert nicht oder der Bot kann sie nicht vergeben.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
+      "needsMessage": "Schreibe einen Glückwunsch.",
+      "badTimeZone": "Gib eine gültige Zeitzone ein, z. B. Europe/Berlin."
     }
   }
 }

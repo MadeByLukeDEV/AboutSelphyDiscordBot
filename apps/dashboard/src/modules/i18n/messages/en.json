@@ -23,7 +23,8 @@
         "giveaways": "Giveaways",
         "suggestions": "Suggestions",
         "polls": "Polls",
-        "starboard": "Starboard"
+        "starboard": "Starboard",
+        "birthdays": "Birthdays"
       }
     },
     "account": {
@@ -1410,6 +1411,51 @@
       "failed": "Couldn't save the settings. Try again.",
       "badEmoji": "Enter exactly one emoji.",
       "badThreshold": "Enter a number from {min} to {max}."
+    }
+  },
+  "Birthdays": {
+    "title": "Birthdays",
+    "intro": "Members save their own birthday with /birthday set (day and month only, never the year). On the day the bot posts a greeting and can give a role for the day. A member who leaves is forgotten.",
+    "none": "Not chosen",
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these.",
+      "enabled": "Birthdays are on",
+      "channel": "Greeting channel",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the greeting is posted. Leave empty to only give the role.",
+      "botOffline": "The bot is offline, so the lists aren't available. The saved values are kept.",
+      "role": "Birthday role",
+      "roleHelp": "Worn for the day and removed afterwards. Only roles without special permissions can be chosen, and the bot's own role must sit above it.",
+      "message": "Greeting",
+      "messageHelp": "'{user}' becomes a mention of the member, '{name}' their name. Everything else is shown as plain text.",
+      "timeZone": "Time zone",
+      "timeZoneHelp": "Decides when a day starts for everyone, e.g. Europe/Berlin or UTC.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "list": {
+      "title": "Next birthdays",
+      "total": "({count} saved)",
+      "today": "Today",
+      "inDays": "{count, plural, one {tomorrow} other {in # days}}",
+      "empty": {
+        "title": "No birthdays yet",
+        "body": "They show up as members use /birthday set."
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsTarget": "Pick a channel or a role before turning birthdays on.",
+      "botUnavailable": "Can't reach the bot, so the channel and role can't be checked. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "roleNotFound": "That role doesn't exist, or the bot can't hand it out.",
+      "failed": "Couldn't save the settings. Try again.",
+      "needsMessage": "Write a greeting.",
+      "badTimeZone": "Enter a valid time zone, e.g. Europe/Berlin."
     }
   }
 }

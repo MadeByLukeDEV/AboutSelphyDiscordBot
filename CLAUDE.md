@@ -818,6 +818,18 @@ Decided 2026-10-08:
     the author, attachments and the jump link.
   - Dashboard `/starboard` (admins): settings and the most starred messages.
   - [ ] Custom server emoji, a channel ignore list, a random-star command, a per-member count.
+- [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;
+    **day and month only, never the year**; `isValidDay` allows 29 Feb, celebrated on 28 Feb in
+    common years). A round every 10 min (and on settings change; only in production or with
+    `BOT_INTEGRATIONS_IN_DEV`) greets today's members in the configured IANA time zone, once per
+    day (`claimDay` = one conditional UPDATE on `lastCelebratedOn`, so restarts never greet
+    twice), optionally gives a role for the day (`checkRole` first) and takes it off everyone else.
+    The greeting template has `{user}` (mention, the only ping) and `{name}`; the rest is escaped.
+    A member who leaves is deleted (GDPR).
+  - Dashboard `/birthdays` (admins): settings and the next 50 birthdays.
+  - [ ] Announce milestones with the year, staff-set birthdays, a monthly summary post.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
