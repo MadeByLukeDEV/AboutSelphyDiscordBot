@@ -1,28 +1,33 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Bot } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { LocaleSwitcher } from "@/modules/i18n/components/locale-switcher";
-import { ThemeToggle } from "@/modules/theme";
-import { SignOutButton } from "@/modules/auth/components/sign-out-button";
+import { BotStatusPill } from "@/modules/bot-status";
 import { isAdmin, type StaffSession } from "@/modules/auth";
-import { NAV_ITEMS } from "./nav";
+import { AccountPanel } from "./account-panel";
+import { MobileAccountSheet } from "./mobile-account-sheet";
+import { MobileNav } from "./mobile-nav";
+import { navFor } from "./nav";
+import { SidebarNav } from "./sidebar-nav";
+
+function Brand({ label }: { label: string }) {
+  return (
+    <Link href="/" className="flex items-center gap-2.5 font-bold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+      <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_1.25rem_-0.25rem_var(--primary)]">
+        <Bot className="size-[1.15rem]" aria-hidden />
+      </span>
+      {label}
+    </Link>
+  );
+}
 
 // Hiding a nav item is only a convenience: every page and Server Action
 // re-checks the role itself.
-export async function AppShell({
-  session,
-  children,
-}: {
-  session: StaffSession;
-  children: React.ReactNode;
-}) {
+export async function AppShell({ session, children }: { session: StaffSession; children: React.ReactNode }) {
   const t = await getTranslations("Shell");
-  const items = NAV_ITEMS.filter((item) => !item.requires || isAdmin(session.user.role));
+  const groups = navFor(isAdmin(session.user.role));
 
   return (
-    <div className="flex min-h-dvh flex-col md:flex-row">
+    <div className="flex min-h-dvh flex-col lg:flex-row lg:gap-4 lg:p-4">
       <a
         href="#content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
@@ -30,62 +35,36 @@ export async function AppShell({
         {t("skipToContent")}
       </a>
 
-      <aside className="flex flex-col gap-4 border-b bg-card px-gutter py-4 md:sticky md:top-0 md:h-dvh md:w-[16rem] md:shrink-0 md:border-r md:border-b-0 md:px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Bot className="size-4" aria-hidden />
-          </span>
-          {t("brand")}
-        </Link>
-
-        <nav aria-label={t("nav.label")} className="flex gap-1 md:flex-col">
-          {items.map(({ href, labelKey, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <Icon className="size-4" aria-hidden />
-              {t(`nav.${labelKey}`)}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-auto hidden flex-col gap-3 md:flex">
-          <Separator />
-          <AccountBlock session={session} />
+      {/* Desktop: a floating glass sidebar. */}
+      <aside className="surface hidden w-[17rem] shrink-0 flex-col gap-6 p-4 lg:sticky lg:top-4 lg:flex lg:h-[calc(100dvh-2rem)]">
+        <div className="px-1 pt-1">
+          <Brand label={t("brand")} />
+        </div>
+        <div className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1 pl-3">
+          <SidebarNav groups={groups} />
+        </div>
+        <div className="flex flex-col gap-4 border-t border-border/60 pt-4">
+          <BotStatusPill className="self-start" />
+          <AccountPanel session={session} />
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <main id="content" data-enter className="flex flex-1 flex-col gap-fluid p-gutter">
-          {children}
-        </main>
-        <div className="flex flex-col gap-3 border-t px-gutter py-4 md:hidden">
-          <AccountBlock session={session} />
+      {/* Phone and tablet: a slim top bar, the tab bar sits at the bottom. */}
+      <header className="flex items-center justify-between gap-3 px-gutter pt-4 lg:hidden">
+        <Brand label={t("brand")} />
+        <div className="flex items-center gap-3">
+          <BotStatusPill />
+          <MobileAccountSheet name={session.user.name} image={session.user.image}>
+            <AccountPanel session={session} />
+          </MobileAccountSheet>
         </div>
-      </div>
-    </div>
-  );
-}
+      </header>
 
-async function AccountBlock({ session }: { session: StaffSession }) {
-  const t = await getTranslations("Shell");
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <p className="truncate text-sm font-medium">{session.user.name}</p>
-        <div>
-          <Badge variant={isAdmin(session.user.role) ? "default" : "secondary"}>
-            {t(`role.${session.user.role}`)}
-          </Badge>
-        </div>
-      </div>
-      <div className="flex items-center justify-between gap-2">
-        <ThemeToggle />
-        <LocaleSwitcher />
-      </div>
-      <SignOutButton />
+      <main id="content" data-enter className="flex min-w-0 flex-1 flex-col gap-fluid p-gutter pb-28 lg:p-4 lg:pb-4">
+        {children}
+      </main>
+
+      <MobileNav groups={groups} />
     </div>
   );
 }

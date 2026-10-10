@@ -3,10 +3,21 @@
     "brand": "AboutSelphy Bot",
     "nav": {
       "label": "Main navigation",
-      "overview": "Overview",
-      "cases": "Cases",
-      "voiceRooms": "Voice rooms",
-      "settings": "Settings"
+      "groups": {
+        "moderation": "Moderation",
+        "community": "Community"
+      },
+      "items": {
+        "overview": "Overview",
+        "cases": "Cases",
+        "voiceRooms": "Voice rooms",
+        "settings": "Settings"
+      }
+    },
+    "account": {
+      "open": "Open account menu",
+      "title": "Account",
+      "description": "Your account, theme, language and sign out."
     },
     "signOut": "Sign out",
     "signedInAs": "Signed in as {name}",

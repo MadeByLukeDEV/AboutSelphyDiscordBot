@@ -24,7 +24,8 @@ export function buildCsp(
     // React `style` attributes and sonner's injected <style> need
     // 'unsafe-inline'. Never add a nonce here: browsers then ignore it.
     "style-src": ["'self'", "'unsafe-inline'"],
-    "img-src": ["'self'", "data:", "blob:"],
+    // Discord's CDN: the signed-in staff member's avatar in the account card.
+    "img-src": ["'self'", "data:", "blob:", "https://cdn.discordapp.com"],
     "font-src": ["'self'"],
     "connect-src": ["'self'"],
     "frame-src": ["'none'"],
