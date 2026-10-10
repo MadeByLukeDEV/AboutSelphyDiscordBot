@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  BirthdayConfig,
+  Birthday,
   StarboardConfig,
   StarboardPost,
   RolePanel,

@@ -727,3 +727,32 @@ model StarboardPost {
 
   @@index([stars])
 }
+
+/// Birthdays: members choose their own day and month (never the year); the bot celebrates them.
+model BirthdayConfig {
+  id        Int      @id @default(1)
+  enabled   Boolean  @default(false)
+  /// Where the greeting is posted.
+  channelId String?  @db.VarChar(20)
+  /// Optional role worn for the day.
+  roleId    String?  @db.VarChar(20)
+  /// {user} (a mention of the member) and {name}.
+  message   String   @default("🎂 Happy birthday {user}!") @db.VarChar(300)
+  /// IANA time zone that decides when a day starts for everyone.
+  timeZone  String   @default("Europe/Berlin") @db.VarChar(64)
+  updatedAt DateTime @updatedAt
+}
+
+model Birthday {
+  userId           String   @id @db.VarChar(20)
+  /// Only for the dashboard list; refreshed whenever the member sets their date.
+  displayName      String   @db.VarChar(100)
+  month            Int
+  day              Int
+  /// "YYYY-MM-DD" of the last day this member was celebrated, so a restart never greets twice.
+  lastCelebratedOn String?  @db.VarChar(10)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([month, day])
+}
