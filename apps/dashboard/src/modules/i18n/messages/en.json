@@ -22,7 +22,8 @@
         "tickets": "Tickets",
         "giveaways": "Giveaways",
         "suggestions": "Suggestions",
-        "polls": "Polls"
+        "polls": "Polls",
+        "starboard": "Starboard"
       }
     },
     "account": {
@@ -1365,6 +1366,50 @@
         "forbidden": "No access.",
         "invalid": "Invalid."
       }
+    }
+  },
+  "Starboard": {
+    "title": "Starboard",
+    "intro": "When a message collects enough of one reaction, the bot re-posts it in a showcase channel and keeps the count up to date. Messages in age-restricted channels never count.",
+    "noChannel": "Not chosen",
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these.",
+      "enabled": "Starboard is on",
+      "channel": "Showcase channel",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where starred messages are re-posted. The bot needs to send messages and embeds there.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+      "emoji": "Reaction",
+      "emojiHelp": "One standard emoji.",
+      "threshold": "Reactions needed",
+      "thresholdHelp": "{min} to {max}. Bots never count.",
+      "allowSelf": "Count the author's own reaction",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "list": {
+      "title": "Most starred",
+      "onBoard": "On the board",
+      "belowThreshold": "Below the threshold",
+      "noText": "(no text)",
+      "open": "Open",
+      "empty": {
+        "title": "Nothing starred yet",
+        "body": "Messages show up here once they collect reactions."
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel before turning the starboard on.",
+      "botUnavailable": "Can't reach the bot, so the channel can't be checked. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "failed": "Couldn't save the settings. Try again.",
+      "badEmoji": "Enter exactly one emoji.",
+      "badThreshold": "Enter a number from {min} to {max}."
     }
   }
 }

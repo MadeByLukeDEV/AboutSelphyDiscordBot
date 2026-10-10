@@ -804,6 +804,20 @@ Decided 2026-10-08:
   - Dashboard `/polls` (all staff): create (options one per line, channel, optional end,
     multiple choice), live results with bars, start a draft, end now, remove (not while running).
   - [ ] Editing a draft, a results chart over time, reminders before it ends.
+- [~] Starboard (2026-10-20, `feature_starboard`, migration `20261020100000_starboard`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/starboard/`): one unicode emoji (default star) and a threshold of 1-25
+    reactions; at the threshold the message is re-posted in the showcase channel (embed with the
+    escaped text, first image from Discord's CDN only, jump link, `emoji **n** | #channel`), the
+    count is **recomputed from Discord on every reaction** (never incremented, so a missed event
+    heals), reactions are handled one message at a time (`KeyedMutex`). Bots never count, the
+    author only with `allowSelf`. Below the threshold the re-post is removed; deleting the
+    original removes the re-post; deleting the re-post by hand lets the next star post it again.
+    Age-restricted channels and the showcase channel itself are ignored. Message text needs the
+    Message Content intent (`DISCORD_MESSAGE_CONTENT=true`); without it the re-post still shows
+    the author, attachments and the jump link.
+  - Dashboard `/starboard` (admins): settings and the most starred messages.
+  - [ ] Custom server emoji, a channel ignore list, a random-star command, a per-member count.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed

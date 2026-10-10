@@ -22,7 +22,8 @@
         "tickets": "Tickets",
         "giveaways": "Gewinnspiele",
         "suggestions": "Vorschläge",
-        "polls": "Umfragen"
+        "polls": "Umfragen",
+        "starboard": "Starboard"
       }
     },
     "account": {
@@ -1365,6 +1366,50 @@
         "forbidden": "Kein Zugriff.",
         "invalid": "Ungültig."
       }
+    }
+  },
+  "Starboard": {
+    "title": "Starboard",
+    "intro": "Sammelt eine Nachricht genug Reaktionen mit einem Emoji, postet der Bot sie in einem Schaukasten-Kanal und hält die Anzahl aktuell. Nachrichten in altersbeschränkten Kanälen zählen nie.",
+    "noChannel": "Nicht gewählt",
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern.",
+      "enabled": "Starboard ist an",
+      "channel": "Schaukasten-Kanal",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin die markierten Nachrichten gepostet werden. Der Bot braucht dort das Recht, Nachrichten und Embeds zu senden.",
+      "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar. Der gespeicherte Kanal bleibt.",
+      "emoji": "Reaktion",
+      "emojiHelp": "Ein Standard-Emoji.",
+      "threshold": "Benötigte Reaktionen",
+      "thresholdHelp": "{min} bis {max}. Bots zählen nie.",
+      "allowSelf": "Reaktion des Autors mitzählen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "list": {
+      "title": "Meiste Sterne",
+      "onBoard": "Auf dem Board",
+      "belowThreshold": "Unter der Schwelle",
+      "noText": "(kein Text)",
+      "open": "Öffnen",
+      "empty": {
+        "title": "Noch nichts markiert",
+        "body": "Nachrichten erscheinen hier, sobald sie Reaktionen sammeln."
+      }
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du das Starboard einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher kann der Kanal nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
+      "badEmoji": "Gib genau ein Emoji ein.",
+      "badThreshold": "Gib eine Zahl von {min} bis {max} ein."
     }
   }
 }
