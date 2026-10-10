@@ -191,7 +191,10 @@
           "timeoutRange": "A timeout needs a length between 1 minute and 28 days.",
           "kickNoDuration": "A kick has no length.",
           "tooShort": "At least 1 minute."
-        }
+        },
+        "window": "Only count warnings from the last (days)",
+        "windowHelp": "Leave empty to count every active warning, however old. Between 1 and {max} days.",
+        "windowError": "Use a whole number of days between 1 and {max}, or leave it empty."
       }
     }
   },

@@ -91,6 +91,7 @@ describe("settingsSchema", () => {
     escalationThreshold: 3,
     escalationAction: "timeout",
     escalationDuration: "1h",
+    escalationWindow: "",
   } as const;
   const parse = (over: Record<string, unknown>) => settingsSchema.safeParse({ ...base, ...over });
 
@@ -134,6 +135,14 @@ describe("settingsSchema", () => {
       expect(parse({ ...on, escalationThreshold: 1 }).success).toBe(false);
       expect(parse({ ...on, escalationThreshold: 21 }).success).toBe(false);
       expect(parse({ ...on, escalationThreshold: 2 }).success).toBe(true);
+    });
+
+    it("takes an optional window of 1 to 365 days", () => {
+      expect(parse({ ...on, escalationWindow: "" }).success).toBe(true);
+      expect(parse({ ...on, escalationWindow: "30" }).success).toBe(true);
+      expect(parse({ ...on, escalationWindow: "0" }).success).toBe(false);
+      expect(parse({ ...on, escalationWindow: "366" }).success).toBe(false);
+      expect(parse({ ...on, escalationWindow: "abc" }).success).toBe(false);
     });
 
     it("refuses an unknown action", () => {

@@ -276,7 +276,8 @@ const modlog: Command = {
             .setRequired(true)
             .addChoices({ name: "Time out", value: "timeout" }, { name: "Kick", value: "kick" }, { name: "Ban", value: "ban" }),
         )
-        .addStringOption((o) => o.setName("duration").setDescription("Timeout length (required) or temporary ban length, e.g. 1h, 3d").setMaxLength(20)),
+        .addStringOption((o) => o.setName("duration").setDescription("Timeout length (required) or temporary ban length, e.g. 1h, 3d").setMaxLength(20))
+        .addIntegerOption((o) => o.setName("window_days").setDescription("Only count warnings from the last N days (empty = all active warnings)").setMinValue(1).setMaxValue(365)),
     )
     .addSubcommand((s) => s.setName("escalation_off").setDescription("Turn warning escalation off"))
     .addSubcommand((s) => s.setName("status").setDescription("Show the current settings"))
@@ -327,12 +328,13 @@ const modlog: Command = {
           }
         }
         if (action === "ban" && seconds !== null && seconds < MIN_TIMEOUT_SECONDS) return void (await reply("A temporary ban lasts at least 1 minute."));
-        await saveModConfig({ escalationThreshold: warnings, escalationAction: action, escalationDurationSeconds: seconds });
-        await reply(`Every ${warnings} active warnings now ${describeEscalation(action, seconds)}.`);
+        const windowDays = i.options.getInteger("window_days");
+        await saveModConfig({ escalationThreshold: warnings, escalationAction: action, escalationDurationSeconds: seconds, escalationWindowDays: windowDays });
+        await reply(`Every ${warnings} active warnings${windowDays ? ` within ${windowDays} days` : ""} now ${describeEscalation(action, seconds)}.`);
         return;
       }
       case "escalation_off":
-        await saveModConfig({ escalationThreshold: null, escalationAction: null, escalationDurationSeconds: null });
+        await saveModConfig({ escalationThreshold: null, escalationAction: null, escalationDurationSeconds: null, escalationWindowDays: null });
         await reply("Warning escalation is off.");
         return;
       default: {
@@ -343,7 +345,7 @@ const modlog: Command = {
             `DM members on action: ${config.dmOnAction ? "on" : "off"}`,
             `Warning escalation: ${
               config.escalationThreshold && config.escalationAction
-                ? `every ${config.escalationThreshold} active warnings ${describeEscalation(config.escalationAction, config.escalationDurationSeconds)}`
+                ? `every ${config.escalationThreshold} active warnings${config.escalationWindowDays ? ` within ${config.escalationWindowDays} days` : ""} ${describeEscalation(config.escalationAction, config.escalationDurationSeconds)}`
                 : "off"
             }`,
             `Next case number: ${config.nextCaseNumber}`,

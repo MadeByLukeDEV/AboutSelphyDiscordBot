@@ -191,7 +191,10 @@
           "timeoutRange": "Ein Timeout braucht eine Dauer zwischen 1 Minute und 28 Tagen.",
           "kickNoDuration": "Ein Kick hat keine Dauer.",
           "tooShort": "Mindestens 1 Minute."
-        }
+        },
+        "window": "Nur Verwarnungen der letzten (Tage) zählen",
+        "windowHelp": "Leer lassen, um jede aktive Verwarnung zu zählen, egal wie alt. Zwischen 1 und {max} Tagen.",
+        "windowError": "Nutze eine ganze Zahl zwischen 1 und {max} Tagen oder lass das Feld leer."
       }
     }
   },

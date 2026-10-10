@@ -40,6 +40,7 @@ export const ESCALATION_ACTIONS = ["timeout", "kick", "ban"] as const;
 export type EscalationAction = (typeof ESCALATION_ACTIONS)[number];
 export const MIN_ESCALATION_WARNINGS = 2;
 export const MAX_ESCALATION_WARNINGS = 20;
+export const MAX_ESCALATION_WINDOW_DAYS = 365;
 
 /**
  * Moderation settings form. An empty channel means "don't post cases anywhere".
@@ -55,9 +56,15 @@ export const settingsSchema = z
     escalationThreshold: z.number().int().min(MIN_ESCALATION_WARNINGS).max(MAX_ESCALATION_WARNINGS),
     escalationAction: z.enum(ESCALATION_ACTIONS),
     escalationDuration: z.string().trim().max(20),
+    /** Days as text; empty = every active warning counts. */
+    escalationWindow: z.string().trim().regex(/^(\d{1,3})?$/),
   })
   .superRefine((v, ctx) => {
     if (!v.escalationEnabled) return;
+    if (v.escalationWindow) {
+      const days = Number(v.escalationWindow);
+      if (days < 1 || days > MAX_ESCALATION_WINDOW_DAYS) ctx.addIssue({ code: "custom", path: ["escalationWindow"], message: "range" });
+    }
     const seconds = v.escalationDuration ? parseDuration(v.escalationDuration) : null;
     const bad = (message: string) => ctx.addIssue({ code: "custom", path: ["escalationDuration"], message });
     if (v.escalationDuration && seconds === null) return bad("unreadable");
@@ -74,6 +81,7 @@ export const DEFAULT_ESCALATION = {
   escalationThreshold: 3,
   escalationAction: "timeout",
   escalationDuration: "1h",
+  escalationWindow: "",
 } as const satisfies Partial<SettingsInput>;
 
 export type SettingsError = "forbidden" | "invalid" | "botUnavailable" | "channelNotFound" | "failed";

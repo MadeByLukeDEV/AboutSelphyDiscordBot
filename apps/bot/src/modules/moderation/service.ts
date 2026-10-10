@@ -4,7 +4,7 @@ import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { getModConfig } from "./config";
 import { formatDuration } from "./duration";
-import { escalationDue, ruleFrom } from "./escalation";
+import { escalationDue, ruleFrom, windowStart } from "./escalation";
 import { buildCaseEmbed, typeLabel } from "./embed";
 import { checkHierarchy, DENIAL_MESSAGES } from "./hierarchy";
 import {
@@ -220,7 +220,7 @@ async function escalateIfDue(guild: Guild, targetId: string, user: User | null):
   try {
     const rule = ruleFrom(await getModConfig());
     if (!rule) return null;
-    const warnings = await countActiveWarnings(targetId);
+    const warnings = await countActiveWarnings(targetId, windowStart(rule, new Date()));
     if (!escalationDue(warnings, rule)) return null;
 
     const me = guild.members.me ?? (await guild.members.fetchMe());
@@ -231,7 +231,7 @@ async function escalateIfDue(guild: Guild, targetId: string, user: User | null):
       type: rule.action,
       targetId,
       targetUser: user,
-      reason: `Reached ${warnings} active warnings`,
+      reason: rule.windowDays ? `Reached ${warnings} active warnings in ${rule.windowDays} days` : `Reached ${warnings} active warnings`,
       ...(rule.durationSeconds ? { durationSeconds: rule.durationSeconds } : {}),
       source: "automod",
     });

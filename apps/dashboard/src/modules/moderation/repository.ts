@@ -53,6 +53,7 @@ export function updateConfig(data: {
   escalationThreshold: number | null;
   escalationAction: "timeout" | "kick" | "ban" | null;
   escalationDurationSeconds: number | null;
+  escalationWindowDays: number | null;
 }) {
   return prisma.modConfig.update({ where: { id: 1 }, data });
 }

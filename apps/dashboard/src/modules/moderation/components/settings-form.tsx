@@ -12,7 +12,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { saveSettingsAction } from "../actions";
-import { ESCALATION_ACTIONS, MAX_ESCALATION_WARNINGS, MIN_ESCALATION_WARNINGS, settingsSchema, type SettingsInput } from "../schema";
+import { ESCALATION_ACTIONS, MAX_ESCALATION_WARNINGS, MAX_ESCALATION_WINDOW_DAYS, MIN_ESCALATION_WARNINGS, settingsSchema, type SettingsInput } from "../schema";
 
 const DURATION_ERRORS = ["unreadable", "timeoutRange", "kickNoDuration", "tooShort"] as const;
 
@@ -145,6 +145,22 @@ export function SettingsForm({
               <Field>
                 <FieldLabel htmlFor="escalationAction">{t("escalation.action")}</FieldLabel>
                 <FormSelect control={form.control} name="escalationAction" id="escalationAction" options={actionOptions} placeholder={t("escalation.action")} disabled={!canEdit} />
+              </Field>
+
+              <Field data-invalid={Boolean(errors.escalationWindow) || undefined}>
+                <FieldLabel htmlFor="escalationWindow">{t("escalation.window")}</FieldLabel>
+                <Input
+                  id="escalationWindow"
+                  inputMode="numeric"
+                  className="max-w-[8rem]"
+                  autoComplete="off"
+                  maxLength={3}
+                  disabled={!canEdit}
+                  aria-invalid={Boolean(errors.escalationWindow) || undefined}
+                  {...form.register("escalationWindow")}
+                />
+                <FieldDescription>{t("escalation.windowHelp", { max: MAX_ESCALATION_WINDOW_DAYS })}</FieldDescription>
+                {errors.escalationWindow && <FieldError>{t("escalation.windowError", { max: MAX_ESCALATION_WINDOW_DAYS })}</FieldError>}
               </Field>
 
               {escalationAction !== "kick" && (

@@ -62,16 +62,16 @@ export function readConfig(): Promise<ModConfig> {
 }
 
 export type ConfigUpdate = Partial<
-  Pick<ModConfig, "logChannelId" | "dmOnAction" | "escalationThreshold" | "escalationAction" | "escalationDurationSeconds">
+  Pick<ModConfig, "logChannelId" | "dmOnAction" | "escalationThreshold" | "escalationAction" | "escalationDurationSeconds" | "escalationWindowDays">
 >;
 
 export function updateConfig(data: ConfigUpdate) {
   return prisma.modConfig.update({ where: { id: 1 }, data });
 }
 
-/** Warnings that haven't been pardoned. */
-export function countActiveWarnings(targetId: string): Promise<number> {
-  return prisma.modCase.count({ where: { targetId, type: "warn", active: true } });
+/** Warnings that haven't been pardoned, optionally only those given since a date. */
+export function countActiveWarnings(targetId: string, since: Date | null = null): Promise<number> {
+  return prisma.modCase.count({ where: { targetId, type: "warn", active: true, ...(since ? { createdAt: { gte: since } } : {}) } });
 }
 
 // -- temporary bans ------------------------------------------------------------------

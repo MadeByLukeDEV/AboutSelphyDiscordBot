@@ -41,6 +41,7 @@ const toSettings = (c: ModConfig): SettingsInput => ({
   escalationEnabled: c.escalationThreshold !== null && c.escalationAction !== null,
   escalationThreshold: c.escalationThreshold ?? DEFAULT_ESCALATION.escalationThreshold,
   escalationAction: c.escalationAction ?? DEFAULT_ESCALATION.escalationAction,
+  escalationWindow: c.escalationWindowDays ? String(c.escalationWindowDays) : "",
   escalationDuration: c.escalationDurationSeconds ? formatDuration(c.escalationDurationSeconds).replaceAll(" ", "") : c.escalationAction ? "" : DEFAULT_ESCALATION.escalationDuration,
 });
 
@@ -72,6 +73,7 @@ export async function saveSettings(input: SettingsInput): Promise<SaveSettingsRe
       escalationThreshold: input.escalationEnabled ? input.escalationThreshold : null,
       escalationAction: input.escalationEnabled ? input.escalationAction : null,
       escalationDurationSeconds: input.escalationEnabled ? seconds : null,
+      escalationWindowDays: input.escalationEnabled && input.escalationWindow ? Number(input.escalationWindow) : null,
     });
     // The bot caches this config (60 s TTL); tell it to drop the cache now.
     const botNotified = await reloadBotModule("moderation");

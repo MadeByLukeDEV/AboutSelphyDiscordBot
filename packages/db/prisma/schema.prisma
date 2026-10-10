@@ -66,6 +66,8 @@ model ModConfig {
   escalationAction          ModEscalationAction?
   /// How long a timeout lasts (or a temporary ban); null on a ban = permanent.
   escalationDurationSeconds Int?
+  /// Only warnings from the last N days count towards the threshold; null = all active warnings.
+  escalationWindowDays      Int?
   updatedAt                 DateTime             @updatedAt
 }
 
