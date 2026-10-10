@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
-import { FormSelect } from "@/components/form/form-select";
+import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
@@ -28,11 +28,20 @@ export function SettingsForm({
   const form = useForm<SettingsInput>({ resolver: zodResolver(settingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
 
-  // "#general (Chat)". The saved channel is always offered, even if the bot is
-  // offline or the channel was deleted, so the field never shows a blank.
-  const options = [
+  // The bot sends channels in Discord's own order (uncategorised first, then
+  // each category, text before voice), and the list keeps it, with the category
+  // as a heading. The closed field says "#general (Chat)" because several
+  // categories can have a channel of the same name. The saved channel is always
+  // offered, even if the bot is offline or the channel was deleted, so the
+  // field never shows a blank.
+  const options: SelectOption[] = [
     { value: "", label: t("noChannel") },
-    ...(channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}` })),
+    ...(channels ?? []).map((c) => ({
+      value: c.id,
+      label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`,
+      text: `#${c.name}`,
+      group: c.parent ?? undefined,
+    })),
   ];
   if (initial.logChannelId && !options.some((o) => o.value === initial.logChannelId)) {
     options.push({ value: initial.logChannelId, label: initial.logChannelId });
