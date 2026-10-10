@@ -24,7 +24,8 @@
         "suggestions": "Suggestions",
         "polls": "Polls",
         "starboard": "Starboard",
-        "birthdays": "Birthdays"
+        "birthdays": "Birthdays",
+        "reminders": "Reminders"
       }
     },
     "account": {
@@ -1456,6 +1457,32 @@
       "failed": "Couldn't save the settings. Try again.",
       "needsMessage": "Write a greeting.",
       "badTimeZone": "Enter a valid time zone, e.g. Europe/Berlin."
+    }
+  },
+  "Reminders": {
+    "title": "Reminders",
+    "intro": "Members use /remind me to get a message later, by DM or, if their DMs are closed, in the channel where they set it. The text of their reminders is private and not shown here.",
+    "stats": {
+      "title": "Right now",
+      "pending": "{count, plural, one {# pending reminder} other {# pending reminders}}",
+      "next": "Next one: {time}"
+    },
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these. Switching reminders off stops new ones; the ones already set are still delivered.",
+      "enabled": "Reminders are on",
+      "max": "Pending reminders per member",
+      "maxHelp": "{min} to {max}.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "failed": "Couldn't save the settings. Try again.",
+      "badMax": "Enter a number from {min} to {max}."
     }
   }
 }

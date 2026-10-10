@@ -24,7 +24,8 @@
         "suggestions": "Vorschläge",
         "polls": "Umfragen",
         "starboard": "Starboard",
-        "birthdays": "Geburtstage"
+        "birthdays": "Geburtstage",
+        "reminders": "Erinnerungen"
       }
     },
     "account": {
@@ -1456,6 +1457,32 @@
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
       "needsMessage": "Schreibe einen Glückwunsch.",
       "badTimeZone": "Gib eine gültige Zeitzone ein, z. B. Europe/Berlin."
+    }
+  },
+  "Reminders": {
+    "title": "Erinnerungen",
+    "intro": "Mitglieder nutzen /remind me, um später eine Nachricht zu bekommen, per DM oder, falls ihre DMs geschlossen sind, im Kanal, in dem sie sie gesetzt haben. Der Text ihrer Erinnerungen ist privat und wird hier nicht angezeigt.",
+    "stats": {
+      "title": "Gerade jetzt",
+      "pending": "{count, plural, one {# ausstehende Erinnerung} other {# ausstehende Erinnerungen}}",
+      "next": "Nächste: {time}"
+    },
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern. Ausschalten stoppt neue Erinnerungen; bereits gesetzte werden weiterhin zugestellt.",
+      "enabled": "Erinnerungen sind an",
+      "max": "Ausstehende Erinnerungen pro Mitglied",
+      "maxHelp": "{min} bis {max}.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
+      "badMax": "Gib eine Zahl von {min} bis {max} ein."
     }
   }
 }

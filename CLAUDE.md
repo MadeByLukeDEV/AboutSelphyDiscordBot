@@ -830,6 +830,18 @@ Decided 2026-10-08:
     A member who leaves is deleted (GDPR).
   - Dashboard `/birthdays` (admins): settings and the next 50 birthdays.
   - [ ] Announce milestones with the year, staff-set birthdays, a monthly summary post.
+- [~] Reminders (2026-10-21, `feature_reminders`, migration `20261021100000_reminders`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/reminders/`): `/remind me in:<30m|2h|3d> about:<text>` (1 min to 1 year,
+    `parseDuration`), `/remind list`, `/remind cancel number:`; open to every member, a limit of
+    pending reminders per member (config, default 10). A round every 30 s (only in production or
+    with `BOT_INTEGRATIONS_IN_DEV`) claims each due reminder with one conditional UPDATE
+    (delivered once), sends a DM, or posts in the channel where it was set if the DMs are closed;
+    the text is escaped, only the owner is pinged; overdue ones after downtime say so. Delivered
+    rows are pruned after a day; a member who leaves loses their reminders (GDPR).
+  - Dashboard `/reminders` (admins): on/off, the per-member limit, and counts only (the text
+    of members' reminders is never shown).
+  - [ ] Repeating reminders, `/remind` for a channel or another member, snooze button.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
