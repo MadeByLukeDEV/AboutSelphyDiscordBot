@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@/lib/env";
 import { canAccessDashboard, isAdmin } from "./roles";
@@ -14,6 +15,11 @@ export class AuthorizationError extends Error {
     this.name = "AuthorizationError";
   }
 }
+
+// A layout and its page both need the session; the lookup (cookie check + one
+// query) runs once per render. Deliberately NOT used by requireStaff() below:
+// actions and route handlers always read it fresh.
+const currentSession = cache(() => getStaffSession());
 
 /** For Server Actions and route handlers: the staff session, or throws. */
 export async function requireStaff(): Promise<StaffSession> {
@@ -34,7 +40,7 @@ export async function requireAdmin(): Promise<StaffSession> {
  * that returns to `returnPath` (a path on this site, e.g. "/").
  */
 export async function requireStaffPage(returnPath = "/"): Promise<StaffSession> {
-  const session = await getStaffSession();
+  const session = await currentSession();
   if (!session || !canAccessDashboard(session.user.role)) {
     redirect(loginUrl(`${siteUrl()}${returnPath}`));
   }

@@ -3,7 +3,9 @@
     "brand": "AboutSelphy Bot",
     "nav": {
       "label": "Main navigation",
-      "overview": "Overview"
+      "overview": "Overview",
+      "cases": "Cases",
+      "settings": "Settings"
     },
     "signOut": "Sign out",
     "signedInAs": "Signed in as {name}",
@@ -25,7 +27,13 @@
   "Overview": {
     "title": "Overview",
     "welcome": "Welcome back, {name}.",
-    "intro": "Live status of the bot. Modules appear here as they are built."
+    "intro": "What happened in the server lately, and whether the bot is running.",
+    "last7days": "Last 7 days",
+    "activeWarnings": "Active warnings",
+    "noActivity": "Nothing in the last 7 days.",
+    "latest": "Latest cases",
+    "viewAll": "View all cases",
+    "noCases": "No cases yet. They appear here when someone is warned, timed out, kicked or banned."
   },
   "BotStatus": {
     "title": "Bot status",
@@ -44,9 +52,116 @@
     "version": "Version",
     "checkedAt": "Checked {time}"
   },
+  "Moderation": {
+    "title": "Cases",
+    "intro": "Every warning, timeout, kick and ban, whether it came from a command, this dashboard or Discord itself.",
+    "types": {
+      "warn": "Warning",
+      "timeout": "Timeout",
+      "untimeout": "Timeout removed",
+      "kick": "Kick",
+      "ban": "Ban",
+      "unban": "Unban",
+      "note": "Note",
+      "antibot": "Anti-bot"
+    },
+    "search": {
+      "label": "Search cases",
+      "placeholder": "Name, user ID, reason or case number",
+      "submit": "Search",
+      "typeLabel": "Action",
+      "allTypes": "All actions",
+      "clear": "Clear filters"
+    },
+    "count": "{count, plural, one {# case} other {# cases}}",
+    "empty": {
+      "title": "No cases yet",
+      "body": "Cases appear here when someone is warned, timed out, kicked or banned."
+    },
+    "noMatch": {
+      "title": "No cases match",
+      "body": "Try another search or clear the filters."
+    },
+    "noReason": "No reason given",
+    "automatic": "Automatic rule",
+    "pardonedTag": "Pardoned",
+    "pagination": {
+      "label": "Pages",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {page} of {pageCount}"
+    },
+    "detail": {
+      "back": "All cases",
+      "title": "Case #{number}",
+      "member": "Member",
+      "moderator": "Moderator",
+      "reason": "Reason",
+      "duration": "Duration",
+      "until": "Ends",
+      "created": "Created",
+      "source": "Source",
+      "status": "Status",
+      "active": "Active",
+      "pardoned": "Pardoned by {name} on {date}",
+      "pardonedUnknown": "Pardoned on {date}",
+      "more": "More cases for this member",
+      "moreNone": "No other cases for this member.",
+      "searchMember": "Search all cases for this member",
+      "sources": {
+        "command": "Slash command",
+        "dashboard": "Dashboard",
+        "audit_log": "Discord (audit log)",
+        "automod": "Automatic"
+      }
+    },
+    "pardon": {
+      "button": "Pardon warning",
+      "title": "Pardon this warning?",
+      "body": "It stays in the history, marked as pardoned, and the log message in Discord is updated.",
+      "confirm": "Pardon warning",
+      "cancel": "Cancel",
+      "done": "Warning pardoned",
+      "doneNoLog": "Warning pardoned. The log message in Discord couldn't be updated.",
+      "errors": {
+        "forbidden": "You're not allowed to do that.",
+        "invalid": "That case number isn't valid.",
+        "notFound": "That case doesn't exist.",
+        "notActiveWarning": "That isn't an active warning any more.",
+        "failed": "Couldn't pardon the warning. Try again."
+      }
+    },
+    "settings": {
+      "title": "Moderation settings",
+      "intro": "Where cases are posted in Discord and whether members are told.",
+      "adminOnly": "Only admins can change these settings.",
+      "logChannel": "Log channel",
+      "logChannelHelp": "Every case is posted here as an embed. Cases are recorded either way.",
+      "noChannel": "Don't post cases",
+      "channelPlaceholder": "Pick a channel",
+      "botOffline": "The bot is offline, so the channel list isn't available. Your current channel is kept until you can pick a new one.",
+      "dm": "Message members when they're warned, timed out, kicked or banned",
+      "dmHelp": "If a member has direct messages closed, the action still goes through.",
+      "save": "Save settings",
+      "saving": "Saving…",
+      "saved": "Settings saved",
+      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute.",
+      "errors": {
+        "forbidden": "Only admins can change these settings.",
+        "invalid": "Those settings aren't valid.",
+        "botUnavailable": "Can't reach the bot to check that channel. Try again in a moment.",
+        "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+        "failed": "Couldn't save the settings. Try again."
+      }
+    }
+  },
   "Errors": {
     "notFoundTitle": "Page not found",
     "notFoundBody": "This page doesn't exist.",
-    "backToOverview": "Back to overview"
+    "backToOverview": "Back to overview",
+    "caseNotFound": "That case doesn't exist.",
+    "loadFailedTitle": "Couldn't load this page",
+    "loadFailedBody": "The database didn't answer. Try again in a moment.",
+    "retry": "Try again"
   }
 }

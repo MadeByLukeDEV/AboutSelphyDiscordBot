@@ -3,7 +3,9 @@
     "brand": "AboutSelphy Bot",
     "nav": {
       "label": "Hauptnavigation",
-      "overview": "Übersicht"
+      "overview": "Übersicht",
+      "cases": "Fälle",
+      "settings": "Einstellungen"
     },
     "signOut": "Abmelden",
     "signedInAs": "Angemeldet als {name}",
@@ -25,7 +27,13 @@
   "Overview": {
     "title": "Übersicht",
     "welcome": "Willkommen zurück, {name}.",
-    "intro": "Live-Status des Bots. Module erscheinen hier, sobald sie gebaut sind."
+    "intro": "Was zuletzt auf dem Server passiert ist und ob der Bot läuft.",
+    "last7days": "Letzte 7 Tage",
+    "activeWarnings": "Aktive Verwarnungen",
+    "noActivity": "In den letzten 7 Tagen ist nichts passiert.",
+    "latest": "Neueste Fälle",
+    "viewAll": "Alle Fälle ansehen",
+    "noCases": "Noch keine Fälle. Sie erscheinen hier, sobald jemand verwarnt, getimeoutet, gekickt oder gebannt wird."
   },
   "BotStatus": {
     "title": "Bot-Status",
@@ -44,9 +52,116 @@
     "version": "Version",
     "checkedAt": "Geprüft {time}"
   },
+  "Moderation": {
+    "title": "Fälle",
+    "intro": "Jede Verwarnung, jeder Timeout, Kick und Bann, egal ob per Befehl, über dieses Dashboard oder direkt in Discord.",
+    "types": {
+      "warn": "Verwarnung",
+      "timeout": "Timeout",
+      "untimeout": "Timeout aufgehoben",
+      "kick": "Kick",
+      "ban": "Bann",
+      "unban": "Entbannung",
+      "note": "Notiz",
+      "antibot": "Anti-Bot"
+    },
+    "search": {
+      "label": "Fälle durchsuchen",
+      "placeholder": "Name, Nutzer-ID, Grund oder Fallnummer",
+      "submit": "Suchen",
+      "typeLabel": "Aktion",
+      "allTypes": "Alle Aktionen",
+      "clear": "Filter zurücksetzen"
+    },
+    "count": "{count, plural, one {# Fall} other {# Fälle}}",
+    "empty": {
+      "title": "Noch keine Fälle",
+      "body": "Fälle erscheinen hier, sobald jemand verwarnt, getimeoutet, gekickt oder gebannt wird."
+    },
+    "noMatch": {
+      "title": "Keine passenden Fälle",
+      "body": "Versuche eine andere Suche oder setze die Filter zurück."
+    },
+    "noReason": "Kein Grund angegeben",
+    "automatic": "Automatische Regel",
+    "pardonedTag": "Begnadigt",
+    "pagination": {
+      "label": "Seiten",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "page": "Seite {page} von {pageCount}"
+    },
+    "detail": {
+      "back": "Alle Fälle",
+      "title": "Fall #{number}",
+      "member": "Mitglied",
+      "moderator": "Moderator",
+      "reason": "Grund",
+      "duration": "Dauer",
+      "until": "Endet",
+      "created": "Erstellt",
+      "source": "Quelle",
+      "status": "Status",
+      "active": "Aktiv",
+      "pardoned": "Begnadigt von {name} am {date}",
+      "pardonedUnknown": "Begnadigt am {date}",
+      "more": "Weitere Fälle zu diesem Mitglied",
+      "moreNone": "Keine weiteren Fälle zu diesem Mitglied.",
+      "searchMember": "Alle Fälle dieses Mitglieds suchen",
+      "sources": {
+        "command": "Slash-Befehl",
+        "dashboard": "Dashboard",
+        "audit_log": "Discord (Audit-Log)",
+        "automod": "Automatisch"
+      }
+    },
+    "pardon": {
+      "button": "Verwarnung begnadigen",
+      "title": "Diese Verwarnung begnadigen?",
+      "body": "Sie bleibt im Verlauf, als begnadigt markiert, und die Log-Nachricht in Discord wird aktualisiert.",
+      "confirm": "Verwarnung begnadigen",
+      "cancel": "Abbrechen",
+      "done": "Verwarnung begnadigt",
+      "doneNoLog": "Verwarnung begnadigt. Die Log-Nachricht in Discord konnte nicht aktualisiert werden.",
+      "errors": {
+        "forbidden": "Dafür hast du keine Berechtigung.",
+        "invalid": "Diese Fallnummer ist ungültig.",
+        "notFound": "Diesen Fall gibt es nicht.",
+        "notActiveWarning": "Das ist keine aktive Verwarnung mehr.",
+        "failed": "Die Verwarnung konnte nicht begnadigt werden. Versuche es erneut."
+      }
+    },
+    "settings": {
+      "title": "Moderationseinstellungen",
+      "intro": "Wo Fälle in Discord gepostet werden und ob Mitglieder benachrichtigt werden.",
+      "adminOnly": "Nur Admins können diese Einstellungen ändern.",
+      "logChannel": "Log-Kanal",
+      "logChannelHelp": "Jeder Fall wird hier als Embed gepostet. Aufgezeichnet werden Fälle in jedem Fall.",
+      "noChannel": "Fälle nicht posten",
+      "channelPlaceholder": "Kanal wählen",
+      "botOffline": "Der Bot ist offline, deshalb ist die Kanalliste nicht verfügbar. Der aktuelle Kanal bleibt, bis du einen neuen wählen kannst.",
+      "dm": "Mitglieder benachrichtigen, wenn sie verwarnt, getimeoutet, gekickt oder gebannt werden",
+      "dmHelp": "Hat ein Mitglied Direktnachrichten deaktiviert, wird die Aktion trotzdem ausgeführt.",
+      "save": "Einstellungen speichern",
+      "saving": "Speichern…",
+      "saved": "Einstellungen gespeichert",
+      "savedBotLater": "Einstellungen gespeichert. Der Bot war nicht erreichbar und übernimmt sie innerhalb einer Minute.",
+      "errors": {
+        "forbidden": "Nur Admins können diese Einstellungen ändern.",
+        "invalid": "Diese Einstellungen sind ungültig.",
+        "botUnavailable": "Der Bot ist nicht erreichbar, um den Kanal zu prüfen. Versuche es gleich noch einmal.",
+        "channelNotFound": "Diesen Kanal gibt es nicht oder der Bot kann ihn nicht sehen.",
+        "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+      }
+    }
+  },
   "Errors": {
     "notFoundTitle": "Seite nicht gefunden",
     "notFoundBody": "Diese Seite existiert nicht.",
-    "backToOverview": "Zurück zur Übersicht"
+    "backToOverview": "Zurück zur Übersicht",
+    "caseNotFound": "Diesen Fall gibt es nicht.",
+    "loadFailedTitle": "Diese Seite konnte nicht geladen werden",
+    "loadFailedBody": "Die Datenbank hat nicht geantwortet. Versuche es gleich noch einmal.",
+    "retry": "Erneut versuchen"
   }
 }
