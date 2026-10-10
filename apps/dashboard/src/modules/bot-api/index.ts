@@ -1,1 +1,1 @@
-export { listChannels, refreshCaseLog, reloadBotModule } from "./service";
+export { getTempVoiceOverview, listChannels, refreshCaseLog, reloadBotModule } from "./service";

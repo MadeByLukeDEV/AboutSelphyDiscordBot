@@ -2,10 +2,12 @@ import "server-only";
 import {
   channelsResponse,
   refreshCaseResponse,
+  tempVoiceOverview,
   type ChannelKind,
   type GuildChannel,
   type RefreshCaseStatus,
   type ReloadModule,
+  type TempVoiceOverview,
 } from "@aboutselphy/shared";
 import { env } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
@@ -43,6 +45,14 @@ export async function listChannels(kinds: ChannelKind[]): Promise<GuildChannel[]
   if (!res?.ok) return null;
   const parsed = channelsResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data.channels : null;
+}
+
+/** The open temporary voice rooms and what the bot lacks to run them, or null if the bot can't be reached. */
+export async function getTempVoiceOverview(): Promise<TempVoiceOverview | null> {
+  const res = await botFetch("/internal/tempvoice/overview");
+  if (!res?.ok) return null;
+  const parsed = tempVoiceOverview.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
 }
 
 /** Asks the bot to drop its cached config for a module. False if it couldn't be told. */
