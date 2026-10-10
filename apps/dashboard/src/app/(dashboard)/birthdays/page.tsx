@@ -14,7 +14,7 @@ export default async function BirthdaysPage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("Birthdays");
-  const { settings, birthdays, total, channels, roles } = await getBirthdaysPage();
+  const { settings, birthdays, total, channels, roles, cardImage } = await getBirthdaysPage();
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function BirthdaysPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <BirthdaysManager initial={settings} birthdays={birthdays} total={total} channels={channels} roles={roles} />
+      <BirthdaysManager initial={settings} birthdays={birthdays} total={total} channels={channels} roles={roles} cardImage={cardImage} />
     </>
   );
 }

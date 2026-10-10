@@ -15,13 +15,15 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { MemberCardSettings } from "@/modules/member-cards/components/member-card-settings";
+import type { CardImageView } from "@/modules/member-cards/schema";
 import { saveBirthdaySettingsAction } from "../actions";
 import type { BirthdayRow } from "../schema";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 /** The birthday settings and the next birthdays. State flows in as props; saving calls router.refresh(). */
-export function BirthdaysManager({ initial, birthdays, total, channels, roles }: { initial: BirthdaySettings; birthdays: BirthdayRow[]; total: number; channels: GuildChannel[] | null; roles: GuildRole[] | null }) {
+export function BirthdaysManager({ initial, birthdays, total, channels, roles, cardImage }: { initial: BirthdaySettings; birthdays: BirthdayRow[]; total: number; channels: GuildChannel[] | null; roles: GuildRole[] | null; cardImage: CardImageView | null }) {
   const t = useTranslations("Birthdays");
   const te = useTranslations("Birthdays.errors");
   const router = useRouter();
@@ -86,6 +88,7 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles }:
             {errors.timeZone && <FieldError>{te("badTimeZone")}</FieldError>}
           </Field>
         </FieldGroup>
+        <MemberCardSettings kind="birthday" form={form} cardImage={cardImage} withSubtitle />
         <div>
           <Button type="submit" disabled={pending || !isDirty}>
             {pending ? t("form.saving") : t("form.save")}

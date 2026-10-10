@@ -1662,5 +1662,48 @@
       "notFound": "Diesen Statistik-Kanal gibt es nicht mehr. Lade die Seite neu.",
       "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
+  },
+  "MemberCards": {
+    "title": "Überschrift auf dem Bild",
+    "subtitle": "Zeile unter dem Namen",
+    "image": "Dein Bild",
+    "imageHelp": "PNG, JPEG oder WebP, bis zu 3 MB, zwischen 64 und 4096 Pixeln pro Seite. Ohne Bild bekommt das Bild einen einfachen dunklen Hintergrund.",
+    "current": "Hochgeladen: {width} × {height} Pixel, von {name} am {date}.",
+    "remove": "Bild entfernen",
+    "mode": "Wie dein Bild verwendet wird",
+    "modes": {
+      "background": "Als Hintergrund",
+      "sticker": "Als Sticker rechts"
+    },
+    "modeHelp": "Nimm den Hintergrund für ein breites, großes Bild. Nimm einen Sticker für ein kleines Bild wie ein Emote oder ein Maskottchen.",
+    "preview": "Vorschau des Bildes",
+    "previewNote": "Vom Bot aus den gespeicherten Einstellungen mit einem Beispielmitglied gezeichnet. Speichere und aktualisiere, um Änderungen zu sehen.",
+    "previewFailed": "Die Vorschau konnte nicht gezeichnet werden. Vielleicht ist der Bot offline.",
+    "refresh": "Vorschau aktualisieren",
+    "uploaded": "Bild hochgeladen",
+    "removed": "Bild entfernt",
+    "errors": {
+      "forbidden": "Nur Admins können das ändern.",
+      "noFile": "Wähle zuerst eine Bilddatei.",
+      "type": "Das ist kein PNG-, JPEG- oder WebP-Bild.",
+      "size": "Die Datei ist zu groß. Das Limit liegt bei 3 MB.",
+      "dimensions": "Das Bild muss auf jeder Seite zwischen 64 und 4096 Pixel groß sein.",
+      "failed": "Das Bild konnte nicht gespeichert werden. Versuche es erneut.",
+      "invalid": "Das ist nicht gültig."
+    },
+    "kinds": {
+      "birthday": {
+        "enabled": "Geburtstagsbild hinzufügen",
+        "enabledHelp": "Der Bot hängt an den Geburtstagsgruß ein Bild mit Profilbild und Namen des Mitglieds auf einem Bild deiner Wahl an.",
+        "subtitleHelp": "Nutze '{date}' für den Geburtstag, z. B. 29 February. Leer lassen für keine.",
+        "previewAlt": "Beispiel-Geburtstagsbild für ein Mitglied namens Selphy"
+      },
+      "reminder": {
+        "enabled": "Erinnerungen mit Bild versehen",
+        "enabledHelp": "Der Bot hängt an jede Erinnerung ein Bild mit Profilbild und Namen des Mitglieds an, mit dem Erinnerungstext unter dem Namen, auf einem Bild deiner Wahl.",
+        "subtitleHelp": "",
+        "previewAlt": "Beispiel-Erinnerungsbild für ein Mitglied namens Selphy"
+      }
+    }
   }
 }

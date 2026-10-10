@@ -178,6 +178,14 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
 }
 
+/** A sample birthday or reminder card from the saved settings. Null if the bot can't be reached or can't draw it. */
+export async function getMemberCardPreview(kind: "birthday" | "reminder"): Promise<Uint8Array | null> {
+  const res = await botFetch("/internal/membercards/preview", { method: "POST", body: { kind }, timeoutMs: 15_000 });
+  if (!res?.ok) return null;
+  const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
 /** Asks the bot to post (or update) the ticket panel message. Null if the bot can't be reached. */
 export async function postTicketPanel(): Promise<TicketPanelStatus | null> {
   const res = await botFetch("/internal/tickets/panel", { method: "POST" });

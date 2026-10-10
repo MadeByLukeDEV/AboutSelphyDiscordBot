@@ -14,7 +14,7 @@ export default async function RemindersPage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("Reminders");
-  const { settings, stats } = await getRemindersPage();
+  const { settings, stats, cardImage } = await getRemindersPage();
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function RemindersPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <RemindersManager initial={settings} stats={stats} />
+      <RemindersManager initial={settings} stats={stats} cardImage={cardImage} />
     </>
   );
 }

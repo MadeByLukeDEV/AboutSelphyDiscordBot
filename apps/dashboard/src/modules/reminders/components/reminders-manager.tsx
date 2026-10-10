@@ -11,11 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { MemberCardSettings } from "@/modules/member-cards/components/member-card-settings";
+import type { CardImageView } from "@/modules/member-cards/schema";
 import { saveReminderSettingsAction } from "../actions";
 import type { ReminderStats } from "../schema";
 
 /** The reminder settings and a count of pending reminders (their text stays private). */
-export function RemindersManager({ initial, stats }: { initial: ReminderSettings; stats: ReminderStats }) {
+export function RemindersManager({ initial, stats, cardImage }: { initial: ReminderSettings; stats: ReminderStats; cardImage: CardImageView | null }) {
   const t = useTranslations("Reminders");
   const te = useTranslations("Reminders.errors");
   const format = useFormatter();
@@ -65,6 +67,7 @@ export function RemindersManager({ initial, stats }: { initial: ReminderSettings
             {errors.maxPerUser && <FieldError>{te("badMax", { min: MIN_PER_USER, max: MAX_PER_USER })}</FieldError>}
           </Field>
         </FieldGroup>
+        <MemberCardSettings kind="reminder" form={form} cardImage={cardImage} withSubtitle={false} />
         <div>
           <Button type="submit" disabled={pending || !isDirty}>
             {pending ? t("form.saving") : t("form.save")}

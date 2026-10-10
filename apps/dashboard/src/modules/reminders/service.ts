@@ -3,15 +3,16 @@ import type { ReminderConfig } from "@aboutselphy/db";
 import type { ReminderSettings } from "@aboutselphy/shared/reminders";
 import { errorInfo } from "@/lib/log";
 import { reloadBotModule } from "@/modules/bot-api";
+import { getCardImageView } from "@/modules/member-cards";
 import { readConfig, stats, updateConfig } from "./repository";
 import type { ReminderStats, SaveReminderResult } from "./schema";
 
-const toSettings = (c: ReminderConfig): ReminderSettings => ({ enabled: c.enabled, maxPerUser: c.maxPerUser });
+const toSettings = (c: ReminderConfig): ReminderSettings => ({ enabled: c.enabled, maxPerUser: c.maxPerUser, cardEnabled: c.cardEnabled, cardMode: c.cardMode === "sticker" ? "sticker" : "background", cardTitle: c.cardTitle });
 
 export async function getRemindersPage() {
-  const [config, s] = await Promise.all([readConfig(), stats()]);
+  const [config, s, cardImage] = await Promise.all([readConfig(), stats(), getCardImageView("reminder")]);
   const summary: ReminderStats = { pending: s.pending, nextAt: s.nextAt?.toISOString() ?? null };
-  return { settings: toSettings(config), stats: summary };
+  return { settings: toSettings(config), stats: summary, cardImage };
 }
 
 export async function saveReminders(input: ReminderSettings): Promise<SaveReminderResult> {
