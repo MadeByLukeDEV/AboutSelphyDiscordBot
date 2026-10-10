@@ -486,19 +486,22 @@ Decided 2026-10-08:
 - [ ] Phase 2 — anti-bot
 - [ ] Phase 3 — went live
 - [~] Phase 4 — temporary voice channels
-  - [x] Lifecycle (2026-10-10, , **tried live by the user**):
-         (singleton, switched off by default) and
-         (one row per room the bot made). Joining the lobby
-        creates a room named from the template () and moves the
+  - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
+        the user**): `TempVoiceConfig` (singleton, switched off by default) and
+        `TempVoiceChannel` (one row per room the bot made). Joining the lobby
+        creates a room named from the template (`{user}'s room`) and moves the
         member in; joining again returns them to their own room; the room is
         deleted when no human is left (a bot staying behind doesn't count); only
         channels with a row are ever deleted, never the lobby; rooms are
         reconciled at startup and after a gateway resume; a room deleted by hand is
-        forgotten. Events per room are serialised (), creation has a
-        5 s per-member cooldown. Admin command  checks the bot's View Channel, Manage Channels,
-        Move Members and Connect where rooms live. Needs the         intent (not privileged). The room's live state (locked, limit, video,
-        soundboard, allow-list) is the Discord channel itself, not the database.
-  - [ ] Controls: in-room panel +  for **everyone** (authorised in code:
+        forgotten. Events per room are serialised (`KeyedMutex`), creation has a
+        5 s per-member cooldown. Admin command `/tempvoice lobby|category|name|
+        limit|enable|disable|status` checks the bot's View Channel, Manage
+        Channels, Move Members and Connect where rooms live. Needs the
+        `GuildVoiceStates` intent (not privileged). The room's live state (locked,
+        limit, video, soundboard, allow-list) is the Discord channel itself, not
+        the database.
+  - [ ] Controls: in-room panel + `/voice` for **everyone** (authorised in code:
         only the room owner or staff), rename (2 per 10 min limit), member limit,
         lock + allow-list, video, soundboard, kick, block, transfer, claim
   - [ ] Dashboard page for the settings (lobby, category, template, defaults,
