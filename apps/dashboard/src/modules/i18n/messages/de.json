@@ -14,7 +14,8 @@
         "settings": "Einstellungen",
         "twitch": "Twitch",
         "announcements": "Ankündigungen",
-        "youtube": "YouTube"
+        "youtube": "YouTube",
+        "roles": "Rollen"
       }
     },
     "account": {
@@ -622,6 +623,103 @@
       "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Diese Rolle existiert nicht mehr.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
+  },
+  "Roles": {
+    "title": "Rollen",
+    "intro": "Erstelle Rollen und lass Mitglieder sich ihre Rollen selbst über ein Panel mit Buttons oder einem Menü aussuchen.",
+    "create": {
+      "sectionTitle": "Rolle erstellen",
+      "sectionBody": "Lege hier direkt eine neue Rolle mit Namen und Farbe an. Hier erstellte Rollen haben keine Berechtigungen, sie kennzeichnen Leute nur oder können erwähnt werden.",
+      "open": "Neue Rolle",
+      "title": "Rolle erstellen",
+      "intro": "Sie erscheint sofort auf deinem Server, unterhalb der Rolle des Bots.",
+      "name": "Name",
+      "color": "Farbe",
+      "hoist": "Mitglieder separat anzeigen",
+      "hoistHelp": "Leute mit dieser Rolle stehen in der Mitgliederliste in einer eigenen Gruppe.",
+      "mentionable": "Jeder darf sie erwähnen",
+      "mentionableHelp": "Nötig, wenn Mitglieder die Rolle selbst pingen können sollen.",
+      "noPermissions": "Diese Rolle bekommt keine Berechtigungen. Das kannst du bei Bedarf in Discord ändern.",
+      "cancel": "Abbrechen",
+      "submit": "Rolle erstellen",
+      "creating": "Erstellt…",
+      "created": "Rolle {name} erstellt"
+    },
+    "panels": {
+      "title": "Rollen-Panels",
+      "intro": "Eine Nachricht, in der Mitglieder per Button oder Menü selbst eine Rolle hinzufügen oder entfernen.",
+      "new": "Neues Panel",
+      "botOffline": "Der Bot ist offline, deshalb sind die Kanal- und Rollenlisten nicht verfügbar.",
+      "empty": {
+        "title": "Noch keine Panels",
+        "body": "Erstelle das erste mit Neues Panel."
+      },
+      "untitled": "(ohne Titel)",
+      "posted": "Gepostet",
+      "draft": "Entwurf",
+      "exclusive": "eine Auswahl",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "removed": "Panel gelöscht",
+      "confirmTitle": "Dieses Panel löschen?",
+      "confirmBody": "Es wird aus dieser Liste entfernt. Es wurde noch nichts gepostet.",
+      "confirmBodyPosted": "Die Nachricht wird auch in Discord gelöscht. Mitglieder behalten ihre bisherigen Rollen."
+    },
+    "panel": {
+      "newTitle": "Neues Rollen-Panel",
+      "editTitle": "Rollen-Panel bearbeiten",
+      "safety": "Es können nur Rollen ohne mächtige Berechtigungen angeboten werden, da jeder sie drücken kann.",
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin die Panel-Nachricht gepostet wird.",
+      "channelFixed": "Ein gepostetes Panel bleibt in seinem Kanal.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar.",
+      "title": "Titel",
+      "description": "Text",
+      "style": "Aussehen",
+      "styles": {
+        "buttons": "Buttons",
+        "menu": "Menü"
+      },
+      "buttonsHelp": "Ein Button pro Rolle, bis zu 25. Mit einem Klick bekommen Mitglieder die Rolle, mit einem weiteren verlieren sie sie.",
+      "menuHelp": "Eine Auswahlliste. Mitglieder wählen daraus Rollen, um sie hinzuzufügen oder zu entfernen.",
+      "exclusive": "Nur eine Auswahl",
+      "exclusiveHelp": "Eine Rolle zu wählen ersetzt die anderen dieses Panels, ein Mitglied hat also höchstens eine.",
+      "color": "Farbe",
+      "roles": "Rollen",
+      "rolesHelp": "Zwischen 1 und {max}. Es werden nur Rollen angezeigt, die der Bot vergeben darf.",
+      "role": "Rolle",
+      "rolePlaceholder": "Rolle wählen",
+      "label": "Beschriftung",
+      "emoji": "Emoji",
+      "roleDescription": "Kurzbeschreibung (Menü)",
+      "addRole": "Rolle hinzufügen",
+      "removeRole": "Entfernen",
+      "cancel": "Abbrechen",
+      "saveDraft": "Als Entwurf speichern",
+      "saveUpdate": "Speichern und Nachricht aktualisieren",
+      "savePost": "Speichern und posten",
+      "saving": "Speichert…",
+      "savedDraft": "Als Entwurf gespeichert",
+      "posted": "Panel gepostet",
+      "updated": "Panel in Discord aktualisiert"
+    },
+    "errors": {
+      "forbidden": "Nur Admins können Rollen verwalten.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "notFound": "Dieses Panel existiert nicht mehr. Lade die Seite neu.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
+      "roleNotAllowed": "Eine dieser Rollen kann nicht vergeben werden. Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
+      "needsPermission": "Der Bot braucht dafür die Berechtigung „Rollen verwalten“.",
+      "tooManyRoles": "Der Server hat Discords Grenze von 250 Rollen erreicht.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsText": "Gib dem Panel einen Titel oder etwas Text.",
+      "rolesInvalid": "Füge zwischen 1 und 25 verschiedene Rollen hinzu.",
+      "duplicateRole": "Diese Rolle steht schon auf dem Panel.",
+      "emojiInvalid": "Nutze ein Standard-Emoji, kein eigenes."
     }
   }
 }

@@ -14,7 +14,8 @@
         "settings": "Settings",
         "twitch": "Twitch",
         "announcements": "Announcements",
-        "youtube": "YouTube"
+        "youtube": "YouTube",
+        "roles": "Roles"
       }
     },
     "account": {
@@ -622,6 +623,103 @@
       "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
       "roleNotFound": "That role doesn't exist any more.",
       "failed": "Couldn't save the settings. Try again."
+    }
+  },
+  "Roles": {
+    "title": "Roles",
+    "intro": "Create roles and let members pick their own with a panel of buttons or a menu.",
+    "create": {
+      "sectionTitle": "Create a role",
+      "sectionBody": "Make a new role with a name and a colour right here. Roles made here carry no permissions, so they only label people or get mentioned.",
+      "open": "New role",
+      "title": "Create a role",
+      "intro": "It appears in your server right away, below the bot's own role.",
+      "name": "Name",
+      "color": "Colour",
+      "hoist": "Show members separately",
+      "hoistHelp": "People with this role are listed in their own group in the member list.",
+      "mentionable": "Anyone can mention it",
+      "mentionableHelp": "Needed if members should be able to ping the role themselves.",
+      "noPermissions": "This role gets no permissions. Change that in Discord if you ever need to.",
+      "cancel": "Cancel",
+      "submit": "Create role",
+      "creating": "Creating…",
+      "created": "Created the role {name}"
+    },
+    "panels": {
+      "title": "Role panels",
+      "intro": "A message where members press a button or choose from a menu to add or remove a role themselves.",
+      "new": "New panel",
+      "botOffline": "The bot is offline, so the channel and role lists aren't available.",
+      "empty": {
+        "title": "No panels yet",
+        "body": "Create the first one with New panel."
+      },
+      "untitled": "(no title)",
+      "posted": "Posted",
+      "draft": "Draft",
+      "exclusive": "choose one",
+      "edit": "Edit",
+      "delete": "Delete",
+      "removed": "Panel deleted",
+      "confirmTitle": "Delete this panel?",
+      "confirmBody": "It is removed from this list. Nothing has been posted yet.",
+      "confirmBodyPosted": "The message is deleted from Discord too. Members keep the roles they already have."
+    },
+    "panel": {
+      "newTitle": "New role panel",
+      "editTitle": "Edit role panel",
+      "safety": "Only roles without powerful permissions can be offered, since everyone can press them.",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the panel message is posted.",
+      "channelFixed": "A posted panel stays in its channel.",
+      "botOffline": "The bot is offline, so the channel list isn't available.",
+      "title": "Title",
+      "description": "Text",
+      "style": "Look",
+      "styles": {
+        "buttons": "Buttons",
+        "menu": "Menu"
+      },
+      "buttonsHelp": "One button per role, up to 25. Members press a button to add the role and press it again to remove it.",
+      "menuHelp": "A drop-down list. Members choose roles from it to add or remove them.",
+      "exclusive": "Choose one",
+      "exclusiveHelp": "Choosing a role replaces the others from this panel, so a member holds at most one.",
+      "color": "Colour",
+      "roles": "Roles",
+      "rolesHelp": "Between 1 and {max}. Only roles the bot may hand out are listed.",
+      "role": "Role",
+      "rolePlaceholder": "Pick a role",
+      "label": "Label",
+      "emoji": "Emoji",
+      "roleDescription": "Short description (menu)",
+      "addRole": "Add a role",
+      "removeRole": "Remove",
+      "cancel": "Cancel",
+      "saveDraft": "Save as draft",
+      "saveUpdate": "Save and update message",
+      "savePost": "Save and post",
+      "saving": "Saving…",
+      "savedDraft": "Saved as a draft",
+      "posted": "Panel posted",
+      "updated": "Panel updated in Discord"
+    },
+    "errors": {
+      "forbidden": "Only admins can manage roles.",
+      "invalid": "Some of these values aren't valid.",
+      "notFound": "That panel doesn't exist any more. Reload the page.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "roleNotFound": "One of these roles doesn't exist any more.",
+      "roleNotAllowed": "One of these roles can't be handed out. It is above the bot's role, managed by an integration, or has powerful permissions.",
+      "needsPermission": "The bot needs the Manage Roles permission to do that.",
+      "tooManyRoles": "The server has reached Discord's limit of 250 roles.",
+      "failed": "That didn't work. Try again.",
+      "needsText": "Give the panel a title or some text.",
+      "rolesInvalid": "Add between 1 and 25 different roles.",
+      "duplicateRole": "This role is already on the panel.",
+      "emojiInvalid": "Use a standard emoji, not a custom one."
     }
   }
 }

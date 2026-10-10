@@ -3,6 +3,9 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  roleCreateResponse,
+  rolePanelDeleteStatus,
+  rolePanelPublishStatus,
   refreshCaseResponse,
   rolesResponse,
   tempVoiceOverview,
@@ -10,6 +13,9 @@ import {
   type AnnouncementDeleteStatus,
   type AnnouncementEditStatus,
   type ChannelKind,
+  type RoleCreateResponse,
+  type RolePanelDeleteStatus,
+  type RolePanelPublishStatus,
   type GuildChannel,
   type GuildRole,
   type RefreshCaseStatus,
@@ -106,5 +112,32 @@ export async function deleteAnnouncementMessage(id: string): Promise<Announcemen
   const res = await botFetch("/internal/announcements/delete", { method: "POST", body: { id } });
   if (!res?.ok) return null;
   const parsed = announcementDeleteStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to create a cosmetic role (no permissions). Null if the bot can't be reached. */
+export async function createGuildRole(
+  input: { name: string; color: number; hoist: boolean; mentionable: boolean },
+  by: string,
+): Promise<RoleCreateResponse | null> {
+  const res = await botFetch(`/internal/roles/create?by=${encodeURIComponent(by.slice(0, 60))}`, { method: "POST", body: input });
+  if (!res?.ok) return null;
+  const parsed = roleCreateResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post (or update) a role panel's message. Null if the bot can't be reached. */
+export async function publishRolePanel(id: string): Promise<RolePanelPublishStatus | null> {
+  const res = await botFetch("/internal/rolepanels/publish", { method: "POST", body: { id } });
+  if (!res?.ok) return null;
+  const parsed = rolePanelPublishStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to delete a role panel's message. Null if the bot can't be reached. */
+export async function deleteRolePanelMessage(id: string): Promise<RolePanelDeleteStatus | null> {
+  const res = await botFetch("/internal/rolepanels/delete", { method: "POST", body: { id } });
+  if (!res?.ok) return null;
+  const parsed = rolePanelDeleteStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }

@@ -1,1 +1,1 @@
-export { deleteAnnouncementMessage, editAnnouncementMessage, getTempVoiceOverview, listChannels, listRoles, refreshCaseLog, reloadBotModule, resolveTwitchChannel } from "./service";
+export { createGuildRole, deleteRolePanelMessage, publishRolePanel, deleteAnnouncementMessage, editAnnouncementMessage, getTempVoiceOverview, listChannels, listRoles, refreshCaseLog, reloadBotModule, resolveTwitchChannel } from "./service";
