@@ -23,6 +23,11 @@ ships its dashboard page with it.
 | 6 | **New video upload** (YouTube) | Small, polling-based |
 | 7 | **Webhooks** | Lowest urgency; meaning still to confirm (see Open decisions) |
 
+**Order update (2026-10-10, the user):** moderation dashboard first (done), then
+**Phase 4 (temporary voice channels)**, then **Phase 3 (Went Live)**. **Phase 2
+(anti-bot) is skipped completely for now**: don't build its engine either until
+the user brings it back.
+
 Out of scope until the user says so: leveling/XP, music, economy, ticket system,
 AI moderation, multi-guild support.
 
@@ -327,7 +332,8 @@ pnpm commands:register             # force re-register slash commands
 Keep `.env.example` complete and commented; defaults are production values where
 safe. Bot: `DISCORD_BOT_TOKEN`, `DISCORD_APP_ID`, `DISCORD_GUILD_ID`,
 `DISCORD_ADMIN_ROLE_IDS`, `DISCORD_MODERATOR_ROLE_IDS`, `DATABASE_URL`,
-`DATABASE_SCHEMA`, `BOT_API_SECRET`, `BOT_API_PORT`, `TOKEN_ENCRYPTION_KEY`,
+`DATABASE_SCHEMA`, `BOT_API_SECRET`, `BOT_API_PORT`, `BOT_API_HOST` (optional:
+127.0.0.1 locally, 0.0.0.0 when `BOT_ENV=production`), `TOKEN_ENCRYPTION_KEY`,
 `BOT_ENV`, `BOT_INTEGRATIONS_IN_DEV`, `TWITCH_CLIENT_ID/_SECRET`,
 `TWITCH_BROADCASTER_LOGIN`, `YOUTUBE_API_KEY`, `YOUTUBE_CHANNEL_ID`.
 Dashboard: `DATABASE_URL`, `AUTH_URL`, `AUTH_DATABASE_URL`,
@@ -372,6 +378,29 @@ Decided 2026-10-08:
   tool. Never run `git` commands against a sibling repo (`../Main`) by
   accident: use absolute paths and check `git branch --show-current` first.
 - Dev environment: local Node is v26 (Prisma only warns), images use Node 22.
+- **pnpm on this machine**: incremental installs are unreliable. After editing a
+  `package.json`, `pnpm install` may say "Already up to date" without linking, and
+  `pnpm install --force` can leave dangling links. A **clean install** (delete
+  every `node_modules`, then `pnpm install`) is deterministic (~2 min). Stop the
+  bot and dev servers first, they hold files open. The dashboard has no vitest of
+  its own (pnpm records it without its peers and links a folder that doesn't
+  exist): `pnpm --filter @aboutselphy/dashboard test` runs through the bot's
+  vitest with `--root`, and `*.test.ts` is excluded from the dashboard's `tsc`.
+- The generated Prisma client (`packages/db/src/generated`) is gitignored and a
+  branch switch can wipe or half-wipe it. `ensure-client` (bot `predev`/`prestart`)
+  regenerates it; `pnpm --filter @aboutselphy/db generate` always starts clean.
+- Local login needs `../Auth` running on `:3000` with `http://localhost:3004` in its
+  `TRUSTED_ORIGINS` (its cookie is host-only on localhost), and a valid
+  `DISCORD_CLIENT_SECRET` there. `invalid_client` from Discord at the callback
+  means that secret is stale (reset in the Developer Portal), not that our
+  `DISCORD_APP_ID` is wrong (the client ID is the application ID).
+- `next dev` writes `apps/dashboard/AGENTS.md` and a `CLAUDE.md` importing it;
+  they are committed, like in Main.
+- The bot exits if Discord can't be reached at startup (one 10 s connect
+  timeout was enough). Production relies on the container restart policy; a
+  login retry with backoff is a small TODO.
+- Moderators' dashboard rights: Settings is hidden from them in the nav, and the
+  page and `saveSettingsAction` enforce admin anyway.
 
 ## Verified so far (2026-10-08, no live Discord/DB/auth available)
 
@@ -397,9 +426,17 @@ Decided 2026-10-08:
   yet: npm registry timeouts inside Docker, not a Dockerfile error. A pnpm store
   cache mount and `.npmrc` retries are on `chore_dockerfiles`, which stays off
   `main` until a fresh-clone dashboard build succeeds.
-- **Not verified yet**: a real session lookup and the dashboard against the auth
-  DB, the dashboard image, and the audit-log capture event in Discord (user to
-  confirm).
+- **Dashboard verified live (2026-10-10, by the user)**: login through the local
+  Auth service, overview, cases list/search/detail, pardon, settings and the
+  channel picker all work. Internal API checked: bearer required, 8 KB JSON
+  bodies, loopback-only outside production.
+- **Security review of the dashboard branch (2026-10-10, manual: the
+  `security-review` skill needs a git remote, `origin/HEAD`)**: no tracked
+  secrets, no raw HTML rendering, every action/route guarded (public on purpose:
+  `/api/health`, the language switch which validates against an allow-list);
+  one finding fixed (internal API bound to all interfaces locally).
+- **Not verified yet**: the dashboard Docker image, the audit-log capture event
+  in Discord (user to confirm), and a moderator-role (non-admin) login.
 
 ## Feature status
 
@@ -431,9 +468,21 @@ Decided 2026-10-08:
         permission. Mapping is pure and tested (`caseFromAuditEntry`, 7 tests);
         the live event is untested. Not captured yet: AutoMod timeouts, and
         timeouts by Discord itself.
-  - [ ] `/purge`, warning pardon, escalation config, temp bans (needs a scheduler)
+  - [x] Dashboard (2026-10-10, `feature_dashboard-moderation`): overview (last 7
+        days, active warnings, latest cases, bot status), `/cases` (filter by
+        action, search by name / user ID / reason / case number, filter in the
+        URL, pagination), `/cases/[number]` (detail, other cases for the
+        member), **pardon warning** (any staff; one conditional UPDATE, records
+        who and when in `pardonedAt/ByUserId/ByName`, then the bot edits the log
+        embed), `/settings` (admin: log channel picker in Discord's own order
+        with category headings, DM toggle; the channel is validated against the
+        bot's list). The dashboard never talks to Discord: the bot's internal API
+        gained `GET /internal/guild/channels` and `POST
+        /internal/moderation/refresh-case`.
+  - [ ] `/purge`, escalation config, temp bans (needs a scheduler)
   - [ ] More log types (message edit/delete, joins/leaves, voice)
-  - [ ] Dashboard: cases list/detail, user history, log settings
+  - [ ] Case notes editing, a per-member history page, and dashboard-issued
+        actions (warn/timeout from the dashboard)
 - [ ] Phase 2 — anti-bot
 - [ ] Phase 3 — went live
 - [ ] Phase 4 — temporary voice channels
