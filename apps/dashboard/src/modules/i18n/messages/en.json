@@ -21,7 +21,8 @@
         "levels": "Levels",
         "tickets": "Tickets",
         "giveaways": "Giveaways",
-        "suggestions": "Suggestions"
+        "suggestions": "Suggestions",
+        "polls": "Polls"
       }
     },
     "account": {
@@ -1275,6 +1276,95 @@
       "notFound": "That suggestion doesn't exist any more. Reload the page.",
       "wrongState": "That suggestion can't be changed to that any more. Reload the page.",
       "failed": "That didn't work. Try again."
+    }
+  },
+  "Polls": {
+    "title": "Polls",
+    "intro": "Post a question with up to 10 options. Members vote with buttons; votes are anonymous and the post updates live. A poll ends at its end time or when you end it.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "new": "New poll",
+    "started": "Poll started",
+    "ended": "Poll ended",
+    "deleted": "Poll removed",
+    "list": {
+      "title": "Polls",
+      "single": "one choice",
+      "multiple": "several choices",
+      "ends": "ends {time}",
+      "ended": "ended {time}",
+      "by": "by {name}",
+      "voters": "{count, plural, one {# voter} other {# voters}}"
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Running",
+      "ended": "Ended"
+    },
+    "actions": {
+      "start": "Start",
+      "end": "End now",
+      "delete": "Remove"
+    },
+    "empty": {
+      "title": "No polls yet",
+      "body": "Create the first one with New poll."
+    },
+    "dialog": {
+      "title": "New poll",
+      "intro": "Everything you type is shown as plain text and pings nobody."
+    },
+    "form": {
+      "question": "Question",
+      "options": "Options",
+      "optionsPlaceholder": "Pizza\nPasta\nSalad",
+      "optionsHelp": "One per line (or separated by |). {min} to {max} different options, up to {length} characters each.",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "ends": "Ends at",
+      "endsHelp": "Optional. Leave empty to end it yourself.",
+      "multiple": "Members may choose several options",
+      "cancel": "Cancel",
+      "saveDraft": "Save as draft",
+      "start": "Start now",
+      "saving": "Saving…",
+      "saved": "Saved as a draft",
+      "started": "Poll started"
+    },
+    "confirm": {
+      "end": {
+        "title": "End this poll now?",
+        "body": "Voting for “{question}” closes right away and the post shows the result.",
+        "button": "End poll"
+      },
+      "delete": {
+        "title": "Remove this poll?",
+        "body": "“{question}” is removed from the list, with its votes, and its post is deleted.",
+        "button": "Remove"
+      },
+      "back": "Back"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "notFound": "That poll doesn't exist any more. Reload the page.",
+      "wrongState": "That poll isn't in a state where this works any more. Reload the page.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't post in it.",
+      "failed": "That didn't work. Try again.",
+      "needsQuestion": "Write a question.",
+      "badOptions": "Give {min} to {max} different options of up to {length} characters.",
+      "endTime": "Pick a date and time.",
+      "endPast": "Pick a time at least a minute from now.",
+      "endTooFar": "Pick a time within the next year.",
+      "start": {
+        "channelNotFound": "It was saved as a draft, but the bot couldn't post in that channel.",
+        "botUnavailable": "It was saved as a draft, but the bot can't be reached. Start it again in a moment.",
+        "wrongState": "It was saved, but it can't be started (is the end time already past?).",
+        "failed": "It was saved as a draft, but starting failed. Try again.",
+        "notFound": "It was saved as a draft, but starting failed.",
+        "forbidden": "No access.",
+        "invalid": "Invalid."
+      }
     }
   }
 }

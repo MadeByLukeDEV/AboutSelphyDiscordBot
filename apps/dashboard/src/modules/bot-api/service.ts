@@ -5,6 +5,7 @@ import {
   channelsResponse,
   suggestionDecideStatus,
   giveawayActionStatus,
+  pollActionStatus,
   ticketPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
@@ -20,6 +21,7 @@ import {
   type ChannelKind,
   type SuggestionDecideStatus,
   type GiveawayActionStatus,
+  type PollActionStatus,
   type TicketPanelStatus,
   type GuildEmoji,
   type RoleCreateResponse,
@@ -181,6 +183,14 @@ export async function giveawayAction(id: string, action: GiveawayAction): Promis
   const res = await botFetch("/internal/giveaways/action", { method: "POST", body: { id, action } });
   if (!res?.ok) return null;
   const parsed = giveawayActionStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to start or end a poll, or remove its post. Null if the bot can't be reached. */
+export async function pollAction(id: string, action: "start" | "end" | "delete"): Promise<PollActionStatus | null> {
+  const res = await botFetch("/internal/polls/action", { method: "POST", body: { id, action } });
+  if (!res?.ok) return null;
+  const parsed = pollActionStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

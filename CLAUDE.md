@@ -791,6 +791,19 @@ Decided 2026-10-08:
     Numbers from `SuggestionConfig.nextNumber` (atomic).
   - Dashboard `/suggestions` (all staff: list, filter, decide; admins: settings).
   - [ ] Staff-only comments on a suggestion, merging duplicates, a leaderboard of ideas.
+- [~] Polls (2026-10-19, `feature_polls`, migration `20261019180000_polls` applied; **not tried
+      live yet**; Tier B)
+  - Bot (`modules/polls/`): `/poll question options duration multiple` (team; options split
+    on `|`, 2-10, 80 chars each), post with one button per option (`pl:v:<id>:<n>`, strict
+    parse; single choice replaces the vote, same button withdraws it, multiple choice toggles;
+    votes are anonymous, only counts show; post edits debounced 1.5 s). A poll is a draft until
+    started (conditional UPDATE draft -> active), ended by a 30 s job at its end time or by
+    staff (conditional UPDATE active -> ended); the ended post disables the buttons and marks
+    the winner. Question and options are escaped, nothing pings. `POST /internal/polls/action`
+    (start|end|delete).
+  - Dashboard `/polls` (all staff): create (options one per line, channel, optional end,
+    multiple choice), live results with bars, start a draft, end now, remove (not while running).
+  - [ ] Editing a draft, a results chart over time, reminders before it ends.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
