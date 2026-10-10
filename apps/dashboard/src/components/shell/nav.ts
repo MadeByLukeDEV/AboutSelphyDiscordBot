@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "community";
 
@@ -44,6 +44,7 @@ const NAV: NavGroupSpec[] = [
       { href: "/stat-channels", label: "statChannels", requires: "admin" },
       { href: "/sticky", label: "sticky", requires: "admin" },
       { href: "/auto-publish", label: "autoPublish", requires: "admin" },
+      { href: "/custom-commands", label: "customCommands", requires: "admin" },
       { href: "/twitch", label: "twitch", requires: "admin" },
       { href: "/youtube", label: "youtube", requires: "admin" },
     ],

@@ -29,7 +29,8 @@
         "roleManager": "Rollenverwaltung",
         "statChannels": "Statistik-Kanäle",
         "sticky": "Angeheftete Nachrichten",
-        "autoPublish": "Automatisch veröffentlichen"
+        "autoPublish": "Automatisch veröffentlichen",
+        "customCommands": "Eigene Befehle"
       }
     },
     "account": {
@@ -1786,6 +1787,54 @@
       "notFound": "Dieser Kanal steht nicht mehr auf der Liste. Lade die Seite neu.",
       "failed": "Das hat nicht geklappt. Versuche es erneut.",
       "pick": "Wähle zuerst einen Kanal."
+    }
+  },
+  "CustomCommands": {
+    "title": "Eigene Befehle",
+    "intro": "Gespeicherte Antworten, die Mitglieder mit /tag zeigen können, etwa die Regeln, eine FAQ oder eine Linkliste. Mitglieder finden sie per Autovervollständigung oder /tags. Der Text kann niemanden pingen außer das Mitglied, das gefragt hat.",
+    "add": "Eigenen Befehl hinzufügen",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Eigener Befehl entfernt",
+    "on": "An",
+    "off": "Aus",
+    "private": "Nur für sie sichtbar",
+    "list": {
+      "title": "Eigene Befehle",
+      "count": "({count} von {max})",
+      "meta": "{uses, plural, one {Einmal benutzt} other {# Mal benutzt}} · hinzugefügt von {name}"
+    },
+    "empty": {
+      "title": "Noch keine eigenen Befehle",
+      "body": "Füge einen hinzu, zum Beispiel regeln oder faq."
+    },
+    "dialog": {
+      "newTitle": "Eigenen Befehl hinzufügen",
+      "editTitle": "Eigenen Befehl bearbeiten",
+      "intro": "Mitglieder zeigen ihn mit /tag und dem Namen."
+    },
+    "form": {
+      "name": "Name",
+      "nameHelp": "Kleinbuchstaben, Ziffern, - und _ (bis zu 32). Nach dem Erstellen fest.",
+      "response": "Antwort",
+      "responseHelp": "Discord-Markdown funktioniert. '{user}' wird zur Erwähnung des fragenden Mitglieds, '{username}' zu seinem Namen und '{server}' zum Servernamen.",
+      "private": "Nur dem fragenden Mitglied zeigen",
+      "privateHelp": "Die Antwort erscheint nur für sie, nicht im Kanal.",
+      "enabled": "Verfügbar",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "badName": "Nutze Kleinbuchstaben, Ziffern, - und _, beginnend mit Buchstabe oder Ziffer (bis zu 32 Zeichen).",
+      "alreadyExists": "Ein Befehl mit diesem Namen existiert bereits.",
+      "tooMany": "Das ist die maximale Anzahl eigener Befehle.",
+      "notFound": "Diesen Befehl gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsResponse": "Schreibe die Antwort (bis zu 1800 Zeichen)."
     }
   }
 }

@@ -29,7 +29,8 @@
         "roleManager": "Role manager",
         "statChannels": "Stat channels",
         "sticky": "Sticky messages",
-        "autoPublish": "Auto-publish"
+        "autoPublish": "Auto-publish",
+        "customCommands": "Custom commands"
       }
     },
     "account": {
@@ -1786,6 +1787,54 @@
       "notFound": "That channel isn't on the list any more. Reload the page.",
       "failed": "That didn't work. Try again.",
       "pick": "Pick a channel first."
+    }
+  },
+  "CustomCommands": {
+    "title": "Custom commands",
+    "intro": "Saved answers members can show with /tag, like the rules, an FAQ or a link list. Members find them with autocomplete or /tags. The text can't ping anyone but the member who asked.",
+    "add": "Add a custom command",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Custom command removed",
+    "on": "On",
+    "off": "Off",
+    "private": "Only they see it",
+    "list": {
+      "title": "Custom commands",
+      "count": "({count} of {max})",
+      "meta": "{uses, plural, one {Used once} other {Used # times}} · added by {name}"
+    },
+    "empty": {
+      "title": "No custom commands yet",
+      "body": "Add one, for example rules or faq."
+    },
+    "dialog": {
+      "newTitle": "Add a custom command",
+      "editTitle": "Edit custom command",
+      "intro": "Members show it with /tag and the name."
+    },
+    "form": {
+      "name": "Name",
+      "nameHelp": "Lowercase letters, digits, - and _ (up to 32). Fixed once created.",
+      "response": "Answer",
+      "responseHelp": "Discord markdown works. '{user}' becomes a mention of the member who asked, '{username}' their name and '{server}' the server name.",
+      "private": "Only show it to the member who asked",
+      "privateHelp": "The answer appears only for them, not in the channel.",
+      "enabled": "Available",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "badName": "Use lowercase letters, digits, - and _, starting with a letter or digit (up to 32 characters).",
+      "alreadyExists": "A command with that name already exists.",
+      "tooMany": "That's the maximum number of custom commands.",
+      "notFound": "That command doesn't exist any more. Reload the page.",
+      "failed": "That didn't work. Try again.",
+      "needsResponse": "Write the answer (up to 1800 characters)."
     }
   }
 }
