@@ -842,6 +842,22 @@ Decided 2026-10-08:
   - Dashboard `/reminders` (admins): on/off, the per-member limit, and counts only (the text
     of members' reminders is never shown).
   - [ ] Repeating reminders, `/remind` for a channel or another member, snooze button.
+- [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
+      asked for by the user)
+  - Dashboard `/role-manager` (admins only): every role but @everyone with member count, colour,
+    a "powerful permissions" badge and badges for where the bot still uses it (role panels, level
+    rewards, auto-roles, no-XP, ticket staff, giveaways, announcements, Twitch/YouTube pings,
+    birthday role). Search, filters (no members, not used by the bot, deletable, protected),
+    multi-select, and **mass delete** behind a dialog that lists the roles and needs `DELETE` typed.
+    Done in batches of 50 (`MAX_ROLE_DELETES`).
+  - Bot: `GET /internal/roles/manage` (fills the member cache first, so counts are right) and
+    `POST /internal/roles/delete`. **The bot decides again for every id** (`protectionOf`, pure,
+    tested): integration-managed roles, roles at or above the bot's top role and the staff roles
+    from `DISCORD_ADMIN_ROLE_IDS`/`DISCORD_MODERATOR_ROLE_IDS` are refused; each delete carries the
+    admin's name as the audit-log reason and is logged. Deleting is irreversible and the settings
+    pointing at a deleted role are not cleaned up (they are flagged in the dialog instead).
+  - [ ] Rename / recolour / reorder, copy permissions, merge two roles, clean up settings that
+        point at a deleted role.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed

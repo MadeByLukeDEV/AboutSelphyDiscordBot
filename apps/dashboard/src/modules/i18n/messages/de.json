@@ -25,7 +25,8 @@
         "polls": "Umfragen",
         "starboard": "Starboard",
         "birthdays": "Geburtstage",
-        "reminders": "Erinnerungen"
+        "reminders": "Erinnerungen",
+        "roleManager": "Rollenverwaltung"
       }
     },
     "account": {
@@ -1483,6 +1484,69 @@
       "invalid": "Einige Werte sind ungültig.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
       "badMax": "Gib eine Zahl von {min} bis {max} ein."
+    }
+  },
+  "RoleManager": {
+    "title": "Rollenverwaltung",
+    "intro": "Sieh alle Rollen mit ihrer Mitgliederzahl und lösche viele auf einmal. Das Löschen entfernt die Rolle bei allen Mitgliedern und kann nicht rückgängig gemacht werden. Rollen von Integrationen, Rollen über dem Bot und die Team-Rollen sind geschützt.",
+    "botOffline": "Der Bot ist offline, daher können die Rollen nicht geladen werden. Versuche es gleich noch einmal.",
+    "search": "Rollen suchen",
+    "selectAllShown": "Alle angezeigten löschbaren auswählen ({count})",
+    "select": "{name} auswählen",
+    "members": "{count, plural, one {# Mitglied} other {# Mitglieder}}",
+    "deleteSelected": "Auswahl löschen ({count})",
+    "deleted": "{count, plural, one {# Rolle gelöscht} other {# Rollen gelöscht}}",
+    "skipped": "{count, plural, one {# Rolle konnte nicht gelöscht werden} other {# Rollen konnten nicht gelöscht werden}} (schon weg, geschützt oder fehlgeschlagen)",
+    "list": {
+      "title": "Rollen",
+      "count": "({shown} von {total})"
+    },
+    "filters": {
+      "label": "Filter",
+      "all": "Alle",
+      "empty": "Ohne Mitglieder",
+      "unused": "Vom Bot ungenutzt",
+      "deletable": "Löschbar",
+      "protected": "Geschützt"
+    },
+    "empty": {
+      "title": "Keine Rollen hier",
+      "body": "Ändere die Suche oder den Filter."
+    },
+    "badge": {
+      "powerful": "Mächtige Rechte"
+    },
+    "usage": {
+      "panel": "Rollen-Panel",
+      "levelReward": "Level-Belohnung",
+      "welcome": "Auto-Rolle",
+      "noXp": "Keine-XP-Rolle",
+      "tickets": "Ticket-Team",
+      "giveaway": "Gewinnspiel",
+      "announcement": "Ankündigungs-Ping",
+      "twitch": "Twitch-Ping",
+      "youtube": "YouTube-Ping",
+      "birthday": "Geburtstagsrolle"
+    },
+    "protected": {
+      "managed": "Von einer Integration verwaltet",
+      "aboveBot": "Über dem Bot",
+      "staff": "Team-Rolle"
+    },
+    "confirm": {
+      "title": "{count, plural, one {# Rolle} other {# Rollen}} löschen?",
+      "body": "{members, plural, one {1 Mitglied verliert} other {# Mitglieder verlieren}} diese Rollen. Das kann nicht rückgängig gemacht werden.",
+      "inUse": "{count, plural, one {# davon wird} other {# davon werden}} noch vom Bot verwendet (siehe die Hinweise). Diese Einstellungen zeigen dann auf eine Rolle, die es nicht mehr gibt.",
+      "type": "Tippe {word} zur Bestätigung",
+      "back": "Zurück",
+      "button": "{count, plural, one {# Rolle} other {# Rollen}} löschen",
+      "deleting": "Löschen…"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Diese Auswahl ist ungültig.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Es wurde nichts gelöscht. Versuche es gleich noch einmal.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   }
 }

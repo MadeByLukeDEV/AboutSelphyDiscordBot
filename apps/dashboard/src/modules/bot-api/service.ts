@@ -6,6 +6,8 @@ import {
   suggestionDecideStatus,
   giveawayActionStatus,
   pollActionStatus,
+  manageRolesResponse,
+  roleDeleteResponse,
   ticketPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
@@ -22,6 +24,8 @@ import {
   type SuggestionDecideStatus,
   type GiveawayActionStatus,
   type PollActionStatus,
+  type ManagedRole,
+  type RoleDeleteResponse,
   type TicketPanelStatus,
   type GuildEmoji,
   type RoleCreateResponse,
@@ -192,6 +196,22 @@ export async function pollAction(id: string, action: "start" | "end" | "delete")
   if (!res?.ok) return null;
   const parsed = pollActionStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
+}
+
+/** Every role with its member count, for the role manager. Null if the bot can't be reached. */
+export async function listManagedRoles(): Promise<ManagedRole[] | null> {
+  const res = await botFetch("/internal/roles/manage");
+  if (!res?.ok) return null;
+  const parsed = manageRolesResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data.roles : null;
+}
+
+/** Asks the bot to delete roles (it re-checks every one). Null if the bot can't be reached. */
+export async function deleteRolesViaBot(ids: string[], by: string): Promise<RoleDeleteResponse["results"] | null> {
+  const res = await botFetch("/internal/roles/delete", { method: "POST", body: { ids, by: by.slice(0, 60) || "the dashboard" } });
+  if (!res?.ok) return null;
+  const parsed = roleDeleteResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data.results : null;
 }
 
 /** A team member's decision on a suggestion, carried out by the bot (it edits the post and tells the author). Null if the bot can't be reached. */

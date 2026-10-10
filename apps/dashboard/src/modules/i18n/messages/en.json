@@ -25,7 +25,8 @@
         "polls": "Polls",
         "starboard": "Starboard",
         "birthdays": "Birthdays",
-        "reminders": "Reminders"
+        "reminders": "Reminders",
+        "roleManager": "Role manager"
       }
     },
     "account": {
@@ -1483,6 +1484,69 @@
       "invalid": "Some of these values aren't valid.",
       "failed": "Couldn't save the settings. Try again.",
       "badMax": "Enter a number from {min} to {max}."
+    }
+  },
+  "RoleManager": {
+    "title": "Role manager",
+    "intro": "See every role with its member count and delete many at once. Deleting a role removes it from all members and can't be undone. Roles managed by an integration, roles above the bot, and the staff roles are protected.",
+    "botOffline": "The bot is offline, so the roles can't be loaded. Try again in a moment.",
+    "search": "Search roles",
+    "selectAllShown": "Select all shown that can be deleted ({count})",
+    "select": "Select {name}",
+    "members": "{count, plural, one {# member} other {# members}}",
+    "deleteSelected": "Delete selected ({count})",
+    "deleted": "{count, plural, one {# role deleted} other {# roles deleted}}",
+    "skipped": "{count, plural, one {# role couldn't be deleted} other {# roles couldn't be deleted}} (already gone, protected or failed)",
+    "list": {
+      "title": "Roles",
+      "count": "({shown} of {total})"
+    },
+    "filters": {
+      "label": "Filter",
+      "all": "All",
+      "empty": "No members",
+      "unused": "Not used by the bot",
+      "deletable": "Can be deleted",
+      "protected": "Protected"
+    },
+    "empty": {
+      "title": "No roles here",
+      "body": "Change the search or the filter."
+    },
+    "badge": {
+      "powerful": "Powerful permissions"
+    },
+    "usage": {
+      "panel": "Role panel",
+      "levelReward": "Level reward",
+      "welcome": "Auto-role",
+      "noXp": "No-XP role",
+      "tickets": "Ticket staff",
+      "giveaway": "Giveaway",
+      "announcement": "Announcement ping",
+      "twitch": "Twitch ping",
+      "youtube": "YouTube ping",
+      "birthday": "Birthday role"
+    },
+    "protected": {
+      "managed": "Managed by an integration",
+      "aboveBot": "Above the bot",
+      "staff": "Staff role"
+    },
+    "confirm": {
+      "title": "Delete {count, plural, one {# role} other {# roles}}?",
+      "body": "{members, plural, one {1 member loses} other {# members lose}} these roles. This can't be undone.",
+      "inUse": "{count, plural, one {# of these is} other {# of these are}} still used by the bot (see the badges). Those settings will point at a role that no longer exists.",
+      "type": "Type {word} to confirm",
+      "back": "Back",
+      "button": "Delete {count, plural, one {# role} other {# roles}}",
+      "deleting": "Deleting…"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "That selection isn't valid.",
+      "botUnavailable": "Can't reach the bot. Nothing was deleted. Try again in a moment.",
+      "failed": "That didn't work. Try again."
     }
   }
 }
