@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Bot } from "lucide-react";
+import Image from "next/image";
 import { BotStatusPill } from "@/modules/bot-status";
 import { isAdmin, type StaffSession } from "@/modules/auth";
 import { AccountPanel } from "./account-panel";
@@ -12,9 +12,7 @@ import { SidebarNav } from "./sidebar-nav";
 function Brand({ label }: { label: string }) {
   return (
     <Link href="/" className="flex items-center gap-2.5 font-bold focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-      <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_0_1.25rem_-0.25rem_var(--primary)]">
-        <Bot className="size-[1.15rem]" aria-hidden />
-      </span>
+      <Image src="/brand/logo.png" alt="" width={72} height={72} unoptimized priority className="size-9 rounded-xl object-cover shadow-[0_0_1.25rem_-0.25rem_var(--primary)]" />
       {label}
     </Link>
   );

@@ -474,6 +474,12 @@ Decided 2026-10-08:
   the invite link, the bot can't create it. `pnpm --filter @aboutselphy/bot invite-url` prints the link
   with every permission the features need; opening it again for a bot already in the server updates
   the role without kicking anything. Administrator and Mention Everyone are left out on purpose.
+- **Logo** (2026-10-22, `chore_branding`): the chibi picture the user sent. The one source is
+  `apps/dashboard/public/brand/logo-source.png` (128 px). `pnpm --filter @aboutselphy/bot brand`
+  rebuilds `src/app/icon.png`, `apple-icon.png`, `favicon.ico`, `public/brand/logo.png` (sidebar and
+  mobile bar) and `bot-avatar.png`; `pnpm --filter @aboutselphy/bot set-avatar` pushes the avatar to
+  Discord through the REST API (rate-limited, run it once). Replace the source with a bigger picture
+  for crisper icons and run both again.
 - Moderators' dashboard rights: Settings is hidden from them in the nav, and the
   page and `saveSettingsAction` enforce admin anyway.
 

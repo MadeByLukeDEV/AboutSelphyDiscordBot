@@ -10,6 +10,8 @@
     "start": "tsx src/index.ts",
     "commands:register": "tsx scripts/register-commands.ts",
     "invite-url": "tsx scripts/invite-url.ts",
+    "brand": "tsx scripts/brand.ts",
+    "set-avatar": "tsx scripts/set-avatar.ts",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
