@@ -6,6 +6,14 @@ import { z } from "zod";
 // values, so Dokploy only needs what has no safe default. Read server env
 // through env(), never process.env.
 const schema = z.object({
+  // The bot's database (role aboutselphy_bot, schema DATABASE_SCHEMA). Read by
+  // @aboutselphy/db itself; validated here so a missing value fails with a
+  // clear message and, in Docker, `migrate deploy` has what it needs.
+  DATABASE_URL: z.string().min(1),
+  DATABASE_SCHEMA: z
+    .string()
+    .regex(/^[a-z_][a-z0-9_]*$/, "must be a plain identifier")
+    .default("bot"),
   AUTH_URL: z.url().default("https://auth.aboutselphy.com"),
   AUTH_DATABASE_URL: z.string().min(1),
   AUTH_DATABASE_SCHEMA: z

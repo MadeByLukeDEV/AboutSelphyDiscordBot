@@ -1,5 +1,16 @@
+import path from "node:path";
+import { config as loadEnv } from "dotenv";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+
+// One env file for the whole repo: the bot and the Prisma CLI read the root
+// .env.local, but Next only looks inside apps/dashboard. Already-set variables
+// win (Dokploy's real env, or a dashboard-local .env.local), so this changes
+// nothing in production, where no such files exist.
+loadEnv({
+  path: [path.resolve(process.cwd(), "../../.env.local"), path.resolve(process.cwd(), "../../.env")],
+  quiet: true,
+});
 
 const withNextIntl = createNextIntlPlugin("./src/modules/i18n/request.ts");
 
