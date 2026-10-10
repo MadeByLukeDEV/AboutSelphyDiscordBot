@@ -1,3 +1,5 @@
 export * from "./roles";
 export * from "./snowflake";
 export * from "./internal-api";
+export * from "./text-filter";
+export * from "./profanity";
