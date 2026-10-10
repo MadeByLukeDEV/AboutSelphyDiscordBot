@@ -1,12 +1,14 @@
 import { PermissionFlagsBits, type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
-import type { ModCase } from "@aboutselphy/db";
+import type { ModCase, ModCaseSource } from "@aboutselphy/db";
 import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { getModConfig } from "./config";
 import { formatDuration } from "./duration";
+import { escalationDue, ruleFrom } from "./escalation";
 import { buildCaseEmbed, typeLabel } from "./embed";
 import { checkHierarchy, DENIAL_MESSAGES } from "./hierarchy";
 import {
+  countActiveWarnings,
   countCasesByType,
   createCase,
   findCaseByNumber,
@@ -24,7 +26,10 @@ export type ActionRequest = {
   /** The Discord user, when known (a user option, or fetched for unban). */
   targetUser: User | null;
   reason: string | null;
+  /** Timeout length, or how long a ban lasts (omit for a permanent ban). */
   durationSeconds?: number;
+  /** Where the action came from; defaults to a command. */
+  source?: ModCaseSource;
   /** Ban only: delete this many days of the user's messages (0-7). */
   deleteDays?: number;
 };
@@ -75,7 +80,7 @@ function dmText(type: ActionType, guild: Guild, reason: string | null, durationS
     case "kick":
       return `You were kicked from ${where}.${why}`;
     case "ban":
-      return `You were banned from ${where}.${why}`;
+      return `You were banned from ${where}${durationSeconds ? ` for ${formatDuration(durationSeconds)}` : ""}.${why}`;
     default:
       return null;
   }
@@ -142,7 +147,7 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
   const user = req.targetUser ?? member?.user ?? null;
   const reason = req.reason;
   const dm = config.dmOnAction && user ? dmText(type, guild, reason, req.durationSeconds) : null;
-  const expiresAt = type === "timeout" && req.durationSeconds ? new Date(Date.now() + req.durationSeconds * 1000) : null;
+  const expiresAt = (type === "timeout" || type === "ban") && req.durationSeconds ? new Date(Date.now() + req.durationSeconds * 1000) : null;
 
   // -- the Discord action ---------------------------------------------------
   try {
@@ -184,7 +189,7 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
   try {
     row = await createCase({
       type,
-      source: "command",
+      source: req.source ?? "command",
       targetId,
       targetName: user?.username ?? null,
       moderatorId: moderator.id,
@@ -200,11 +205,42 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
 
   log.info({ case: row.caseNumber, type, target: targetId, moderator: moderator.id }, "moderation action");
   await postCaseLog(guild, row);
+
+  // A warning may be the one that tips the member over the escalation threshold.
+  const escalated = type === "warn" ? await escalateIfDue(guild, targetId, user) : null;
   return {
     ok: true,
     caseNumber: row.caseNumber,
-    message: `Case #${row.caseNumber} · ${typeLabel(type)} · <@${targetId}>`,
+    message: `Case #${row.caseNumber} · ${typeLabel(type)} · <@${targetId}>${escalated ? `\n${escalated}` : ""}`,
   };
+}
+
+/** After a warning: applies the configured escalation if this is the N-th active warning. Never throws. */
+async function escalateIfDue(guild: Guild, targetId: string, user: User | null): Promise<string | null> {
+  try {
+    const rule = ruleFrom(await getModConfig());
+    if (!rule) return null;
+    const warnings = await countActiveWarnings(targetId);
+    if (!escalationDue(warnings, rule)) return null;
+
+    const me = guild.members.me ?? (await guild.members.fetchMe());
+    log.info({ target: targetId, warnings, action: rule.action }, "warning escalation");
+    const result = await performAction({
+      guild,
+      moderator: me,
+      type: rule.action,
+      targetId,
+      targetUser: user,
+      reason: `Reached ${warnings} active warnings`,
+      ...(rule.durationSeconds ? { durationSeconds: rule.durationSeconds } : {}),
+      source: "automod",
+    });
+    if (!result.ok) log.warn({ target: targetId, message: result.message }, "warning escalation could not be applied");
+    return result.ok ? `Escalation: ${warnings} active warnings, so case #${result.caseNumber} (${rule.action}) was applied.` : `Escalation due (${warnings} warnings) but not applied: ${result.message}`;
+  } catch (err) {
+    log.error({ err, target: targetId }, "warning escalation failed");
+    return null;
+  }
 }
 
 /** Posts the case embed to the log channel. Best effort: never breaks the action. */

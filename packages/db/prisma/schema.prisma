@@ -44,17 +44,29 @@ enum ModCaseSource {
   automod
 }
 
+enum ModEscalationAction {
+  timeout
+  kick
+  ban
+}
+
 /// Singleton (id = 1): moderation settings and the case counter.
 model ModConfig {
-  id             Int      @id @default(1)
+  id                        Int                  @id @default(1)
   /// The number the next case gets. Incremented atomically in the same
   /// transaction that inserts the case, so numbers are never reused.
-  nextCaseNumber Int      @default(1)
+  nextCaseNumber            Int                  @default(1)
   /// Channel that receives one embed per case. Null = logging off.
-  logChannelId   String?  @db.VarChar(20)
+  logChannelId              String?              @db.VarChar(20)
   /// Try to DM the member before a kick/ban and on warn/timeout.
-  dmOnAction     Boolean  @default(true)
-  updatedAt      DateTime @updatedAt
+  dmOnAction                Boolean              @default(true)
+  /// Escalation: every N-th active warning of a member triggers `escalationAction`.
+  /// Null threshold = off.
+  escalationThreshold       Int?
+  escalationAction          ModEscalationAction?
+  /// How long a timeout lasts (or a temporary ban); null on a ban = permanent.
+  escalationDurationSeconds Int?
+  updatedAt                 DateTime             @updatedAt
 }
 
 model ModCase {
@@ -83,10 +95,14 @@ model ModCase {
   /// Where the case embed was posted, so edits can update it.
   logChannelId     String?       @db.VarChar(20)
   logMessageId     String?       @db.VarChar(20)
+  /// Temporary bans: set once the ban was lifted (or found already lifted), so it
+  /// is never lifted twice. Null on a ban with an expiry = still to do.
+  expiryHandledAt  DateTime?
   createdAt        DateTime      @default(now())
 
   @@index([targetId, createdAt])
   @@index([type, createdAt])
+  @@index([expiryHandledAt, expiresAt])
 }
 
 // ---- temporary voice channels -------------------------------------------

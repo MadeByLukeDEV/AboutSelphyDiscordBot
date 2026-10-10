@@ -61,6 +61,37 @@ export function readConfig(): Promise<ModConfig> {
   return prisma.modConfig.findUniqueOrThrow({ where: { id: 1 } });
 }
 
-export function updateConfig(data: Partial<Pick<ModConfig, "logChannelId" | "dmOnAction">>) {
+export type ConfigUpdate = Partial<
+  Pick<ModConfig, "logChannelId" | "dmOnAction" | "escalationThreshold" | "escalationAction" | "escalationDurationSeconds">
+>;
+
+export function updateConfig(data: ConfigUpdate) {
   return prisma.modConfig.update({ where: { id: 1 }, data });
+}
+
+/** Warnings that haven't been pardoned. */
+export function countActiveWarnings(targetId: string): Promise<number> {
+  return prisma.modCase.count({ where: { targetId, type: "warn", active: true } });
+}
+
+// -- temporary bans ------------------------------------------------------------------
+
+/** Bans whose time is up and that nobody has lifted yet. */
+export function listDueBans(now: Date, take = 25): Promise<ModCase[]> {
+  return prisma.modCase.findMany({
+    where: { type: "ban", expiresAt: { lte: now }, expiryHandledAt: null },
+    orderBy: { expiresAt: "asc" },
+    take,
+  });
+}
+
+/** Marks the expiry as taken care of. False if someone else (another process) got there first. */
+export async function claimExpiry(id: string, at: Date): Promise<boolean> {
+  const { count } = await prisma.modCase.updateMany({ where: { id, expiryHandledAt: null }, data: { expiryHandledAt: at } });
+  return count > 0;
+}
+
+/** Gives the claim back after a failed attempt, so the next round tries again. */
+export function releaseExpiry(id: string) {
+  return prisma.modCase.updateMany({ where: { id }, data: { expiryHandledAt: null } });
 }

@@ -2,7 +2,7 @@ import { prisma } from "@aboutselphy/db";
 import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
-import { registerAuditLog } from "./modules/moderation";
+import { registerAuditLog, registerModerationJobs, stopModerationJobs } from "./modules/moderation";
 import { registerTempVoice } from "./modules/tempvoice";
 import { startTwitch, stopTwitch } from "./modules/twitch";
 import { startInternalApi } from "./internal-api/server";
@@ -27,6 +27,7 @@ async function main() {
   registerLifecycle(client);
   registerInteractionCreate(client);
   registerAuditLog(client);
+  registerModerationJobs(client);
   registerTempVoice(client);
   startTwitch(client);
   await client.login(e.DISCORD_BOT_TOKEN);
@@ -38,6 +39,7 @@ async function main() {
     log.info({ signal }, "shutting down");
     api.close();
     stopTwitch();
+    stopModerationJobs();
     await client.destroy();
     await prisma.$disconnect();
     process.exit(0);

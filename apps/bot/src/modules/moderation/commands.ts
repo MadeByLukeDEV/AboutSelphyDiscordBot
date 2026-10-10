@@ -119,6 +119,7 @@ const ban: Command = {
     .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers)
     .addUserOption((o) => o.setName("user").setDescription("User").setRequired(true))
     .addStringOption((o) => o.setName("reason").setDescription("Why").setRequired(true).setMaxLength(REASON_MAX))
+    .addStringOption((o) => o.setName("duration").setDescription("Temporary ban, e.g. 3d or 2w (leave empty for permanent)").setMaxLength(20))
     .addIntegerOption((o) =>
       o.setName("delete_days").setDescription("Also delete their messages from the last N days (0-7)").setMinValue(0).setMaxValue(7),
     )
@@ -127,12 +128,21 @@ const ban: Command = {
   execute: (i) =>
     run(i, async () => {
       const user = i.options.getUser("user", true);
+      const rawDuration = i.options.getString("duration");
+      let seconds: number | undefined;
+      if (rawDuration) {
+        const parsed = parseDuration(rawDuration);
+        if (parsed === null) return "I couldn't read that duration. Use e.g. `3d`, `2w`, `12h`.";
+        if (parsed < MIN_TIMEOUT_SECONDS) return "A temporary ban must last at least 1 minute.";
+        seconds = parsed;
+      }
       return {
         type: "ban",
         targetId: user.id,
         targetUser: user,
         reason: i.options.getString("reason", true),
         deleteDays: i.options.getInteger("delete_days") ?? 0,
+        ...(seconds ? { durationSeconds: seconds } : {}),
       };
     }),
 };
@@ -224,6 +234,12 @@ const infractions: Command = {
   },
 };
 
+function describeEscalation(action: "timeout" | "kick" | "ban", seconds: number | null): string {
+  if (action === "timeout") return `time the member out for ${formatDuration(seconds ?? 0)}`;
+  if (action === "kick") return "kick the member";
+  return seconds ? `ban the member for ${formatDuration(seconds)}` : "ban the member";
+}
+
 const modlog: Command = {
   data: guildOnly(new SlashCommandBuilder())
     .setName("modlog")
@@ -248,6 +264,21 @@ const modlog: Command = {
         .setDescription("Whether members get a DM when they are warned, timed out, kicked or banned")
         .addBooleanOption((o) => o.setName("enabled").setDescription("Send DMs").setRequired(true)),
     )
+    .addSubcommand((s) =>
+      s
+        .setName("escalation")
+        .setDescription("Act automatically when a member collects warnings")
+        .addIntegerOption((o) => o.setName("warnings").setDescription("Every this many active warnings (2 to 20)").setRequired(true).setMinValue(2).setMaxValue(20))
+        .addStringOption((o) =>
+          o
+            .setName("action")
+            .setDescription("What happens")
+            .setRequired(true)
+            .addChoices({ name: "Time out", value: "timeout" }, { name: "Kick", value: "kick" }, { name: "Ban", value: "ban" }),
+        )
+        .addStringOption((o) => o.setName("duration").setDescription("Timeout length (required) or temporary ban length, e.g. 1h, 3d").setMaxLength(20)),
+    )
+    .addSubcommand((s) => s.setName("escalation_off").setDescription("Turn warning escalation off"))
     .addSubcommand((s) => s.setName("status").setDescription("Show the current settings"))
     .toJSON(),
   requires: "admin",
@@ -279,12 +310,42 @@ const modlog: Command = {
         await reply(`DMs to members are now ${enabled ? "on" : "off"}.`);
         return;
       }
+      case "escalation": {
+        const warnings = i.options.getInteger("warnings", true);
+        const action = i.options.getString("action", true) as "timeout" | "kick" | "ban";
+        const rawDuration = i.options.getString("duration");
+        let seconds: number | null = null;
+        if (rawDuration) {
+          seconds = parseDuration(rawDuration);
+          if (seconds === null) return void (await reply("I couldn't read that duration. Use e.g. `1h`, `3d`."));
+        }
+        if (action === "kick" && seconds !== null) return void (await reply("A kick has no duration."));
+        if (action === "timeout") {
+          if (seconds === null) return void (await reply("A timeout needs a duration, e.g. `1h`."));
+          if (seconds < MIN_TIMEOUT_SECONDS || seconds > MAX_TIMEOUT_SECONDS) {
+            return void (await reply(`A timeout lasts between 1 minute and ${formatDuration(MAX_TIMEOUT_SECONDS)}.`));
+          }
+        }
+        if (action === "ban" && seconds !== null && seconds < MIN_TIMEOUT_SECONDS) return void (await reply("A temporary ban lasts at least 1 minute."));
+        await saveModConfig({ escalationThreshold: warnings, escalationAction: action, escalationDurationSeconds: seconds });
+        await reply(`Every ${warnings} active warnings now ${describeEscalation(action, seconds)}.`);
+        return;
+      }
+      case "escalation_off":
+        await saveModConfig({ escalationThreshold: null, escalationAction: null, escalationDurationSeconds: null });
+        await reply("Warning escalation is off.");
+        return;
       default: {
         const config = await getModConfig();
         await reply(
           [
             `Log channel: ${config.logChannelId ? `<#${config.logChannelId}>` : "not set"}`,
             `DM members on action: ${config.dmOnAction ? "on" : "off"}`,
+            `Warning escalation: ${
+              config.escalationThreshold && config.escalationAction
+                ? `every ${config.escalationThreshold} active warnings ${describeEscalation(config.escalationAction, config.escalationDurationSeconds)}`
+                : "off"
+            }`,
             `Next case number: ${config.nextCaseNumber}`,
           ].join("\n"),
         );

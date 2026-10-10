@@ -1,6 +1,6 @@
 import type { ModConfig } from "@aboutselphy/db";
 import { onReload } from "../../internal-api/reload";
-import { readConfig, updateConfig } from "./repository";
+import { readConfig, updateConfig, type ConfigUpdate } from "./repository";
 
 // Cached in memory with a short TTL. The dashboard also asks the bot to drop
 // the cache (POST /internal/reload/moderation), but that only reaches this
@@ -15,7 +15,7 @@ export async function getModConfig(): Promise<ModConfig> {
   return value;
 }
 
-export async function saveModConfig(data: Partial<Pick<ModConfig, "logChannelId" | "dmOnAction">>) {
+export async function saveModConfig(data: ConfigUpdate) {
   const value = await updateConfig(data);
   cached = { value, at: Date.now() };
   return value;

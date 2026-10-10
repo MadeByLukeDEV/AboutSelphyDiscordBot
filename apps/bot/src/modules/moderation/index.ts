@@ -2,3 +2,4 @@
 export { moderationCommands } from "./commands";
 export { registerAuditLog } from "./audit-log";
 export { performAction, postCaseLog, postModNote, refreshCaseLog, type ActionRequest, type ActionResult } from "./service";
+export { registerModerationJobs, stopModerationJobs } from "./jobs";
