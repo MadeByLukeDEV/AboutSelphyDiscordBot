@@ -765,6 +765,21 @@ Decided 2026-10-08:
     settings, post/update panel). `components/form/multi-picker.tsx` is shared.
   - [ ] Ticket categories/topics, a reason prompt when opening, rating, auto-close of
         idle tickets, claiming limits.
+- [~] Giveaways (2026-10-18, `feature_giveaways`, migration `20261018100000_giveaways`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/giveaways/`): draft -> active (posts the message with an Enter button),
+    active -> ended (draw), each a **single conditional UPDATE** so nothing happens twice; a
+    30 s round (`endDue`) ends due giveaways, so a restart only delays an ending. Entering
+    checks: running, before its end, pressed on its own message, required role (read now), not
+    a bot; pressing again withdraws. At the draw, entries are filtered again (still in the
+    server, still holding the role, not a bot) and `pickWinners` (unbiased partial Fisher-Yates,
+    tested for uniformity) picks them; re-roll prefers new people; only the winners are pinged;
+    prize and text are escaped. One internal endpoint `POST /internal/giveaways/action`
+    (start/end/reroll/cancel). Runs only in production or with `BOT_INTEGRATIONS_IN_DEV`.
+  - Dashboard `/giveaways` (all staff): list, create/edit drafts, start, end now, re-roll,
+    cancel, remove. A giveaway that can't be posted stays a draft with the reason.
+  - [ ] Weighted entries (e.g. extra for boosters), entry requirements beyond a role, recurring
+        giveaways, a `/giveaway` slash command.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
