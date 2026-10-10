@@ -399,6 +399,9 @@ Decided 2026-10-08:
 - The bot exits if Discord can't be reached at startup (one 10 s connect
   timeout was enough). Production relies on the container restart policy; a
   login retry with backoff is a small TODO.
+- **Never put backticks (or `$(...)`) in a shell string**, e.g. a `node -e "..."`
+  that writes Markdown: the shell runs them as commands and silently eats the
+  text between. Edit docs and code with the editor tool, not with shell one-liners.
 - Moderators' dashboard rights: Settings is hidden from them in the nav, and the
   page and `saveSettingsAction` enforce admin anyway.
 
@@ -501,9 +504,23 @@ Decided 2026-10-08:
         `GuildVoiceStates` intent (not privileged). The room's live state (locked,
         limit, video, soundboard, allow-list) is the Discord channel itself, not
         the database.
-  - [ ] Controls: in-room panel + `/voice` for **everyone** (authorised in code:
-        only the room owner or staff), rename (2 per 10 min limit), member limit,
-        lock + allow-list, video, soundboard, kick, block, transfer, claim
+  - [x] Controls (2026-10-10, `feature_tempvoice-controls`, **tried live by the
+        user**): a panel posted in each room's chat (one button row + four user
+        selects) and `/voice` (info, panel, name, limit, lock, unlock, video,
+        soundboard, allow, remove, kick, block, unblock, transfer, claim), open to
+        **every member** on purpose: no `requires`, no hidden default permissions.
+        The boundary is `controller.ts`: each action first checks the person is
+        the room's owner or staff (`canManageRoom`), and `checkTarget` stops an
+        owner turning the controls on moderators, the server owner or themselves.
+        `claim` only works for someone inside the room while the owner is not.
+        Room state is derived from the channel's permission overwrites
+        (`deriveRoomState`), so the panel can't disagree with Discord. Owners
+        never hold Manage Channel: the bot changes things for them. Renames are
+        limited to Discord's 2 per 10 minutes (`SlidingWindowLimiter`), else
+        discord.js queues the request and the button hangs. Buttons, selects and
+        modals are routed by custom-ID prefix (`events/components.ts`, `tv:...`,
+        strict parse). Needs the bot to send messages and embeds in the voice
+        channels' chat.
   - [ ] Dashboard page for the settings (lobby, category, template, defaults,
         blocked words, open rooms)
 - [ ] Phase 5 — announcements
