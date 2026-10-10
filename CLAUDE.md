@@ -573,7 +573,18 @@ Decided 2026-10-08:
         `@aboutselphy/shared/duration` (bot and dashboard parse identically).
   - [ ] Roles re-applied when a member rejoins (needs the GuildMembers intent),
         warn/timeout/ban from the dashboard, case notes editing
-  - [ ] More log types (message edit/delete, joins/leaves, voice)
+  - [x] Server logs (2026-10-16, `feature_logs`, migration `20261016100000_logs` applied;
+        **not tried live yet**): four kinds, each with its own channel and switch
+        (`LogRoute`, dashboard `/logs`, admins): **members** (joins with account age and a
+        warning under 7 days, leaves with roles), **memberUpdates** (nickname, role changes;
+        role changes within 20 s of a join are skipped, those are auto-roles), **voice**
+        (join/leave/move; mutes and camera not logged), **server** (channels and roles
+        created/deleted/renamed, role permission or colour changes). Entries are built from
+        plain data (`embeds.ts`, tested): people as mention + raw id, every name escaped, no
+        pings. Routes cached 60 s + reload. Only runs in production or with
+        `BOT_INTEGRATIONS_IN_DEV`. Moderation actions keep their own log (`/modlog`).
+  - [ ] **Message edit/delete logs**: need the privileged **MessageContent** intent (and
+        GuildMessages) so the old text is known; invite tracking (GuildInvites intent).
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
 - [ ] Phase 2 — anti-bot
