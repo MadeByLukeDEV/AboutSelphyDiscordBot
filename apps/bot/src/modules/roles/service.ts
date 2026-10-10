@@ -27,6 +27,7 @@ export const toView = (p: PanelRow): PanelView => ({
   title: p.title,
   description: p.description,
   color: p.color,
+  imageUrl: p.imageUrl,
   style: p.style,
   exclusive: p.exclusive,
   roles: p.roles.map((r) => ({ roleId: r.roleId, label: r.label, emoji: r.emoji, description: r.description })),

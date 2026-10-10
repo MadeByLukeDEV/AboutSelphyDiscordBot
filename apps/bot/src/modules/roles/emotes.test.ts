@@ -53,6 +53,7 @@ describe("a reactions panel", () => {
     title: "Pick",
     description: "Games",
     color: 0,
+    imageUrl: "",
     style: "reactions",
     exclusive: false,
     roles: [
@@ -80,7 +81,7 @@ describe("a reactions panel", () => {
 
 describe("rolePanelInput for reactions", () => {
   const role = (i: number, emoji: string) => ({ roleId: `1000000000000000${String(i).padStart(2, "0")}`, label: `R${i}`, emoji, description: "" });
-  const base = { channelId: "123456789012345678", title: "T", description: "", color: 0, style: "reactions" as const, exclusive: false, publish: false };
+  const base = { channelId: "123456789012345678", title: "T", description: "", color: 0, imageUrl: "", style: "reactions" as const, exclusive: false, publish: false };
   const parse = (roles: unknown[]) => rolePanelInput.safeParse({ ...base, roles });
 
   it("needs a different emoji on every role", () => {

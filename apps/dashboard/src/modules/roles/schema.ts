@@ -20,6 +20,7 @@ export type RolePanelView = {
   title: string;
   description: string;
   color: number;
+  imageUrl: string;
   style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: PanelRoleView[];

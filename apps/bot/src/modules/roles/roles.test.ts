@@ -66,6 +66,7 @@ describe("buildPanelMessage", () => {
     title: "Pick your roles",
     description: "Hello",
     color: 0x00ffa8,
+    imageUrl: "",
     style: "buttons",
     exclusive: false,
     roles: Array.from({ length: n }, (_, i) => ({ roleId: `${100000000000000000 + i}`, label: `Role ${i}`, emoji: "", description: "" })),
@@ -86,6 +87,12 @@ describe("buildPanelMessage", () => {
     expect(menu.max_values).toBe(1);
   });
 
+  it("shows the picture only when it is a good https address", () => {
+    expect(buildPanelMessage(panel(2, { imageUrl: "https://cdn.example.com/p.png" })).embeds[0]!.toJSON().image?.url).toBe("https://cdn.example.com/p.png");
+    expect(buildPanelMessage(panel(2, { imageUrl: "http://cdn.example.com/p.png" })).embeds[0]!.toJSON().image).toBeUndefined();
+    expect(buildPanelMessage(panel(2)).embeds[0]!.toJSON().image).toBeUndefined();
+  });
+
   it("allows no mentions", () => {
     expect(buildPanelMessage(panel(2)).allowedMentions).toEqual({ parse: [] });
   });
@@ -97,6 +104,7 @@ describe("rolePanelInput", () => {
     title: "Roles",
     description: "",
     color: 0x00ffa8,
+    imageUrl: "",
     style: "buttons" as const,
     exclusive: false,
     roles: [{ roleId: "111111111111111111", label: "Gamer", emoji: "🎮", description: "" }],
@@ -114,6 +122,11 @@ describe("rolePanelInput", () => {
     const many = Array.from({ length: 26 }, (_, i) => ({ roleId: `${100000000000000000 + i}`, label: "x", emoji: "", description: "" }));
     expect(parse({ roles: many }).success).toBe(false);
     expect(parse({ roles: [base.roles[0], base.roles[0]] }).success).toBe(false);
+  });
+
+  it("takes an optional https picture", () => {
+    expect(parse({ imageUrl: "https://cdn.example.com/panel.png" }).success).toBe(true);
+    for (const bad of ["http://a.com/x.png", "javascript:alert(1)", "https://u:p@a.com/x", "https://a.com/a b"]) expect(parse({ imageUrl: bad }).success, bad).toBe(false);
   });
 
   it("only takes unicode emoji", () => {

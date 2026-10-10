@@ -19,6 +19,7 @@ import {
   PANEL_STYLES,
   rolePanelInput,
 } from "@aboutselphy/shared/role-panel";
+import { MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
 import { colorToHex, hexToColor } from "@aboutselphy/shared/twitch-template";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
@@ -31,12 +32,14 @@ import { savePanelAction } from "../actions";
 import type { RolePanelView } from "../schema";
 import { CreateRoleDialog } from "./create-role-dialog";
 import { EmojiPicker } from "./emoji-picker";
+import { PanelPreview } from "./panel-preview";
 
 type FormValues = {
   channelId: string;
   title: string;
   description: string;
   color: number;
+  imageUrl: string;
   style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: Array<{ roleId: string; label: string; emoji: string; description: string }>;
@@ -70,12 +73,15 @@ export function PanelForm({
 
   const form = useForm<FormValues>({
     defaultValues: panel
-      ? { channelId: panel.channelId, title: panel.title, description: panel.description, color: panel.color, style: panel.style, exclusive: panel.exclusive, roles: panel.roles }
-      : { channelId: "", title: "", description: "", color: DEFAULT_PANEL_COLOR, style: "buttons", exclusive: false, roles: [{ ...EMPTY_ROLE }] },
+      ? { channelId: panel.channelId, title: panel.title, description: panel.description, color: panel.color, imageUrl: panel.imageUrl, style: panel.style, exclusive: panel.exclusive, roles: panel.roles }
+      : { channelId: "", title: "", description: "", color: DEFAULT_PANEL_COLOR, imageUrl: "", style: "buttons", exclusive: false, roles: [{ ...EMPTY_ROLE }] },
   });
   const { errors } = form.formState;
   const fields = useFieldArray({ control: form.control, name: "roles" });
-  const [color, style, rows] = useWatch({ control: form.control, name: ["color", "style", "roles"] });
+  const [color, style, rows, title, description, imageUrl] = useWatch({
+    control: form.control,
+    name: ["color", "style", "roles", "title", "description", "imageUrl"],
+  });
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({
     value: c.id,
@@ -105,7 +111,7 @@ export function PanelForm({
           const [key, index, sub] = issue.path;
           if (key === "roles" && typeof index === "number" && typeof sub === "string") form.setError(`roles.${index}.${sub as "roleId"}`, { type: "custom", message: issue.message });
           else if (key === "roles") form.setError("roles", { type: "custom", message: issue.message });
-          else if (key === "channelId" || key === "title") form.setError(key, { type: "custom", message: issue.message });
+          else if (key === "channelId" || key === "title" || key === "imageUrl") form.setError(key, { type: "custom", message: issue.message });
         }
         return;
       }
@@ -136,6 +142,22 @@ export function PanelForm({
         <Field>
           <FieldLabel htmlFor="rp-description">{t("description")}</FieldLabel>
           <Textarea id="rp-description" rows={3} maxLength={MAX_PANEL_DESCRIPTION} {...form.register("description")} />
+        </Field>
+
+        <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
+          <FieldLabel htmlFor="rp-image">{t("image")}</FieldLabel>
+          <Input
+            id="rp-image"
+            type="url"
+            inputMode="url"
+            autoComplete="off"
+            maxLength={MAX_IMAGE_URL}
+            placeholder="https://"
+            aria-invalid={Boolean(errors.imageUrl) || undefined}
+            {...form.register("imageUrl")}
+          />
+          <FieldDescription>{t("imageHelp")}</FieldDescription>
+          {errors.imageUrl && <FieldError>{te("imageInvalid")}</FieldError>}
         </Field>
 
         <Field>
@@ -251,6 +273,15 @@ export function PanelForm({
           </Button>
         </div>
       </section>
+
+      <PanelPreview
+        title={title}
+        description={description}
+        color={color}
+        hasImage={imageUrl.trim() !== ""}
+        style={style}
+        roles={rows.map((r) => ({ label: r.label.trim() || nameOf(r.roleId), emoji: r.emoji }))}
+      />
 
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>

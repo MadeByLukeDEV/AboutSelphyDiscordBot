@@ -13,6 +13,7 @@ const toView = (p: PanelWithRoles): RolePanelView => ({
   title: p.title,
   description: p.description,
   color: p.color,
+  imageUrl: p.imageUrl,
   style: p.style,
   exclusive: p.exclusive,
   roles: p.roles.map((r) => ({ roleId: r.roleId, label: r.label, emoji: r.emoji, description: r.description })),
@@ -74,7 +75,7 @@ export async function savePanel(input: RolePanelInput, by: StaffSession["user"])
     // A posted panel stays in its channel (the message can't move); move it by deleting and creating.
     if (existing?.messageId && existing.channelId !== input.channelId) return fail("invalid");
 
-    const data = { channelId: input.channelId, title: input.title, description: input.description, color: input.color, style: input.style, exclusive: input.exclusive };
+    const data = { channelId: input.channelId, title: input.title, description: input.description, color: input.color, imageUrl: input.imageUrl.trim(), style: input.style, exclusive: input.exclusive };
     const roleViews = input.roles.map((r) => ({ roleId: r.roleId, label: r.label, emoji: r.emoji, description: r.description }));
     const saved = existing ? await updatePanel(existing.id, data, roleViews) : await createPanel(data, roleViews, by.name);
 

@@ -709,7 +709,17 @@
       "rolesHelpReactions": "Zwischen 1 und {max}, jede mit eigenem Emoji. Es werden nur Rollen angezeigt, die der Bot vergeben darf.",
       "emojiPlaceholder": "Emoji eintippen oder auswählen",
       "pickEmoji": "Auswählen",
-      "clearEmoji": "Leeren"
+      "clearEmoji": "Leeren",
+      "image": "Bild",
+      "imageHelp": "Optional. Ein Link zu einem Bild, der mit https:// beginnt und groß unter dem Text angezeigt wird. Tipp: Lade es in einen Discord-Kanal hoch und kopiere den Link.",
+      "preview": {
+        "label": "Vorschau",
+        "botName": "AboutSelphy Bot",
+        "bot": "Bot",
+        "picture": "Bild",
+        "note": "Das Bild wird hier nicht geladen. Discord zeigt es, wenn das Panel gepostet wird.",
+        "reactHint": "Mitglieder reagieren darunter"
+      }
     },
     "errors": {
       "forbidden": "Nur Admins können Rollen verwalten.",
@@ -728,7 +738,8 @@
       "emojiInvalid": "Nutze ein Standard-Emoji, kein eigenes.",
       "emojiNotFound": "Eines dieser Emotes stammt nicht mehr von diesem Server.",
       "needsEmoji": "Reaktions-Panels brauchen bei jeder Rolle ein Emoji.",
-      "duplicateEmoji": "Jede Rolle braucht ein anderes Emoji."
+      "duplicateEmoji": "Jede Rolle braucht ein anderes Emoji.",
+      "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten."
     },
     "picker": {
       "search": "Emoji suchen",

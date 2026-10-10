@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAllowedImageUrl, MAX_IMAGE_URL } from "./announcement";
 
 // What a role panel may contain. One definition for the dashboard (form and Server
 // Action); the bot re-checks everything before it posts. Pure and free of Node APIs.
@@ -60,6 +61,8 @@ export const rolePanelInput = z
     title: z.string().trim().max(MAX_PANEL_TITLE),
     description: z.string().trim().max(MAX_PANEL_DESCRIPTION),
     color: z.number().int().min(0).max(0xffffff),
+    /** "" = no picture. https only. */
+    imageUrl: z.string().max(MAX_IMAGE_URL),
     style: z.enum(PANEL_STYLES),
     exclusive: z.boolean(),
     roles: z.array(panelRoleInput).min(1).max(MAX_PANEL_ROLES),
@@ -67,6 +70,7 @@ export const rolePanelInput = z
     publish: z.boolean(),
   })
   .superRefine((v, ctx) => {
+    if (!isAllowedImageUrl(v.imageUrl.trim())) ctx.addIssue({ code: "custom", path: ["imageUrl"], message: "image" });
     if (v.title === "" && v.description === "") ctx.addIssue({ code: "custom", path: ["title"], message: "empty" });
     if (v.style === "reactions") {
       // A reaction is the control, so every role needs its own emoji, and at most 20 fit on a message.

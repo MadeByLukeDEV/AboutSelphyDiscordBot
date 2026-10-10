@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
 import { parseEmoji } from "@aboutselphy/shared/role-panel";
 import { truncate } from "../../lib/escape";
 
@@ -12,6 +13,7 @@ export type PanelView = {
   title: string;
   description: string;
   color: number;
+  imageUrl: string;
   style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: Array<{ roleId: string; label: string; emoji: string; description: string }>;
@@ -55,6 +57,8 @@ export function emojiMatches(stored: string, reaction: { id: string | null; name
 export function buildPanelMessage(panel: PanelView) {
   const embed = new EmbedBuilder().setColor(panel.color);
   if (panel.title) embed.setTitle(truncate(panel.title, 256));
+  // Re-checked here: the row is trusted, but a bad address must never reach Discord.
+  if (panel.imageUrl && isAllowedImageUrl(panel.imageUrl)) embed.setImage(panel.imageUrl);
   const reactions = panel.style === "reactions";
   const hint = reactions
     ? panel.exclusive
