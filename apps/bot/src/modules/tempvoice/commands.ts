@@ -3,7 +3,7 @@ import type { Command } from "../../commands/types";
 import { escapeText } from "../../lib/escape";
 import { missingFor } from "./checks";
 import { getTempVoiceConfig, saveTempVoiceConfig } from "./config";
-import { findBlockedWord, sanitizeRoomName } from "./name";
+import { isBlocked, policyOf, sanitizeRoomName } from "./name";
 import { roomCount } from "./service";
 
 const NO_MENTIONS = { parse: [] as never[] };
@@ -79,8 +79,7 @@ const tempvoice: Command = {
           await reply("That name is empty once invisible characters are removed.");
           return;
         }
-        const blocked = findBlockedWord(template.replaceAll("{user}", ""), config.blockedWords);
-        if (blocked) {
+        if (isBlocked(template.replaceAll("{user}", ""), policyOf(config))) {
           await reply("That template contains a blocked word.");
           return;
         }
@@ -122,7 +121,7 @@ const tempvoice: Command = {
             `Name: \`${escapeText(config.nameTemplate)}\``,
             `Member limit: ${config.defaultUserLimit === 0 ? "none" : config.defaultUserLimit}`,
             `Video by default: ${config.allowVideoByDefault ? "on" : "off"} · Soundboard by default: ${config.allowSoundboardByDefault ? "on" : "off"}`,
-            `Blocked words: ${config.blockedWords.length}`,
+            `Blocked words: ${config.blockedWords.length} of your own, built-in list ${config.useDefaultBlocklist ? "on" : "off"}`,
             `Rooms open right now: ${roomCount()}`,
             missing.length ? `⚠ Missing permissions: ${missing.join(", ")}` : "Permissions: all good",
           ].join("\n"),

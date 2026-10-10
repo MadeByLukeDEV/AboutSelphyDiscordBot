@@ -2,9 +2,39 @@ import { OverwriteType, PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { Cooldown } from "../../lib/cooldown";
 import { KeyedMutex } from "../../lib/keyed-mutex";
-import { checkRename, findBlockedWord, renderRoomName, sanitizeRoomName } from "./name";
+import { checkRename, findBlockedWord, isBlocked, policyOf, renderRoomName, sanitizeRoomName } from "./name";
 import { initialOverwrites, missingBotPermissions } from "./permissions";
 import { planTransition } from "./transition";
+
+/** Only the admin's own words, built-in list off: keeps these tests about one thing at a time. */
+const custom = (words: string[] = []) => ({ words, useDefaultList: false });
+const withDefaults = (words: string[] = []) => ({ words, useDefaultList: true });
+
+describe("the block policy", () => {
+  it("applies the built-in list only when it is switched on", () => {
+    expect(isBlocked("what the fuck", withDefaults())).toBe(true);
+    expect(isBlocked("what the fuck", custom())).toBe(false);
+  });
+  it("applies the admin's own words whether or not the built-in list is on", () => {
+    expect(isBlocked("Secret Club", custom(["secret"]))).toBe(true);
+    expect(isBlocked("Secret Club", withDefaults(["secret"]))).toBe(true);
+  });
+  it("lets ordinary names through with the built-in list on", () => {
+    for (const name of ["Selphy's room", "Assassin's Creed night", "Movie night", "Class of 2026"]) {
+      expect(isBlocked(name, withDefaults()), name).toBe(false);
+    }
+  });
+  it("builds the policy from the saved settings, tolerating a null list", () => {
+    expect(policyOf({ blockedWords: ["a"], useDefaultBlocklist: true })).toEqual({ words: ["a"], useDefaultList: true });
+    expect(policyOf({ blockedWords: null, useDefaultBlocklist: false })).toEqual({ words: [], useDefaultList: false });
+  });
+  it("replaces a room name that would be blocked, and refuses a blocked rename", () => {
+    expect(renderRoomName("{user}'s room", "Fuck123", withDefaults())).toBe("Voice room");
+    expect(renderRoomName("{user}'s room", "Fuck123", custom())).toBe("Fuck123's room");
+    expect(checkRename("sh1t room", withDefaults())).toEqual({ ok: false, reason: "blocked" });
+    expect(checkRename("sh1t room", custom())).toEqual({ ok: true, name: "sh1t room" });
+  });
+});
 
 describe("sanitizeRoomName", () => {
   it("removes control and zero-width characters and collapses whitespace", () => {
@@ -39,27 +69,27 @@ describe("findBlockedWord", () => {
 
 describe("renderRoomName", () => {
   it("fills {user} in the template", () => {
-    expect(renderRoomName("{user}'s room", "Selphy", [])).toBe("Selphy's room");
-    expect(renderRoomName("Room of {user} ({user})", "A", [])).toBe("Room of A (A)");
+    expect(renderRoomName("{user}'s room", "Selphy", custom())).toBe("Selphy's room");
+    expect(renderRoomName("Room of {user} ({user})", "A", custom())).toBe("Room of A (A)");
   });
   it("falls back when the display name contains a blocked word", () => {
-    expect(renderRoomName("{user}'s room", "BadWord123", ["badword"])).toBe("Voice room");
+    expect(renderRoomName("{user}'s room", "BadWord123", custom(["badword"]))).toBe("Voice room");
   });
   it("falls back when nothing usable is left", () => {
-    expect(renderRoomName("{user}", "​", [])).toBe("Voice room");
+    expect(renderRoomName("{user}", "​", custom())).toBe("Voice room");
   });
   it("keeps a template without a placeholder as is", () => {
-    expect(renderRoomName("Hangout", "Selphy", [])).toBe("Hangout");
+    expect(renderRoomName("Hangout", "Selphy", custom())).toBe("Hangout");
   });
 });
 
 describe("checkRename", () => {
   it("accepts a clean name, sanitised", () => {
-    expect(checkRename("  Movie   night ", ["x"])).toEqual({ ok: true, name: "Movie night" });
+    expect(checkRename("  Movie   night ", custom(["x"]))).toEqual({ ok: true, name: "Movie night" });
   });
   it("refuses empty and blocked names with a reason", () => {
-    expect(checkRename("   ", [])).toEqual({ ok: false, reason: "empty" });
-    expect(checkRename("so BADWORD", ["badword"])).toEqual({ ok: false, reason: "blocked" });
+    expect(checkRename("   ", custom())).toEqual({ ok: false, reason: "empty" });
+    expect(checkRename("so BADWORD", custom(["badword"]))).toEqual({ ok: false, reason: "blocked" });
   });
 });
 

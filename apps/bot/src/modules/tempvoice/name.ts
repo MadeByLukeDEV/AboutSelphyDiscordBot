@@ -1,22 +1,24 @@
+import { findBlockedWord, findProfanity } from "@aboutselphy/shared";
+
+export { findBlockedWord };
+
 const MAX_NAME_LENGTH = 100;
 const FALLBACK_NAME = "Voice room";
 
-/** Lowercased, NFKC-normalised, with invisible characters removed, for matching. */
-export function normalizeForMatch(text: string): string {
-  return text
-    .normalize("NFKC")
-    .replace(/[\p{Cf}\p{Cc}]/gu, "")
-    .toLowerCase();
+/**
+ * What a room name may not contain: the admin's own words (literal text) and,
+ * unless switched off, the built-in list of common insults and slurs.
+ */
+export type BlockPolicy = { words: readonly string[]; useDefaultList: boolean };
+
+/** The policy from the saved settings. */
+export function policyOf(config: { blockedWords: string[] | null; useDefaultBlocklist: boolean }): BlockPolicy {
+  return { words: config.blockedWords ?? [], useDefaultList: config.useDefaultBlocklist };
 }
 
-/** The first blocked word the text contains (case-insensitive, ignoring zero-width tricks), or null. */
-export function findBlockedWord(text: string, blockedWords: readonly string[]): string | null {
-  const haystack = normalizeForMatch(text);
-  for (const word of blockedWords) {
-    const needle = normalizeForMatch(word).trim();
-    if (needle && haystack.includes(needle)) return word;
-  }
-  return null;
+/** True when the text hits the policy. Callers say "that isn't allowed", never which word matched. */
+export function isBlocked(text: string, policy: BlockPolicy): boolean {
+  return findBlockedWord(text, policy.words) !== null || (policy.useDefaultList && findProfanity(text) !== null);
 }
 
 /**
@@ -35,22 +37,22 @@ export function sanitizeRoomName(input: string): string {
 
 /**
  * The name of a new room: the template with {user} replaced by the owner's
- * display name. If the result contains a blocked word (a display name can!),
- * or comes out empty, the neutral fallback is used instead, so a room can always
- * be created and never shows a blocked word.
+ * display name. If the result is blocked (a display name can be!) or comes out
+ * empty, the neutral fallback is used instead, so a room can always be created
+ * and never shows a blocked word.
  */
-export function renderRoomName(template: string, displayName: string, blockedWords: readonly string[]): string {
+export function renderRoomName(template: string, displayName: string, policy: BlockPolicy): string {
   const name = sanitizeRoomName(template.replaceAll("{user}", sanitizeRoomName(displayName)));
-  if (!name || findBlockedWord(name, blockedWords)) return FALLBACK_NAME;
+  if (!name || isBlocked(name, policy)) return FALLBACK_NAME;
   return name;
 }
 
 /** Result of a rename request by a member. */
 export type RenameCheck = { ok: true; name: string } | { ok: false; reason: "empty" | "blocked" };
 
-export function checkRename(requested: string, blockedWords: readonly string[]): RenameCheck {
+export function checkRename(requested: string, policy: BlockPolicy): RenameCheck {
   const name = sanitizeRoomName(requested);
   if (!name) return { ok: false, reason: "empty" };
-  if (findBlockedWord(name, blockedWords)) return { ok: false, reason: "blocked" };
+  if (isBlocked(name, policy)) return { ok: false, reason: "blocked" };
   return { ok: true, name };
 }

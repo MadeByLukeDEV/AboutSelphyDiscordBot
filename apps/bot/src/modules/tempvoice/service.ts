@@ -7,7 +7,7 @@ import { log } from "../../lib/log";
 import { getTempVoiceConfig } from "./config";
 import { loadRoom, postPanel } from "./controller";
 import { fetchVoiceChannel, humansIn } from "./discord-channels";
-import { renderRoomName } from "./name";
+import { policyOf, renderRoomName } from "./name";
 import { initialOverwrites } from "./permissions";
 import * as repo from "./repository";
 import { planTransition } from "./transition";
@@ -98,7 +98,7 @@ async function createRoomFor(member: GuildMember, config: TempVoiceConfig): Prom
   }
 
   const lobby = await fetchVoiceChannel(guild, config.lobbyChannelId);
-  const name = renderRoomName(config.nameTemplate, member.displayName, config.blockedWords);
+  const name = renderRoomName(config.nameTemplate, member.displayName, policyOf(config));
 
   const channel = await guild.channels.create({
     name,

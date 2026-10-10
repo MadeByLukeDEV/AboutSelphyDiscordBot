@@ -14,7 +14,7 @@ import { staffLevel } from "../../lib/permissions";
 import { SlidingWindowLimiter } from "../../lib/sliding-window";
 import { getTempVoiceConfig } from "./config";
 import { fetchVoiceChannel } from "./discord-channels";
-import { checkRename } from "./name";
+import { checkRename, policyOf } from "./name";
 import { buildPanel, panelId } from "./panel";
 import * as repo from "./repository";
 import {
@@ -136,7 +136,7 @@ export async function renameRoom(room: Room, actor: GuildMember, requested: stri
   if (denied) return denied;
 
   const config = await getTempVoiceConfig();
-  const check = checkRename(requested, config.blockedWords);
+  const check = checkRename(requested, policyOf(config));
   if (!check.ok) return no(check.reason === "empty" ? "That name is empty." : "That name isn't allowed here.");
   if (check.name === room.channel.name) return ok("The room already has that name.");
 

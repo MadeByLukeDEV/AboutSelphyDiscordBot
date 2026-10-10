@@ -12,6 +12,7 @@ export type ConfigUpdate = Partial<
     | "allowVideoByDefault"
     | "allowSoundboardByDefault"
     | "blockedWords"
+    | "useDefaultBlocklist"
   >
 >;
 
