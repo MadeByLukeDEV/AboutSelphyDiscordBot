@@ -16,7 +16,8 @@
         "announcements": "Ankündigungen",
         "youtube": "YouTube",
         "roles": "Rollen",
-        "welcome": "Willkommen"
+        "welcome": "Willkommen",
+        "logs": "Protokolle"
       }
     },
     "account": {
@@ -872,6 +873,46 @@
         "failed": "Das Bild konnte nicht gespeichert werden. Versuche es erneut.",
         "invalid": "Das ist nicht gültig."
       }
+    }
+  },
+  "Logs": {
+    "title": "Protokolle",
+    "intro": "Lege fest, wo der Bot meldet, was auf dem Server passiert. Jede Art hat einen eigenen Kanal und Schalter, mehrere können sich einen Kanal teilen. Moderationsaktionen haben ihr eigenes Protokoll in den Moderationseinstellungen.",
+    "noChannel": "Nicht gewählt",
+    "enabled": "Dieses Protokoll posten",
+    "channel": "Posten in",
+    "channelPlaceholder": "Kanal wählen",
+    "channelHelp": "Wohin dieses Protokoll gepostet wird. Nur das Team sollte es lesen können.",
+    "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar. Der gespeicherte Kanal bleibt erhalten.",
+    "categories": {
+      "members": {
+        "title": "Beitritte und Austritte",
+        "body": "Wer beigetreten ist (mit dem Alter des Kontos und einer Warnung bei ganz neuen Konten) und wer gegangen ist (mit seinen Rollen)."
+      },
+      "memberUpdates": {
+        "title": "Spitznamen und Rollen",
+        "body": "Wenn sich der Spitzname oder die Rollen eines Mitglieds ändern. Rollen, die direkt nach dem Beitritt automatisch vergeben werden, werden nicht protokolliert."
+      },
+      "voice": {
+        "title": "Sprachkanäle",
+        "body": "Wer einem Sprachkanal beitritt, ihn verlässt oder wechselt. Stummschalten und Kamera-Änderungen werden nicht protokolliert."
+      },
+      "server": {
+        "title": "Kanäle und Rollen",
+        "body": "Kanäle und Rollen, die erstellt, gelöscht oder umbenannt werden, sowie Änderungen an Rollenrechten oder -farben."
+      }
+    },
+    "save": "Speichern",
+    "saving": "Speichert…",
+    "saved": "Gespeichert",
+    "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Diese Einstellungen sind nicht gültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du ein Protokoll einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
 }

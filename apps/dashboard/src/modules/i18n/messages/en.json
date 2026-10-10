@@ -16,7 +16,8 @@
         "announcements": "Announcements",
         "youtube": "YouTube",
         "roles": "Roles",
-        "welcome": "Welcome"
+        "welcome": "Welcome",
+        "logs": "Logs"
       }
     },
     "account": {
@@ -872,6 +873,46 @@
         "failed": "Couldn't save the image. Try again.",
         "invalid": "That isn't valid."
       }
+    }
+  },
+  "Logs": {
+    "title": "Logs",
+    "intro": "Choose where the bot reports what happens in the server. Each kind has its own channel and switch, and several can share one channel. Moderation actions have their own log in Moderation settings.",
+    "noChannel": "Not chosen",
+    "enabled": "Post this log",
+    "channel": "Post in",
+    "channelPlaceholder": "Pick a channel",
+    "channelHelp": "Where this log is posted. Only staff should be able to read it.",
+    "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+    "categories": {
+      "members": {
+        "title": "Joins and leaves",
+        "body": "Who joined (with the age of their account, and a warning for brand-new accounts) and who left (with the roles they had)."
+      },
+      "memberUpdates": {
+        "title": "Nicknames and roles",
+        "body": "When a member's nickname or roles change. The roles given automatically right after a join are not logged."
+      },
+      "voice": {
+        "title": "Voice channels",
+        "body": "Who joins, leaves or moves between voice channels. Muting and camera changes are not logged."
+      },
+      "server": {
+        "title": "Channels and roles",
+        "body": "Channels and roles that are created, deleted or renamed, and role permission or colour changes."
+      }
+    },
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Those settings aren't valid.",
+      "needsChannel": "Pick a channel before switching a log on.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "failed": "Couldn't save the settings. Try again."
     }
   }
 }
