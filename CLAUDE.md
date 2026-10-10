@@ -737,6 +737,23 @@ Decided 2026-10-08:
     the bot.
   - [ ] Templates, several embeds or fields, recurring announcements, auto-publish
         in announcement channels
+- [~] Roles (2026-10-14, `feature_roles`, migration `20261014100000_role_panels`
+      applied; **not tried live yet**; part of the replacement roadmap, Tier A)
+  - **Create roles from the dashboard** (`/roles`, admins): the bot makes a cosmetic
+    role (`POST /internal/roles/create`: name, colour, hoist, mentionable, **never any
+    permission**); also available inside the panel dialog. Needs the bot's Manage Roles.
+  - **Role panels** (`modules/roles/`): a message with buttons (<= 25, five per row) or a
+    menu; "choose one" mode. Ids `rp:<panelId>[:<roleId>]`, parsed strictly. Safety
+    (`safety.ts`, pure, tested): a role is only handed out if it is not @everyone, not
+    managed, below the bot, and without Administrator/Manage*/Kick/Ban/Timeout/Mention
+    Everyone/View Audit Log/voice moderation. Checked when the dashboard lists roles
+    (`GuildRole.assignable`), on save, on posting, and **on every click** (a role that
+    gained power later is refused). A click must be on the panel's own current message.
+    `planToggle` (pure, tested) decides add/remove. Posted panels are edited on save and
+    deleted from Discord on removal.
+  - [ ] Auto-roles on join, welcome/goodbye messages, roles re-applied on rejoin: these
+        need the **GuildMembers** privileged intent. Add it behind a flag, the bot refuses
+        to log in if the intent isn't enabled in the Developer Portal.
 - [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
       `20261013180000_youtube` applied; the first poll against the real API ran and
       only remembered the current 10 videos; **no real announcement seen yet**)
