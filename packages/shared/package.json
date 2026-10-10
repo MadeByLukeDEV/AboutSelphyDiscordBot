@@ -29,6 +29,7 @@
     "./levels": "./src/levels.ts",
     "./tickets": "./src/tickets.ts",
     "./giveaways": "./src/giveaways.ts",
-    "./suggestions": "./src/suggestions.ts"
+    "./suggestions": "./src/suggestions.ts",
+    "./polls": "./src/polls.ts"
   }
 }

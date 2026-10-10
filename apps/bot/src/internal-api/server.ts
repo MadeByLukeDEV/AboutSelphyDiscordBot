@@ -4,6 +4,7 @@ import { prisma } from "@aboutselphy/db";
 import {
   announcementIdBody,
   giveawayActionBody,
+  pollActionBody,
   suggestionDecideBody,
   channelKind,
   refreshCaseBody,
@@ -20,6 +21,7 @@ import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
+import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
 import { decideSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
@@ -124,6 +126,16 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     const status = url.pathname.endsWith("/publish") ? await publishPanel(guild, body.data.id) : await deletePanelMessage(guild, body.data.id);
+    return json(res, 200, { status });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/polls/action") {
+    const body = pollActionBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const { id, action } = body.data;
+    const status = action === "start" ? await startPoll(guild, id) : action === "end" ? await endPoll(guild, id) : await deletePollMessage(guild, id);
     return json(res, 200, { status });
   }
 

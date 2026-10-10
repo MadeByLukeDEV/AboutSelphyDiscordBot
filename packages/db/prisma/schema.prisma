@@ -655,3 +655,44 @@ model SuggestionVote {
 
   @@id([suggestionId, userId])
 }
+
+// ---- polls ---------------------------------------------------------------------------
+// A question with 2 to 10 options and a button for each; members vote (one choice or several),
+// the results update live, and the poll ends at its time (restart-safe). Votes are anonymous.
+// CHECK constraints (digits-only IDs, option count) are added by hand.
+
+enum PollStatus {
+  draft
+  active
+  ended
+}
+
+model Poll {
+  id            String     @id @default(cuid())
+  status        PollStatus @default(draft)
+  channelId     String     @db.VarChar(20)
+  /// The posted message. Null until started.
+  messageId     String?    @db.VarChar(20)
+  question      String     @db.VarChar(300)
+  options       String[]
+  /// Members may pick several options.
+  multiple      Boolean    @default(false)
+  /// When the poll closes; null = until a team member ends it.
+  endsAt        DateTime?
+  createdById   String     @db.VarChar(64)
+  createdByName String     @db.VarChar(100)
+  createdAt     DateTime   @default(now())
+  endedAt       DateTime?
+  votes         PollVote[]
+
+  @@index([status, endsAt])
+}
+
+model PollVote {
+  pollId      String
+  poll        Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId      String @db.VarChar(20)
+  optionIndex Int
+
+  @@id([pollId, userId, optionIndex])
+}

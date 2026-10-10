@@ -1,6 +1,7 @@
 import { moderationCommands } from "../modules/moderation";
 import { tempVoiceCommands, voiceCommands } from "../modules/tempvoice";
 import { levelCommands } from "../modules/levels";
+import { pollCommands } from "../modules/polls";
 import { suggestionCommands } from "../modules/suggestions";
 import { ticketCommands } from "../modules/tickets";
 import { twitchCommands } from "../modules/twitch";
@@ -8,6 +9,6 @@ import type { Command } from "./types";
 import { ping } from "./ping";
 
 /** Each module contributes its own command list; add new modules here. */
-export const COMMANDS: Command[] = [ping, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands];
+export const COMMANDS: Command[] = [ping, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands, ...pollCommands];
 
 export const COMMANDS_BY_NAME = new Map(COMMANDS.map((c) => [c.data.name, c]));

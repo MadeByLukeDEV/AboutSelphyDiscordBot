@@ -11,6 +11,8 @@ export type {
   MemberXp,
   ModCase,
   ModConfig,
+  Poll,
+  PollVote,
   RolePanel,
   RolePanelRole,
   TempVoiceChannel,
@@ -31,4 +33,4 @@ export type {
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";
-export type { SuggestionStatus, GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";
+export type { PollStatus, SuggestionStatus, GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

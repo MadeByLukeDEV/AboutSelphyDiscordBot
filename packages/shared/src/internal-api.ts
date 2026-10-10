@@ -14,6 +14,7 @@ export const RELOADABLE_MODULES = [
   "tickets",
   "giveaways",
   "suggestions",
+  "polls",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
@@ -192,3 +193,8 @@ export const suggestionDecideBody = z.object({
 });
 export const suggestionDecideStatus = z.enum(["done", "not-found", "wrong-state", "failed"]);
 export type SuggestionDecideStatus = z.infer<typeof suggestionDecideStatus>;
+
+/** POST /internal/polls/action */
+export const pollActionBody = z.object({ id: z.string().min(1).max(64), action: z.enum(["start", "end", "delete"]) });
+export const pollActionStatus = z.enum(["done", "channel", "not-found", "wrong-state", "failed"]);
+export type PollActionStatus = z.infer<typeof pollActionStatus>;
