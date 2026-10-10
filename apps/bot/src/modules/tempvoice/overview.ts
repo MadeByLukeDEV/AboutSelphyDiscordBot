@@ -1,7 +1,7 @@
 import { ChannelType, type Guild } from "discord.js";
-import type { TempVoiceOverview, TempVoiceRoom } from "@aboutselphy/shared";
+import type { TempVoiceLobbyStatus, TempVoiceOverview, TempVoiceRoom } from "@aboutselphy/shared";
 import { missingFor } from "./checks";
-import { getTempVoiceConfig } from "./config";
+import { getLobbies } from "./config";
 import { stateFromChannel } from "./controller";
 import { humansIn } from "./discord-channels";
 import * as repo from "./repository";
@@ -16,6 +16,7 @@ export type RoomSnapshot = {
   ownerName: string | null;
   members: Array<{ id: string; name: string }>;
   state: RoomState;
+  lobbyChannelId: string | null;
   createdAt: Date;
 };
 
@@ -34,17 +35,18 @@ export function summarizeRoom(s: RoomSnapshot): TempVoiceRoom {
     soundboardAllowed: s.state.soundboardAllowed,
     allowedCount: s.state.allowedIds.length,
     blockedCount: s.state.blockedIds.length,
+    lobbyChannelId: s.lobbyChannelId,
     createdAt: s.createdAt.toISOString(),
   };
 }
 
 /**
- * What the dashboard's live view shows: every room we know of that still exists,
- * read from the gateway cache (no REST call per room, so it's cheap to poll),
- * plus what the bot is missing to run rooms.
+ * What the dashboard's live view shows: every lobby (with what the bot is missing
+ * for it) and every known room that still exists, read from the gateway cache (no
+ * REST call per room, so it's cheap to poll).
  */
 export async function getTempVoiceOverview(guild: Guild): Promise<TempVoiceOverview> {
-  const [rows, config] = await Promise.all([repo.listRooms(), getTempVoiceConfig()]);
+  const [rows, lobbies] = await Promise.all([repo.listRooms(), getLobbies()]);
   const me = guild.client.user.id;
 
   const rooms: TempVoiceRoom[] = [];
@@ -61,11 +63,23 @@ export async function getTempVoiceOverview(guild: Guild): Promise<TempVoiceOverv
         ownerName: owner?.displayName ?? null,
         members: [...humansIn(channel).values()].map((m) => ({ id: m.id, name: m.displayName })),
         state: stateFromChannel(channel, row.ownerId, me),
+        lobbyChannelId: row.lobbyChannelId,
         createdAt: row.createdAt,
       }),
     );
   }
 
-  const missingPermissions = config.lobbyChannelId ? await missingFor(guild, config.lobbyChannelId, config.categoryId) : [];
-  return { missingPermissions, rooms };
+  const lobbyStatus: TempVoiceLobbyStatus[] = [];
+  for (const lobby of lobbies) {
+    const channel = guild.channels.cache.get(lobby.channelId);
+    lobbyStatus.push({
+      channelId: lobby.channelId,
+      name: channel ? channel.name : null,
+      enabled: lobby.enabled,
+      openRooms: rooms.filter((r) => r.lobbyChannelId === lobby.channelId).length,
+      missingPermissions: await missingFor(guild, lobby.channelId, lobby.categoryId),
+    });
+  }
+
+  return { lobbies: lobbyStatus, rooms };
 }

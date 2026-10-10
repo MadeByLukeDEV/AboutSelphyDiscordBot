@@ -217,6 +217,7 @@ describe("summarizeRoom", () => {
     ownerId: OWNER,
     ownerName: "Selphy",
     state,
+    lobbyChannelId: "900000000000000001",
     createdAt: new Date("2026-10-10T20:00:00Z"),
   };
 

@@ -1,10 +1,10 @@
 import { ChannelType, type Guild, type GuildMember, type VoiceState } from "discord.js";
-import type { TempVoiceConfig } from "@aboutselphy/db";
+import type { TempVoiceConfig, TempVoiceLobby } from "@aboutselphy/db";
 import { Cooldown } from "../../lib/cooldown";
 import { env } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
-import { getTempVoiceConfig } from "./config";
+import { getLobbies, getTempVoiceConfig } from "./config";
 import { loadRoom, postPanel } from "./controller";
 import { fetchVoiceChannel, humansIn } from "./discord-channels";
 import { policyOf, renderRoomName } from "./name";
@@ -51,12 +51,12 @@ export async function onVoiceStateUpdate(oldState: VoiceState, newState: VoiceSt
   if (!member || member.user.bot) return;
 
   await ensureRoomsLoaded();
-  const config = await getTempVoiceConfig();
+  const [config, lobbies] = await Promise.all([getTempVoiceConfig(), getLobbies()]);
   const plan = planTransition({
     oldChannelId: oldState.channelId,
     newChannelId: newState.channelId,
     enabled: config.enabled,
-    lobbyChannelId: config.lobbyChannelId,
+    lobbyChannelIds: new Set(lobbies.filter((l) => l.enabled).map((l) => l.channelId)),
     isRoom,
   });
 
@@ -69,19 +69,21 @@ export async function onVoiceStateUpdate(oldState: VoiceState, newState: VoiceSt
       log.warn({ err, channel: id }, "could not post the owner-left notice");
     });
   }
-  if (plan.createRoom) {
-    await mutex.run(`user:${member.id}`, () => createRoomFor(member, config)).catch((err) => {
+  const lobby = plan.createFromLobby ? lobbies.find((l) => l.channelId === plan.createFromLobby) : undefined;
+  if (lobby) {
+    await mutex.run(`user:${member.id}`, () => createRoomFor(member, lobby, config)).catch((err) => {
       // Most often a missing permission or a full category: say which, not just "failed".
-      log.error({ err, member: member.id }, "could not create a temporary room (check the bot's Manage Channels and Move Members permissions, and that the category isn't full)");
+      log.error({ err, member: member.id, lobby: lobby.channelId }, "could not create a temporary room (check the bot's Manage Channels and Move Members permissions, and that the category isn't full)");
     });
   }
 }
 
-async function createRoomFor(member: GuildMember, config: TempVoiceConfig): Promise<void> {
+/** Makes a room from `lobby`, using that lobby's own category, name, limit and defaults. */
+async function createRoomFor(member: GuildMember, lobby: TempVoiceLobby, config: TempVoiceConfig): Promise<void> {
   const guild = member.guild;
-  if (!config.lobbyChannelId) return;
 
-  // One room per member: joining the lobby again takes them back to theirs.
+  // One room per member, whichever lobby they use: joining a lobby again takes
+  // them back to the room they already have.
   for (const row of await repo.findRoomsByOwner(member.id)) {
     const existing = await fetchVoiceChannel(guild, row.channelId);
     if (existing) {
@@ -97,25 +99,25 @@ async function createRoomFor(member: GuildMember, config: TempVoiceConfig): Prom
     return;
   }
 
-  const lobby = await fetchVoiceChannel(guild, config.lobbyChannelId);
-  const name = renderRoomName(config.nameTemplate, member.displayName, policyOf(config));
+  const lobbyChannel = await fetchVoiceChannel(guild, lobby.channelId);
+  const name = renderRoomName(lobby.nameTemplate, member.displayName, policyOf(config));
 
   const channel = await guild.channels.create({
     name,
     type: ChannelType.GuildVoice,
-    parent: config.categoryId ?? lobby?.parentId ?? null,
-    userLimit: config.defaultUserLimit,
+    parent: lobby.categoryId ?? lobbyChannel?.parentId ?? null,
+    userLimit: lobby.defaultUserLimit,
     permissionOverwrites: initialOverwrites({
       everyoneId: guild.id,
       ownerId: member.id,
-      allowVideo: config.allowVideoByDefault,
-      allowSoundboard: config.allowSoundboardByDefault,
+      allowVideo: lobby.allowVideoByDefault,
+      allowSoundboard: lobby.allowSoundboardByDefault,
     }),
     reason: `Temporary voice room for ${member.user.username}`,
   });
 
   try {
-    await repo.insertRoom(channel.id, member.id);
+    await repo.insertRoom(channel.id, member.id, lobby.channelId);
     rooms.add(channel.id);
   } catch (err) {
     // Never leave a channel behind that we can't find again.
@@ -135,27 +137,27 @@ async function createRoomFor(member: GuildMember, config: TempVoiceConfig): Prom
     return;
   }
   await postPanel({ channel, ownerId: member.id, panelMessageId: null });
-  log.info({ member: member.id, channel: channel.id, name }, "temporary room created");
+  log.info({ member: member.id, channel: channel.id, lobby: lobby.channelId, name }, "temporary room created");
 }
 
 /**
  * Deletes a room once no human is left in it (a bot that stays behind doesn't
- * keep it alive). Never touches a channel that isn't one of ours, and never the
- * configured lobby, even if a row somehow points at it.
+ * keep it alive). Never touches a channel that isn't one of ours, and never a
+ * configured lobby, even if a row somehow points at one.
  */
 async function deleteIfEmpty(guild: Guild, channelId: string): Promise<void> {
   if (!rooms.has(channelId)) return;
 
-  const config = await getTempVoiceConfig();
+  const lobbies = await getLobbies();
   const channel = await fetchVoiceChannel(guild, channelId);
   if (!channel) {
     await forget(channelId);
     log.info({ channel: channelId }, "temporary room was already gone, row removed");
     return;
   }
-  if (channelId === config.lobbyChannelId) {
+  if (lobbies.some((l) => l.channelId === channelId)) {
     await forget(channelId);
-    log.warn({ channel: channelId }, "a room row pointed at the lobby: row removed, channel kept");
+    log.warn({ channel: channelId }, "a room row pointed at a lobby: row removed, channel kept");
     return;
   }
 

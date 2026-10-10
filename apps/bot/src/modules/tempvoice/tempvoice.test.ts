@@ -94,28 +94,37 @@ describe("checkRename", () => {
 });
 
 describe("planTransition", () => {
-  const base = { enabled: true, lobbyChannelId: "L", isRoom: (id: string) => id === "R1" || id === "R2" };
+  const base = { enabled: true, lobbyChannelIds: new Set(["L", "L2"]), isRoom: (id: string) => id === "R1" || id === "R2" };
+  const none = { createFromLobby: null, checkEmpty: null };
 
-  it("creates a room when someone joins the lobby", () => {
-    expect(planTransition({ ...base, oldChannelId: null, newChannelId: "L" })).toEqual({ createRoom: true, checkEmpty: null });
+  it("creates a room when someone joins a lobby, from the lobby they joined", () => {
+    expect(planTransition({ ...base, oldChannelId: null, newChannelId: "L" })).toEqual({ createFromLobby: "L", checkEmpty: null });
+    expect(planTransition({ ...base, oldChannelId: null, newChannelId: "L2" })).toEqual({ createFromLobby: "L2", checkEmpty: null });
   });
-  it("creates a room and checks the old one when moving from a room to the lobby", () => {
-    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "L" })).toEqual({ createRoom: true, checkEmpty: "R1" });
+  it("creates a room and checks the old one when moving from a room to a lobby", () => {
+    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "L2" })).toEqual({ createFromLobby: "L2", checkEmpty: "R1" });
   });
   it("checks a room for emptiness when someone leaves or disconnects", () => {
-    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: null })).toEqual({ createRoom: false, checkEmpty: "R1" });
-    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "R2" })).toEqual({ createRoom: false, checkEmpty: "R1" });
+    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: null })).toEqual({ createFromLobby: null, checkEmpty: "R1" });
+    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "R2" })).toEqual({ createFromLobby: null, checkEmpty: "R1" });
   });
   it("ignores changes inside one channel (mute, deafen, camera)", () => {
-    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "R1" })).toEqual({ createRoom: false, checkEmpty: null });
-    expect(planTransition({ ...base, oldChannelId: "L", newChannelId: "L" })).toEqual({ createRoom: false, checkEmpty: null });
+    expect(planTransition({ ...base, oldChannelId: "R1", newChannelId: "R1" })).toEqual(none);
+    expect(planTransition({ ...base, oldChannelId: "L", newChannelId: "L" })).toEqual(none);
   });
   it("ignores channels that aren't ours", () => {
-    expect(planTransition({ ...base, oldChannelId: "other", newChannelId: "elsewhere" })).toEqual({ createRoom: false, checkEmpty: null });
+    expect(planTransition({ ...base, oldChannelId: "other", newChannelId: "elsewhere" })).toEqual(none);
   });
-  it("creates nothing while disabled or without a lobby, but still cleans up rooms", () => {
-    expect(planTransition({ ...base, enabled: false, oldChannelId: "R1", newChannelId: "L" })).toEqual({ createRoom: false, checkEmpty: "R1" });
-    expect(planTransition({ ...base, lobbyChannelId: null, oldChannelId: null, newChannelId: "L" })).toEqual({ createRoom: false, checkEmpty: null });
+  it("creates nothing while the master switch is off, but still cleans up rooms", () => {
+    expect(planTransition({ ...base, enabled: false, oldChannelId: "R1", newChannelId: "L" })).toEqual({ createFromLobby: null, checkEmpty: "R1" });
+  });
+  it("creates nothing without lobbies, or from a channel that isn't a (switched-on) lobby", () => {
+    expect(planTransition({ ...base, lobbyChannelIds: new Set(), oldChannelId: null, newChannelId: "L" })).toEqual(none);
+    // A paused lobby is simply absent from the set the caller passes in.
+    expect(planTransition({ ...base, lobbyChannelIds: new Set(["L"]), oldChannelId: null, newChannelId: "L2" })).toEqual(none);
+  });
+  it("a room is never also a lobby: joining a room doesn't create one", () => {
+    expect(planTransition({ ...base, oldChannelId: null, newChannelId: "R1" })).toEqual(none);
   });
 });
 
