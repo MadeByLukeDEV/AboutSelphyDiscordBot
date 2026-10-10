@@ -54,14 +54,27 @@ export const tempVoiceRoom = z.object({
   soundboardAllowed: z.boolean(),
   allowedCount: z.number().int().min(0),
   blockedCount: z.number().int().min(0),
+  /** The lobby it was created from, if known (rooms from before lobbies were tracked have none). */
+  lobbyChannelId: z.string().nullable(),
   createdAt: z.string(),
 });
 export type TempVoiceRoom = z.infer<typeof tempVoiceRoom>;
 
+/** One configured lobby, with its live state. */
+export const tempVoiceLobbyStatus = z.object({
+  channelId: z.string().regex(/^\d{17,20}$/),
+  /** The channel's current name, or null if the channel no longer exists. */
+  name: z.string().nullable(),
+  enabled: z.boolean(),
+  openRooms: z.number().int().min(0),
+  /** Permissions the bot still needs where this lobby's rooms are created (empty = all good). */
+  missingPermissions: z.array(z.string()),
+});
+export type TempVoiceLobbyStatus = z.infer<typeof tempVoiceLobbyStatus>;
+
 /** GET /internal/tempvoice/overview */
 export const tempVoiceOverview = z.object({
-  /** Permissions the bot still needs where rooms are created (empty = all good). */
-  missingPermissions: z.array(z.string()),
+  lobbies: z.array(tempVoiceLobbyStatus),
   rooms: z.array(tempVoiceRoom),
 });
 export type TempVoiceOverview = z.infer<typeof tempVoiceOverview>;
