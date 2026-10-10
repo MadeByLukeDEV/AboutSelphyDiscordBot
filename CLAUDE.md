@@ -751,6 +751,17 @@ Decided 2026-10-08:
     gained power later is refused). A click must be on the panel's own current message.
     `planToggle` (pure, tested) decides add/remove. Posted panels are edited on save and
     deleted from Discord on removal.
+  - **Server emotes and reactions** (2026-10-14, `feature_role-emotes`, migration
+    `20261014180000_role_panel_emotes` applied): a role's emoji can be unicode or one of
+    the server's emotes stored as `<:name:id>` / `<a:name:id>` (`parseEmoji` in
+    `@aboutselphy/shared/role-panel`; checked to exist in the server on save and on posting;
+    a server emote matches a reaction by **id**, its name may change). Panel style
+    `reactions`: the bot adds one reaction per role (max 20, each with its own emoji) and a
+    legend in the message; reacting gives the role, removing the reaction takes it back,
+    "choose one" keeps a single reaction, foreign emoji are removed again. Uses the
+    `GuildMessageReactions` intent (not privileged) and partials (Message, Channel,
+    Reaction, User). The dashboard form has a "Server emotes" picker (images from Discord's
+    CDN, allowed by the CSP) next to the unicode text field.
   - [ ] Auto-roles on join, welcome/goodbye messages, roles re-applied on rejoin: these
         need the **GuildMembers** privileged intent. Add it behind a flag, the bot refuses
         to log in if the intent isn't enabled in the Developer Portal.
