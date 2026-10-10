@@ -280,3 +280,42 @@ model Announcement {
   @@index([status, scheduledFor])
   @@index([createdAt])
 }
+
+// ---- youtube (new video uploads) ------------------------------------------------
+// The bot polls the channel's uploads playlist and announces new public videos.
+// CHECK constraints (singleton id, digits-only Discord IDs, colour range) are
+// added to the migration by hand.
+
+/// Singleton (id = 1): settings and the poller's last result.
+model YoutubeConfig {
+  id              Int       @id @default(1)
+  enabled         Boolean   @default(false)
+  /// Discord channel the announcement goes to.
+  channelId       String?   @db.VarChar(20)
+  /// Role to ping, or null for no ping.
+  pingRoleId      String?   @db.VarChar(20)
+  /// Text above the embed; {title} {channel} {url} are replaced.
+  messageTemplate String    @default("New video: {title}") @db.VarChar(300)
+  /// Announce Shorts (videos of 3 minutes or less) too.
+  announceShorts  Boolean   @default(false)
+  embedColor      Int       @default(16711680)
+  /// When the poller last got an answer from YouTube, and a short code if it failed.
+  lastCheckedAt   DateTime?
+  lastError       String    @default("") @db.VarChar(40)
+  updatedAt       DateTime  @updatedAt
+}
+
+/// Every upload the bot has seen. Unique on the video id, so a video is announced once.
+model YoutubeVideo {
+  id          String    @id @default(cuid())
+  videoId     String    @unique @db.VarChar(20)
+  title       String    @db.VarChar(300)
+  publishedAt DateTime
+  isShort     Boolean   @default(false)
+  /// Null = remembered silently (the first run, a Short we skip, or announcing is off).
+  messageId   String?   @db.VarChar(20)
+  announcedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([publishedAt])
+}

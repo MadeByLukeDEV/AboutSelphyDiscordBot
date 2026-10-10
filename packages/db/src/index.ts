@@ -12,5 +12,7 @@ export type {
   TwitchConnection,
   TwitchNotification,
   TwitchStreamer,
+  YoutubeConfig,
+  YoutubeVideo,
 } from "./generated/prisma/client";
 export type { AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

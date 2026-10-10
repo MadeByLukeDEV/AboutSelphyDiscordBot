@@ -6,6 +6,7 @@ import { startAnnouncements, stopAnnouncements } from "./modules/announcements";
 import { registerAuditLog, registerModerationJobs, stopModerationJobs } from "./modules/moderation";
 import { registerTempVoice } from "./modules/tempvoice";
 import { startTwitch, stopTwitch } from "./modules/twitch";
+import { startYoutube, stopYoutube } from "./modules/youtube";
 import { startInternalApi } from "./internal-api/server";
 import { env, integrationsActive } from "./lib/env";
 import { log } from "./lib/log";
@@ -32,6 +33,7 @@ async function main() {
   registerTempVoice(client);
   startTwitch(client);
   startAnnouncements(client);
+  startYoutube(client);
   await client.login(e.DISCORD_BOT_TOKEN);
 
   let stopping = false;
@@ -42,6 +44,7 @@ async function main() {
     api.close();
     stopTwitch();
     stopAnnouncements();
+    stopYoutube();
     stopModerationJobs();
     await client.destroy();
     await prisma.$disconnect();

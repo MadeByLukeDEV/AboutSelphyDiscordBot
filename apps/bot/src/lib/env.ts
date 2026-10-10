@@ -21,6 +21,9 @@ const bool = z
   .default("false")
   .transform((v) => v === "true");
 
+// An empty value in .env (KEY="") means "not set", not "invalid".
+const optional = <T extends z.ZodType>(type: T) => z.preprocess((v) => (v === "" ? undefined : v), type.optional());
+
 const schema = z.object({
   DISCORD_BOT_TOKEN: z.string().min(50),
   DISCORD_APP_ID: snowflake,
@@ -34,13 +37,14 @@ const schema = z.object({
   // Optional. Default: loopback locally, all interfaces when BOT_ENV=production.
   BOT_API_HOST: z.string().optional(),
   // Twitch (went live). All optional: without them the module stays off.
-  TWITCH_CLIENT_ID: z.string().min(1).optional(),
-  TWITCH_CLIENT_SECRET: z.string().min(1).optional(),
+  TWITCH_CLIENT_ID: optional(z.string().min(1)),
+  TWITCH_CLIENT_SECRET: optional(z.string().min(1)),
   // 32 bytes as 64 hex characters; decrypts the stored Twitch refresh token.
-  TOKEN_ENCRYPTION_KEY: z
-    .string()
-    .regex(/^[0-9a-fA-F]{64}$/)
-    .optional(),
+  TOKEN_ENCRYPTION_KEY: optional(z.string().regex(/^[0-9a-fA-F]{64}$/)),
+  // YouTube (new uploads). Optional: without them the module stays off.
+  YOUTUBE_API_KEY: optional(z.string().min(10)),
+  // The channel's ID (starts with UC), not its @handle.
+  YOUTUBE_CHANNEL_ID: optional(z.string().regex(/^UC[A-Za-z0-9_-]{22}$/)),
   BOT_ENV: z.enum(["local", "production"]).default("local"),
   BOT_INTEGRATIONS_IN_DEV: bool,
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
