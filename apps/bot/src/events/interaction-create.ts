@@ -2,8 +2,13 @@ import { Events, MessageFlags, type Client, type Interaction } from "discord.js"
 import { COMMANDS_BY_NAME } from "../commands";
 import { log } from "../lib/log";
 import { staffLevel } from "../lib/permissions";
+import { dispatchComponent } from "./components";
 
 async function handle(interaction: Interaction) {
+  if (interaction.isButton() || interaction.isAnySelectMenu() || interaction.isModalSubmit()) {
+    await dispatchComponent(interaction);
+    return;
+  }
   if (!interaction.isChatInputCommand()) return;
 
   const command = COMMANDS_BY_NAME.get(interaction.commandName);
