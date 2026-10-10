@@ -1,4 +1,4 @@
-import type { Client, GuildTextBasedChannel } from "discord.js";
+import { Events, type Client, type GuildTextBasedChannel } from "discord.js";
 import type { TwitchNotification, TwitchStreamer } from "@aboutselphy/db";
 import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
@@ -72,7 +72,7 @@ export function startTwitch(client: Client): void {
 
   // The dashboard changed streamers or switches: a new session resubscribes to exactly the current set.
   onReload("twitch", () => socket?.restart());
-  client.once("ready", () => socket?.start());
+  client.once(Events.ClientReady, () => socket?.start());
 }
 
 export function stopTwitch(): void {
