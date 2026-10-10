@@ -399,6 +399,12 @@ Decided 2026-10-08:
 - The bot exits if Discord can't be reached at startup (one 10 s connect
   timeout was enough). Production relies on the container restart policy; a
   login retry with backoff is a small TODO.
+- **After a Prisma schema change, restart the bot and the dashboard dev server.**
+  A running process keeps the client it loaded at start (`pnpm --filter
+  @aboutselphy/db generate` only rewrites files). Symptom: `Cannot read properties
+  of undefined (reading 'findUniqueOrThrow')` for a model that exists in the
+  schema, shown on the dashboard as the generic "Couldn't load this page". The
+  real error is in the dev server's log; the page deliberately never shows it.
 - **Never put backticks (or `$(...)`) in a shell string**, e.g. a `node -e "..."`
   that writes Markdown: the shell runs them as commands and silently eats the
   text between. Edit docs and code with the editor tool, not with shell one-liners.

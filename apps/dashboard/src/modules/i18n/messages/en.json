@@ -231,7 +231,7 @@
     "backToOverview": "Back to overview",
     "caseNotFound": "That case doesn't exist.",
     "loadFailedTitle": "Couldn't load this page",
-    "loadFailedBody": "The database didn't answer. Try again in a moment.",
+    "loadFailedBody": "Something went wrong while loading it. Try again in a moment. If it keeps happening, the dashboard's log has the details.",
     "retry": "Try again"
   }
 }

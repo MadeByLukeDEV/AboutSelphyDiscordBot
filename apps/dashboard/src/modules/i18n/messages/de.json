@@ -231,7 +231,7 @@
     "backToOverview": "Zurück zur Übersicht",
     "caseNotFound": "Diesen Fall gibt es nicht.",
     "loadFailedTitle": "Diese Seite konnte nicht geladen werden",
-    "loadFailedBody": "Die Datenbank hat nicht geantwortet. Versuche es gleich noch einmal.",
+    "loadFailedBody": "Beim Laden ist etwas schiefgelaufen. Versuche es gleich noch einmal. Wenn es weiter auftritt, stehen die Details im Log des Dashboards.",
     "retry": "Erneut versuchen"
   }
 }
