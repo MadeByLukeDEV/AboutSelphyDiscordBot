@@ -762,6 +762,12 @@ Decided 2026-10-08:
     `GuildMessageReactions` intent (not privileged) and partials (Message, Channel,
     Reaction, User). The dashboard form has a "Server emotes" picker (images from Discord's
     CDN, allowed by the CSP) next to the unicode text field.
+  - **Panel picture** (2026-10-14, `feature_panel-image`, migration
+    `20261014210000_role_panel_image`): `RolePanel.imageUrl`, https only (shared
+    `isAllowedImageUrl`, a DB CHECK, and re-checked by the bot), shown big under the text
+    like the example the user sent; the dashboard form has a full-message preview and
+    never loads the picture. Role mentions typed into a panel's text (`<@&id>`) render
+    as mentions without pinging (the message allows none).
   - **Emoji picker** (`emoji-picker.tsx`, branch `feature_emoji-picker`): search over the
     server's emotes and the standard emoji, categories as tabs. The standard list is the
     data-only package `unicode-emoji-json` (pinned 0.9.0), loaded with a dynamic import the
