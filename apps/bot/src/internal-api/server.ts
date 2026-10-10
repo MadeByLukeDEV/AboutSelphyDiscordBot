@@ -5,6 +5,7 @@ import {
   channelKind,
   refreshCaseBody,
   reloadModule as reloadModuleSchema,
+  twitchResolveBody,
   type BotHealth,
 } from "@aboutselphy/shared";
 import { getClient } from "../client";
@@ -12,8 +13,9 @@ import { env } from "../lib/env";
 import { log } from "../lib/log";
 import { refreshCaseLog } from "../modules/moderation";
 import { getTempVoiceOverview } from "../modules/tempvoice";
+import { lookupTwitchChannel } from "../modules/twitch";
 import { BodyError, readJsonBody } from "./body";
-import { listGuildChannels } from "./guild";
+import { listGuildChannels, listGuildRoles } from "./guild";
 import { resolveApiHost } from "./host";
 import { reloadModule } from "./reload";
 
@@ -82,6 +84,18 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { channels: await listGuildChannels(guild, kinds) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/guild/roles") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { roles: await listGuildRoles(guild) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/twitch/resolve") {
+    const body = twitchResolveBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    return json(res, 200, await lookupTwitchChannel(body.data.login));
   }
 
   if (req.method === "GET" && url.pathname === "/internal/tempvoice/overview") {

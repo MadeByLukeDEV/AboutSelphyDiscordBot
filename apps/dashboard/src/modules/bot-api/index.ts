@@ -1,1 +1,1 @@
-export { getTempVoiceOverview, listChannels, refreshCaseLog, reloadBotModule } from "./service";
+export { getTempVoiceOverview, listChannels, listRoles, refreshCaseLog, reloadBotModule, resolveTwitchChannel } from "./service";

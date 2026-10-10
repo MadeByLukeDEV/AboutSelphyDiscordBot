@@ -90,3 +90,28 @@ export const botHealth = z.object({
   version: z.string(),
 });
 export type BotHealth = z.infer<typeof botHealth>;
+
+/** A role of the server, for a "ping this role" picker. @everyone and managed (bot/integration) roles are left out. */
+export const guildRole = z.object({
+  id: z.string().regex(/^\d{17,20}$/),
+  name: z.string(),
+  /** 0 = no colour. */
+  color: z.number().int().min(0),
+});
+export type GuildRole = z.infer<typeof guildRole>;
+
+/** GET /internal/guild/roles */
+export const rolesResponse = z.object({ roles: z.array(guildRole) });
+
+/** POST /internal/twitch/resolve: look a Twitch channel up by its login name. */
+export const twitchResolveBody = z.object({ login: z.string().regex(/^[a-zA-Z0-9_]{3,25}$/) });
+export const twitchResolveResponse = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("found"),
+    channel: z.object({ id: z.string().regex(/^\d{1,32}$/), login: z.string(), displayName: z.string() }),
+  }),
+  z.object({ status: z.literal("notFound") }),
+  /** Twitch isn't connected or didn't answer. */
+  z.object({ status: z.literal("unavailable") }),
+]);
+export type TwitchResolveResponse = z.infer<typeof twitchResolveResponse>;

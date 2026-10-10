@@ -1,8 +1,8 @@
 "use server";
 
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import { twitchSettingsSchema, type SaveTwitchResult, type SimpleResult } from "./schema";
-import { disconnectTwitch, pauseStreamer, removeStreamer, saveTwitchSettings } from "./service";
+import { streamerSchema, twitchSettingsSchema, type SaveStreamerResult, type SaveTwitchResult, type SimpleResult } from "./schema";
+import { disconnectTwitch, pauseStreamer, removeStreamer, saveStreamer, saveTwitchSettings } from "./service";
 
 // Public POST endpoints like every Server Action: each one checks the session
 // and the role itself, validates its input, and returns codes (never error text).
@@ -24,6 +24,14 @@ export async function saveTwitchSettingsAction(input: unknown): Promise<SaveTwit
   const parsed = twitchSettingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   return saveTwitchSettings(parsed.data);
+}
+
+/** Admins only: add a channel (no id) or change one (with its id). */
+export async function saveStreamerAction(input: unknown): Promise<SaveStreamerResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = streamerSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return saveStreamer(parsed.data);
 }
 
 export async function removeStreamerAction(id: unknown): Promise<SimpleResult> {

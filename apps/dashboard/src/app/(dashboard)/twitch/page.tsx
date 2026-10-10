@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { listChannels } from "@/modules/bot-api";
+import { MAX_TWITCH_STREAMERS } from "@aboutselphy/shared";
+import { listChannels, listRoles } from "@/modules/bot-api";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getTwitchOverview, isConnectOutcome } from "@/modules/twitch";
 import { TwitchManager } from "@/modules/twitch/components/twitch-manager";
@@ -16,7 +17,7 @@ export default async function TwitchPage({ searchParams }: { searchParams: Promi
 
   const t = await getTranslations("Twitch");
   const { connect } = await searchParams;
-  const [overview, channels] = await Promise.all([getTwitchOverview(), listChannels(["text"])]);
+  const [overview, channels, roles] = await Promise.all([getTwitchOverview(), listChannels(["text"]), listRoles()]);
 
   return (
     <>
@@ -24,7 +25,7 @@ export default async function TwitchPage({ searchParams }: { searchParams: Promi
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <TwitchManager overview={overview} channels={channels} outcome={isConnectOutcome(connect) ? connect : null} />
+      <TwitchManager overview={overview} channels={channels} roles={roles} maxStreamers={MAX_TWITCH_STREAMERS} outcome={isConnectOutcome(connect) ? connect : null} />
     </>
   );
 }

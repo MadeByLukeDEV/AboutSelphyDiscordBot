@@ -1,6 +1,6 @@
 import { Events, type Client, type GuildTextBasedChannel } from "discord.js";
 import type { TwitchNotification, TwitchStreamer } from "@aboutselphy/db";
-import { MAX_TWITCH_STREAMERS } from "@aboutselphy/shared";
+import { MAX_TWITCH_STREAMERS, type TwitchResolveResponse } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
@@ -333,6 +333,17 @@ export async function resolveChannel(login: string): Promise<ResolvedChannel | u
   if (!credentials) throw new NoTwitchToken("notConfigured");
   const [found] = await getUsersByLogin(credentials, await getAccessToken(), [login.toLowerCase()]);
   return found && { id: found.id, login: found.login, displayName: found.displayName };
+}
+
+/** For the dashboard: the same lookup as /twitch add, as a result instead of an exception. */
+export async function lookupTwitchChannel(login: string): Promise<TwitchResolveResponse> {
+  try {
+    const found = await resolveChannel(login);
+    return found ? { status: "found", channel: { id: found.id, login: found.login, displayName: found.displayName } } : { status: "notFound" };
+  } catch (err) {
+    log.warn({ err: err instanceof TwitchError ? { code: err.code, status: err.status } : err }, "twitch: channel lookup failed");
+    return { status: "unavailable" };
+  }
 }
 
 export { NoTwitchToken, TwitchError };

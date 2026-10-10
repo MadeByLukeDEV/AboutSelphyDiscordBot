@@ -34,3 +34,25 @@ export async function deleteStreamer(id: string): Promise<number> {
 export async function setStreamerEnabled(id: string, enabled: boolean): Promise<number> {
   return (await prisma.twitchStreamer.updateMany({ where: { id }, data: { enabled } })).count;
 }
+
+export type StreamerData = { channelId: string; pingRoleId: string | null; messageTemplate: string; enabled: boolean };
+
+export function findStreamer(id: string): Promise<TwitchStreamer | null> {
+  return prisma.twitchStreamer.findUnique({ where: { id } });
+}
+
+export function findStreamerByTwitchId(twitchUserId: string): Promise<TwitchStreamer | null> {
+  return prisma.twitchStreamer.findUnique({ where: { twitchUserId } });
+}
+
+export function countStreamers(): Promise<number> {
+  return prisma.twitchStreamer.count();
+}
+
+export function createStreamer(who: { twitchUserId: string; login: string; displayName: string }, data: StreamerData): Promise<TwitchStreamer> {
+  return prisma.twitchStreamer.create({ data: { ...who, ...data } });
+}
+
+export function updateStreamer(id: string, data: StreamerData): Promise<TwitchStreamer> {
+  return prisma.twitchStreamer.update({ where: { id }, data });
+}

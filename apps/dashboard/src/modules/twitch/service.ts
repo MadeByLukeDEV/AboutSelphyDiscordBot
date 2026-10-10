@@ -1,22 +1,37 @@
 import "server-only";
 import { randomBytes, timingSafeEqual } from "node:crypto";
-import { TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy/shared";
+import { MAX_TWITCH_STREAMERS, TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy/shared";
 import { decryptToken, encryptToken } from "@aboutselphy/shared/token-cipher";
 import { env, siteUrl } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
-import { reloadBotModule } from "@/modules/bot-api";
+import { listChannels, listRoles, reloadBotModule, resolveTwitchChannel } from "@/modules/bot-api";
 import { buildAuthorizationUrl, exchangeCode, refreshAccessToken, revokeToken, TwitchOAuthError, validateToken } from "./oauth";
 import {
+  countStreamers,
+  createStreamer,
   deleteConnection,
   deleteStreamer,
+  findStreamer,
+  findStreamerByTwitchId,
   listStreamers,
   readConfig,
   readConnection,
   saveConnection,
   setStreamerEnabled,
   updateConfig,
+  updateStreamer,
 } from "./repository";
-import type { ConnectOutcome, SaveTwitchResult, SimpleResult, TwitchOverview, TwitchSettings } from "./schema";
+import type {
+  ConnectOutcome,
+  SaveStreamerResult,
+  SaveTwitchResult,
+  SimpleResult,
+  StreamerInput,
+  TwitchError,
+  TwitchOverview,
+  TwitchSettings,
+  TwitchStreamerView,
+} from "./schema";
 
 export const TWITCH_OAUTH_COOKIE = "tw_oauth";
 export const TWITCH_OAUTH_COOKIE_PATH = "/api/twitch";
@@ -92,6 +107,24 @@ export async function completeTwitchConnect(input: {
   }
 }
 
+const toView = (s: {
+  id: string;
+  login: string;
+  displayName: string;
+  channelId: string;
+  pingRoleId: string | null;
+  messageTemplate: string;
+  enabled: boolean;
+}): TwitchStreamerView => ({
+  id: s.id,
+  login: s.login,
+  displayName: s.displayName,
+  channelId: s.channelId,
+  pingRoleId: s.pingRoleId,
+  messageTemplate: s.messageTemplate,
+  enabled: s.enabled,
+});
+
 // -- page data ----------------------------------------------------------------------------------
 
 export async function getTwitchOverview(): Promise<TwitchOverview> {
@@ -107,14 +140,7 @@ export async function getTwitchOverview(): Promise<TwitchOverview> {
         }
       : null,
     settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline },
-    streamers: streamers.map((s) => ({
-      id: s.id,
-      login: s.login,
-      displayName: s.displayName,
-      channelId: s.channelId,
-      pingRoleId: s.pingRoleId,
-      enabled: s.enabled,
-    })),
+    streamers: streamers.map(toView),
   };
 }
 
@@ -129,6 +155,58 @@ export async function saveTwitchSettings(input: TwitchSettings): Promise<SaveTwi
   } catch (error) {
     console.error("[twitch] saving the settings failed", errorInfo(error));
     return { ok: false, error: "failed" };
+  }
+}
+
+const fail = (error: TwitchError) => ({ ok: false as const, error });
+const isUniqueViolation = (error: unknown) => (error as { code?: unknown } | null)?.code === "P2002";
+
+/**
+ * Adds a channel (no id) or changes one (with its id). Nothing from the request is
+ * trusted: a new channel is looked up on Twitch through the bot, and the Discord
+ * channel and role must exist in the server. If the bot can't answer, a change
+ * that needs the check is refused rather than believed.
+ */
+export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerResult> {
+  try {
+    const existing = input.id ? await findStreamer(input.id) : null;
+    if (input.id && !existing) return fail("notFound");
+
+    const roleId = input.pingRoleId || null;
+    const channelChanged = !existing || existing.channelId !== input.channelId;
+    const roleChanged = roleId !== null && roleId !== (existing?.pingRoleId ?? null);
+
+    if (channelChanged) {
+      const channels = await listChannels(["text"]);
+      if (!channels) return fail("botUnavailable");
+      if (!channels.some((c) => c.id === input.channelId && c.kind === "text")) return fail("channelNotFound");
+    }
+    if (roleChanged) {
+      const roles = await listRoles();
+      if (!roles) return fail("botUnavailable");
+      if (!roles.some((r) => r.id === roleId)) return fail("roleNotFound");
+    }
+
+    const data = { channelId: input.channelId, pingRoleId: roleId, messageTemplate: input.messageTemplate, enabled: input.enabled };
+
+    let saved;
+    if (existing) {
+      saved = await updateStreamer(existing.id, data);
+    } else {
+      if (!input.login) return fail("invalid");
+      if ((await countStreamers()) >= MAX_TWITCH_STREAMERS) return fail("tooManyStreamers");
+      const resolved = await resolveTwitchChannel(input.login.replace(/^@/, ""));
+      if (!resolved || resolved.status === "unavailable") return fail("botUnavailable");
+      if (resolved.status === "notFound") return fail("twitchNotFound");
+      const { id, login, displayName } = resolved.channel;
+      if (await findStreamerByTwitchId(id)) return fail("alreadyAdded");
+      saved = await createStreamer({ twitchUserId: id, login, displayName }, data);
+    }
+    return { ok: true, streamer: toView(saved), botNotified: await reloadBotModule("twitch") };
+  } catch (error) {
+    if (isUniqueViolation(error)) return fail("alreadyAdded");
+    console.error("[twitch] saving a channel failed", errorInfo(error));
+    return fail("failed");
   }
 }
 

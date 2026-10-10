@@ -15,6 +15,7 @@ export type TwitchStreamerView = {
   displayName: string;
   channelId: string;
   pingRoleId: string | null;
+  messageTemplate: string;
   enabled: boolean;
 };
 
@@ -26,7 +27,62 @@ export type TwitchOverview = {
   streamers: TwitchStreamerView[];
 };
 
-export type TwitchError = "forbidden" | "invalid" | "notConnected" | "notFound" | "failed";
+export const MAX_TEMPLATE_LENGTH = 300;
+export const DEFAULT_TEMPLATE = "{name} is live: {title}";
+
+/** The add/edit form. `id` is set when editing; `login` is only used when adding. */
+export const streamerSchema = z.object({
+  id: z.string().min(1).max(64).optional(),
+  login: z.string().trim().regex(/^@?[a-zA-Z0-9_]{3,25}$/).optional(),
+  channelId: z.string().regex(/^\d{17,20}$/),
+  /** "" = nobody is pinged. */
+  pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
+  enabled: z.boolean(),
+});
+export type StreamerInput = z.infer<typeof streamerSchema>;
+
+/** What the form validates before it sends anything (the server validates again). */
+export const streamerFormSchema = z.object({
+  login: z.string().trim().regex(/^@?[a-zA-Z0-9_]{3,25}$/),
+  channelId: z.string().regex(/^\d{17,20}$/),
+  pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
+  enabled: z.boolean(),
+});
+
+export type StreamerFormValues = {
+  login: string;
+  channelId: string;
+  pingRoleId: string;
+  messageTemplate: string;
+  enabled: boolean;
+};
+
+export const DEFAULT_STREAMER_FORM: StreamerFormValues = {
+  login: "",
+  channelId: "",
+  pingRoleId: "",
+  messageTemplate: DEFAULT_TEMPLATE,
+  enabled: true,
+};
+
+export type TwitchError =
+  | "forbidden"
+  | "invalid"
+  | "notConnected"
+  | "notFound"
+  | "botUnavailable"
+  | "twitchNotFound"
+  | "channelNotFound"
+  | "roleNotFound"
+  | "tooManyStreamers"
+  | "alreadyAdded"
+  | "failed";
+
+export type SaveStreamerResult =
+  | { ok: true; streamer: TwitchStreamerView; botNotified: boolean }
+  | { ok: false; error: TwitchError };
 
 export type SaveTwitchResult =
   | { ok: true; settings: TwitchSettings; botNotified: boolean }

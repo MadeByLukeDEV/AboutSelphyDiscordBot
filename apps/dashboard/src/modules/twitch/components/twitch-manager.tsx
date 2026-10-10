@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import type { GuildChannel } from "@aboutselphy/shared";
+import { Plus } from "lucide-react";
+import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { disconnectTwitchAction, removeStreamerAction, saveTwitchSettingsAction, setStreamerEnabledAction } from "../actions";
 import type { ConnectOutcome, TwitchOverview, TwitchStreamerView } from "../schema";
+import { StreamerForm } from "./streamer-form";
 
 type Confirm = { kind: "disconnect" } | { kind: "remove"; streamer: TwitchStreamerView } | null;
 
@@ -20,11 +22,15 @@ type Confirm = { kind: "disconnect" } | { kind: "remove"; streamer: TwitchStream
 export function TwitchManager({
   overview,
   channels,
+  roles,
+  maxStreamers,
   outcome,
 }: {
   overview: TwitchOverview;
   /** Text channels, for names. null = the bot couldn't be reached (IDs are shown). */
   channels: GuildChannel[] | null;
+  roles: GuildRole[] | null;
+  maxStreamers: number;
   /** What happened on the way back from Twitch's login, if the page was opened from there. */
   outcome: ConnectOutcome | null;
 }) {
@@ -34,7 +40,11 @@ export function TwitchManager({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<Confirm>(null);
+  const [editing, setEditing] = useState<{ streamer: TwitchStreamerView | null } | null>(null);
   const { connection, settings, streamers } = overview;
+
+  const roleName = (id: string) => roles?.find((r) => r.id === id)?.name ?? id;
+  const atLimit = streamers.length >= maxStreamers;
 
   const channelName = (id: string) => {
     const c = channels?.find((x) => x.id === id);
@@ -138,12 +148,23 @@ export function TwitchManager({
 
       {/* The channels */}
       <section aria-labelledby="twitch-streamers" className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id="twitch-streamers" className="text-fluid-lg font-bold">
-            {t("streamers.title")}
-          </h2>
-          <p className="max-w-prose text-sm text-muted-foreground">{t("streamers.intro")}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="twitch-streamers" className="text-fluid-lg font-bold">
+              {t("streamers.title")}
+            </h2>
+            <p className="max-w-prose text-sm text-muted-foreground">{t("streamers.intro")}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground tabular-nums">{t("streamers.count", { count: streamers.length, max: maxStreamers })}</span>
+            <Button size="sm" onClick={() => setEditing({ streamer: null })} disabled={atLimit || !connection}>
+              <Plus aria-hidden />
+              {t("streamers.add")}
+            </Button>
+          </div>
         </div>
+        {!connection && <p className="text-sm text-muted-foreground">{t("streamers.needsConnection")}</p>}
+        {atLimit && <p className="text-sm text-muted-foreground">{t("streamers.limitReached", { max: maxStreamers })}</p>}
         {streamers.length === 0 ? (
           <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
             <h3 className="font-semibold">{t("streamers.empty.title")}</h3>
@@ -162,10 +183,13 @@ export function TwitchManager({
                     </div>
                     <p className="truncate text-sm text-muted-foreground">
                       twitch.tv/{s.login} → {channelName(s.channelId)}
-                      {s.pingRoleId ? ` · ${t("streamers.pings")}` : ""}
+                      {s.pingRoleId ? ` · ${t("streamers.pings", { role: roleName(s.pingRoleId) })}` : ""}
                     </p>
                   </div>
                   <div className="ml-auto flex items-center gap-2">
+                    <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditing({ streamer: s })}>
+                      {t("streamers.edit")}
+                    </Button>
                     <Button variant="outline" size="sm" disabled={pending} onClick={() => run(() => setStreamerEnabledAction(s.id, !s.enabled), t("saved"))}>
                       {s.enabled ? t("streamers.pause") : t("streamers.resume")}
                     </Button>
@@ -178,8 +202,28 @@ export function TwitchManager({
             ))}
           </ul>
         )}
-        <p className="text-sm text-muted-foreground">{t("streamers.addHint")}</p>
       </section>
+
+      {/* Add / edit. Mounted only while open and keyed by channel, so it always starts from fresh values. */}
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>{editing?.streamer ? t("form.editTitle") : t("form.addTitle")}</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <StreamerForm
+              key={editing.streamer?.id ?? "new"}
+              streamer={editing.streamer}
+              channels={channels}
+              roles={roles}
+              onDone={() => {
+                setEditing(null);
+                router.refresh();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={confirm !== null} onOpenChange={(open) => !open && setConfirm(null)}>
         <DialogContent>

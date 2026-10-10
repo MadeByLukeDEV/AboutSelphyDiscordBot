@@ -336,15 +336,19 @@
       "intro": "Jeder Kanal postet in seinen eigenen Discord-Kanal und pingt optional eine Rolle.",
       "empty": {
         "title": "Noch keine Kanäle",
-        "body": "Füge den ersten in Discord mit /twitch add hinzu."
+        "body": "Mit Kanal hinzufügen kündigst du den ersten an."
       },
       "paused": "Pausiert",
-      "pings": "pingt eine Rolle",
+      "pings": "pingt {role}",
       "pause": "Pausieren",
       "resume": "Fortsetzen",
       "remove": "Entfernen",
       "removed": "Kanal entfernt",
-      "addHint": "Kanäle hinzufügen oder ändern geht in Discord mit /twitch add (Kanal, wohin posten, optional Rolle und Text)."
+      "count": "{count} von {max}",
+      "add": "Kanal hinzufügen",
+      "edit": "Bearbeiten",
+      "needsConnection": "Verbinde oben zuerst ein Twitch-Konto, bevor du Kanäle hinzufügst.",
+      "limitReached": "Mehr kann eine Twitch-Verbindung nicht verfolgen ({max}). Entferne einen Kanal, um einen anderen hinzuzufügen."
     },
     "confirm": {
       "cancel": "Abbrechen",
@@ -358,7 +362,37 @@
       "invalid": "Diese Anfrage war ungültig.",
       "notConnected": "Verbinde zuerst ein Twitch-Konto.",
       "notFound": "Dieser Kanal existiert nicht mehr. Lade die Seite neu.",
-      "failed": "Das wurde nicht gespeichert. Versuche es erneut."
+      "failed": "Das wurde nicht gespeichert. Versuche es erneut.",
+      "invalidLogin": "Das ist kein gültiger Twitch-Kanalname (3 bis 25 Buchstaben, Zahlen oder Unterstriche).",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "twitchNotFound": "Twitch kennt keinen Kanal mit diesem Namen.",
+      "channelNotFound": "Dieser Discord-Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Diese Rolle existiert nicht mehr.",
+      "tooManyStreamers": "Mehr Kanäle kann eine Twitch-Verbindung nicht verfolgen. Entferne zuerst einen.",
+      "alreadyAdded": "Dieser Kanal steht schon auf der Liste."
+    },
+    "form": {
+      "addTitle": "Kanal hinzufügen",
+      "editTitle": "Kanal bearbeiten",
+      "login": "Twitch-Kanalname",
+      "loginHelp": "Der Name in der Adresse des Kanals, zum Beispiel twitch.tv/NAME.",
+      "loginFixed": "Der Twitch-Kanal lässt sich nicht ändern. Entferne ihn und füge einen anderen hinzu.",
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Mehrere Personen können sich einen Discord-Kanal teilen.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar. Der aktuelle Kanal bleibt erhalten.",
+      "role": "Rolle pingen",
+      "noRole": "Niemanden",
+      "roleHelp": "Diese Rolle wird über der Ankündigung erwähnt. Sonst kann nichts jemanden pingen.",
+      "message": "Text über der Ankündigung",
+      "messageHelp": "Du kannst {name}, {title}, {game} und {url} verwenden.",
+      "enabled": "Diesen Kanal ankündigen",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "added": "Kanal hinzugefügt",
+      "saved": "Kanal gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
     }
   }
 }

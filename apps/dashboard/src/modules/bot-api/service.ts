@@ -2,12 +2,16 @@ import "server-only";
 import {
   channelsResponse,
   refreshCaseResponse,
+  rolesResponse,
   tempVoiceOverview,
+  twitchResolveResponse,
   type ChannelKind,
   type GuildChannel,
+  type GuildRole,
   type RefreshCaseStatus,
   type ReloadModule,
   type TempVoiceOverview,
+  type TwitchResolveResponse,
 } from "@aboutselphy/shared";
 import { env } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
@@ -67,4 +71,20 @@ export async function refreshCaseLog(caseNumber: number): Promise<RefreshCaseSta
   if (!res?.ok) return null;
   const parsed = refreshCaseResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data.status : null;
+}
+
+/** Roles of the server for a "ping this role" picker, or null if the bot can't be reached. */
+export async function listRoles(): Promise<GuildRole[] | null> {
+  const res = await botFetch("/internal/guild/roles");
+  if (!res?.ok) return null;
+  const parsed = rolesResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data.roles : null;
+}
+
+/** Looks a Twitch channel up by login through the bot (it holds the Twitch token). Null if the bot can't be reached. */
+export async function resolveTwitchChannel(login: string): Promise<TwitchResolveResponse | null> {
+  const res = await botFetch("/internal/twitch/resolve", { method: "POST", body: { login } });
+  if (!res?.ok) return null;
+  const parsed = twitchResolveResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
 }

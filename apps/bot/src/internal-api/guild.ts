@@ -1,5 +1,5 @@
 import { ChannelType, type Guild } from "discord.js";
-import type { ChannelKind, GuildChannel } from "@aboutselphy/shared";
+import type { ChannelKind, GuildChannel, GuildRole } from "@aboutselphy/shared";
 
 /** Our three kinds -> Discord channel types. Announcement channels count as text. */
 const KIND_OF: Partial<Record<ChannelType, ChannelKind>> = {
@@ -68,4 +68,14 @@ export async function listGuildChannels(guild: Guild, kinds: ReadonlySet<Channel
     [...fetched.values()].filter((c): c is NonNullable<typeof c> => c !== null),
     kinds,
   );
+}
+
+/** Roles someone could sensibly ping: not @everyone, not managed by a bot or integration. Highest first, like Discord's list. */
+export async function listGuildRoles(guild: Guild): Promise<GuildRole[]> {
+  const fetched = await guild.roles.fetch();
+  return [...fetched.values()]
+    .filter((r) => r.id !== guild.id && !r.managed)
+    .sort((a, b) => b.position - a.position)
+    .slice(0, 250)
+    .map((r) => ({ id: r.id, name: r.name, color: r.color }));
 }

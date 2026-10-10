@@ -336,15 +336,19 @@
       "intro": "Each channel posts into its own Discord channel, optionally pinging a role.",
       "empty": {
         "title": "No channels yet",
-        "body": "Add the first one in Discord with /twitch add."
+        "body": "Use Add channel to announce the first one."
       },
       "paused": "Paused",
-      "pings": "pings a role",
+      "pings": "pings {role}",
       "pause": "Pause",
       "resume": "Resume",
       "remove": "Remove",
       "removed": "Channel removed",
-      "addHint": "Add or change a channel in Discord with /twitch add (channel, where to post, optional role and message)."
+      "count": "{count} of {max}",
+      "add": "Add channel",
+      "edit": "Edit",
+      "needsConnection": "Connect a Twitch account above before adding channels.",
+      "limitReached": "That is the most one Twitch connection can follow ({max}). Remove a channel to add another."
     },
     "confirm": {
       "cancel": "Cancel",
@@ -358,7 +362,37 @@
       "invalid": "That request wasn't valid.",
       "notConnected": "Connect a Twitch account first.",
       "notFound": "That channel doesn't exist any more. Reload the page.",
-      "failed": "That didn't save. Try again."
+      "failed": "That didn't save. Try again.",
+      "invalidLogin": "That isn't a valid Twitch channel name (3 to 25 letters, numbers or underscores).",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "twitchNotFound": "Twitch has no channel with that name.",
+      "channelNotFound": "That Discord channel doesn't exist, or the bot can't see it.",
+      "roleNotFound": "That role doesn't exist any more.",
+      "tooManyStreamers": "That is the most channels one Twitch connection can follow. Remove one first.",
+      "alreadyAdded": "That channel is already on the list."
+    },
+    "form": {
+      "addTitle": "Add a channel",
+      "editTitle": "Edit channel",
+      "login": "Twitch channel name",
+      "loginHelp": "The name in the channel's address, for example twitch.tv/NAME.",
+      "loginFixed": "The Twitch channel can't be changed. Remove it and add another to switch.",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Several people can share one Discord channel.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The current channel is kept.",
+      "role": "Ping a role",
+      "noRole": "Nobody",
+      "roleHelp": "This role is mentioned above the announcement. Nothing else can ping anyone.",
+      "message": "Message above the announcement",
+      "messageHelp": "You can use {name}, {title}, {game} and {url}.",
+      "enabled": "Announce this channel",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "added": "Channel added",
+      "saved": "Channel saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
     }
   }
 }
