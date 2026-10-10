@@ -890,6 +890,18 @@ Decided 2026-10-08:
       automatic answer per channel every 5 s. Up to 50, optional channel limit. Dashboard
       `/auto-responders` (admins). Both modules start only with `DISCORD_MESSAGE_CONTENT=true` and in
       production or with `BOT_INTEGRATIONS_IN_DEV`.
+- [~] Modules page (2026-10-25, `feature_modules-page`, migration `20261025180000_module_flags`; **not tried
+      live yet**; Tier C)
+  - `ModuleFlag` rows (no row = on) switched on `/modules` (admins; saves at once). 19 features
+    (`@aboutselphy/shared/modules`: welcome, role panels, levels, birthdays, starboard, counting, giveaways,
+    polls, suggestions, tickets, logs, sticky, auto-publish, stat channels, custom commands, auto-responders,
+    reminders, info commands, temp voice). Enforced in the bot by `lib/modules.ts` `moduleOn(key)` (60 s cache
+    + reload; on a database error the last known state is kept, never "off"): `interaction-create` refuses
+    the feature's slash commands and autocomplete, `dispatchComponent` its buttons/menus/modals, and the
+    passive handlers (counting, auto-responders, sticky, auto-publish, starboard, XP, welcome, logs, role
+    reactions) and jobs (reminders, birthdays, stat channels) do nothing while it is off. Settings and data
+    stay; reminders stay queued. **Not switchable**: moderation, `/help`, `/ping`, Twitch, YouTube and
+    announcements (own switches). Polls/giveaways already running still end on time.
 - [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;
