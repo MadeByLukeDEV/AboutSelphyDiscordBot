@@ -14,6 +14,9 @@ export type CaseView = {
   durationSeconds: number | null;
   expiresAt: Date | null;
   active: boolean;
+  /** Set when a dashboard user pardoned the warning. */
+  pardonedAt?: Date | null;
+  pardonedByName?: string | null;
   createdAt: Date;
 };
 
@@ -63,6 +66,12 @@ export function buildCaseEmbed(c: CaseView): EmbedBuilder {
         ? `${formatDuration(c.durationSeconds)} (until <t:${unix(c.expiresAt)}:f>)`
         : formatDuration(c.durationSeconds),
       inline: true,
+    });
+  }
+  if (c.pardonedAt) {
+    embed.addFields({
+      name: "Pardoned",
+      value: `${c.pardonedByName ? `by ${escapeText(c.pardonedByName)} ` : ""}on <t:${unix(c.pardonedAt)}:f>`,
     });
   }
   if (c.source !== "command") {

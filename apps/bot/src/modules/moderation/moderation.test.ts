@@ -127,6 +127,19 @@ describe("buildCaseEmbed", () => {
     expect(warn.title).toContain("(pardoned)");
     expect(memberLine("system", null)).toBe("Automatic rule");
   });
+  it("shows who pardoned a warning, escaped", () => {
+    const json = buildCaseEmbed({
+      ...sample,
+      type: "warn",
+      active: false,
+      durationSeconds: null,
+      expiresAt: null,
+      pardonedAt: new Date("2026-10-10T08:00:00Z"),
+      pardonedByName: "Ad*min",
+    }).toJSON();
+    const pardoned = json.fields?.find((f) => f.name === "Pardoned");
+    expect(pardoned?.value).toBe("by Ad\\*min on <t:1791619200:f>");
+  });
   it("stays within Discord's field limits for a huge reason", () => {
     const json = buildCaseEmbed({ ...sample, reason: "x".repeat(5000) }).toJSON();
     for (const f of json.fields ?? []) expect(f.value.length).toBeLessThanOrEqual(1024);
