@@ -27,7 +27,9 @@
         "birthdays": "Birthdays",
         "reminders": "Reminders",
         "roleManager": "Role manager",
-        "statChannels": "Stat channels"
+        "statChannels": "Stat channels",
+        "sticky": "Sticky messages",
+        "autoPublish": "Auto-publish"
       }
     },
     "account": {
@@ -1704,6 +1706,86 @@
         "subtitleHelp": "",
         "previewAlt": "Sample reminder picture for a member called Selphy"
       }
+    }
+  },
+  "Sticky": {
+    "title": "Sticky messages",
+    "intro": "A message the bot keeps at the bottom of a channel. When people write, the bot waits a few seconds, deletes its old copy and posts it again, so it is always the last thing in the channel. The text can't ping anyone.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "add": "Add a sticky message",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Sticky message removed",
+    "on": "On",
+    "off": "Off",
+    "list": {
+      "title": "Sticky messages",
+      "count": "({count} of {max})"
+    },
+    "empty": {
+      "title": "No sticky messages yet",
+      "body": "Add one for a channel like #rules or #help."
+    },
+    "dialog": {
+      "newTitle": "Add a sticky message",
+      "editTitle": "Edit sticky message",
+      "intro": "The bot posts it within a moment of saving."
+    },
+    "form": {
+      "channel": "Channel",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Fixed once added. The bot needs to send messages and delete its own messages there.",
+      "content": "Text",
+      "contentHelp": "Discord markdown works (**bold**, lists, links). Shown in a box with a small pin note.",
+      "enabled": "Keep it at the bottom",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "alreadyAdded": "That channel already has a sticky message.",
+      "tooMany": "That's the maximum number of sticky messages.",
+      "notFound": "That sticky message doesn't exist any more. Reload the page.",
+      "failed": "That didn't work. Try again.",
+      "needsContent": "Write the text of the message (up to 1500 characters)."
+    }
+  },
+  "AutoPublish": {
+    "title": "Auto-publish",
+    "intro": "Messages in the announcement channels you pick here are published automatically to every server that follows them, so nobody has to press Publish. The bot needs Manage Messages in those channels. Discord allows 10 publishes per hour per channel.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "added": "Channel added",
+    "removed": "Channel removed",
+    "remove": "Remove",
+    "add": {
+      "title": "Add a channel",
+      "channel": "Announcement channel",
+      "placeholder": "Pick an announcement channel",
+      "help": "Only announcement channels are listed.",
+      "none": "There is no announcement channel left to add. Create one in Discord (channel type: Announcement).",
+      "button": "Add channel"
+    },
+    "list": {
+      "title": "Published automatically"
+    },
+    "empty": {
+      "title": "No channels yet",
+      "body": "Add an announcement channel above."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "That isn't valid.",
+      "botUnavailable": "Can't reach the bot, so the channel can't be checked. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't an announcement channel.",
+      "alreadyAdded": "That channel is already on the list.",
+      "notFound": "That channel isn't on the list any more. Reload the page.",
+      "failed": "That didn't work. Try again.",
+      "pick": "Pick a channel first."
     }
   }
 }

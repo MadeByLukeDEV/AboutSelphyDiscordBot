@@ -8,6 +8,7 @@ import {
   pollActionStatus,
   manageRolesResponse,
   roleDeleteResponse,
+  stickyClearStatus,
   roleMergeResponse,
   roleUpdateStatus,
   ticketPanelStatus,
@@ -176,6 +177,14 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   if (!res?.ok) return null;
   const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
+/** Takes a sticky message's current copy down. Null if the bot can't be reached. */
+export async function clearStickyViaBot(channelId: string): Promise<"done" | "failed" | null> {
+  const res = await botFetch("/internal/sticky/clear", { method: "POST", body: { channelId } });
+  if (!res?.ok) return null;
+  const parsed = stickyClearStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
 }
 
 /** A sample birthday or reminder card from the saved settings. Null if the bot can't be reached or can't draw it. */

@@ -27,7 +27,9 @@
         "birthdays": "Geburtstage",
         "reminders": "Erinnerungen",
         "roleManager": "Rollenverwaltung",
-        "statChannels": "Statistik-Kanäle"
+        "statChannels": "Statistik-Kanäle",
+        "sticky": "Angeheftete Nachrichten",
+        "autoPublish": "Automatisch veröffentlichen"
       }
     },
     "account": {
@@ -1704,6 +1706,86 @@
         "subtitleHelp": "",
         "previewAlt": "Beispiel-Erinnerungsbild für ein Mitglied namens Selphy"
       }
+    }
+  },
+  "Sticky": {
+    "title": "Angeheftete Nachrichten",
+    "intro": "Eine Nachricht, die der Bot am Ende eines Kanals hält. Sobald jemand schreibt, wartet der Bot ein paar Sekunden, löscht seine alte Kopie und postet sie erneut, damit sie immer das Letzte im Kanal ist. Der Text kann niemanden pingen.",
+    "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+    "add": "Nachricht anheften",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Angeheftete Nachricht entfernt",
+    "on": "An",
+    "off": "Aus",
+    "list": {
+      "title": "Angeheftete Nachrichten",
+      "count": "({count} von {max})"
+    },
+    "empty": {
+      "title": "Noch keine angehefteten Nachrichten",
+      "body": "Füge eine für einen Kanal wie #regeln oder #hilfe hinzu."
+    },
+    "dialog": {
+      "newTitle": "Nachricht anheften",
+      "editTitle": "Angeheftete Nachricht bearbeiten",
+      "intro": "Der Bot postet sie kurz nach dem Speichern."
+    },
+    "form": {
+      "channel": "Kanal",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Nach dem Hinzufügen fest. Der Bot braucht dort das Recht, Nachrichten zu senden und seine eigenen zu löschen.",
+      "content": "Text",
+      "contentHelp": "Discord-Markdown funktioniert (**fett**, Listen, Links). Wird in einer Box mit kleinem Pin-Hinweis angezeigt.",
+      "enabled": "Am Ende halten",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "alreadyAdded": "Dieser Kanal hat bereits eine angeheftete Nachricht.",
+      "tooMany": "Das ist die maximale Anzahl angehefteter Nachrichten.",
+      "notFound": "Diese angeheftete Nachricht gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsContent": "Schreibe den Text der Nachricht (bis zu 1500 Zeichen)."
+    }
+  },
+  "AutoPublish": {
+    "title": "Automatisch veröffentlichen",
+    "intro": "Nachrichten in den hier gewählten Ankündigungskanälen werden automatisch an alle Server veröffentlicht, die ihnen folgen, damit niemand auf Veröffentlichen drücken muss. Der Bot braucht dort Nachrichten verwalten. Discord erlaubt 10 Veröffentlichungen pro Stunde und Kanal.",
+    "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+    "added": "Kanal hinzugefügt",
+    "removed": "Kanal entfernt",
+    "remove": "Entfernen",
+    "add": {
+      "title": "Kanal hinzufügen",
+      "channel": "Ankündigungskanal",
+      "placeholder": "Ankündigungskanal wählen",
+      "help": "Es werden nur Ankündigungskanäle angezeigt.",
+      "none": "Es gibt keinen Ankündigungskanal mehr zum Hinzufügen. Erstelle einen in Discord (Kanaltyp: Ankündigung).",
+      "button": "Kanal hinzufügen"
+    },
+    "list": {
+      "title": "Automatisch veröffentlicht"
+    },
+    "empty": {
+      "title": "Noch keine Kanäle",
+      "body": "Füge oben einen Ankündigungskanal hinzu."
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Das ist nicht gültig.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher kann der Kanal nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Ankündigungskanal.",
+      "alreadyAdded": "Dieser Kanal steht bereits auf der Liste.",
+      "notFound": "Dieser Kanal steht nicht mehr auf der Liste. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "pick": "Wähle zuerst einen Kanal."
     }
   }
 }
