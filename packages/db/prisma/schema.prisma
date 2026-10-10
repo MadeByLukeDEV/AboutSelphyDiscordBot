@@ -784,3 +784,17 @@ model Reminder {
   @@index([deliveredAt, remindAt])
   @@index([userId, deliveredAt])
 }
+
+/// Stat channels: a voice channel whose name shows a live number ("Members: 123").
+model StatChannel {
+  id        String   @id @default(cuid())
+  channelId String   @unique @db.VarChar(20)
+  /// members | humans | bots | boosts | channels | roles | voice (CHECK in the migration).
+  kind      String   @db.VarChar(20)
+  /// Must contain {count}.
+  template  String   @db.VarChar(90)
+  /// The name the bot last set; the dashboard shows it.
+  lastName  String?  @db.VarChar(100)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

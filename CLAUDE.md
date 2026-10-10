@@ -879,6 +879,17 @@ Decided 2026-10-08:
     reload. Already posted role panels must be posted again. Long calls use their own timeout in
     `botFetch` (`timeoutMs`).
   - [ ] Reorder roles, copy permissions between roles.
+- [~] Stat channels (2026-10-22, `feature_stat-channels`, migration `20261022100000_stat_channels`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/statchannels/`): up to 10 voice channels whose name shows a live number
+    (`Members: {count}`): all members, people, bots, boosts, channels, roles, people in voice. A
+    round every 10 min (Discord allows 2 renames per channel per 10 min) and when the dashboard
+    changes the list; a channel is only renamed when its name differs. `renderStatName` (shared,
+    tested) strips control/invisible characters and caps at 100. Needs Manage Channels on the
+    channel; a deleted channel is forgotten. No "online" kind: that needs the privileged Presence
+    intent. Only runs in production or with `BOT_INTEGRATIONS_IN_DEV`.
+  - Dashboard `/stat-channels` (admins): add/edit/remove. Lock the channel for everyone (deny Connect)
+    yourself in Discord.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed

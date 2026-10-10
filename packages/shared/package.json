@@ -33,6 +33,7 @@
     "./polls": "./src/polls.ts",
     "./starboard": "./src/starboard.ts",
     "./birthdays": "./src/birthdays.ts",
-    "./reminders": "./src/reminders.ts"
+    "./reminders": "./src/reminders.ts",
+    "./stat-channels": "./src/stat-channels.ts"
   }
 }

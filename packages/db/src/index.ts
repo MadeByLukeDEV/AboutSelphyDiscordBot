@@ -13,6 +13,7 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  StatChannel,
   ReminderConfig,
   Reminder,
   BirthdayConfig,
