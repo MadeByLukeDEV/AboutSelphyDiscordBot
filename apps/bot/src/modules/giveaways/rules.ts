@@ -1,3 +1,4 @@
+import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { GIVEAWAY_COLOR } from "@aboutselphy/shared/giveaways";
 import { escapeText, truncate } from "../../lib/escape";
@@ -43,6 +44,8 @@ export type GiveawayView = {
   /** Only for an ended giveaway. */
   winners: string[];
   entryCount?: number;
+  /** Optional picture; only https addresses are ever shown. */
+  imageUrl?: string;
 };
 
 /** The giveaway post: staff-written prize and text are escaped (they can't ping or link), winners are real mentions. */
@@ -63,6 +66,7 @@ export function buildGiveawayMessage(g: GiveawayView) {
   }
   if (g.entryCount !== undefined) lines.push(`**Entries:** ${g.entryCount}`);
   embed.setDescription(lines.join("\n\n"));
+  if (g.imageUrl && isAllowedImageUrl(g.imageUrl)) embed.setImage(g.imageUrl);
 
   const button = new ButtonBuilder().setCustomId(enterControlId(g.id)).setLabel(g.ended ? "Ended" : "Enter").setEmoji("🎉").setStyle(ButtonStyle.Primary).setDisabled(g.ended);
   return {

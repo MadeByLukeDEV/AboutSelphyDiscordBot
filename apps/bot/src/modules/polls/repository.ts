@@ -3,7 +3,7 @@ import { prisma } from "@aboutselphy/db";
 
 export const find = (id: string) => prisma.poll.findUnique({ where: { id } });
 
-export function create(data: { channelId: string; question: string; options: string[]; multiple: boolean; endsAt: Date | null; createdById: string; createdByName: string }) {
+export function create(data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null; createdById: string; createdByName: string }) {
   return prisma.poll.create({ data: { ...data, createdByName: data.createdByName.slice(0, 100) } });
 }
 

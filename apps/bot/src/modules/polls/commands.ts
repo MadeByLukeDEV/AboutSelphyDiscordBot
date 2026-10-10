@@ -1,5 +1,6 @@
 import { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { parseDuration } from "@aboutselphy/shared/duration";
+import { isAllowedImageUrl, MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
 import { MAX_OPTION, MAX_OPTIONS, MAX_QUESTION, MIN_OPTIONS, parseOptions } from "@aboutselphy/shared/polls";
 import type { Command } from "../../commands/types";
 import { create } from "./repository";
@@ -18,6 +19,7 @@ const poll: Command = {
     .addStringOption((o) => o.setName("options").setDescription(`${MIN_OPTIONS} to ${MAX_OPTIONS} options separated by | (e.g. Pizza | Pasta | Salad)`).setRequired(true).setMaxLength(MAX_OPTIONS * (MAX_OPTION + 3)))
     .addStringOption((o) => o.setName("duration").setDescription("How long it runs, e.g. 1h or 2d (empty = until a team member ends it)").setMaxLength(12))
     .addBooleanOption((o) => o.setName("multiple").setDescription("Members may choose several options"))
+    .addStringOption((o) => o.setName("image").setDescription("A picture address starting with https:// (optional)").setMaxLength(MAX_IMAGE_URL))
     .toJSON(),
   requires: "moderator",
   async execute(i) {
@@ -34,10 +36,12 @@ const poll: Command = {
       if (seconds === null || seconds < 60 || seconds > MAX_DURATION_SECONDS) return void (await reply("The duration must be between 1 minute and 30 days, e.g. `1h` or `2d`."));
       endsAt = new Date(Date.now() + seconds * 1000);
     }
+    const image = (i.options.getString("image") ?? "").trim();
+    if (!isAllowedImageUrl(image)) return void (await reply("The picture address must start with https:// and contain no spaces."));
     if (!i.channel || i.channel.isDMBased()) return void (await reply("Use this in a server channel."));
 
     await i.deferReply({ flags: MessageFlags.Ephemeral });
-    const created = await create({ channelId: i.channelId, question: i.options.getString("question", true).trim(), options, multiple: i.options.getBoolean("multiple") ?? false, endsAt, createdById: i.user.id, createdByName: i.member.displayName });
+    const created = await create({ channelId: i.channelId, question: i.options.getString("question", true).trim(), options, multiple: i.options.getBoolean("multiple") ?? false, imageUrl: image, endsAt, createdById: i.user.id, createdByName: i.member.displayName });
     const status = await startPoll(i.guild, created.id);
     await i.editReply({ content: status === "done" ? "Poll started." : status === "channel" ? "I can't post in this channel." : "Couldn't start the poll. Try again.", allowedMentions: NO_MENTIONS });
   },

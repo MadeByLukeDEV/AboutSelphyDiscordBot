@@ -795,6 +795,7 @@ Decided 2026-10-08:
     (start/end/reroll/cancel). Runs only in production or with `BOT_INTEGRATIONS_IN_DEV`.
   - Dashboard `/giveaways` (all staff): list, create/edit drafts, start, end now, re-roll,
     cancel, remove. A giveaway that can't be posted stays a draft with the reason.
+  - **Picture**: giveaways have the same optional `imageUrl` (see Polls).
   - [ ] Weighted entries (e.g. extra for boosters), entry requirements beyond a role, recurring
         giveaways, a `/giveaway` slash command.
 - [~] Suggestions (2026-10-19, `feature_suggestions`, migration
@@ -821,6 +822,9 @@ Decided 2026-10-08:
   - Dashboard `/polls` (all staff): create (options one per line, channel, optional end,
     multiple choice), live results with bars, start a draft, end now, remove (not while running).
   - [ ] Editing a draft, a results chart over time, reminders before it ends.
+  - **Picture** (2026-10-22, `feature_giveaway-poll-images`, migration `20261022180000_giveaway_poll_images`):
+    `imageUrl` on polls and giveaways (https only, shared `isAllowedImageUrl`, a DB CHECK, re-checked by the
+    bot), shown big in the post; the dashboard forms and `/poll image:` take the address.
 - [~] Starboard (2026-10-20, `feature_starboard`, migration `20261020100000_starboard`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/starboard/`): one unicode emoji (default star) and a threshold of 1-25

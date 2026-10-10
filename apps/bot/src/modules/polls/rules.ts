@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
 import { escapeText, truncate } from "../../lib/escape";
 
 // The poll post, its vote buttons, and what a press means. Pure, so the rules are testable. The
@@ -54,6 +55,8 @@ export type PollView = {
   /** How many different members voted (not the number of votes: a multiple-choice voter counts once). */
   voters: number;
   createdByName: string;
+  /** Optional picture; only https addresses are ever shown. */
+  imageUrl?: string;
 };
 
 export function buildPollMessage(p: PollView) {
@@ -74,6 +77,8 @@ export function buildPollMessage(p: PollView) {
     .setTitle(`📊 ${truncate(escapeText(p.question), 250)}`)
     .setDescription(`${lines.join("\n\n")}\n\n${status}`)
     .setFooter({ text: `${p.voters} ${p.voters === 1 ? "voter" : "voters"} · by ${truncate(p.createdByName, 40)}` });
+
+  if (p.imageUrl && isAllowedImageUrl(p.imageUrl)) embed.setImage(p.imageUrl);
 
   const rows: ActionRowBuilder<ButtonBuilder>[] = [];
   for (let start = 0; start < p.options.length; start += 5) {

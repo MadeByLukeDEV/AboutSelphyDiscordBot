@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MAX_SCHEDULE_AHEAD_MS, MIN_SCHEDULE_AHEAD_MS } from "./announcement";
+import { isAllowedImageUrl, MAX_IMAGE_URL, MAX_SCHEDULE_AHEAD_MS, MIN_SCHEDULE_AHEAD_MS } from "./announcement";
 
 // What a giveaway may contain. One definition for the dashboard (form and Server Action); the
 // bot re-checks everything before it posts. Pure and free of Node APIs.
@@ -25,6 +25,8 @@ export const giveawayInput = z
     requiredRoleId: z.union([z.literal(""), snowflake]),
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
+    /** Optional picture, https only. "" = none. */
+    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image"),
     /** Post it right after saving (otherwise it stays a draft). */
     start: z.boolean(),
   })

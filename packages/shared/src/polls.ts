@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MAX_SCHEDULE_AHEAD_MS, MIN_SCHEDULE_AHEAD_MS } from "./announcement";
+import { isAllowedImageUrl, MAX_IMAGE_URL, MAX_SCHEDULE_AHEAD_MS, MIN_SCHEDULE_AHEAD_MS } from "./announcement";
 
 // What a poll may contain. One definition for the dashboard (form and Server Action), the /poll
 // command and the bot. Pure and free of Node APIs. Import it from "@aboutselphy/shared/polls".
@@ -31,6 +31,8 @@ export const pollInput = z
     question: z.string().trim().min(1).max(MAX_QUESTION),
     options: z.array(z.string().trim().min(1).max(MAX_OPTION)).min(MIN_OPTIONS).max(MAX_OPTIONS),
     multiple: z.boolean(),
+    /** Optional picture, https only. "" = none. */
+    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image"),
     /** ISO time the poll closes; "" = it runs until a team member ends it. */
     endsAt: z.string().max(40),
   })

@@ -17,7 +17,7 @@ const EDIT_DELAY_MS = 1500;
 
 async function view(p: Poll, ended: boolean) {
   const votes = await allVotes(p.id);
-  return { id: p.id, question: p.question, options: p.options, multiple: p.multiple, endsAt: p.endsAt, ended, counts: tally(p.options.length, votes), voters: new Set(votes.map((v) => v.userId)).size, createdByName: p.createdByName };
+  return { id: p.id, question: p.question, options: p.options, multiple: p.multiple, endsAt: p.endsAt, ended, counts: tally(p.options.length, votes), voters: new Set(votes.map((v) => v.userId)).size, createdByName: p.createdByName, imageUrl: p.imageUrl };
 }
 
 async function channelOf(guild: Guild, id: string): Promise<GuildTextBasedChannel | null> {

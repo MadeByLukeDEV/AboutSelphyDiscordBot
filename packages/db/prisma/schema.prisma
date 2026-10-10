@@ -592,6 +592,8 @@ model Giveaway {
   entries        GiveawayEntry[]
 
   @@index([status, endsAt])
+  /// Optional picture (https only), shown big in the post.
+  imageUrl String @default("") @db.VarChar(500)
 }
 
 model GiveawayEntry {
@@ -690,6 +692,8 @@ model Poll {
   votes         PollVote[]
 
   @@index([status, endsAt])
+  /// Optional picture (https only), shown big in the post.
+  imageUrl String @default("") @db.VarChar(500)
 }
 
 model PollVote {

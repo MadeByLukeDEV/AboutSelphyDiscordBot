@@ -19,6 +19,7 @@ const view = (g: Giveaway, extra: { ended: boolean; winners: string[]; entryCoun
   id: g.id,
   prize: g.prize,
   description: g.description,
+  imageUrl: g.imageUrl,
   winnerCount: g.winnerCount,
   endsAt: g.endsAt,
   hostName: g.hostName,

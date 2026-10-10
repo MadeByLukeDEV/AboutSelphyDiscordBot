@@ -67,6 +67,15 @@ describe("control ids", () => {
   });
 });
 
+describe("the picture", () => {
+  const base = { id: "cm1abc2def3ghi", question: "Q?", options: ["A", "B"], multiple: false, endsAt: null, ended: false, counts: [0, 0], voters: 0, createdByName: "x" };
+  it("shows an https picture and ignores anything else", () => {
+    expect(buildPollMessage({ ...base, imageUrl: "https://cdn.example.com/a.png" }).embeds[0]!.toJSON().image?.url).toBe("https://cdn.example.com/a.png");
+    for (const bad of ["http://x.example/a.png", "javascript:alert(1)", "https://a b.example/x"]) expect(buildPollMessage({ ...base, imageUrl: bad }).embeds[0]!.toJSON().image).toBeUndefined();
+    expect(buildPollMessage(base).embeds[0]!.toJSON().image).toBeUndefined();
+  });
+});
+
 describe("the message", () => {
   const view = (over: Partial<PollView> = {}): PollView => ({
     id: "cm1abc2def3ghi",
