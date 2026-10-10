@@ -15,7 +15,8 @@
         "twitch": "Twitch",
         "announcements": "Announcements",
         "youtube": "YouTube",
-        "roles": "Roles"
+        "roles": "Roles",
+        "welcome": "Welcome"
       }
     },
     "account": {
@@ -750,6 +751,84 @@
       "loading": "Loading emoji…",
       "loadFailed": "The emoji list couldn't be loaded. You can still type an emoji.",
       "none": "No emoji found."
+    }
+  },
+  "Welcome": {
+    "title": "Welcome",
+    "intro": "Greet new members, give them roles automatically, and say goodbye when they leave.",
+    "noChannel": "Not chosen",
+    "roles": {
+      "title": "Roles for new members",
+      "intro": "Given automatically the moment someone joins. Only roles without powerful permissions can be offered, and the bot checks again every time.",
+      "members": "Roles for new members (up to {max})",
+      "bots": "Roles for new bots (up to {max})",
+      "restore": "Give returning members their roles back",
+      "restoreHelp": "The bot remembers a member's roles for 90 days after they leave and gives back the ones it is allowed to hand out. Staff roles are never restored this way.",
+      "selected": "Selected roles",
+      "none": "No roles selected",
+      "remove": "Remove {name}",
+      "search": "Search roles",
+      "available": "Roles you can add",
+      "noMatch": "No matching role. Roles above the bot's own role aren't listed.",
+      "full": "That's the most you can add ({max}). Remove one to add another.",
+      "botOffline": "The bot is offline, so the role list isn't available."
+    },
+    "welcome": {
+      "title": "Welcome message",
+      "intro": "Posted in a channel when a member joins.",
+      "enabled": "Post a welcome message",
+      "channel": "Post in",
+      "message": "Message",
+      "messageHelp": "{count} of {max} characters. '{user}' mentions the new member, so they are pinged.",
+      "embed": "Show it in a box (embed)",
+      "embedHelp": "The new member is still mentioned above the box so they get pinged.",
+      "image": "Picture",
+      "imageHelp": "Optional. A link starting with https:// that is shown big in the box.",
+      "color": "Box colour",
+      "colorReset": "Brand green"
+    },
+    "dm": {
+      "title": "Direct message",
+      "intro": "A private message to the new member. If they have direct messages closed, nothing happens.",
+      "enabled": "Send a direct message",
+      "message": "Message",
+      "messageHelp": "Use '{server}' and '{username}' if you like."
+    },
+    "goodbye": {
+      "title": "Goodbye message",
+      "intro": "Posted in a channel when a member leaves. It never pings anyone.",
+      "enabled": "Post a goodbye message",
+      "channel": "Post in",
+      "message": "Message",
+      "messageHelp": "'{username}' is the name of the person who left."
+    },
+    "preview": {
+      "label": "Preview",
+      "botName": "AboutSelphy Bot",
+      "server": "Your server",
+      "picture": "Picture",
+      "note": "The picture isn't loaded here. Discord shows it when the message is posted."
+    },
+    "form": {
+      "insert": "Insert:",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the message is posted.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel before switching a message on.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "roleNotFound": "One of these roles doesn't exist any more.",
+      "roleNotAllowed": "One of these roles can't be handed out: it is above the bot's role, managed by an integration, or has powerful permissions.",
+      "imageInvalid": "The picture address must start with https:// and contain no spaces.",
+      "failed": "Couldn't save the settings. Try again."
     }
   }
 }

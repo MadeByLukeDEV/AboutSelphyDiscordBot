@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { welcomeSettingsSchema } from "@aboutselphy/shared/welcome";
 import { dmText, goodbyeMessage, renderWelcome, rolesOnJoin, rolesToSnapshot, welcomeMessage, type MemberFacts } from "./message";
 
 const who: MemberFacts = { id: "123456789012345678", username: "Cool **Guy** <@&999999999999999999>", serverName: "Selphy's [Server]", memberCount: 42 };
@@ -57,5 +58,50 @@ describe("roles", () => {
 
   it("gives auto and restored roles once, skipping what the member has", () => {
     expect(rolesOnJoin({ auto: ["a", "b"], restored: ["b", "c", "d"], already: new Set(["d"]) })).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("welcomeSettingsSchema", () => {
+  const base = {
+    autoRoleIds: [],
+    botAutoRoleIds: [],
+    restoreRoles: false,
+    welcomeEnabled: false,
+    welcomeChannelId: "",
+    welcomeTemplate: "Hi {user}",
+    welcomeAsEmbed: true,
+    welcomeColor: 0x00ffa8,
+    welcomeImageUrl: "",
+    dmEnabled: false,
+    dmTemplate: "Hi",
+    goodbyeEnabled: false,
+    goodbyeChannelId: "",
+    goodbyeTemplate: "Bye {username}",
+  };
+  const parse = (over: Record<string, unknown>) => welcomeSettingsSchema.safeParse({ ...base, ...over });
+  const role = (i: number) => `1000000000000000${String(i).padStart(2, "0")}`;
+
+  it("accepts the defaults", () => {
+    expect(parse({}).success).toBe(true);
+  });
+
+  it("needs a channel for a message that is switched on", () => {
+    expect(parse({ welcomeEnabled: true }).success).toBe(false);
+    expect(parse({ welcomeEnabled: true, welcomeChannelId: "123456789012345678" }).success).toBe(true);
+    expect(parse({ goodbyeEnabled: true }).success).toBe(false);
+  });
+
+  it("allows at most 5 different auto-roles per list", () => {
+    expect(parse({ autoRoleIds: [1, 2, 3, 4, 5].map(role) }).success).toBe(true);
+    expect(parse({ autoRoleIds: [1, 2, 3, 4, 5, 6].map(role) }).success).toBe(false);
+    expect(parse({ botAutoRoleIds: [role(1), role(1)] }).success).toBe(false);
+    expect(parse({ autoRoleIds: ["everyone"] }).success).toBe(false);
+  });
+
+  it("takes only a good https picture and a template of sensible size", () => {
+    expect(parse({ welcomeImageUrl: "https://cdn.example.com/w.png" }).success).toBe(true);
+    expect(parse({ welcomeImageUrl: "http://a.com/x.png" }).success).toBe(false);
+    expect(parse({ welcomeTemplate: "" }).success).toBe(false);
+    expect(parse({ welcomeTemplate: "x".repeat(1001) }).success).toBe(false);
   });
 });

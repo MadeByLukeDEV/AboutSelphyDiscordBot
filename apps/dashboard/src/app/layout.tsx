@@ -21,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const locale = await getLocale();
   // Add a namespace here whenever a client component uses useTranslations("X").
-  const messages = await clientMessages(["Shell", "ThemeToggle","LocaleSwitcher", "BotStatus", "Moderation", "TempVoice", "Twitch", "Youtube", "Announcements", "Roles", "Errors"]);
+  const messages = await clientMessages(["Shell", "ThemeToggle","LocaleSwitcher", "BotStatus", "Moderation", "TempVoice", "Twitch", "Youtube", "Announcements", "Roles", "Welcome", "Errors"]);
 
   return (
     <html lang={locale} className={fontSans.variable} suppressHydrationWarning>

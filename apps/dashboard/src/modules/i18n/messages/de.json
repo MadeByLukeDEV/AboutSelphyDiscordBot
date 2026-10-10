@@ -15,7 +15,8 @@
         "twitch": "Twitch",
         "announcements": "Ankündigungen",
         "youtube": "YouTube",
-        "roles": "Rollen"
+        "roles": "Rollen",
+        "welcome": "Willkommen"
       }
     },
     "account": {
@@ -750,6 +751,84 @@
       "loading": "Emoji werden geladen…",
       "loadFailed": "Die Emoji-Liste konnte nicht geladen werden. Du kannst trotzdem ein Emoji eintippen.",
       "none": "Kein Emoji gefunden."
+    }
+  },
+  "Welcome": {
+    "title": "Willkommen",
+    "intro": "Begrüße neue Mitglieder, gib ihnen automatisch Rollen und verabschiede sie, wenn sie gehen.",
+    "noChannel": "Nicht gewählt",
+    "roles": {
+      "title": "Rollen für neue Mitglieder",
+      "intro": "Werden automatisch vergeben, sobald jemand beitritt. Es können nur Rollen ohne mächtige Berechtigungen angeboten werden, und der Bot prüft jedes Mal erneut.",
+      "members": "Rollen für neue Mitglieder (bis zu {max})",
+      "bots": "Rollen für neue Bots (bis zu {max})",
+      "restore": "Zurückkehrenden Mitgliedern ihre Rollen zurückgeben",
+      "restoreHelp": "Der Bot merkt sich die Rollen eines Mitglieds 90 Tage nach dem Verlassen und gibt die zurück, die er vergeben darf. Team-Rollen werden so nie wiederhergestellt.",
+      "selected": "Ausgewählte Rollen",
+      "none": "Keine Rollen ausgewählt",
+      "remove": "{name} entfernen",
+      "search": "Rollen suchen",
+      "available": "Rollen, die du hinzufügen kannst",
+      "noMatch": "Keine passende Rolle. Rollen über der Rolle des Bots werden nicht angezeigt.",
+      "full": "Mehr kannst du nicht hinzufügen ({max}). Entferne eine, um eine andere hinzuzufügen.",
+      "botOffline": "Der Bot ist offline, deshalb ist die Rollenliste nicht verfügbar."
+    },
+    "welcome": {
+      "title": "Willkommensnachricht",
+      "intro": "Wird in einem Kanal gepostet, wenn ein Mitglied beitritt.",
+      "enabled": "Willkommensnachricht posten",
+      "channel": "Posten in",
+      "message": "Nachricht",
+      "messageHelp": "{count} von {max} Zeichen. '{user}' erwähnt das neue Mitglied, es wird also gepingt.",
+      "embed": "In einer Box anzeigen (Embed)",
+      "embedHelp": "Das neue Mitglied wird trotzdem über der Box erwähnt, damit es gepingt wird.",
+      "image": "Bild",
+      "imageHelp": "Optional. Ein Link, der mit https:// beginnt und groß in der Box angezeigt wird.",
+      "color": "Farbe der Box",
+      "colorReset": "Markengrün"
+    },
+    "dm": {
+      "title": "Direktnachricht",
+      "intro": "Eine private Nachricht an das neue Mitglied. Hat es Direktnachrichten geschlossen, passiert nichts.",
+      "enabled": "Direktnachricht senden",
+      "message": "Nachricht",
+      "messageHelp": "Nutze bei Bedarf '{server}' und '{username}'."
+    },
+    "goodbye": {
+      "title": "Abschiedsnachricht",
+      "intro": "Wird in einem Kanal gepostet, wenn ein Mitglied geht. Sie pingt nie jemanden.",
+      "enabled": "Abschiedsnachricht posten",
+      "channel": "Posten in",
+      "message": "Nachricht",
+      "messageHelp": "'{username}' ist der Name der Person, die gegangen ist."
+    },
+    "preview": {
+      "label": "Vorschau",
+      "botName": "AboutSelphy Bot",
+      "server": "Dein Server",
+      "picture": "Bild",
+      "note": "Das Bild wird hier nicht geladen. Discord zeigt es, wenn die Nachricht gepostet wird."
+    },
+    "form": {
+      "insert": "Einfügen:",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin die Nachricht gepostet wird.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar. Der gespeicherte Kanal bleibt erhalten.",
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du eine Nachricht einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
+      "roleNotAllowed": "Eine dieser Rollen kann nicht vergeben werden: Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
+      "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Megaphone, Mic, Tags, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Megaphone, Mic, Tags, HandHeart, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -17,6 +17,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   youtube: SquarePlay,
   announcements: Megaphone,
   roles: Tags,
+  welcome: HandHeart,
 };
 
 /** "/" matches only itself; every other item also matches its sub-pages ("/cases/12"). */
