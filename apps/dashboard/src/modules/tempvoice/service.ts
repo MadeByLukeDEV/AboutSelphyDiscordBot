@@ -1,73 +1,132 @@
 import "server-only";
-import type { TempVoiceConfig } from "@aboutselphy/db";
+import type { TempVoiceConfig, TempVoiceLobby } from "@aboutselphy/db";
+import { MAX_TEMP_VOICE_LOBBIES } from "@aboutselphy/shared";
 import { errorInfo } from "@/lib/log";
 import { getTempVoiceOverview, listChannels, reloadBotModule } from "@/modules/bot-api";
-import { readConfig, updateConfig } from "./repository";
-import { isTemplateBlocked, type SaveSettingsResult, type SettingsInput } from "./schema";
+import {
+  countLobbies,
+  createLobby,
+  deleteLobby,
+  findLobby,
+  findLobbyByChannel,
+  isRoomChannel,
+  listLobbies,
+  readConfig,
+  updateConfig,
+  updateLobby,
+  type LobbyData,
+} from "./repository";
+import {
+  isTemplateBlocked,
+  type DeleteLobbyResult,
+  type GlobalSettings,
+  type LobbyInput,
+  type LobbyView,
+  type SaveGlobalResult,
+  type SaveLobbyResult,
+  type SettingsError,
+} from "./schema";
 
-function toSettings(c: TempVoiceConfig): SettingsInput {
-  return {
-    enabled: c.enabled,
-    lobbyChannelId: c.lobbyChannelId ?? "",
-    categoryId: c.categoryId ?? "",
-    nameTemplate: c.nameTemplate,
-    defaultUserLimit: c.defaultUserLimit,
-    allowVideoByDefault: c.allowVideoByDefault,
-    allowSoundboardByDefault: c.allowSoundboardByDefault,
-    blockedWords: c.blockedWords ?? [],
-    useDefaultBlocklist: c.useDefaultBlocklist,
-  };
-}
+const toGlobal = (c: TempVoiceConfig): GlobalSettings => ({
+  enabled: c.enabled,
+  blockedWords: c.blockedWords ?? [],
+  useDefaultBlocklist: c.useDefaultBlocklist,
+});
 
-/** The saved settings plus the channels to pick from (null channels = the bot is unreachable). */
-export async function getSettings() {
-  const [config, channels] = await Promise.all([readConfig(), listChannels(["voice", "category"])]);
-  return { settings: toSettings(config), channels };
-}
+const toLobbyView = (l: TempVoiceLobby): LobbyView => ({
+  id: l.id,
+  channelId: l.channelId,
+  categoryId: l.categoryId ?? "",
+  nameTemplate: l.nameTemplate,
+  defaultUserLimit: l.defaultUserLimit,
+  allowVideoByDefault: l.allowVideoByDefault,
+  allowSoundboardByDefault: l.allowSoundboardByDefault,
+  enabled: l.enabled,
+});
 
 export { getTempVoiceOverview };
 
-export async function saveSettings(input: SettingsInput): Promise<SaveSettingsResult> {
-  // A template that is itself blocked would turn every new room into "Voice room".
-  if (isTemplateBlocked(input)) return { ok: false, error: "templateBlocked" };
+/** Everything the page needs. `channels` is null when the bot can't be reached. */
+export async function getSettings() {
+  const [config, lobbies, channels] = await Promise.all([readConfig(), listLobbies(), listChannels(["voice", "category"])]);
+  return { global: toGlobal(config), lobbies: lobbies.map(toLobbyView), channels };
+}
 
+const fail = (error: SettingsError) => ({ ok: false as const, error });
+
+/** Prisma's "unique constraint failed": two admins adding the same channel at once. */
+const isUniqueViolation = (error: unknown) => (error as { code?: unknown } | null)?.code === "P2002";
+
+export async function saveGlobal(input: GlobalSettings): Promise<SaveGlobalResult> {
   try {
-    const current = await readConfig();
-    const lobby = input.lobbyChannelId || null;
-    const category = input.categoryId || null;
-    const lobbyChanged = lobby !== null && lobby !== current.lobbyChannelId;
-    const categoryChanged = category !== null && category !== current.categoryId;
+    // Switching on with nothing to join would silently do nothing: say so instead.
+    if (input.enabled && (await countLobbies()) === 0) return fail("needsLobby");
 
-    // A channel ID in a crafted request must not be stored on trust: the lobby has
-    // to be a voice channel and the category a category that the bot can see. If
-    // the bot can't answer, a change of channel is refused rather than believed.
-    if (lobbyChanged || categoryChanged) {
-      const channels = await listChannels(["voice", "category"]);
-      if (!channels) return { ok: false, error: "botUnavailable" };
-      if (lobbyChanged && !channels.some((c) => c.id === lobby && c.kind === "voice")) {
-        return { ok: false, error: "lobbyNotFound" };
-      }
-      if (categoryChanged && !channels.some((c) => c.id === category && c.kind === "category")) {
-        return { ok: false, error: "categoryNotFound" };
-      }
+    const saved = await updateConfig(input);
+    // The bot caches this config (60 s TTL): tell it to drop the cache now.
+    return { ok: true, settings: toGlobal(saved), botNotified: await reloadBotModule("tempvoice") };
+  } catch (error) {
+    console.error("[tempvoice] saving the general settings failed", errorInfo(error));
+    return fail("failed");
+  }
+}
+
+/**
+ * Creates a lobby (no id) or updates one (with its id). A new lobby's channel
+ * must be a real voice channel the bot can see, and a category must be a real
+ * category: IDs in a crafted request are never stored on trust, and if the bot
+ * can't answer, a channel change is refused rather than believed.
+ */
+export async function saveLobby(input: LobbyInput): Promise<SaveLobbyResult> {
+  try {
+    const config = await readConfig();
+    if (isTemplateBlocked(input.nameTemplate, { blockedWords: config.blockedWords ?? [], useDefaultBlocklist: config.useDefaultBlocklist })) {
+      return fail("templateBlocked");
     }
 
-    const saved = await updateConfig({
-      enabled: input.enabled,
-      lobbyChannelId: lobby,
+    const existing = input.id ? await findLobby(input.id) : null;
+    if (input.id && !existing) return fail("notFound");
+    // The channel is what makes it this lobby; moving one means remove + add.
+    if (existing && existing.channelId !== input.channelId) return fail("invalid");
+
+    if (!existing) {
+      if ((await countLobbies()) >= MAX_TEMP_VOICE_LOBBIES) return fail("tooManyLobbies");
+      if ((await findLobbyByChannel(input.channelId)) || (await isRoomChannel(input.channelId))) return fail("alreadyALobby");
+    }
+
+    const category = input.categoryId || null;
+    const categoryChanged = category !== null && category !== (existing?.categoryId ?? null);
+    if (!existing || categoryChanged) {
+      const channels = await listChannels(["voice", "category"]);
+      if (!channels) return fail("botUnavailable");
+      if (!existing && !channels.some((c) => c.id === input.channelId && c.kind === "voice")) return fail("lobbyNotFound");
+      if (categoryChanged && !channels.some((c) => c.id === category && c.kind === "category")) return fail("categoryNotFound");
+    }
+
+    const data: LobbyData = {
       categoryId: category,
       nameTemplate: input.nameTemplate,
       defaultUserLimit: input.defaultUserLimit,
       allowVideoByDefault: input.allowVideoByDefault,
       allowSoundboardByDefault: input.allowSoundboardByDefault,
-      blockedWords: input.blockedWords,
-      useDefaultBlocklist: input.useDefaultBlocklist,
-    });
-    // The bot caches this config (60 s TTL): tell it to drop the cache now.
-    const botNotified = await reloadBotModule("tempvoice");
-    return { ok: true, settings: toSettings(saved), botNotified };
+      enabled: input.enabled,
+    };
+    const saved = existing ? await updateLobby(existing.id, data) : await createLobby(input.channelId, data);
+    return { ok: true, lobby: toLobbyView(saved), botNotified: await reloadBotModule("tempvoice") };
   } catch (error) {
-    console.error("[tempvoice] saving settings failed", errorInfo(error));
-    return { ok: false, error: "failed" };
+    if (isUniqueViolation(error)) return fail("alreadyALobby");
+    console.error("[tempvoice] saving a lobby failed", errorInfo(error));
+    return fail("failed");
+  }
+}
+
+/** Removes a lobby. Rooms already open stay until they are empty. */
+export async function removeLobby(id: string): Promise<DeleteLobbyResult> {
+  try {
+    if ((await deleteLobby(id)) === 0) return fail("notFound");
+    return { ok: true, botNotified: await reloadBotModule("tempvoice") };
+  } catch (error) {
+    console.error("[tempvoice] removing a lobby failed", errorInfo(error));
+    return fail("failed");
   }
 }

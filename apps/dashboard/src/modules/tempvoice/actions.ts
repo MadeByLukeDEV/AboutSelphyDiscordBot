@@ -1,24 +1,47 @@
 "use server";
 
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import { settingsSchema, type SaveSettingsResult } from "./schema";
-import { saveSettings } from "./service";
+import {
+  globalSettingsSchema,
+  lobbySchema,
+  type DeleteLobbyResult,
+  type SaveGlobalResult,
+  type SaveLobbyResult,
+} from "./schema";
+import { removeLobby, saveGlobal, saveLobby } from "./service";
 
-// A public POST endpoint like every Server Action: it checks the session and the
-// role itself, validates its input, and returns codes (never error text).
+// Public POST endpoints like every Server Action: each one checks the session
+// and the role itself, validates its input, and returns codes (never error text).
 
-/** Admins only: the lobby, where rooms go, the defaults and the blocked words. */
-export async function saveTempVoiceSettingsAction(input: unknown): Promise<SaveSettingsResult> {
+async function adminOnly(): Promise<boolean> {
   try {
     await requireAdmin();
+    return true;
   } catch (error) {
-    if (error instanceof AuthorizationError) return { ok: false, error: "forbidden" };
+    if (error instanceof AuthorizationError) return false;
     throw error;
   }
-  const parsed = settingsSchema.safeParse(input);
-  if (!parsed.success) {
-    const needsLobby = parsed.error.issues.some((i) => i.message === "needsLobby");
-    return { ok: false, error: needsLobby ? "needsLobby" : "invalid" };
-  }
-  return saveSettings(parsed.data);
+}
+
+/** Admins only: the master switch, the blocked words and the built-in list. */
+export async function saveGlobalSettingsAction(input: unknown): Promise<SaveGlobalResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = globalSettingsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return saveGlobal(parsed.data);
+}
+
+/** Admins only: add a lobby (no id) or change one (with its id). */
+export async function saveLobbyAction(input: unknown): Promise<SaveLobbyResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = lobbySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return saveLobby(parsed.data);
+}
+
+/** Admins only: remove a lobby. Open rooms are left alone. */
+export async function removeLobbyAction(id: unknown): Promise<DeleteLobbyResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  if (typeof id !== "string" || id.length === 0 || id.length > 64) return { ok: false, error: "invalid" };
+  return removeLobby(id);
 }

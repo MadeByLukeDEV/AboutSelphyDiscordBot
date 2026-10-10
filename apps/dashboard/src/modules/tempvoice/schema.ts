@@ -24,6 +24,40 @@ export function parseBlockedWords(text: string): string[] {
   return words;
 }
 
+// -- settings every lobby shares ------------------------------------------------------
+
+const globalBase = {
+  /** The master switch. */
+  enabled: z.boolean(),
+  /** Also refuse the built-in list of common insults and slurs (English and German). */
+  useDefaultBlocklist: z.boolean(),
+};
+
+/** What the server action accepts (the blocked words already split into a list). */
+export const globalSettingsSchema = z.object({
+  ...globalBase,
+  blockedWords: z
+    .array(z.string().trim().min(1).max(MAX_BLOCKED_WORD_LENGTH).refine(visible, "invisible characters"))
+    .max(MAX_BLOCKED_WORDS),
+});
+export type GlobalSettings = z.infer<typeof globalSettingsSchema>;
+
+/** What the form edits: the blocked words as one block of text. */
+export const globalFormSchema = z.object({ ...globalBase, blockedWordsText: z.string().max(3000) });
+export type GlobalFormValues = z.infer<typeof globalFormSchema>;
+
+export const globalToForm = ({ blockedWords, ...rest }: GlobalSettings): GlobalFormValues => ({
+  ...rest,
+  blockedWordsText: blockedWords.join("\n"),
+});
+
+export const globalFromForm = ({ blockedWordsText, ...rest }: GlobalFormValues): GlobalSettings => ({
+  ...rest,
+  blockedWords: parseBlockedWords(blockedWordsText),
+});
+
+// -- one lobby ----------------------------------------------------------------------------
+
 const channelOrNone = z.union([snowflake, z.literal("")]);
 
 const nameTemplate = z
@@ -33,10 +67,7 @@ const nameTemplate = z
   .max(100)
   .refine(visible, "invisible characters");
 
-const base = {
-  enabled: z.boolean(),
-  /** Empty = none. */
-  lobbyChannelId: channelOrNone,
+const lobbyFields = {
   /** Empty = next to the lobby. */
   categoryId: channelOrNone,
   nameTemplate,
@@ -44,49 +75,52 @@ const base = {
   defaultUserLimit: z.number().int().min(0).max(99),
   allowVideoByDefault: z.boolean(),
   allowSoundboardByDefault: z.boolean(),
-  /** Also refuse the built-in list of common insults and slurs (English and German). */
-  useDefaultBlocklist: z.boolean(),
+  /** Pause just this lobby. */
+  enabled: z.boolean(),
 };
 
-const needsLobby = (v: { enabled: boolean; lobbyChannelId: string }) => !v.enabled || v.lobbyChannelId !== "";
-const needsLobbyIssue = { message: "needsLobby", path: ["enabled"] };
+/**
+ * Create (no id) or update (with the lobby's id). The channel is fixed once a
+ * lobby exists: to move a lobby to another channel, remove it and add a new one.
+ */
+export const lobbySchema = z.object({
+  id: z.string().min(1).max(64).optional(),
+  channelId: snowflake,
+  ...lobbyFields,
+});
+export type LobbyInput = z.infer<typeof lobbySchema>;
 
-/** What the server action accepts (the blocked words already split into a list). */
-export const settingsSchema = z
-  .object({
-    ...base,
-    blockedWords: z
-      .array(z.string().trim().min(1).max(MAX_BLOCKED_WORD_LENGTH).refine(visible, "invisible characters"))
-      .max(MAX_BLOCKED_WORDS),
-  })
-  .refine(needsLobby, needsLobbyIssue);
-export type SettingsInput = z.infer<typeof settingsSchema>;
+/** The same fields as the form edits them (no id: the dialog knows which lobby it edits). */
+export const lobbyFormSchema = z.object({ channelId: channelOrNone, ...lobbyFields });
+export type LobbyFormValues = z.infer<typeof lobbyFormSchema>;
 
-/** What the form edits: the blocked words as one block of text. */
-export const settingsFormSchema = z
-  .object({ ...base, blockedWordsText: z.string().max(3000) })
-  .refine(needsLobby, needsLobbyIssue);
-export type SettingsFormValues = z.infer<typeof settingsFormSchema>;
+export const DEFAULT_LOBBY_FORM: LobbyFormValues = {
+  channelId: "",
+  categoryId: "",
+  nameTemplate: "{user}'s room",
+  defaultUserLimit: 0,
+  allowVideoByDefault: true,
+  allowSoundboardByDefault: true,
+  enabled: true,
+};
 
-export function toFormValues(s: SettingsInput): SettingsFormValues {
-  const { blockedWords, ...rest } = s;
-  return { ...rest, blockedWordsText: blockedWords.join("\n") };
-}
-
-export function fromFormValues(v: SettingsFormValues): SettingsInput {
-  const { blockedWordsText, ...rest } = v;
-  return { ...rest, blockedWords: parseBlockedWords(blockedWordsText) };
-}
+/** A lobby as the dashboard shows it. */
+export type LobbyView = LobbyFormValues & { id: string; channelId: string };
 
 /**
- * True when the room name template itself contains something the settings would
- * block (the admin's own words, or the built-in list if it is on). {user} is
- * left out: it is replaced by the owner's name later.
+ * True when a room name template contains something the settings would block
+ * (the admin's own words, or the built-in list if it is on). {user} is left
+ * out: it is replaced by the owner's name later.
  */
-export function isTemplateBlocked(s: Pick<SettingsInput, "nameTemplate" | "blockedWords" | "useDefaultBlocklist">): boolean {
-  const text = s.nameTemplate.replaceAll("{user}", " ");
-  return findBlockedWord(text, s.blockedWords) !== null || (s.useDefaultBlocklist && findProfanity(text) !== null);
+export function isTemplateBlocked(
+  nameTemplate: string,
+  policy: { blockedWords: readonly string[]; useDefaultBlocklist: boolean },
+): boolean {
+  const text = nameTemplate.replaceAll("{user}", " ");
+  return findBlockedWord(text, policy.blockedWords) !== null || (policy.useDefaultBlocklist && findProfanity(text) !== null);
 }
+
+// -- results ----------------------------------------------------------------------------------
 
 export type SettingsError =
   | "forbidden"
@@ -96,8 +130,11 @@ export type SettingsError =
   | "botUnavailable"
   | "lobbyNotFound"
   | "categoryNotFound"
+  | "alreadyALobby"
+  | "tooManyLobbies"
+  | "notFound"
   | "failed";
 
-export type SaveSettingsResult =
-  | { ok: true; settings: SettingsInput; botNotified: boolean }
-  | { ok: false; error: SettingsError };
+export type SaveGlobalResult = { ok: true; settings: GlobalSettings; botNotified: boolean } | { ok: false; error: SettingsError };
+export type SaveLobbyResult = { ok: true; lobby: LobbyView; botNotified: boolean } | { ok: false; error: SettingsError };
+export type DeleteLobbyResult = { ok: true; botNotified: boolean } | { ok: false; error: SettingsError };
