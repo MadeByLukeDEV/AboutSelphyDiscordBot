@@ -31,6 +31,8 @@ const schema = z.object({
   DATABASE_SCHEMA: z.string().default("bot"),
   BOT_API_SECRET: z.string().min(32),
   BOT_API_PORT: z.coerce.number().int().min(1).max(65535).default(3100),
+  // Optional. Default: loopback locally, all interfaces when BOT_ENV=production.
+  BOT_API_HOST: z.string().optional(),
   BOT_ENV: z.enum(["local", "production"]).default("local"),
   BOT_INTEGRATIONS_IN_DEV: bool,
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),

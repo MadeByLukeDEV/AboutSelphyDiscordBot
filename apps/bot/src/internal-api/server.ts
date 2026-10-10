@@ -13,6 +13,7 @@ import { log } from "../lib/log";
 import { refreshCaseLog } from "../modules/moderation";
 import { BodyError, readJsonBody } from "./body";
 import { listGuildChannels } from "./guild";
+import { resolveApiHost } from "./host";
 import { reloadModule } from "./reload";
 
 const VERSION = "0.1.0";
@@ -109,7 +110,8 @@ export function startInternalApi(): Server {
       if (!res.headersSent) json(res, 500, { error: "internal error" });
     });
   });
-  const port = env().BOT_API_PORT;
-  server.listen(port, "0.0.0.0", () => log.info({ port }, "internal api listening"));
+  const { BOT_API_PORT: port, BOT_API_HOST, BOT_ENV } = env();
+  const host = resolveApiHost(BOT_ENV, BOT_API_HOST);
+  server.listen(port, host, () => log.info({ host, port }, "internal api listening"));
   return server;
 }

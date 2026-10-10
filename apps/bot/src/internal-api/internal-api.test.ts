@@ -4,6 +4,22 @@ import { ChannelType } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { BodyError, readJsonBody } from "./body";
 import { mapChannels } from "./guild";
+import { resolveApiHost } from "./host";
+
+describe("resolveApiHost", () => {
+  it("listens on loopback only outside production", () => {
+    expect(resolveApiHost("local")).toBe("127.0.0.1");
+  });
+  it("listens on all interfaces in production, for the dashboard container", () => {
+    expect(resolveApiHost("production")).toBe("0.0.0.0");
+  });
+  it("lets BOT_API_HOST override both, ignoring blanks", () => {
+    expect(resolveApiHost("local", "0.0.0.0")).toBe("0.0.0.0");
+    expect(resolveApiHost("production", "10.0.0.5")).toBe("10.0.0.5");
+    expect(resolveApiHost("local", "   ")).toBe("127.0.0.1");
+    expect(resolveApiHost("production", "")).toBe("0.0.0.0");
+  });
+});
 
 const chat = { name: "Chat", rawPosition: 0 };
 const voice = { name: "Voice", rawPosition: 5 };
