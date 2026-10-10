@@ -32,6 +32,18 @@ describe("slash command definitions", () => {
     expect(COMMANDS.find((c) => c.data.name === "modlog")!.requires).toBe("admin");
   });
 
+  it("keeps /tempvoice admin-only", () => {
+    expect(COMMANDS.find((c) => c.data.name === "tempvoice")!.requires).toBe("admin");
+  });
+
+  it("leaves /voice open to every member: acting on someone's own room is checked in the controller, not by hiding the command", () => {
+    const voice = COMMANDS.find((c) => c.data.name === "voice");
+    expect(voice).toBeDefined();
+    expect(voice!.requires).toBeUndefined();
+    // No default_member_permissions: Discord would hide the command from members who lack them.
+    expect(voice!.data.default_member_permissions ?? null).toBeNull();
+  });
+
   it("is guild-only", () => {
     for (const c of COMMANDS) expect(c.data.contexts, c.data.name).toEqual([0]);
   });

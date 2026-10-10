@@ -1,10 +1,13 @@
 import { Events, type Client } from "discord.js";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
+import { registerRoomComponents } from "./interactions";
 import { onChannelDeleted, onVoiceStateUpdate, reconcileRooms } from "./service";
 
 /** Needs the GuildVoiceStates intent. */
 export function registerTempVoice(client: Client) {
+  registerRoomComponents();
+
   const reconcile = async (reason: string) => {
     const guild = client.guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return;

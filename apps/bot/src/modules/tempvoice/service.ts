@@ -1,17 +1,12 @@
-import {
-  ChannelType,
-  DiscordAPIError,
-  type Guild,
-  type GuildMember,
-  type VoiceChannel,
-  type VoiceState,
-} from "discord.js";
+import { ChannelType, type Guild, type GuildMember, type VoiceState } from "discord.js";
 import type { TempVoiceConfig } from "@aboutselphy/db";
 import { Cooldown } from "../../lib/cooldown";
 import { env } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { getTempVoiceConfig } from "./config";
+import { loadRoom, postPanel } from "./controller";
+import { fetchVoiceChannel, humansIn } from "./discord-channels";
 import { renderRoomName } from "./name";
 import { initialOverwrites } from "./permissions";
 import * as repo from "./repository";
@@ -22,28 +17,17 @@ import { planTransition } from "./transition";
 // creations at once.
 const mutex = new KeyedMutex();
 const createCooldown = new Cooldown(5000);
+/** One "the owner left" notice per room per minute, so someone reconnecting over and over can't spam the chat. */
+const ownerLeftCooldown = new Cooldown(60_000);
 
 /** Channel IDs of the rooms we made. The database is the truth; this is its in-memory mirror. */
 const rooms = new Set<string>();
 let roomsLoaded = false;
 
-const UNKNOWN_CHANNEL = 10003;
-
 async function ensureRoomsLoaded() {
   if (roomsLoaded) return;
   for (const row of await repo.listRooms()) rooms.add(row.channelId);
   roomsLoaded = true;
-}
-
-/** The voice channel with this ID, or null if it doesn't exist (any other error is thrown). */
-async function fetchVoiceChannel(guild: Guild, channelId: string): Promise<VoiceChannel | null> {
-  const found =
-    guild.channels.cache.get(channelId) ??
-    (await guild.channels.fetch(channelId).catch((err: unknown) => {
-      if (err instanceof DiscordAPIError && err.code === UNKNOWN_CHANNEL) return null;
-      throw err;
-    }));
-  return found?.type === ChannelType.GuildVoice ? found : null;
 }
 
 /** Forget a room: drop it from the mirror and the table. Safe to call twice. */
@@ -80,6 +64,9 @@ export async function onVoiceStateUpdate(oldState: VoiceState, newState: VoiceSt
     const id = plan.checkEmpty;
     await mutex.run(`room:${id}`, () => deleteIfEmpty(newState.guild, id)).catch((err) => {
       log.error({ err, channel: id }, "could not check a temporary room for emptiness");
+    });
+    await notifyOwnerLeft(newState.guild, id, member.id).catch((err) => {
+      log.warn({ err, channel: id }, "could not post the owner-left notice");
     });
   }
   if (plan.createRoom) {
@@ -147,6 +134,7 @@ async function createRoomFor(member: GuildMember, config: TempVoiceConfig): Prom
     log.info({ member: member.id }, "room removed again: the member left before being moved");
     return;
   }
+  await postPanel({ channel, ownerId: member.id, panelMessageId: null });
   log.info({ member: member.id, channel: channel.id, name }, "temporary room created");
 }
 
@@ -171,12 +159,27 @@ async function deleteIfEmpty(guild: Guild, channelId: string): Promise<void> {
     return;
   }
 
-  const humans = channel.members.filter((m) => !m.user.bot).size;
-  if (humans > 0) return;
+  if (humansIn(channel).size > 0) return;
 
   await channel.delete("Temporary voice room is empty");
   await forget(channelId);
   log.info({ channel: channelId }, "empty temporary room deleted");
+}
+
+/**
+ * When a room's owner leaves but other people stay, say so in the room's chat:
+ * the room isn't deleted (people are in it) and nobody can manage it until
+ * someone claims it.
+ */
+async function notifyOwnerLeft(guild: Guild, channelId: string, memberId: string): Promise<void> {
+  const room = await loadRoom(guild, channelId);
+  if (!room || room.ownerId !== memberId) return;
+  if (humansIn(room.channel).size === 0) return;
+  if (!ownerLeftCooldown.tryAcquire(channelId)) return;
+  await room.channel.send({
+    content: `<@${memberId}> left the room. Anyone in here can take over with \`/voice claim\`.`,
+    allowedMentions: { parse: [] },
+  });
 }
 
 /**
