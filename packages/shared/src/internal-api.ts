@@ -147,7 +147,20 @@ export type RoleCreateResponse = z.infer<typeof roleCreateResponse>;
 
 /** POST /internal/rolepanels/{publish,delete} */
 export const rolePanelIdBody = z.object({ id: z.string().min(1).max(64) });
-export const rolePanelPublishStatus = z.enum(["published", "updated", "channel", "roles", "not-found", "failed"]);
+export const rolePanelPublishStatus = z.enum(["published", "updated", "channel", "roles", "emoji", "not-found", "failed"]);
 export const rolePanelDeleteStatus = z.enum(["deleted", "already-gone", "not-found", "failed"]);
 export type RolePanelPublishStatus = z.infer<typeof rolePanelPublishStatus>;
 export type RolePanelDeleteStatus = z.infer<typeof rolePanelDeleteStatus>;
+
+/** A custom emote of the server, for the emoji picker. */
+export const guildEmoji = z.object({
+  id: z.string().regex(/^\d{17,20}$/),
+  name: z.string(),
+  animated: z.boolean(),
+  /** The text form to store: "<:name:id>" or "<a:name:id>". */
+  value: z.string(),
+});
+export type GuildEmoji = z.infer<typeof guildEmoji>;
+
+/** GET /internal/guild/emojis */
+export const emojisResponse = z.object({ emojis: z.array(guildEmoji) });

@@ -20,7 +20,7 @@ import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { getTempVoiceOverview } from "../modules/tempvoice";
 import { lookupTwitchChannel } from "../modules/twitch";
 import { BodyError, readJsonBody } from "./body";
-import { listGuildChannels, listGuildRoles } from "./guild";
+import { listGuildChannels, listGuildEmojis, listGuildRoles } from "./guild";
 import { resolveApiHost } from "./host";
 import { reloadModule } from "./reload";
 
@@ -89,6 +89,12 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { channels: await listGuildChannels(guild, kinds) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/guild/emojis") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { emojis: await listGuildEmojis(guild) });
   }
 
   if (req.method === "GET" && url.pathname === "/internal/guild/roles") {

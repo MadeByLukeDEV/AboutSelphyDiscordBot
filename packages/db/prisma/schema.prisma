@@ -328,6 +328,8 @@ model YoutubeVideo {
 enum RolePanelStyle {
   buttons
   menu
+  /// Members react to the message with an emoji to get the role.
+  reactions
 }
 
 model RolePanel {
@@ -356,8 +358,8 @@ model RolePanelRole {
   panel       RolePanel @relation(fields: [panelId], references: [id], onDelete: Cascade)
   roleId      String    @db.VarChar(20)
   label       String    @db.VarChar(80)
-  /// A unicode emoji or a custom emoji ("<:name:id>" is not stored: unicode only here).
-  emoji       String    @default("") @db.VarChar(32)
+  /// A unicode emoji, or one of the server's emotes as "<:name:id>" / "<a:name:id>".
+  emoji       String    @default("") @db.VarChar(64)
   /// Shown under the label in a menu.
   description String    @default("") @db.VarChar(100)
   position    Int       @default(0)

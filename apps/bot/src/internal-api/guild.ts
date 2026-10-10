@@ -1,5 +1,5 @@
 import { ChannelType, type Guild } from "discord.js";
-import type { ChannelKind, GuildChannel, GuildRole } from "@aboutselphy/shared";
+import type { ChannelKind, GuildChannel, GuildEmoji, GuildRole } from "@aboutselphy/shared";
 import { whyUnassignable } from "../modules/roles";
 
 /** Our three kinds -> Discord channel types. Announcement channels count as text. */
@@ -85,4 +85,14 @@ export async function listGuildRoles(guild: Guild): Promise<GuildRole[]> {
       color: r.color,
       assignable: whyUnassignable({ id: r.id, guildId: guild.id, managed: r.managed, position: r.position, permissions: r.permissions.bitfield }, botTop) === null,
     }));
+}
+
+/** The server's own custom emotes, for the emoji picker. */
+export async function listGuildEmojis(guild: Guild): Promise<GuildEmoji[]> {
+  const fetched = await guild.emojis.fetch();
+  return [...fetched.values()]
+    .filter((e) => e.id && e.name && e.available !== false)
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
+    .slice(0, 500)
+    .map((e) => ({ id: e.id, name: e.name!, animated: e.animated ?? false, value: `<${e.animated ? "a" : ""}:${e.name}:${e.id}>` }));
 }

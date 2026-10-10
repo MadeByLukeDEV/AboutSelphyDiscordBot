@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { parseEmoji } from "@aboutselphy/shared/role-panel";
 import { truncate } from "../../lib/escape";
 
 // The panel message, and what a click on it means. Custom IDs: "rp:<panelId>:<roleId>"
@@ -11,7 +12,7 @@ export type PanelView = {
   title: string;
   description: string;
   color: number;
-  style: "buttons" | "menu";
+  style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: Array<{ roleId: string; label: string; emoji: string; description: string }>;
 };
@@ -30,15 +31,47 @@ export function parsePanelCustomId(customId: string): { panelId: string; roleId:
   return match ? { panelId: match[1]!, roleId: match[2] ?? null } : null;
 }
 
+/** An emoji as discord.js wants it for a button or menu option: the unicode text, or {id, name, animated}. */
+export function toComponentEmoji(value: string): string | { id: string; name: string; animated: boolean } | undefined {
+  const parsed = parseEmoji(value);
+  if (!parsed) return undefined;
+  return parsed.kind === "unicode" ? parsed.name : { id: parsed.id, name: parsed.name, animated: parsed.animated };
+}
+
+/** The same emoji as a reaction identifier ("name:id" for a server emote, the character otherwise). */
+export function toReactionIdentifier(value: string): string | undefined {
+  const parsed = parseEmoji(value);
+  if (!parsed) return undefined;
+  return parsed.kind === "unicode" ? parsed.name : `${parsed.name}:${parsed.id}`;
+}
+
+/** Does a reaction's emoji match a stored one? A server emote matches by id (its name can change). */
+export function emojiMatches(stored: string, reaction: { id: string | null; name: string | null }): boolean {
+  const parsed = parseEmoji(stored);
+  if (!parsed) return false;
+  return parsed.kind === "custom" ? reaction.id === parsed.id : reaction.id === null && reaction.name === parsed.name;
+}
+
 export function buildPanelMessage(panel: PanelView) {
   const embed = new EmbedBuilder().setColor(panel.color);
   if (panel.title) embed.setTitle(truncate(panel.title, 256));
-  const hint = panel.exclusive ? "Pick one: choosing a new one replaces your old choice." : "Press a role to add it. Press it again to remove it.";
-  embed.setDescription(truncate([panel.description, panel.description ? "" : null, `*${hint}*`].filter((x) => x !== null).join("\n"), 4000));
+  const reactions = panel.style === "reactions";
+  const hint = reactions
+    ? panel.exclusive
+      ? "React with an emoji to pick one. Reacting with another replaces your choice; removing your reaction removes the role."
+      : "React with an emoji to get the role. Remove your reaction to give it back."
+    : panel.exclusive
+      ? "Pick one: choosing a new one replaces your old choice."
+      : "Press a role to add it. Press it again to remove it.";
+  // A reaction panel has no buttons, so the message itself lists which emoji gives which role.
+  const legend = reactions ? panel.roles.map((r) => `${r.emoji} ${r.label}`).join("\n") : null;
+  embed.setDescription(truncate([panel.description, legend, `*${hint}*`].filter((x) => x).join("\n\n"), 4000));
 
   const components =
-    panel.style === "menu"
-      ? [
+    panel.style === "reactions"
+      ? []
+      : panel.style === "menu"
+        ? [
           new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
             new StringSelectMenuBuilder()
               .setCustomId(menuId(panel.id))
@@ -49,7 +82,8 @@ export function buildPanelMessage(panel: PanelView) {
                 panel.roles.map((r) => {
                   const option = new StringSelectMenuOptionBuilder().setLabel(truncate(r.label, 100)).setValue(r.roleId);
                   if (r.description) option.setDescription(truncate(r.description, 100));
-                  if (r.emoji) option.setEmoji(r.emoji);
+                  const emoji = toComponentEmoji(r.emoji);
+                  if (emoji) option.setEmoji(emoji);
                   return option;
                 }),
               ),
@@ -61,7 +95,8 @@ export function buildPanelMessage(panel: PanelView) {
             new ActionRowBuilder<ButtonBuilder>().addComponents(
               row.map((r) => {
                 const button = new ButtonBuilder().setCustomId(buttonId(panel.id, r.roleId)).setLabel(truncate(r.label, 80)).setStyle(ButtonStyle.Secondary);
-                if (r.emoji) button.setEmoji(r.emoji);
+                const emoji = toComponentEmoji(r.emoji);
+                if (emoji) button.setEmoji(emoji);
                 return button;
               }),
             ),

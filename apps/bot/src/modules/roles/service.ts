@@ -2,7 +2,8 @@ import { PermissionFlagsBits, type Guild } from "discord.js";
 import type { RoleCreateResponse, RolePanelDeleteStatus, RolePanelPublishStatus } from "@aboutselphy/shared";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
-import { buildPanelMessage, type PanelView } from "./panel";
+import { parseEmoji } from "@aboutselphy/shared/role-panel";
+import { buildPanelMessage, toReactionIdentifier, type PanelView } from "./panel";
 import { findPanel, setPanelMessage } from "./repository";
 import { whyUnassignable } from "./safety";
 
@@ -39,6 +40,14 @@ export async function publishPanel(guild: Guild, id: string): Promise<RolePanelP
     await guild.roles.fetch(); // make sure the cache is current before judging roles
     if (panel.roles.length === 0 || panel.roles.some((r) => checkRole(guild, r.roleId) !== "ok")) return "roles";
 
+    // A server emote must exist in this server (the bot only uses the server's own emotes).
+    await guild.emojis.fetch();
+    for (const r of panel.roles) {
+      const parsed = parseEmoji(r.emoji);
+      if (r.emoji && !parsed) return "emoji";
+      if (parsed?.kind === "custom" && !guild.emojis.cache.has(parsed.id)) return "emoji";
+    }
+
     const channel = await guild.channels.fetch(panel.channelId).catch(() => null);
     if (!channel || channel.isDMBased() || channel.guildId !== env().DISCORD_GUILD_ID || !channel.isTextBased() || !("send" in channel)) return "channel";
 
@@ -47,17 +56,28 @@ export async function publishPanel(guild: Guild, id: string): Promise<RolePanelP
       const existing = await channel.messages.fetch(panel.messageId).catch(() => null);
       if (existing) {
         await existing.edit(payload);
+        if (panel.style === "reactions") await syncReactions(existing, panel.roles.map((r) => r.emoji));
         log.info({ panel: id }, "role panel updated");
         return "updated";
       }
     }
     const message = await channel.send(payload);
     await setPanelMessage(id, message.id);
+    if (panel.style === "reactions") await syncReactions(message, panel.roles.map((r) => r.emoji));
     log.info({ panel: id, channelId: channel.id, messageId: message.id }, "role panel published");
     return "published";
   } catch (err) {
     log.error({ err, panel: id }, "publishing a role panel failed");
     return "failed";
+  }
+}
+
+/** Makes the message's reactions exactly the panel's emoji, in order (the bot's own, and nothing of the members'). */
+async function syncReactions(message: { reactions: { removeAll(): Promise<unknown> }; react(emoji: string): Promise<unknown> }, emojis: string[]): Promise<void> {
+  await message.reactions.removeAll();
+  for (const value of emojis) {
+    const id = toReactionIdentifier(value);
+    if (id) await message.react(id);
   }
 }
 
