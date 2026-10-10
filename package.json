@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@12.3.4",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev:bot": "pnpm --filter @aboutselphy/bot dev",
     "dev:dashboard": "pnpm --filter @aboutselphy/dashboard dev",
