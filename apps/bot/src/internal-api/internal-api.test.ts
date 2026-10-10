@@ -81,7 +81,12 @@ describe("mapChannels", () => {
   });
 
   it("does not leak internal sorting fields", () => {
-    for (const c of mapChannels(channels, new Set(["text"]))) expect(Object.keys(c).sort()).toEqual(["id", "kind", "name", "parent"]);
+    for (const c of mapChannels(channels, new Set(["text"]))) {
+      // `announcement` is only present (and true) for announcement channels.
+      const keys = Object.keys(c).filter((k) => k !== "announcement").sort();
+      expect(keys).toEqual(["id", "kind", "name", "parent"]);
+      if ("announcement" in c) expect(c.announcement).toBe(true);
+    }
   });
 });
 

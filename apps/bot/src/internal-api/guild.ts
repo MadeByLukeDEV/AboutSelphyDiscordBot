@@ -45,7 +45,7 @@ export function mapChannels(channels: Iterable<ChannelLike>, kinds: ReadonlySet<
     const kind = KIND_OF[c.type];
     if (!kind || !kinds.has(kind)) continue;
     entries.push({
-      channel: { id: c.id, name: c.name, kind, parent: c.parent?.name ?? null },
+      channel: { id: c.id, name: c.name, kind, parent: c.parent?.name ?? null, ...(c.type === ChannelType.GuildAnnouncement ? { announcement: true } : {}) },
       // The category's own position decides where its block sits.
       group: kind === "category" ? (c.rawPosition ?? 0) : c.parent ? (c.parent.rawPosition ?? 0) : -1,
       rank: KIND_RANK[kind],

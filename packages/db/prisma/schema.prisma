@@ -823,3 +823,24 @@ model MemberCardImage {
   uploadedByName String   @db.VarChar(100)
   uploadedAt     DateTime @default(now())
 }
+
+/// A message the bot keeps at the bottom of a channel: when people write, it deletes its old copy and posts it again.
+model StickyMessage {
+  id            String   @id @default(cuid())
+  channelId     String   @unique @db.VarChar(20)
+  /// Staff-written text (markdown allowed, never pings).
+  content       String   @db.VarChar(1500)
+  enabled       Boolean  @default(true)
+  /// The copy currently at the bottom, so the bot can delete it.
+  lastMessageId String?  @db.VarChar(20)
+  /// Set by the dashboard on every change; the bot posts again and clears it.
+  dirty         Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+/// Announcement channels whose messages the bot publishes (crossposts) to every server that follows them.
+model AutoPublishChannel {
+  channelId String   @id @db.VarChar(20)
+  createdAt DateTime @default(now())
+}

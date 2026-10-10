@@ -839,6 +839,20 @@ Decided 2026-10-08:
     the author, attachments and the jump link.
   - Dashboard `/starboard` (admins): settings and the most starred messages.
   - [ ] Custom server emoji, a channel ignore list, a random-star command, a per-member count.
+- [~] Sticky messages (2026-10-23, `feature_sticky-publish`, migration `20261023180000_sticky_publish`
+      applied; **not tried live yet**; Tier B)
+  - Bot (`modules/sticky/`): up to 10 channels, each with a staff-written text kept at the bottom as
+    an embed. A message from anyone but the bot starts a 3 s quiet timer, then the bot deletes its
+    old copy and posts again, one channel at a time (`KeyedMutex`); `dirty` marks a dashboard change
+    so it is posted right away and on startup. The text keeps markdown and **cannot ping**
+    (`allowedMentions: parse []`). Only the GuildMessages intent, other people's text is never read.
+    `POST /internal/sticky/clear` takes the copy down before the dashboard removes the row (the row
+    stays if the bot can't be reached, so nothing is left behind). Runs only in production or with
+    `BOT_INTEGRATIONS_IN_DEV`. Dashboard `/sticky` (admins).
+- [~] Auto-publish (same branch): messages in the chosen **announcement** channels are crossposted
+      (`modules/autopublish/`, needs Manage Messages there; Discord allows 10 per hour per channel, a
+      refusal is logged). `GuildChannel.announcement` tells the dashboard which channels qualify.
+      Dashboard `/auto-publish` (admins).
 - [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;

@@ -35,6 +35,7 @@
     "./birthdays": "./src/birthdays.ts",
     "./reminders": "./src/reminders.ts",
     "./stat-channels": "./src/stat-channels.ts",
-    "./member-card": "./src/member-card.ts"
+    "./member-card": "./src/member-card.ts",
+    "./sticky": "./src/sticky.ts"
   }
 }

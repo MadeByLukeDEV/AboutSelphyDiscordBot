@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  StickyMessage,
+  AutoPublishChannel,
   MemberCardImage,
   StatChannel,
   ReminderConfig,

@@ -8,6 +8,8 @@ import { registerLevels, stopLevels } from "./modules/levels";
 import { registerPollControls, startPolls, stopPolls } from "./modules/polls";
 import { startBirthdays, stopBirthdays } from "./modules/birthdays";
 import { startReminders, stopReminders } from "./modules/reminders";
+import { startAutoPublish } from "./modules/autopublish";
+import { startSticky, stopSticky } from "./modules/sticky";
 import { registerStarboard } from "./modules/starboard";
 import { startStatChannels, stopStatChannels } from "./modules/statchannels";
 import { registerSuggestionControls } from "./modules/suggestions";
@@ -57,6 +59,8 @@ async function main() {
   startBirthdays(client);
   startReminders(client);
   startStatChannels(client);
+  startSticky(client);
+  startAutoPublish(client);
   startPolls(client);
   registerTicketEvents(client);
   startTwitch(client);
@@ -78,6 +82,7 @@ async function main() {
     stopBirthdays();
     stopReminders();
     stopStatChannels();
+    stopSticky();
     stopYoutube();
     stopModerationJobs();
     await client.destroy();

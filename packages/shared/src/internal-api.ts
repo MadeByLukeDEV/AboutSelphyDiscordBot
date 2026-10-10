@@ -19,6 +19,8 @@ export const RELOADABLE_MODULES = [
   "birthdays",
   "reminders",
   "statchannels",
+  "sticky",
+  "autopublish",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
@@ -33,6 +35,8 @@ export const guildChannel = z.object({
   id: z.string().regex(/^\d{17,20}$/),
   name: z.string(),
   kind: channelKind,
+  /** True for an announcement (news) channel, whose messages can be published to followers. */
+  announcement: z.boolean().optional(),
   /** Name of the category it sits in, for grouping in a picker. */
   parent: z.string().nullable(),
 });
@@ -241,6 +245,11 @@ export const welcomePreviewResponse = z.object({ png: z.string().min(1) /* base6
 
 /** POST /internal/membercards/preview: a birthday or reminder card for a sample member, from the SAVED settings. Answers like the welcome preview. */
 export const memberCardPreviewBody = z.object({ kind: z.enum(["birthday", "reminder"]) });
+
+/** POST /internal/sticky/clear: take a sticky message's current copy down (before the dashboard removes it). */
+export const stickyClearBody = z.object({ channelId: z.string().regex(/^\d{17,20}$/) });
+export const stickyClearStatus = z.enum(["done", "failed"]);
+export type StickyClearStatus = z.infer<typeof stickyClearStatus>;
 
 /** POST /internal/tickets/panel: post (or update) the ticket panel message. */
 export const ticketPanelStatus = z.enum(["posted", "updated", "channel", "needsSetup", "failed"]);
