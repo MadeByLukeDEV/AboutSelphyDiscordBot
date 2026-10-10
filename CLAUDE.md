@@ -780,6 +780,17 @@ Decided 2026-10-08:
     cancel, remove. A giveaway that can't be posted stays a draft with the reason.
   - [ ] Weighted entries (e.g. extra for boosters), entry requirements beyond a role, recurring
         giveaways, a `/giveaway` slash command.
+- [~] Suggestions (2026-10-19, `feature_suggestions`, migration
+      `20261019100000_suggestions` applied; **not tried live yet**; Tier B)
+  - Bot (`modules/suggestions/`): `/suggest` (cooldown, 5-1500 chars), post with up/down
+    buttons (`sg:up|down:<id>`, strict parse; one vote per member, same button again takes it
+    back, the author can't vote on their own idea, voting closes when decided; post edits for
+    votes are debounced 1.5 s), `/suggestion approve|deny|implement` (team) or the dashboard:
+    `canTransition` (open -> any decision, approved -> implemented) + one conditional UPDATE,
+    the post is edited and the author gets a DM. Author text is escaped, nothing pings.
+    Numbers from `SuggestionConfig.nextNumber` (atomic).
+  - Dashboard `/suggestions` (all staff: list, filter, decide; admins: settings).
+  - [ ] Staff-only comments on a suggestion, merging duplicates, a leaderboard of ideas.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
