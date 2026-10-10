@@ -1,10 +1,18 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@aboutselphy/db";
-import { reloadModule as reloadModuleSchema, type BotHealth } from "@aboutselphy/shared";
+import {
+  channelKind,
+  refreshCaseBody,
+  reloadModule as reloadModuleSchema,
+  type BotHealth,
+} from "@aboutselphy/shared";
 import { getClient } from "../client";
 import { env } from "../lib/env";
 import { log } from "../lib/log";
+import { refreshCaseLog } from "../modules/moderation";
+import { BodyError, readJsonBody } from "./body";
+import { listGuildChannels } from "./guild";
 import { reloadModule } from "./reload";
 
 const VERSION = "0.1.0";
@@ -61,6 +69,27 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     return json(res, 401, { error: "unauthorized" });
   }
 
+  if (req.method === "GET" && url.pathname === "/internal/guild/channels") {
+    const kinds = new Set(
+      (url.searchParams.get("kinds") ?? "text")
+        .split(",")
+        .map((k) => channelKind.safeParse(k.trim()))
+        .flatMap((r) => (r.success ? [r.data] : [])),
+    );
+    if (kinds.size === 0) return json(res, 400, { error: "no valid kinds" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { channels: await listGuildChannels(guild, kinds) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/moderation/refresh-case") {
+    const body = refreshCaseBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await refreshCaseLog(guild, body.data.caseNumber) });
+  }
+
   const reload = /^\/internal\/reload\/([a-z]+)$/.exec(url.pathname);
   if (req.method === "POST" && reload) {
     const module = reloadModuleSchema.safeParse(reload[1]);
@@ -75,6 +104,7 @@ async function route(req: IncomingMessage, res: ServerResponse) {
 export function startInternalApi(): Server {
   const server = createServer((req, res) => {
     route(req, res).catch((err) => {
+      if (err instanceof BodyError) return json(res, err.status, { error: err.message });
       log.error({ err }, "internal api error");
       if (!res.headersSent) json(res, 500, { error: "internal error" });
     });

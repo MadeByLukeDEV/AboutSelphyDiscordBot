@@ -227,6 +227,34 @@ export async function postCaseLog(guild: Guild, row: ModCase): Promise<void> {
   }
 }
 
+/**
+ * Re-renders the log embed of an existing case (e.g. after the dashboard
+ * pardoned a warning). Never throws: a deleted log message or channel is
+ * reported as a status, not an error.
+ */
+export async function refreshCaseLog(
+  guild: Guild,
+  caseNumber: number,
+): Promise<"updated" | "no-log-message" | "not-found" | "failed"> {
+  try {
+    const row = await findCaseByNumber(caseNumber);
+    if (!row) return "not-found";
+    if (!row.logChannelId || !row.logMessageId) return "no-log-message";
+
+    const channel = await guild.channels.fetch(row.logChannelId).catch(() => null);
+    if (!channel?.isTextBased()) return "no-log-message";
+    const message = await channel.messages.fetch(row.logMessageId).catch(() => null);
+    if (!message) return "no-log-message"; // deleted by hand
+
+    await message.edit({ embeds: [buildCaseEmbed(row)], allowedMentions: { parse: [] } });
+    log.info({ case: caseNumber }, "case log message refreshed");
+    return "updated";
+  } catch (err) {
+    log.error({ err, case: caseNumber }, "could not refresh the case log message");
+    return "failed";
+  }
+}
+
 export const getCase = findCaseByNumber;
 
 export async function getInfractions(targetId: string) {
