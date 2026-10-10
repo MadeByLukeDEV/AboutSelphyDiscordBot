@@ -743,6 +743,28 @@ Decided 2026-10-08:
   - Dashboard `/levels` (admins): all settings, the reward list, no-XP pickers, top 25.
   - [ ] XP boosts per role, a public leaderboard page, importing MEE6 data, weekly resets,
         voice XP only counting unmuted time.
+- [~] Tickets (2026-10-17, `feature_tickets`, migration `20261017100000_tickets` applied;
+      **not tried live yet**; Tier B)
+  - Bot (`modules/tickets/`): panel message with an "Open a ticket" button; opening
+    (serialised per member via `KeyedMutex`, `maxOpenPerUser`) creates a private channel
+    in the configured category visible only to the opener, the staff roles and the bot
+    (`ticketOverwrites`, pure, tested: the opener never gets Manage Channel/Messages). Claim
+    (staff) and Close (opener or staff, with a confirm step). Close = one conditional UPDATE
+    (`markClosed`), transcript, summary + `.txt` transcript in the log channel, opener's
+    writing locked, channel deleted after 10 s. Control ids `tk:open`,
+    `tk:close|confirm|claim:<id>`, strict parse; the ticket must exist, be open and be pressed
+    in its own channel. A channel deleted by hand closes its ticket; startup reconciles both
+    ways. `/ticket add|remove` (team). Ticket numbers come from `TicketConfig.nextNumber`
+    (atomic; a failed open leaves a gap).
+  - **Transcripts need the privileged MessageContent intent**: opt in with
+    `DISCORD_MESSAGE_CONTENT=true` (adds the intent in `client.ts`) once it is switched on in
+    the Developer Portal; without it tickets work and say "no transcript saved". The saved JSON
+    (`transcriptSchema`, <= 2000 messages, <= 4000 chars each, attachment links only from
+    Discord's CDN) is parsed again before the dashboard shows it, as plain text.
+  - Dashboard `/tickets` (all staff: list + transcript page `/tickets/[number]`; admins:
+    settings, post/update panel). `components/form/multi-picker.tsx` is shared.
+  - [ ] Ticket categories/topics, a reason prompt when opening, rating, auto-close of
+        idle tickets, claiming limits.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
