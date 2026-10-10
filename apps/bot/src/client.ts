@@ -11,7 +11,11 @@ import { Client, GatewayIntentBits } from "discord.js";
  *   Phase 2  GuildMessages, MessageContent*
  *   Phase 4  GuildVoiceStates
  */
-export const INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildModeration];
+export const INTENTS = [
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildModeration,
+  GatewayIntentBits.GuildVoiceStates,
+];
 
 let client: Client | undefined;
 
