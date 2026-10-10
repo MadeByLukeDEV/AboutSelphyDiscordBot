@@ -1,5 +1,6 @@
 import { Events, type Client, type GuildTextBasedChannel } from "discord.js";
 import type { TwitchNotification, TwitchStreamer } from "@aboutselphy/db";
+import { MAX_TWITCH_STREAMERS } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
@@ -94,7 +95,11 @@ async function subscribeAll(sessionId: string): Promise<void> {
     log.info({}, "twitch: module is switched off, staying connected without subscriptions");
     return;
   }
-  const streamers = (await listStreamers()).filter((s) => s.enabled);
+  const enabledStreamers = (await listStreamers()).filter((s) => s.enabled);
+  if (enabledStreamers.length > MAX_TWITCH_STREAMERS) {
+    log.warn({ configured: enabledStreamers.length, max: MAX_TWITCH_STREAMERS }, "twitch: more channels than one connection can subscribe to, the rest are ignored");
+  }
+  const streamers = enabledStreamers.slice(0, MAX_TWITCH_STREAMERS);
   if (streamers.length === 0) {
     log.info({}, "twitch: no streamers configured");
     return;

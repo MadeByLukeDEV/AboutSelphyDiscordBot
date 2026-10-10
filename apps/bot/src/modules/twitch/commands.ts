@@ -1,4 +1,5 @@
 import { ChannelType, InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
+import { MAX_TWITCH_STREAMERS } from "@aboutselphy/shared";
 import type { Command } from "../../commands/types";
 import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
@@ -54,6 +55,14 @@ const twitch: Command = {
           await i.deferReply({ flags: MessageFlags.Ephemeral });
           const found = await resolveChannel(login);
           if (!found) return void (await i.editReply({ content: `There is no Twitch channel called \`${escapeText(login)}\`.`, allowedMentions: NO_MENTIONS }));
+
+          const existing = await listStreamers();
+          if (!existing.some((s) => s.twitchUserId === found.id) && existing.length >= MAX_TWITCH_STREAMERS) {
+            return void (await i.editReply({
+              content: `At most ${MAX_TWITCH_STREAMERS} channels can be announced (Twitch limits one connection's subscriptions). Remove one first with \`/twitch remove\`.`,
+              allowedMentions: NO_MENTIONS,
+            }));
+          }
 
           await upsertStreamer(
             { twitchUserId: found.id, login: found.login, displayName: found.displayName },
