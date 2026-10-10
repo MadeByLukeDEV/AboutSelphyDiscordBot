@@ -10,6 +10,7 @@ export const RELOADABLE_MODULES = [
   "youtube",
   "welcome",
   "logs",
+  "levels",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);

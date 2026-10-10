@@ -3,6 +3,7 @@ import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
 import { registerReactionRoles, registerRolePanels } from "./modules/roles";
+import { registerLevels, stopLevels } from "./modules/levels";
 import { registerLogs } from "./modules/logs";
 import { registerWelcome } from "./modules/welcome";
 import { startAnnouncements, stopAnnouncements } from "./modules/announcements";
@@ -38,6 +39,7 @@ async function main() {
   registerReactionRoles(client);
   registerWelcome(client);
   registerLogs(client);
+  registerLevels(client);
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);
@@ -51,6 +53,7 @@ async function main() {
     api.close();
     stopTwitch();
     stopAnnouncements();
+    stopLevels();
     stopYoutube();
     stopModerationJobs();
     await client.destroy();

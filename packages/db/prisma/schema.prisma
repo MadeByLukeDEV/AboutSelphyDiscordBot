@@ -443,3 +443,51 @@ model LogRoute {
   enabled   Boolean  @default(false)
   updatedAt DateTime @updatedAt
 }
+
+// ---- leveling ------------------------------------------------------------------------
+// XP from messages (with a cooldown) and from time in voice, levels from the MEE6 curve,
+// role rewards at chosen levels. CHECK constraints (singleton, ranges, digits-only IDs)
+// are added to the migration by hand.
+
+/// Singleton (id = 1).
+model LevelConfig {
+  id                Int      @id @default(1)
+  enabled           Boolean  @default(false)
+  /// XP per message is a random number in [xpMin, xpMax], at most once per cooldown.
+  xpMin             Int      @default(15)
+  xpMax             Int      @default(25)
+  cooldownSeconds   Int      @default(60)
+  /// XP for each minute in a voice channel with someone else (0 = off).
+  voiceXpPerMinute  Int      @default(5)
+  /// "off" | "same" (in the channel where it happened) | "channel" (announceChannelId)
+  announce          String   @default("same") @db.VarChar(8)
+  announceChannelId String?  @db.VarChar(20)
+  /// {user} (a mention) {username} {level}
+  announceTemplate  String   @default("GG {user}, you reached level {level}!") @db.VarChar(300)
+  /// Channels and roles that earn no XP.
+  noXpChannelIds    String[] @default([])
+  noXpRoleIds       String[] @default([])
+  /// Keep every reward role up to the member's level (true), or only the highest (false).
+  stackRoles        Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
+}
+
+/// A role given when a member reaches a level.
+model LevelReward {
+  id        String   @id @default(cuid())
+  level     Int      @unique
+  roleId    String   @db.VarChar(20)
+  createdAt DateTime @default(now())
+}
+
+model MemberXp {
+  userId       String   @id @db.VarChar(20)
+  xp           Int      @default(0)
+  messages     Int      @default(0)
+  voiceMinutes Int      @default(0)
+  /// Last known name, for the leaderboard of people who have left.
+  name         String   @default("") @db.VarChar(100)
+  updatedAt    DateTime @updatedAt
+
+  @@index([xp])
+}

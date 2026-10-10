@@ -25,6 +25,7 @@
     "./role-panel": "./src/role-panel.ts",
     "./welcome": "./src/welcome.ts",
     "./image-info": "./src/image-info.ts",
-    "./logs": "./src/logs.ts"
+    "./logs": "./src/logs.ts",
+    "./levels": "./src/levels.ts"
   }
 }

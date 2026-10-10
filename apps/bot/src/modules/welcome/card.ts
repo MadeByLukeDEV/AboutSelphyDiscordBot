@@ -1,7 +1,7 @@
-import { createRequire } from "node:module";
-import { createCanvas, GlobalFonts, loadImage, type Image, type SKRSContext2D } from "@napi-rs/canvas";
+import { createCanvas, loadImage, type Image, type SKRSContext2D } from "@napi-rs/canvas";
 import { cardImageProblem, readImageInfo } from "@aboutselphy/shared/image-info";
 import type { CardMode } from "@aboutselphy/shared/welcome";
+import { ensureFonts, FONT, fitText, hex, roundRect } from "../../lib/canvas";
 import { log } from "../../lib/log";
 
 // The welcome card: a picture made for each new member with their avatar, name and member number
@@ -11,18 +11,6 @@ import { log } from "../../lib/log";
 
 export const CARD_WIDTH = 1024;
 export const CARD_HEIGHT = 360;
-const FONT = "WelcomeFont";
-
-let fontsReady = false;
-function ensureFonts(): void {
-  if (fontsReady) return;
-  const require = createRequire(import.meta.url);
-  const dir = require.resolve("@fontsource/plus-jakarta-sans/package.json").replace(/package\.json$/, "files/");
-  GlobalFonts.registerFromPath(`${dir}plus-jakarta-sans-latin-700-normal.woff2`, FONT);
-  GlobalFonts.registerFromPath(`${dir}plus-jakarta-sans-latin-800-normal.woff2`, FONT);
-  fontsReady = true;
-}
-
 export type CardInput = {
   username: string;
   /** The member's avatar picture bytes, or null to draw their initial instead. */
@@ -36,35 +24,11 @@ export type CardInput = {
   image: Uint8Array | null;
 };
 
-const hex = (n: number) => `#${n.toString(16).padStart(6, "0")}`;
-
-/** Shrinks the font until the text fits, then cuts it with an ellipsis if it still doesn't. */
-function fitText(ctx: SKRSContext2D, text: string, maxWidth: number, startPx: number, minPx: number, weight: number): { text: string; px: number } {
-  for (let px = startPx; px >= minPx; px -= 2) {
-    ctx.font = `${weight} ${px}px ${FONT}`;
-    if (ctx.measureText(text).width <= maxWidth) return { text, px };
-  }
-  ctx.font = `${weight} ${minPx}px ${FONT}`;
-  let cut = [...text];
-  while (cut.length > 1 && ctx.measureText(`${cut.join("")}…`).width > maxWidth) cut = cut.slice(0, -1);
-  return { text: `${cut.join("")}…`, px: minPx };
-}
-
 function cover(ctx: SKRSContext2D, img: Image, w: number, h: number): void {
   const scale = Math.max(w / img.width, h / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-}
-
-function roundRect(ctx: SKRSContext2D, x: number, y: number, w: number, h: number, r: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
 }
 
 export async function renderWelcomeCard(input: CardInput): Promise<Buffer> {
@@ -172,21 +136,4 @@ export async function renderWelcomeCard(input: CardInput): Promise<Buffer> {
   return canvas.toBuffer("image/png");
 }
 
-const AVATAR_HOSTS = new Set(["cdn.discordapp.com", "media.discordapp.net"]);
-const MAX_AVATAR_BYTES = 1_000_000;
-
-/** A member's avatar from Discord's CDN, or null (wrong host, too big, not a picture, slow). Never throws. */
-export async function fetchAvatar(url: string): Promise<Uint8Array | null> {
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" || !AVATAR_HOSTS.has(parsed.hostname)) return null;
-    const res = await fetch(parsed, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    if (bytes.length === 0 || bytes.length > MAX_AVATAR_BYTES || !readImageInfo(bytes)) return null;
-    return bytes;
-  } catch (err) {
-    log.info({ err }, "welcome card: could not fetch the avatar, drawing the initial instead");
-    return null;
-  }
-}
+export { fetchAvatar } from "../../lib/avatar";

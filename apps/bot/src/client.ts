@@ -12,12 +12,14 @@ import { Client, GatewayIntentBits, Partials } from "discord.js";
  *   Phase 4  GuildVoiceStates
  *   Roles    GuildMessageReactions (reaction roles)
  *   Welcome  GuildMembers* (joins and leaves)
+ *   Levels   GuildMessages (message counts only; MessageContent is NOT used)
  */
 export const INTENTS = [
   GatewayIntentBits.Guilds,
   GatewayIntentBits.GuildModeration,
   GatewayIntentBits.GuildVoiceStates,
   GatewayIntentBits.GuildMessageReactions, // role panels in reaction mode
+  GatewayIntentBits.GuildMessages, // leveling counts messages (their text is not read)
   GatewayIntentBits.GuildMembers, // privileged: joins and leaves (welcome, auto-roles, restoring roles)
 ];
 
