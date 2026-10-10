@@ -696,3 +696,34 @@ model PollVote {
 
   @@id([pollId, userId, optionIndex])
 }
+
+/// Starboard: messages that collect enough of one reaction are re-posted in a showcase channel.
+model StarboardConfig {
+  id        Int      @id @default(1)
+  enabled   Boolean  @default(false)
+  /// Where starred messages are re-posted.
+  channelId String?  @db.VarChar(20)
+  /// One unicode emoji.
+  emoji     String   @default("⭐") @db.VarChar(16)
+  /// Reactions needed (not counting the bot, nor the author unless allowSelf).
+  threshold Int      @default(3)
+  allowSelf Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model StarboardPost {
+  sourceMessageId String   @id @db.VarChar(20)
+  sourceChannelId String   @db.VarChar(20)
+  authorId        String   @db.VarChar(20)
+  authorName      String   @db.VarChar(100)
+  /// A short plain-text snippet for the dashboard list.
+  excerpt         String   @db.VarChar(200)
+  jumpUrl         String   @db.VarChar(200)
+  /// The re-post in the starboard channel; null while the message is below the threshold.
+  boardMessageId  String?  @db.VarChar(20)
+  stars           Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([stars])
+}

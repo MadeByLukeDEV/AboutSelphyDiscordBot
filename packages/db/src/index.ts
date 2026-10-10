@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  StarboardConfig,
+  StarboardPost,
   RolePanel,
   RolePanelRole,
   TempVoiceChannel,

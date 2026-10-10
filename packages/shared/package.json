@@ -30,6 +30,7 @@
     "./tickets": "./src/tickets.ts",
     "./giveaways": "./src/giveaways.ts",
     "./suggestions": "./src/suggestions.ts",
-    "./polls": "./src/polls.ts"
+    "./polls": "./src/polls.ts",
+    "./starboard": "./src/starboard.ts"
   }
 }
