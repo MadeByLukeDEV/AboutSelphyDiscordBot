@@ -558,7 +558,21 @@ Decided 2026-10-08:
         SendMessagesInThreads and CreatePublicThreads; unlock resets to inherit).
         They create no cases; each posts a note to the mod log (`postModNote`).
         Each checks the bot's permissions in the target channel first.
-  - [ ] Escalation config, temp bans (needs a scheduler)
+  - [x] Temporary bans and warning escalation (2026-10-12,
+        `feature_moderation-scheduler`; migrations `..._moderation_scheduler` and
+        `..._escalation_window` applied; **not tried live yet**): `/ban duration:3d`
+        stores the expiry on the ban case; `jobs.ts` lifts due bans at startup and
+        every minute (claims each atomically with `expiryHandledAt`, retries on
+        failure, notices a hand-lifted ban, records an `unban` case from "system";
+        only runs in production or with `BOT_INTEGRATIONS_IN_DEV`). Escalation
+        (`escalation.ts`, pure and tested): every N-th active warning (optionally
+        only those of the last 1-365 days) applies a timeout, kick or (temporary) ban
+        as the bot, recorded as an `automod` case; `/modlog escalation` and
+        `/modlog escalation_off`, and a section on `/settings` (admin). A CHECK in the
+        database keeps the settings consistent. Duration helpers live in
+        `@aboutselphy/shared/duration` (bot and dashboard parse identically).
+  - [ ] Roles re-applied when a member rejoins (needs the GuildMembers intent),
+        warn/timeout/ban from the dashboard, case notes editing
   - [ ] More log types (message edit/delete, joins/leaves, voice)
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
