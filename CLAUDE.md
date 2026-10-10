@@ -875,6 +875,21 @@ Decided 2026-10-08:
     asker may use (members, then the team; admin commands are hidden from moderators), built from the
     registered command list at call time. No dashboard page (nothing to configure). `/afk` is not built:
     it needs to read messages.
+- [~] Counting channel (2026-10-25, `feature_counting-autoresponders`, migration
+      `20261025100000_counting_autoresponders`; **not tried live yet**; Tier B)
+  - Bot (`modules/counting/`): a message starting with a whole number in the chosen channel is judged
+    against the stored count, read fresh and one message at a time. The next number from someone else
+    gets a check mark (a trophy for a new high score) and is stored with **one conditional UPDATE**
+    (`acceptNumber`, raw SQL so the high score moves in the same statement the CHECK needs); a wrong
+    number or the same member twice (unless allowed) gets a cross, and a wrong number ends the streak
+    if configured. Other messages are ignored. Needs Message Content, Add Reactions and Send Messages.
+    Dashboard `/counting` (admins): settings, current number, high score, start over.
+- [~] Auto-responders (same branch): answers a message that contains a trigger (whole word, contains or
+      exact; compared as NFKC lower case; the trigger is only ever literal text, regex-escaped). The
+      answer is a reply that pings nobody, with a per-responder cooldown per channel and at most one
+      automatic answer per channel every 5 s. Up to 50, optional channel limit. Dashboard
+      `/auto-responders` (admins). Both modules start only with `DISCORD_MESSAGE_CONTENT=true` and in
+      production or with `BOT_INTEGRATIONS_IN_DEV`.
 - [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;

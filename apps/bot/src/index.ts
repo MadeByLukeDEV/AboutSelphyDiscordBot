@@ -9,6 +9,8 @@ import { registerPollControls, startPolls, stopPolls } from "./modules/polls";
 import { startBirthdays, stopBirthdays } from "./modules/birthdays";
 import { startReminders, stopReminders } from "./modules/reminders";
 import { startAutoPublish } from "./modules/autopublish";
+import { startAutoResponders } from "./modules/autoresponders";
+import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
 import { registerStarboard } from "./modules/starboard";
 import { startStatChannels, stopStatChannels } from "./modules/statchannels";
@@ -61,6 +63,8 @@ async function main() {
   startStatChannels(client);
   startSticky(client);
   startAutoPublish(client);
+  startCounting(client);
+  startAutoResponders(client);
   startPolls(client);
   registerTicketEvents(client);
   startTwitch(client);

@@ -30,7 +30,9 @@
         "statChannels": "Statistik-Kanäle",
         "sticky": "Angeheftete Nachrichten",
         "autoPublish": "Automatisch veröffentlichen",
-        "customCommands": "Eigene Befehle"
+        "customCommands": "Eigene Befehle",
+        "counting": "Zählkanal",
+        "autoResponders": "Auto-Antworten"
       }
     },
     "account": {
@@ -1839,6 +1841,112 @@
       "notFound": "Diesen Befehl gibt es nicht mehr. Lade die Seite neu.",
       "failed": "Das hat nicht geklappt. Versuche es erneut.",
       "needsResponse": "Schreibe die Antwort (bis zu 1800 Zeichen)."
+    }
+  },
+  "Counting": {
+    "title": "Zählkanal",
+    "intro": "Mitglieder zählen gemeinsam hoch, eine Zahl nach der anderen, beginnend bei 1. Die nächste Zahl von jemand anderem wird mit einem Häkchen akzeptiert; eine falsche Zahl (oder dasselbe Mitglied zweimal hintereinander) wird abgelehnt. Nachrichten, die nicht mit einer Zahl beginnen, werden ignoriert, damit weiter geplaudert werden kann. Der Bot braucht im Kanal Reaktionen hinzufügen und Nachrichten senden.",
+    "none": "Nicht gewählt",
+    "reset": "Bei 0 neu beginnen",
+    "resetDone": "Der Zähler wurde auf 0 gesetzt (der Highscore bleibt)",
+    "stats": {
+      "title": "Gerade jetzt",
+      "current": "Aktuelle Zahl: {count}",
+      "high": "Highscore: {count}"
+    },
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern.",
+      "enabled": "Zählen ist an",
+      "channel": "Zählkanal",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wo gezählt wird.",
+      "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar. Der gespeicherte Kanal bleibt.",
+      "resetOnMistake": "Eine falsche Zahl beginnt wieder bei 0",
+      "resetHelp": "Aus: Eine falsche Zahl wird nur abgelehnt und der Zähler bleibt, wo er war.",
+      "allowConsecutive": "Dasselbe Mitglied zweimal hintereinander erlauben",
+      "consecutiveHelp": "Aus: Jemand anderes muss die nächste Zahl zählen.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du das Zählen einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher kann der Kanal nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
+    }
+  },
+  "AutoResponders": {
+    "title": "Auto-Antworten",
+    "intro": "Der Bot antwortet, wenn eine Nachricht ein von dir gewähltes Wort oder eine Phrase enthält. Die Antwort ist eine Antwort-Nachricht, die niemanden pingt. Jede Auto-Antwort hat eine Abklingzeit pro Kanal, und der Bot antwortet in einem Kanal nie öfter als alle 5 Sekunden. Braucht den Message-Content-Intent.",
+    "add": "Auto-Antwort hinzufügen",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Auto-Antwort entfernt",
+    "on": "An",
+    "off": "Aus",
+    "match": {
+      "word": "Ganzes Wort",
+      "contains": "Enthält",
+      "exact": "Genau"
+    },
+    "list": {
+      "title": "Auto-Antworten",
+      "count": "({count} von {max})",
+      "meta": "{uses, plural, one {Einmal geantwortet} other {# Mal geantwortet}} · Abklingzeit {seconds} s",
+      "everywhere": "in jedem Kanal",
+      "inChannels": "{count, plural, one {in 1 Kanal} other {in # Kanälen}}"
+    },
+    "empty": {
+      "title": "Noch keine Auto-Antworten",
+      "body": "Füge eine hinzu, zum Beispiel um auf \"ip\" mit der Serveradresse zu antworten."
+    },
+    "dialog": {
+      "newTitle": "Auto-Antwort hinzufügen",
+      "editTitle": "Auto-Antwort bearbeiten",
+      "intro": "Beim Abgleich werden Groß- und Kleinschreibung und Sonderzeichen ignoriert. Der Auslöser wird immer als einfacher Text verwendet."
+    },
+    "form": {
+      "trigger": "Auslöser",
+      "triggerHelp": "Ein Wort oder eine Phrase, bis zu 100 Zeichen.",
+      "match": "Abgleich",
+      "matchHelp": "Ganzes Wort: \"cat\" passt auf \"my cat\", aber nicht auf \"category\". Enthält: irgendwo in der Nachricht. Genau: die ganze Nachricht ist der Auslöser.",
+      "response": "Antwort",
+      "responseHelp": "Bis zu 1500 Zeichen. '{user}' zeigt die Erwähnung des Autors (sie benachrichtigt nicht), '{username}' seinen Namen.",
+      "cooldown": "Abklingzeit (Sekunden)",
+      "cooldownHelp": "Wie lange der Bot wartet, bevor er im selben Kanal erneut darauf antwortet.",
+      "channels": "Nur in diesen Kanälen",
+      "channelsHelp": "Leer lassen, um in jedem Kanal zu antworten.",
+      "enabled": "Aktiv",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "picker": {
+      "selected": "Gewählte Kanäle",
+      "none": "Jeder Kanal",
+      "search": "Kanäle suchen",
+      "noMatch": "Kein Kanal passt.",
+      "full": "Das ist das Maximum von {max}.",
+      "offline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+      "remove": "{name} entfernen"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "tooMany": "Das ist die maximale Anzahl an Auto-Antworten.",
+      "notFound": "Diese Auto-Antwort gibt es nicht mehr. Lade die Seite neu.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher können die Kanäle nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Einer dieser Kanäle existiert nicht oder ist kein Textkanal.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsTrigger": "Gib ein Wort oder eine Phrase ein (bis zu 100 Zeichen).",
+      "needsResponse": "Schreibe die Antwort (bis zu 1500 Zeichen).",
+      "badCooldown": "Gib eine Sekundenzahl von 0 bis 86400 ein."
     }
   }
 }

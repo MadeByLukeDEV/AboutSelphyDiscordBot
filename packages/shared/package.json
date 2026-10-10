@@ -37,6 +37,8 @@
     "./stat-channels": "./src/stat-channels.ts",
     "./member-card": "./src/member-card.ts",
     "./sticky": "./src/sticky.ts",
-    "./custom-commands": "./src/custom-commands.ts"
+    "./custom-commands": "./src/custom-commands.ts",
+    "./counting": "./src/counting.ts",
+    "./auto-responders": "./src/auto-responders.ts"
   }
 }

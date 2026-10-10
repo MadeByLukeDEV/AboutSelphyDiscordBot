@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  CountingConfig,
+  AutoResponder,
   CustomCommand,
   StickyMessage,
   AutoPublishChannel,

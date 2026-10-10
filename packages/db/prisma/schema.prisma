@@ -860,3 +860,38 @@ model CustomCommand {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
+
+/// The counting channel: members count up one by one; a wrong number or the same member twice breaks the streak.
+model CountingConfig {
+  id               Int      @id @default(1)
+  enabled          Boolean  @default(false)
+  channelId        String?  @db.VarChar(20)
+  /// The last correct number (0 = start with 1).
+  currentCount     Int      @default(0)
+  highScore        Int      @default(0)
+  /// Who counted last, so they can't count twice in a row (unless allowConsecutive).
+  lastUserId       String?  @db.VarChar(20)
+  allowConsecutive Boolean  @default(false)
+  /// A wrong number resets the count to 0 (otherwise it is only refused).
+  resetOnMistake   Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+}
+
+/// Auto-responders: the bot answers when a message contains a trigger word or phrase.
+model AutoResponder {
+  id              String   @id @default(cuid())
+  /// Compared in lower case, ignoring accents tricks (NFKC) and invisible characters.
+  trigger         String   @db.VarChar(100)
+  /// word | contains | exact (CHECK in the migration).
+  matchType       String   @default("word") @db.VarChar(12)
+  response        String   @db.VarChar(1500)
+  /// Wait this long before answering again in the same channel.
+  cooldownSeconds Int      @default(30)
+  /// Limit to these channels; empty = everywhere.
+  channelIds      String[] @default([])
+  enabled         Boolean  @default(true)
+  uses            Int      @default(0)
+  createdByName   String   @db.VarChar(100)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

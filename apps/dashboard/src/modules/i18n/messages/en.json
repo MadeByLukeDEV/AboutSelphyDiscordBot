@@ -30,7 +30,9 @@
         "statChannels": "Stat channels",
         "sticky": "Sticky messages",
         "autoPublish": "Auto-publish",
-        "customCommands": "Custom commands"
+        "customCommands": "Custom commands",
+        "counting": "Counting channel",
+        "autoResponders": "Auto-responders"
       }
     },
     "account": {
@@ -1839,6 +1841,112 @@
       "notFound": "That command doesn't exist any more. Reload the page.",
       "failed": "That didn't work. Try again.",
       "needsResponse": "Write the answer (up to 1800 characters)."
+    }
+  },
+  "Counting": {
+    "title": "Counting channel",
+    "intro": "Members count up together, one number at a time, starting at 1. The next number from someone else is accepted with a check mark; a wrong number (or the same member twice in a row) is refused. Messages that don't start with a number are ignored, so people can still chat. The bot needs Add Reactions and Send Messages in the channel.",
+    "none": "Not chosen",
+    "reset": "Start over from 0",
+    "resetDone": "The count was reset to 0 (the high score stays)",
+    "stats": {
+      "title": "Right now",
+      "current": "Current number: {count}",
+      "high": "High score: {count}"
+    },
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these.",
+      "enabled": "Counting is on",
+      "channel": "Counting channel",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the counting happens.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+      "resetOnMistake": "A wrong number starts over from 0",
+      "resetHelp": "Off: a wrong number is only refused and the count stays where it was.",
+      "allowConsecutive": "Allow the same member twice in a row",
+      "consecutiveHelp": "Off: someone else has to count the next number.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel before turning counting on.",
+      "botUnavailable": "Can't reach the bot, so the channel can't be checked. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "failed": "That didn't work. Try again."
+    }
+  },
+  "AutoResponders": {
+    "title": "Auto-responders",
+    "intro": "The bot answers when a message contains a word or phrase you choose. The answer is a reply that pings nobody. Each auto-responder has a cooldown per channel, and the bot never answers more than once every 5 seconds in a channel. Needs the Message Content intent.",
+    "add": "Add an auto-responder",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Auto-responder removed",
+    "on": "On",
+    "off": "Off",
+    "match": {
+      "word": "Whole word",
+      "contains": "Contains",
+      "exact": "Exactly"
+    },
+    "list": {
+      "title": "Auto-responders",
+      "count": "({count} of {max})",
+      "meta": "{uses, plural, one {Answered once} other {Answered # times}} · cooldown {seconds} s",
+      "everywhere": "in every channel",
+      "inChannels": "{count, plural, one {in 1 channel} other {in # channels}}"
+    },
+    "empty": {
+      "title": "No auto-responders yet",
+      "body": "Add one, for example to answer \"ip\" with the server address."
+    },
+    "dialog": {
+      "newTitle": "Add an auto-responder",
+      "editTitle": "Edit auto-responder",
+      "intro": "Matching ignores capital letters and special characters. The trigger is always used as plain text."
+    },
+    "form": {
+      "trigger": "Trigger",
+      "triggerHelp": "A word or phrase, up to 100 characters.",
+      "match": "Match",
+      "matchHelp": "Whole word: \"cat\" matches \"my cat\" but not \"category\". Contains: anywhere in the message. Exactly: the whole message is the trigger.",
+      "response": "Answer",
+      "responseHelp": "Up to 1500 characters. '{user}' shows the author's mention (it doesn't notify), '{username}' their name.",
+      "cooldown": "Cooldown (seconds)",
+      "cooldownHelp": "How long the bot waits before answering this again in the same channel.",
+      "channels": "Only in these channels",
+      "channelsHelp": "Leave empty to answer in every channel.",
+      "enabled": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "picker": {
+      "selected": "Chosen channels",
+      "none": "Every channel",
+      "search": "Search channels",
+      "noMatch": "No channel matches.",
+      "full": "That's the maximum of {max}.",
+      "offline": "The bot is offline, so the channel list isn't available.",
+      "remove": "Remove {name}"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "tooMany": "That's the maximum number of auto-responders.",
+      "notFound": "That auto-responder doesn't exist any more. Reload the page.",
+      "botUnavailable": "Can't reach the bot, so the channels can't be checked. Try again in a moment.",
+      "channelNotFound": "One of those channels doesn't exist, or isn't a text channel.",
+      "failed": "That didn't work. Try again.",
+      "needsTrigger": "Enter a word or phrase (up to 100 characters).",
+      "needsResponse": "Write the answer (up to 1500 characters).",
+      "badCooldown": "Enter a number of seconds from 0 to 86400."
     }
   }
 }

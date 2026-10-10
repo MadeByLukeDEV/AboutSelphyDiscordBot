@@ -22,6 +22,8 @@ export const RELOADABLE_MODULES = [
   "sticky",
   "autopublish",
   "customcommands",
+  "counting",
+  "autoresponders",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
