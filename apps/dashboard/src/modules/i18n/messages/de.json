@@ -13,7 +13,8 @@
         "voiceRooms": "Sprachräume",
         "settings": "Einstellungen",
         "twitch": "Twitch",
-        "announcements": "Ankündigungen"
+        "announcements": "Ankündigungen",
+        "youtube": "YouTube"
       }
     },
     "account": {
@@ -553,6 +554,74 @@
         "past": "Wähle eine Zeit, die mindestens eine Minute in der Zukunft liegt.",
         "tooFar": "Wähle eine Zeit innerhalb des nächsten Jahres."
       }
+    }
+  },
+  "Youtube": {
+    "title": "YouTube",
+    "intro": "Kündige neue Videos in Discord an. Der Bot prüft alle paar Minuten die Uploads des Kanals und postet jedes neue öffentliche Video genau einmal.",
+    "status": {
+      "title": "Verbindung zu YouTube",
+      "working": "Funktioniert",
+      "failing": "Funktioniert nicht",
+      "waiting": "Wartet",
+      "checked": "Zuletzt geprüft {time}.",
+      "never": "Noch nicht geprüft. Der Bot braucht den YouTube-API-Schlüssel und die Kanal-ID in seinen Einstellungen und prüft gleich nach dem Start.",
+      "errors": {
+        "quota": "Das Tageslimit von YouTube für diesen Schlüssel ist aufgebraucht. Es setzt sich von selbst zurück.",
+        "keyRejected": "YouTube hat den API-Schlüssel abgelehnt. Prüfe, ob er gültig ist und die YouTube Data API dafür aktiviert ist.",
+        "notFound": "YouTube kennt diesen Kanal nicht. Prüfe die Kanal-ID in den Einstellungen des Bots.",
+        "failed": "YouTube hat nicht wie erwartet geantwortet. Der Bot versucht es in ein paar Minuten erneut."
+      }
+    },
+    "form": {
+      "title": "Ankündigungen",
+      "enabled": "Neue Videos ankündigen",
+      "enabledHelp": "Videos, die erscheinen, während das aus ist, werden gemerkt und nicht nachträglich angekündigt.",
+      "channel": "Posten in",
+      "noChannel": "Nicht gewählt",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin die Ankündigung geht.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar. Der gespeicherte Kanal bleibt erhalten.",
+      "role": "Rolle pingen",
+      "noRole": "Niemanden",
+      "roleHelp": "Diese Rolle wird über der Ankündigung erwähnt. Sonst kann nichts jemanden pingen.",
+      "message": "Text über der Ankündigung",
+      "messageHelp": "Du kannst '{title}', '{channel}' und '{url}' verwenden.",
+      "shorts": "Auch Shorts ankündigen",
+      "shortsHelp": "Videos mit 3 Minuten oder weniger werden übersprungen, außer das ist an.",
+      "color": "Farbe",
+      "colorReset": "YouTube-Rot",
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb weniger Minuten."
+    },
+    "preview": {
+      "label": "Vorschau",
+      "botName": "AboutSelphy Bot",
+      "sampleTitle": "Mein neuestes Video",
+      "sampleChannel": "Dein Kanal",
+      "thumbnail": "Video-Vorschaubild",
+      "shortsNote": "Shorts werden nicht angekündigt."
+    },
+    "videos": {
+      "title": "Neueste Videos, die der Bot gesehen hat",
+      "empty": {
+        "title": "Noch nichts gesehen",
+        "body": "Die erste Prüfung merkt sich nur die aktuellen Videos, alte werden also nie angekündigt. Neue Uploads erscheinen hier."
+      },
+      "short": "Short",
+      "announced": "Angekündigt",
+      "notAnnounced": "Nicht angekündigt"
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Diese Einstellungen sind nicht gültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du Ankündigungen einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Diese Rolle existiert nicht mehr.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
 }

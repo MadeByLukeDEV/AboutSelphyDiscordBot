@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "announcements";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "community";
 
@@ -30,6 +30,7 @@ const NAV: NavGroupSpec[] = [
       { href: "/announcements", label: "announcements" },
       { href: "/voice-rooms", label: "voiceRooms", requires: "admin" },
       { href: "/twitch", label: "twitch", requires: "admin" },
+      { href: "/youtube", label: "youtube", requires: "admin" },
     ],
   },
 ];

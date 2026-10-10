@@ -13,7 +13,8 @@
         "voiceRooms": "Voice rooms",
         "settings": "Settings",
         "twitch": "Twitch",
-        "announcements": "Announcements"
+        "announcements": "Announcements",
+        "youtube": "YouTube"
       }
     },
     "account": {
@@ -553,6 +554,74 @@
         "past": "Pick a time at least a minute from now.",
         "tooFar": "Pick a time within the next year."
       }
+    }
+  },
+  "Youtube": {
+    "title": "YouTube",
+    "intro": "Announce new videos in Discord. The bot checks the channel's uploads every few minutes and posts each new public video once.",
+    "status": {
+      "title": "Connection to YouTube",
+      "working": "Working",
+      "failing": "Not working",
+      "waiting": "Waiting",
+      "checked": "Last checked {time}.",
+      "never": "Not checked yet. The bot needs the YouTube API key and channel ID in its settings, and checks right after it starts.",
+      "errors": {
+        "quota": "YouTube's daily limit for this key is used up. It resets by itself.",
+        "keyRejected": "YouTube rejected the API key. Check that the key is valid and the YouTube Data API is switched on for it.",
+        "notFound": "YouTube doesn't know that channel. Check the channel ID in the bot's settings.",
+        "failed": "YouTube didn't answer as expected. The bot tries again in a few minutes."
+      }
+    },
+    "form": {
+      "title": "Announcements",
+      "enabled": "Announce new videos",
+      "enabledHelp": "Videos that appear while this is off are remembered, not announced later.",
+      "channel": "Post in",
+      "noChannel": "Not chosen",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the announcement goes.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+      "role": "Ping a role",
+      "noRole": "Nobody",
+      "roleHelp": "This role is mentioned above the announcement. Nothing else can ping anyone.",
+      "message": "Message above the announcement",
+      "messageHelp": "You can use '{title}', '{channel}' and '{url}'.",
+      "shorts": "Announce Shorts too",
+      "shortsHelp": "Videos of 3 minutes or less are skipped unless this is on.",
+      "color": "Colour",
+      "colorReset": "YouTube red",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a few minutes."
+    },
+    "preview": {
+      "label": "Preview",
+      "botName": "AboutSelphy Bot",
+      "sampleTitle": "My newest video",
+      "sampleChannel": "Your channel",
+      "thumbnail": "Video thumbnail",
+      "shortsNote": "Shorts are not announced."
+    },
+    "videos": {
+      "title": "Latest videos the bot has seen",
+      "empty": {
+        "title": "Nothing seen yet",
+        "body": "The first check only remembers the current videos, so old ones are never announced. New uploads show up here."
+      },
+      "short": "Short",
+      "announced": "Announced",
+      "notAnnounced": "Not announced"
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Those settings aren't valid.",
+      "needsChannel": "Pick a channel before switching announcements on.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "roleNotFound": "That role doesn't exist any more.",
+      "failed": "Couldn't save the settings. Try again."
     }
   }
 }
