@@ -1560,7 +1560,45 @@
       "forbidden": "You don't have access to this.",
       "invalid": "That selection isn't valid.",
       "botUnavailable": "Can't reach the bot. Nothing was deleted. Try again in a moment.",
-      "failed": "That didn't work. Try again."
+      "failed": "That didn't work. Try again.",
+      "notFound": "That role doesn't exist any more. Reload the page.",
+      "protected": "That role is protected and can't be changed.",
+      "targetInvalid": "That role can't be the target (it has special permissions, is a staff role, or sits too high).",
+      "sourceInvalid": "One of the roles to merge doesn't exist any more. Reload the page.",
+      "pickTarget": "Pick the role to merge into."
+    },
+    "mergeSelected": "Merge selected ({count})",
+    "edit": {
+      "open": "Edit {name}",
+      "title": "Edit role",
+      "intro": "Change the name and colour. Members keep the role.",
+      "name": "Name",
+      "color": "Colour",
+      "noColor": "No colour",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Role updated"
+    },
+    "merge": {
+      "title": "Merge {count, plural, one {# role} other {# roles}} into one",
+      "intro": "Everyone who has one of these roles ({members, plural, one {1 membership} other {# memberships}} in total) gets the role you pick below.",
+      "target": "Merge into",
+      "targetPlaceholder": "Pick the role to keep",
+      "targetHelp": "Only roles without special permissions can be the target, and not staff roles.",
+      "deleteSources": "Delete the merged roles afterwards (only if everyone received the new role)",
+      "cancel": "Cancel",
+      "button": "Merge",
+      "merging": "Merging…",
+      "done": "{added, plural, one {1 member received the role} other {# members received the role}}, {deleted, plural, one {1 role deleted} other {# roles deleted}}",
+      "someFailed": "{count, plural, one {1 member} other {# members}} couldn't be given the role, so nothing was deleted."
+    },
+    "dangling": {
+      "title": "Settings pointing at deleted roles",
+      "intro": "These settings still use roles that no longer exist. Cleaning up removes those entries (a ticket system without staff roles, or birthdays without a channel, are switched off). Already posted role panels need to be posted again afterwards.",
+      "button": "Clean up",
+      "cleaning": "Cleaning up…",
+      "done": "{count, plural, one {1 entry removed} other {# entries removed}}"
     }
   }
 }

@@ -3,17 +3,15 @@ import "server-only";
 import { prisma } from "@aboutselphy/db";
 import type { UsageKey } from "./schema";
 
-/** Which roles other features still point at, so deleting them is a conscious choice. */
-export async function roleUsage(): Promise<Map<string, Set<UsageKey>>> {
-  const usage = new Map<string, Set<UsageKey>>();
+export type RoleReference = { key: UsageKey; roleId: string };
+
+/** Every place another feature points at a role. */
+export async function references(): Promise<RoleReference[]> {
+  const refs: RoleReference[] = [];
   const add = (key: UsageKey, ids: Array<string | null | undefined>) => {
-    for (const id of ids) {
-      if (!id) continue;
-      if (!usage.has(id)) usage.set(id, new Set());
-      usage.get(id)!.add(key);
-    }
+    for (const roleId of ids) if (roleId) refs.push({ key, roleId });
   };
-  const [panels, rewards, welcome, levels, tickets, giveaways, announcements, streamers, youtube, birthday] = await Promise.all([
+  const [panels, rewards, welcome, levels, tickets, giveaways, announcements, streamers, twitch, youtube, birthday] = await Promise.all([
     prisma.rolePanelRole.findMany({ select: { roleId: true } }),
     prisma.levelReward.findMany({ select: { roleId: true } }),
     prisma.welcomeConfig.findMany({ select: { autoRoleIds: true, botAutoRoleIds: true } }),
@@ -22,6 +20,7 @@ export async function roleUsage(): Promise<Map<string, Set<UsageKey>>> {
     prisma.giveaway.findMany({ where: { status: { in: ["draft", "active"] } }, select: { requiredRoleId: true, pingRoleId: true } }),
     prisma.announcement.findMany({ where: { status: { in: ["draft", "scheduled"] } }, select: { pingRoleId: true } }),
     prisma.twitchStreamer.findMany({ select: { pingRoleId: true } }),
+    prisma.twitchConfig.findMany({ select: { liveRoleId: true } }),
     prisma.youtubeConfig.findMany({ select: { pingRoleId: true } }),
     prisma.birthdayConfig.findMany({ select: { roleId: true } }),
   ]);
@@ -32,8 +31,63 @@ export async function roleUsage(): Promise<Map<string, Set<UsageKey>>> {
   add("tickets", tickets.flatMap((t) => t.staffRoleIds));
   add("giveaway", giveaways.flatMap((g) => [g.requiredRoleId, g.pingRoleId]));
   add("announcement", announcements.map((a) => a.pingRoleId));
-  add("twitch", streamers.map((s) => s.pingRoleId));
+  add("twitch", [...streamers.map((s) => s.pingRoleId), ...twitch.map((c) => c.liveRoleId)]);
   add("youtube", youtube.map((y) => y.pingRoleId));
   add("birthday", birthday.map((b) => b.roleId));
-  return usage;
+  return refs;
+}
+
+/**
+ * Removes every reference to the given (no longer existing) roles. Settings that would be left
+ * invalid are switched off instead (tickets without staff, birthdays without a channel or role).
+ * Returns how many references were removed per feature.
+ */
+export async function removeReferences(missing: string[]): Promise<Partial<Record<UsageKey, number>>> {
+  const gone = new Set(missing);
+  const removed: Partial<Record<UsageKey, number>> = {};
+  const count = (key: UsageKey, n: number) => {
+    if (n > 0) removed[key] = (removed[key] ?? 0) + n;
+  };
+  const keep = (ids: string[]) => ids.filter((id) => !gone.has(id));
+
+  const [welcome, levels, tickets] = await Promise.all([prisma.welcomeConfig.findMany(), prisma.levelConfig.findMany(), prisma.ticketConfig.findMany()]);
+
+  await prisma.$transaction(async (tx) => {
+    count("panel", (await tx.rolePanelRole.deleteMany({ where: { roleId: { in: missing } } })).count);
+    count("levelReward", (await tx.levelReward.deleteMany({ where: { roleId: { in: missing } } })).count);
+    for (const w of welcome) {
+      const auto = keep(w.autoRoleIds);
+      const botAuto = keep(w.botAutoRoleIds);
+      const n = w.autoRoleIds.length - auto.length + (w.botAutoRoleIds.length - botAuto.length);
+      if (n > 0) {
+        await tx.welcomeConfig.update({ where: { id: w.id }, data: { autoRoleIds: auto, botAutoRoleIds: botAuto } });
+        count("welcome", n);
+      }
+    }
+    for (const l of levels) {
+      const next = keep(l.noXpRoleIds);
+      if (next.length !== l.noXpRoleIds.length) {
+        await tx.levelConfig.update({ where: { id: l.id }, data: { noXpRoleIds: next } });
+        count("noXp", l.noXpRoleIds.length - next.length);
+      }
+    }
+    for (const t of tickets) {
+      const next = keep(t.staffRoleIds);
+      if (next.length !== t.staffRoleIds.length) {
+        // A ticket system needs at least one staff role: without one it is switched off.
+        await tx.ticketConfig.update({ where: { id: t.id }, data: { staffRoleIds: next, ...(next.length === 0 ? { enabled: false } : {}) } });
+        count("tickets", t.staffRoleIds.length - next.length);
+      }
+    }
+    count("giveaway", (await tx.giveaway.updateMany({ where: { requiredRoleId: { in: missing } }, data: { requiredRoleId: null } })).count + (await tx.giveaway.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);
+    count("announcement", (await tx.announcement.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);
+    count("twitch", (await tx.twitchStreamer.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count + (await tx.twitchConfig.updateMany({ where: { liveRoleId: { in: missing } }, data: { liveRoleId: null } })).count);
+    count("youtube", (await tx.youtubeConfig.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);
+    const birthdays = await tx.birthdayConfig.findMany({ where: { roleId: { in: missing } } });
+    for (const b of birthdays) {
+      await tx.birthdayConfig.update({ where: { id: b.id }, data: { roleId: null, ...(b.channelId === null ? { enabled: false } : {}) } });
+      count("birthday", 1);
+    }
+  });
+  return removed;
 }

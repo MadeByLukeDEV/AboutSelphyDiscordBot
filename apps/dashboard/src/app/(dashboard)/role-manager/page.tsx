@@ -14,7 +14,7 @@ export default async function RoleManagerPage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("RoleManager");
-  const { roles } = await getRoleManagerPage();
+  const { roles, dangling } = await getRoleManagerPage();
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function RoleManagerPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <RoleManager roles={roles} />
+      <RoleManager roles={roles} dangling={dangling} />
     </>
   );
 }

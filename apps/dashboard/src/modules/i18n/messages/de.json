@@ -1560,7 +1560,45 @@
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Diese Auswahl ist ungültig.",
       "botUnavailable": "Der Bot ist nicht erreichbar. Es wurde nichts gelöscht. Versuche es gleich noch einmal.",
-      "failed": "Das hat nicht geklappt. Versuche es erneut."
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "notFound": "Diese Rolle gibt es nicht mehr. Lade die Seite neu.",
+      "protected": "Diese Rolle ist geschützt und kann nicht geändert werden.",
+      "targetInvalid": "Diese Rolle kann nicht das Ziel sein (sie hat Sonderrechte, ist eine Team-Rolle oder steht zu hoch).",
+      "sourceInvalid": "Eine der zusammenzuführenden Rollen gibt es nicht mehr. Lade die Seite neu.",
+      "pickTarget": "Wähle die Rolle, in die zusammengeführt wird."
+    },
+    "mergeSelected": "Auswahl zusammenführen ({count})",
+    "edit": {
+      "open": "{name} bearbeiten",
+      "title": "Rolle bearbeiten",
+      "intro": "Ändere Name und Farbe. Die Mitglieder behalten die Rolle.",
+      "name": "Name",
+      "color": "Farbe",
+      "noColor": "Keine Farbe",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Rolle aktualisiert"
+    },
+    "merge": {
+      "title": "{count, plural, one {# Rolle} other {# Rollen}} zu einer zusammenführen",
+      "intro": "Alle, die eine dieser Rollen haben ({members, plural, one {1 Zuordnung} other {# Zuordnungen}} insgesamt), erhalten die unten gewählte Rolle.",
+      "target": "Zusammenführen in",
+      "targetPlaceholder": "Rolle wählen, die bleibt",
+      "targetHelp": "Als Ziel sind nur Rollen ohne Sonderrechte möglich, und keine Team-Rollen.",
+      "deleteSources": "Die zusammengeführten Rollen danach löschen (nur, wenn alle die neue Rolle erhalten haben)",
+      "cancel": "Abbrechen",
+      "button": "Zusammenführen",
+      "merging": "Führe zusammen…",
+      "done": "{added, plural, one {1 Mitglied hat die Rolle erhalten} other {# Mitglieder haben die Rolle erhalten}}, {deleted, plural, one {1 Rolle gelöscht} other {# Rollen gelöscht}}",
+      "someFailed": "{count, plural, one {1 Mitglied konnte} other {# Mitglieder konnten}} die Rolle nicht erhalten, daher wurde nichts gelöscht."
+    },
+    "dangling": {
+      "title": "Einstellungen mit gelöschten Rollen",
+      "intro": "Diese Einstellungen verwenden noch Rollen, die es nicht mehr gibt. Das Aufräumen entfernt diese Einträge (ein Ticket-System ohne Team-Rollen oder Geburtstage ohne Kanal werden ausgeschaltet). Bereits gepostete Rollen-Panels müssen danach neu gepostet werden.",
+      "button": "Aufräumen",
+      "cleaning": "Räume auf…",
+      "done": "{count, plural, one {1 Eintrag entfernt} other {# Einträge entfernt}}"
     }
   }
 }

@@ -8,6 +8,8 @@ import {
   pollActionStatus,
   manageRolesResponse,
   roleDeleteResponse,
+  roleMergeResponse,
+  roleUpdateStatus,
   ticketPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
@@ -26,6 +28,8 @@ import {
   type PollActionStatus,
   type ManagedRole,
   type RoleDeleteResponse,
+  type RoleMergeResponse,
+  type RoleUpdateStatus,
   type TicketPanelStatus,
   type GuildEmoji,
   type RoleCreateResponse,
@@ -49,7 +53,7 @@ import { errorInfo } from "@/lib/log";
 
 const TIMEOUT_MS = 4000;
 
-async function botFetch(path: string, init: { method?: "GET" | "POST"; body?: unknown } = {}) {
+async function botFetch(path: string, init: { method?: "GET" | "POST"; body?: unknown; timeoutMs?: number } = {}) {
   try {
     const { BOT_API_URL, BOT_API_SECRET } = env();
     const res = await fetch(new URL(path, BOT_API_URL), {
@@ -59,7 +63,7 @@ async function botFetch(path: string, init: { method?: "GET" | "POST"; body?: un
         ...(init.body !== undefined ? { "content-type": "application/json" } : {}),
       },
       body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(init.timeoutMs ?? TIMEOUT_MS),
       cache: "no-store",
     });
     return res;
@@ -198,6 +202,22 @@ export async function pollAction(id: string, action: "start" | "end" | "delete")
   return parsed.success ? parsed.data : null;
 }
 
+/** Renames and/or recolours a role (the bot re-checks it). Null if the bot can't be reached. */
+export async function updateRoleViaBot(input: { id: string; name?: string; color?: number }, by: string): Promise<RoleUpdateStatus | null> {
+  const res = await botFetch("/internal/roles/update", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" } });
+  if (!res?.ok) return null;
+  const parsed = roleUpdateStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Merges roles (the bot re-checks everything). Null if the bot can't be reached. */
+export async function mergeRolesViaBot(input: { sourceIds: string[]; targetId: string; deleteSources: boolean }, by: string): Promise<RoleMergeResponse | null> {
+  const res = await botFetch("/internal/roles/merge", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" }, timeoutMs: 300_000 });
+  if (!res?.ok) return null;
+  const parsed = roleMergeResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
 /** A member of the server by ID. Undefined = the bot can't be reached, null = no such member. */
 export async function getGuildMemberName(id: string): Promise<{ id: string; name: string } | null | undefined> {
   const res = await botFetch(`/internal/guild/member?id=${encodeURIComponent(id)}`);
@@ -218,7 +238,7 @@ export async function listManagedRoles(): Promise<ManagedRole[] | null> {
 
 /** Asks the bot to delete roles (it re-checks every one). Null if the bot can't be reached. */
 export async function deleteRolesViaBot(ids: string[], by: string): Promise<RoleDeleteResponse["results"] | null> {
-  const res = await botFetch("/internal/roles/delete", { method: "POST", body: { ids, by: by.slice(0, 60) || "the dashboard" } });
+  const res = await botFetch("/internal/roles/delete", { method: "POST", body: { ids, by: by.slice(0, 60) || "the dashboard" }, timeoutMs: 120_000 });
   if (!res?.ok) return null;
   const parsed = roleDeleteResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data.results : null;

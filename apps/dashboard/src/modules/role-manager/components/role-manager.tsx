@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Trash2 } from "lucide-react";
+import { GitMerge, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { deleteRolesAction } from "../actions";
-import type { RoleRow } from "../schema";
+import type { Dangling, RoleRow } from "../schema";
+import { DanglingCard, EditRoleDialog, MergeDialog } from "./role-tools";
 
 type Filter = "all" | "empty" | "unused" | "deletable" | "protected";
 const FILTERS: Filter[] = ["all", "empty", "unused", "deletable", "protected"];
@@ -22,7 +23,7 @@ const CONFIRM_WORD = "DELETE";
 const hex = (color: number) => (color === 0 ? null : `#${color.toString(16).padStart(6, "0")}`);
 
 /** All roles with search and filters, multi-select and a typed confirmation before deleting. State flows in as props; deleting calls router.refresh(). */
-export function RoleManager({ roles }: { roles: RoleRow[] | null }) {
+export function RoleManager({ roles, dangling }: { roles: RoleRow[] | null; dangling: Dangling }) {
   const t = useTranslations("RoleManager");
   const te = useTranslations("RoleManager.errors");
   const router = useRouter();
@@ -32,6 +33,8 @@ export function RoleManager({ roles }: { roles: RoleRow[] | null }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState("");
+  const [editing, setEditing] = useState<RoleRow | null>(null);
+  const [merging, setMerging] = useState(false);
 
   const all = useMemo(() => roles ?? [], [roles]);
   const byId = useMemo(() => new Map(all.map((r) => [r.id, r])), [all]);
@@ -102,14 +105,21 @@ export function RoleManager({ roles }: { roles: RoleRow[] | null }) {
 
   return (
     <section aria-labelledby="rmgr-heading" className="flex flex-col gap-3">
+      <DanglingCard dangling={dangling} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="rmgr-heading" className="text-fluid-lg font-bold">
           {t("list.title")} <span className="text-sm font-normal text-muted-foreground">{t("list.count", { shown: shown.length, total: all.length })}</span>
         </h2>
-        <Button variant="destructive" size="sm" disabled={chosen.length === 0 || pending} onClick={() => setConfirming(true)}>
-          <Trash2 aria-hidden />
-          {t("deleteSelected", { count: chosen.length })}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" disabled={chosen.length === 0 || pending} onClick={() => setMerging(true)}>
+            <GitMerge aria-hidden />
+            {t("mergeSelected", { count: chosen.length })}
+          </Button>
+          <Button variant="destructive" size="sm" disabled={chosen.length === 0 || pending} onClick={() => setConfirming(true)}>
+            <Trash2 aria-hidden />
+            {t("deleteSelected", { count: chosen.length })}
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -160,12 +170,27 @@ export function RoleManager({ roles }: { roles: RoleRow[] | null }) {
                     ))}
                     {r.protectedReason && <Badge>{t(`protected.${r.protectedReason}`)}</Badge>}
                   </div>
+                  <Button variant="ghost" size="icon-sm" disabled={locked} aria-label={t("edit.open", { name: r.name })} onClick={() => setEditing(r)}>
+                    <Pencil aria-hidden />
+                  </Button>
                 </li>
               );
             })}
           </ul>
         </>
       )}
+
+      <EditRoleDialog role={editing} onClose={() => setEditing(null)} />
+      <MergeDialog
+        open={merging}
+        sources={chosen}
+        candidates={all}
+        onClose={() => setMerging(false)}
+        onDone={() => {
+          setMerging(false);
+          setSelected(new Set());
+        }}
+      />
 
       <Dialog
         open={confirming}
