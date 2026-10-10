@@ -369,3 +369,43 @@ model RolePanelRole {
   @@unique([panelId, roleId])
   @@index([panelId, position])
 }
+
+// ---- welcome, auto-roles and role persistence --------------------------------------
+// CHECK constraints (singleton, digits-only Discord IDs, colour range, https picture, list
+// sizes) are added to the migration by hand.
+
+/// Singleton (id = 1).
+model WelcomeConfig {
+  id               Int      @id @default(1)
+  /// Roles given to every new member / every new bot (each must be safe to hand out; checked
+  /// by the bot every time). At most 5 each.
+  autoRoleIds      String[] @default([])
+  botAutoRoleIds   String[] @default([])
+  /// Give a returning member back the (safe) roles they had when they left.
+  restoreRoles     Boolean  @default(false)
+  welcomeEnabled   Boolean  @default(false)
+  welcomeChannelId String?  @db.VarChar(20)
+  /// Placeholders: {user} (a mention), {username}, {server}, {count} (member number).
+  welcomeTemplate  String   @default("Welcome to {server}, {user}! You are member #{count}.") @db.VarChar(1000)
+  /// Post it as a box (embed) instead of plain text.
+  welcomeAsEmbed   Boolean  @default(true)
+  welcomeColor     Int      @default(65448)
+  /// https picture shown in the box; "" = none.
+  welcomeImageUrl  String   @default("") @db.VarChar(500)
+  /// Also send the new member a direct message.
+  dmEnabled        Boolean  @default(false)
+  dmTemplate       String   @default("Welcome to {server}! Have a look at the rules and say hi.") @db.VarChar(1000)
+  goodbyeEnabled   Boolean  @default(false)
+  goodbyeChannelId String?  @db.VarChar(20)
+  goodbyeTemplate  String   @default("{username} has left the server.") @db.VarChar(1000)
+  updatedAt        DateTime @updatedAt
+}
+
+/// The roles a member had when they left, kept for a limited time so they can be restored.
+model MemberRoleSnapshot {
+  userId  String   @id @db.VarChar(20)
+  roleIds String[]
+  savedAt DateTime @default(now())
+
+  @@index([savedAt])
+}

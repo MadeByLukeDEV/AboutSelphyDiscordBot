@@ -22,6 +22,7 @@
     "./twitch-template": "./src/twitch-template.ts",
     "./duration": "./src/duration.ts",
     "./announcement": "./src/announcement.ts",
-    "./role-panel": "./src/role-panel.ts"
+    "./role-panel": "./src/role-panel.ts",
+    "./welcome": "./src/welcome.ts"
   }
 }

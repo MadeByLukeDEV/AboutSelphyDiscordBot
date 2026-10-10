@@ -14,6 +14,8 @@ export type {
   TwitchConnection,
   TwitchNotification,
   TwitchStreamer,
+  WelcomeConfig,
+  MemberRoleSnapshot,
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";

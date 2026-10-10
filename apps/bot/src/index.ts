@@ -3,6 +3,7 @@ import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
 import { registerReactionRoles, registerRolePanels } from "./modules/roles";
+import { registerWelcome } from "./modules/welcome";
 import { startAnnouncements, stopAnnouncements } from "./modules/announcements";
 import { registerAuditLog, registerModerationJobs, stopModerationJobs } from "./modules/moderation";
 import { registerTempVoice } from "./modules/tempvoice";
@@ -34,6 +35,7 @@ async function main() {
   registerTempVoice(client);
   registerRolePanels();
   registerReactionRoles(client);
+  registerWelcome(client);
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);

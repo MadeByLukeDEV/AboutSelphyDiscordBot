@@ -11,12 +11,14 @@ import { Client, GatewayIntentBits, Partials } from "discord.js";
  *   Phase 2  GuildMessages, MessageContent*
  *   Phase 4  GuildVoiceStates
  *   Roles    GuildMessageReactions (reaction roles)
+ *   Welcome  GuildMembers* (joins and leaves)
  */
 export const INTENTS = [
   GatewayIntentBits.Guilds,
   GatewayIntentBits.GuildModeration,
   GatewayIntentBits.GuildVoiceStates,
   GatewayIntentBits.GuildMessageReactions, // role panels in reaction mode
+  GatewayIntentBits.GuildMembers, // privileged: joins and leaves (welcome, auto-roles, restoring roles)
 ];
 
 let client: Client | undefined;
