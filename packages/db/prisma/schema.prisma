@@ -844,3 +844,19 @@ model AutoPublishChannel {
   channelId String   @id @db.VarChar(20)
   createdAt DateTime @default(now())
 }
+
+/// Custom commands ("tags"): staff-written answers members get with /tag name.
+model CustomCommand {
+  id            String   @id @default(cuid())
+  /// Lowercase letters, digits, "-" and "_" (CHECK in the migration).
+  name          String   @unique @db.VarChar(32)
+  /// Markdown allowed; {user} {username} {server} are replaced; never pings anyone but the member who asked.
+  response      String   @db.VarChar(1800)
+  /// Only the member who asked sees the answer.
+  ephemeral     Boolean  @default(false)
+  enabled       Boolean  @default(true)
+  uses          Int      @default(0)
+  createdByName String   @db.VarChar(100)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

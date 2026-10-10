@@ -36,6 +36,7 @@
     "./reminders": "./src/reminders.ts",
     "./stat-channels": "./src/stat-channels.ts",
     "./member-card": "./src/member-card.ts",
-    "./sticky": "./src/sticky.ts"
+    "./sticky": "./src/sticky.ts",
+    "./custom-commands": "./src/custom-commands.ts"
   }
 }

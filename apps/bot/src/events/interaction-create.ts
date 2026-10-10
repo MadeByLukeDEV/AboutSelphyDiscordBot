@@ -9,6 +9,12 @@ async function handle(interaction: Interaction) {
     await dispatchComponent(interaction);
     return;
   }
+  if (interaction.isAutocomplete()) {
+    // Suggestions only: no permission check needed, but a failure must never leave the member waiting.
+    const handler = COMMANDS_BY_NAME.get(interaction.commandName)?.autocomplete;
+    if (handler) await handler(interaction).catch((err) => log.warn({ err, command: interaction.commandName }, "autocomplete failed"));
+    return;
+  }
   if (!interaction.isChatInputCommand()) return;
 
   const command = COMMANDS_BY_NAME.get(interaction.commandName);

@@ -1,4 +1,5 @@
 import type {
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
 } from "discord.js";
@@ -13,4 +14,6 @@ export type Command = {
    */
   requires?: StaffLevel;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
+  /** Suggestions for an option marked `setAutocomplete(true)`. Never throws to the caller; keep it fast (3 s limit). */
+  autocomplete?: (interaction: AutocompleteInteraction) => Promise<void>;
 };

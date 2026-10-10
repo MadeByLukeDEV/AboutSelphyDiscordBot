@@ -853,6 +853,15 @@ Decided 2026-10-08:
       (`modules/autopublish/`, needs Manage Messages there; Discord allows 10 per hour per channel, a
       refusal is logged). `GuildChannel.announcement` tells the dashboard which channels qualify.
       Dashboard `/auto-publish` (admins).
+- [~] Custom commands (2026-10-24, `feature_custom-commands`, migration
+      `20261024100000_custom_commands`; **not tried live yet**; Tier B/C)
+  - Bot (`modules/customcommands/`): staff-written answers shown with `/tag name` (autocomplete from a
+    60 s name cache, dropped on dashboard changes) and `/tags`. Names `[a-z0-9][a-z0-9_-]{0,31}`
+    (DB CHECK), up to 100, answer up to 1800 chars with `{user}` `{username}` `{server}`; markdown
+    kept, `allowedMentions` limited to the member who asked, optional private (ephemeral) answer, use
+    counter. `Command` gained an optional `autocomplete` handler (dispatched in `interaction-create`).
+    Dashboard `/custom-commands` (admins). **Auto-responders** (reacting to words in messages) are not
+    built: they need the privileged Message Content intent.
 - [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;
