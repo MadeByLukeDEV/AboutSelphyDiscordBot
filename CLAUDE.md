@@ -717,6 +717,25 @@ Decided 2026-10-08:
       card. The CSP's `img-src` allows `https://cdn.discordapp.com` for avatars.
       Use `surface` for any new card, not `border bg-card`. Looked at by the
       user before merge: pending feedback.
-- [ ] Phase 5 — announcements
+- [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
+      `20261013100000_announcements` applied; **not tried live yet**)
+  - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
+    with colour and https picture, channel, one ping role, schedule, the posted
+    message id) with CHECKs. Bot (`modules/announcements/`): `message.ts` builds the
+    message (staff markdown kept, **only the configured role can ping**), `service.ts`
+    posts due rows every 30 s and when the dashboard nudges
+    (`POST /internal/reload/announcements`), claims each atomically (never twice),
+    marks a send interrupted by a restart as **failed** instead of repeating it,
+    `POST /internal/announcements/edit|delete` change the Discord message. Off in a
+    local run without `BOT_INTEGRATIONS_IN_DEV`.
+  - Dashboard `/announcements` (moderators and admins): list with status and a plain
+    failure reason, composer dialog with a Discord-style preview (the picture is
+    only a box: the dashboard never loads staff-typed addresses), send now / schedule
+    / draft, edit (a sent one is edited in Discord), delete (a sent one is deleted
+    from Discord first). Channel and role are validated through the bot; rules in
+    `@aboutselphy/shared/announcement` are used by the form, the Server Action and
+    the bot.
+  - [ ] Templates, several embeds or fields, recurring announcements, auto-publish
+        in announcement channels
 - [ ] Phase 6 — new video upload
 - [ ] Phase 7 — webhooks
