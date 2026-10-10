@@ -118,6 +118,34 @@ export type GuildRole = z.infer<typeof guildRole>;
 /** GET /internal/guild/roles */
 export const rolesResponse = z.object({ roles: z.array(guildRole) });
 
+/** A role as the role manager sees it: every role except @everyone, with its member count and whether it may be deleted. */
+export const MAX_ROLE_DELETES = 50;
+export const managedRole = z.object({
+  id: z.string().regex(/^\d{17,20}$/),
+  name: z.string(),
+  color: z.number().int().min(0),
+  position: z.number().int(),
+  memberCount: z.number().int().min(0),
+  /** Has permissions that change the server or other members (shown as a warning). */
+  powerful: z.boolean(),
+  /** Why the bot refuses to delete it; null = it can be deleted. */
+  protectedReason: z.enum(["managed", "aboveBot", "staff"]).nullable(),
+});
+export type ManagedRole = z.infer<typeof managedRole>;
+
+/** GET /internal/roles/manage */
+export const manageRolesResponse = z.object({ roles: z.array(managedRole) });
+
+/** POST /internal/roles/delete: `by` is only a label for Discord's audit log. */
+export const roleDeleteBody = z.object({
+  ids: z.array(z.string().regex(/^\d{17,20}$/)).min(1).max(MAX_ROLE_DELETES),
+  by: z.string().max(60),
+});
+export const roleDeleteStatus = z.enum(["deleted", "not-found", "protected", "failed"]);
+export type RoleDeleteStatus = z.infer<typeof roleDeleteStatus>;
+export const roleDeleteResponse = z.object({ results: z.array(z.object({ id: z.string(), status: roleDeleteStatus })) });
+export type RoleDeleteResponse = z.infer<typeof roleDeleteResponse>;
+
 /** POST /internal/twitch/resolve: look a Twitch channel up by its login name. */
 export const twitchResolveBody = z.object({ login: z.string().regex(/^[a-zA-Z0-9_]{3,25}$/) });
 export const twitchResolveResponse = z.discriminatedUnion("status", [

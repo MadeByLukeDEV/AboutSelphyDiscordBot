@@ -5,6 +5,7 @@ import {
   announcementIdBody,
   giveawayActionBody,
   pollActionBody,
+  roleDeleteBody,
   suggestionDecideBody,
   channelKind,
   refreshCaseBody,
@@ -22,6 +23,7 @@ import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
+import { deleteRoles, listManagedRoles } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
@@ -109,6 +111,20 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { roles: await listGuildRoles(guild) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/roles/manage") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { roles: await listManagedRoles(guild) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/delete") {
+    const body = roleDeleteBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { results: await deleteRoles(guild, body.data.ids, body.data.by) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/roles/create") {
