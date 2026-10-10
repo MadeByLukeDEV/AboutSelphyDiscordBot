@@ -1,33 +1,12 @@
-import {
-  ChannelType,
-  InteractionContextType,
-  MessageFlags,
-  PermissionFlagsBits,
-  SlashCommandBuilder,
-  type Guild,
-} from "discord.js";
+import { ChannelType, InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import type { Command } from "../../commands/types";
 import { escapeText } from "../../lib/escape";
+import { missingFor } from "./checks";
 import { getTempVoiceConfig, saveTempVoiceConfig } from "./config";
 import { findBlockedWord, sanitizeRoomName } from "./name";
-import { missingBotPermissions } from "./permissions";
 import { roomCount } from "./service";
 
 const NO_MENTIONS = { parse: [] as never[] };
-
-/**
- * What the bot is missing to run rooms in this category (or next to the lobby).
- * Checked when an admin sets things up, so a wrong role setup shows up now and
- * not as a silent failure the first time someone joins the lobby.
- */
-async function missingFor(guild: Guild, lobbyId: string | null, categoryId: string | null): Promise<string[]> {
-  const me = guild.members.me ?? (await guild.members.fetchMe());
-  const target =
-    (categoryId ? guild.channels.cache.get(categoryId) : null) ??
-    (lobbyId ? (guild.channels.cache.get(lobbyId)?.parent ?? guild.channels.cache.get(lobbyId)) : null);
-  const perms = target ? target.permissionsFor(me) : me.permissions;
-  return missingBotPermissions((flag) => perms?.has(flag) ?? false);
-}
 
 const tempvoice: Command = {
   data: new SlashCommandBuilder()

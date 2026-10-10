@@ -11,6 +11,7 @@ import { getClient } from "../client";
 import { env } from "../lib/env";
 import { log } from "../lib/log";
 import { refreshCaseLog } from "../modules/moderation";
+import { getTempVoiceOverview } from "../modules/tempvoice";
 import { BodyError, readJsonBody } from "./body";
 import { listGuildChannels } from "./guild";
 import { resolveApiHost } from "./host";
@@ -81,6 +82,12 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { channels: await listGuildChannels(guild, kinds) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/tempvoice/overview") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await getTempVoiceOverview(guild));
   }
 
   if (req.method === "POST" && url.pathname === "/internal/moderation/refresh-case") {

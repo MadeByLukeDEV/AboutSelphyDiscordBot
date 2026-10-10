@@ -1,6 +1,8 @@
 import { PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { SlidingWindowLimiter } from "../../lib/sliding-window";
+import { tempVoiceRoom } from "@aboutselphy/shared";
+import { summarizeRoom } from "./overview";
 import { buildPanel, PANEL_ACTIONS, panelId, parsePanelId } from "./panel";
 import { canClaimRoom, canManageRoom, checkTarget, deriveRoomState, type OverwriteBits, type RoomState } from "./state";
 
@@ -204,5 +206,44 @@ describe("SlidingWindowLimiter", () => {
     expect(limiter.tryAcquire("a")).toBe(true);
     now += 1000;
     expect(limiter.retryAfterSeconds("a")).toBe(0);
+  });
+});
+
+describe("summarizeRoom", () => {
+  const state: RoomState = { locked: true, videoAllowed: false, soundboardAllowed: true, userLimit: 6, allowedIds: ["a", "b"], blockedIds: ["c"] };
+  const base = {
+    channelId: "123456789012345678",
+    name: "Selphy's room",
+    ownerId: OWNER,
+    ownerName: "Selphy",
+    state,
+    createdAt: new Date("2026-10-10T20:00:00Z"),
+  };
+
+  it("reports counts and flags from the room state", () => {
+    const summary = summarizeRoom({ ...base, members: [{ id: "1", name: "A" }, { id: "2", name: "B" }] });
+    expect(summary).toMatchObject({
+      memberCount: 2,
+      locked: true,
+      userLimit: 6,
+      videoAllowed: false,
+      soundboardAllowed: true,
+      allowedCount: 2,
+      blockedCount: 1,
+      createdAt: "2026-10-10T20:00:00.000Z",
+    });
+    expect(summary.members).toHaveLength(2);
+  });
+
+  it("caps the listed members but keeps the real count", () => {
+    const members = Array.from({ length: 40 }, (_, i) => ({ id: String(i), name: `m${i}` }));
+    const summary = summarizeRoom({ ...base, members });
+    expect(summary.memberCount).toBe(40);
+    expect(summary.members).toHaveLength(25);
+  });
+
+  it("matches the contract the dashboard validates", () => {
+    const summary = summarizeRoom({ ...base, ownerName: null, members: [] });
+    expect(tempVoiceRoom.safeParse(summary).success).toBe(true);
   });
 });

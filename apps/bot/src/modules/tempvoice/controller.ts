@@ -60,9 +60,8 @@ export async function roomOfMember(member: GuildMember): Promise<Room | null> {
 
 // -- state and panel --------------------------------------------------------------
 
-/** The room's state, read from a freshly fetched channel so it includes the change just made. */
-export async function roomState(room: Room): Promise<RoomState> {
-  const channel = (await room.channel.fetch(true)) as VoiceChannel;
+/** The state of a channel as its permission overwrites and settings say it is (no network call). */
+export function stateFromChannel(channel: VoiceChannel, ownerId: string, botId: string): RoomState {
   return deriveRoomState({
     overwrites: [...channel.permissionOverwrites.cache.values()].map((o) => ({
       id: o.id,
@@ -71,10 +70,16 @@ export async function roomState(room: Room): Promise<RoomState> {
       deny: o.deny.bitfield,
     })),
     everyoneId: channel.guild.id,
-    ownerId: room.ownerId,
-    botId: channel.client.user.id,
+    ownerId,
+    botId,
     userLimit: channel.userLimit,
   });
+}
+
+/** The room's state, read from a freshly fetched channel so it includes the change just made. */
+export async function roomState(room: Room): Promise<RoomState> {
+  const channel = (await room.channel.fetch(true)) as VoiceChannel;
+  return stateFromChannel(channel, room.ownerId, channel.client.user.id);
 }
 
 async function panelPayload(room: Room) {
