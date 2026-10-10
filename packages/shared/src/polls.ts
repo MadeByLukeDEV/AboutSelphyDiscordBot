@@ -32,7 +32,7 @@ export const pollInput = z
     options: z.array(z.string().trim().min(1).max(MAX_OPTION)).min(MIN_OPTIONS).max(MAX_OPTIONS),
     multiple: z.boolean(),
     /** Optional picture, https only. "" = none. */
-    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image"),
+    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image").default(""),
     /** ISO time the poll closes; "" = it runs until a team member ends it. */
     endsAt: z.string().max(40),
   })

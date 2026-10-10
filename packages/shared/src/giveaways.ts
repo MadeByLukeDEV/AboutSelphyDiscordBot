@@ -26,7 +26,7 @@ export const giveawayInput = z
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
     /** Optional picture, https only. "" = none. */
-    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image"),
+    imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image").default(""),
     /** Post it right after saving (otherwise it stays a draft). */
     start: z.boolean(),
   })
