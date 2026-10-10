@@ -3,6 +3,7 @@ export type {
   Prisma,
   PrismaClient,
   Announcement,
+  LogRoute,
   ModCase,
   ModConfig,
   RolePanel,

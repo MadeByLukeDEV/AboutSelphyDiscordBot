@@ -430,3 +430,16 @@ model MemberRoleSnapshot {
 
   @@index([savedAt])
 }
+
+// ---- server logs ------------------------------------------------------------------
+// One row per kind of log (members, memberUpdates, voice, server), each with its own
+// channel and an on/off switch. CHECK constraints (known category, digits-only channel,
+// "on" needs a channel) are added to the migration by hand.
+
+model LogRoute {
+  id        String   @id @default(cuid())
+  category  String   @unique @db.VarChar(24)
+  channelId String?  @db.VarChar(20)
+  enabled   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}

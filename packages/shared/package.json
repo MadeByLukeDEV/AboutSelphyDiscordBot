@@ -24,6 +24,7 @@
     "./announcement": "./src/announcement.ts",
     "./role-panel": "./src/role-panel.ts",
     "./welcome": "./src/welcome.ts",
-    "./image-info": "./src/image-info.ts"
+    "./image-info": "./src/image-info.ts",
+    "./logs": "./src/logs.ts"
   }
 }
