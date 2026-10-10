@@ -5,6 +5,8 @@ import {
   announcementIdBody,
   channelKind,
   refreshCaseBody,
+  roleCreateBody,
+  rolePanelIdBody,
   reloadModule as reloadModuleSchema,
   twitchResolveBody,
   type BotHealth,
@@ -14,6 +16,7 @@ import { env } from "../lib/env";
 import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
+import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { getTempVoiceOverview } from "../modules/tempvoice";
 import { lookupTwitchChannel } from "../modules/twitch";
 import { BodyError, readJsonBody } from "./body";
@@ -92,6 +95,24 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { roles: await listGuildRoles(guild) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/create") {
+    const body = roleCreateBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    // `by` is only a label for Discord's audit log; the dashboard passes the staff member's name.
+    return json(res, 200, await createRole(guild, body.data, String(url.searchParams.get("by") ?? "dashboard").slice(0, 60)));
+  }
+
+  if (req.method === "POST" && (url.pathname === "/internal/rolepanels/publish" || url.pathname === "/internal/rolepanels/delete")) {
+    const body = rolePanelIdBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const status = url.pathname.endsWith("/publish") ? await publishPanel(guild, body.data.id) : await deletePanelMessage(guild, body.data.id);
+    return json(res, 200, { status });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/twitch/resolve") {

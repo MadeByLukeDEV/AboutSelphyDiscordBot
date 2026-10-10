@@ -2,6 +2,7 @@ import { prisma } from "@aboutselphy/db";
 import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
+import { registerRolePanels } from "./modules/roles";
 import { startAnnouncements, stopAnnouncements } from "./modules/announcements";
 import { registerAuditLog, registerModerationJobs, stopModerationJobs } from "./modules/moderation";
 import { registerTempVoice } from "./modules/tempvoice";
@@ -31,6 +32,7 @@ async function main() {
   registerAuditLog(client);
   registerModerationJobs(client);
   registerTempVoice(client);
+  registerRolePanels();
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);

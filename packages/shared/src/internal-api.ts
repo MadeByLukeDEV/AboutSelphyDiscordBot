@@ -97,6 +97,11 @@ export const guildRole = z.object({
   name: z.string(),
   /** 0 = no colour. */
   color: z.number().int().min(0),
+  /**
+   * The bot may hand this role out: it sits below the bot's own role, isn't managed by an
+   * integration, and carries no powerful permission (admin, kick, ban, manage ...).
+   */
+  assignable: z.boolean().default(true),
 });
 export type GuildRole = z.infer<typeof guildRole>;
 
@@ -122,3 +127,27 @@ export const announcementEditStatus = z.enum(["edited", "not-sent", "message-gon
 export const announcementDeleteStatus = z.enum(["deleted", "not-sent", "already-gone", "failed"]);
 export type AnnouncementEditStatus = z.infer<typeof announcementEditStatus>;
 export type AnnouncementDeleteStatus = z.infer<typeof announcementDeleteStatus>;
+
+/** POST /internal/roles/create: a cosmetic role (no permissions), made by the bot. */
+export const roleCreateBody = z.object({
+  name: z.string().trim().min(1).max(100),
+  color: z.number().int().min(0).max(0xffffff),
+  hoist: z.boolean(),
+  mentionable: z.boolean(),
+});
+export const roleCreateResponse = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("created"), role: guildRole }),
+  /** The bot lacks the Manage Roles permission. */
+  z.object({ status: z.literal("forbidden") }),
+  /** Discord's limit of 250 roles is reached. */
+  z.object({ status: z.literal("tooMany") }),
+  z.object({ status: z.literal("failed") }),
+]);
+export type RoleCreateResponse = z.infer<typeof roleCreateResponse>;
+
+/** POST /internal/rolepanels/{publish,delete} */
+export const rolePanelIdBody = z.object({ id: z.string().min(1).max(64) });
+export const rolePanelPublishStatus = z.enum(["published", "updated", "channel", "roles", "not-found", "failed"]);
+export const rolePanelDeleteStatus = z.enum(["deleted", "already-gone", "not-found", "failed"]);
+export type RolePanelPublishStatus = z.infer<typeof rolePanelPublishStatus>;
+export type RolePanelDeleteStatus = z.infer<typeof rolePanelDeleteStatus>;

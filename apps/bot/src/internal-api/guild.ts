@@ -1,5 +1,6 @@
 import { ChannelType, type Guild } from "discord.js";
 import type { ChannelKind, GuildChannel, GuildRole } from "@aboutselphy/shared";
+import { whyUnassignable } from "../modules/roles";
 
 /** Our three kinds -> Discord channel types. Announcement channels count as text. */
 const KIND_OF: Partial<Record<ChannelType, ChannelKind>> = {
@@ -73,9 +74,15 @@ export async function listGuildChannels(guild: Guild, kinds: ReadonlySet<Channel
 /** Roles someone could sensibly ping: not @everyone, not managed by a bot or integration. Highest first, like Discord's list. */
 export async function listGuildRoles(guild: Guild): Promise<GuildRole[]> {
   const fetched = await guild.roles.fetch();
+  const botTop = (guild.members.me ?? (await guild.members.fetchMe())).roles.highest.position;
   return [...fetched.values()]
     .filter((r) => r.id !== guild.id && !r.managed)
     .sort((a, b) => b.position - a.position)
     .slice(0, 250)
-    .map((r) => ({ id: r.id, name: r.name, color: r.color }));
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      color: r.color,
+      assignable: whyUnassignable({ id: r.id, guildId: guild.id, managed: r.managed, position: r.position, permissions: r.permissions.bitfield }, botTop) === null,
+    }));
 }

@@ -5,6 +5,8 @@ export type {
   Announcement,
   ModCase,
   ModConfig,
+  RolePanel,
+  RolePanelRole,
   TempVoiceChannel,
   TempVoiceConfig,
   TempVoiceLobby,
@@ -15,4 +17,4 @@ export type {
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";
-export type { AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";
+export type { RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

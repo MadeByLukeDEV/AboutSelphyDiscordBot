@@ -319,3 +319,49 @@ model YoutubeVideo {
 
   @@index([publishedAt])
 }
+
+// ---- role panels ------------------------------------------------------------------
+// A message with buttons or a menu where members pick their own roles. The panel is
+// posted by the bot; clicking toggles a role. CHECK constraints (digits-only Discord
+// IDs, colour range, 1..25 roles are enforced in code) are added by hand.
+
+enum RolePanelStyle {
+  buttons
+  menu
+}
+
+model RolePanel {
+  id            String          @id @default(cuid())
+  channelId     String          @db.VarChar(20)
+  /// The posted message. Null = not published yet (a draft).
+  messageId     String?         @db.VarChar(20)
+  title         String          @default("") @db.VarChar(256)
+  description   String          @default("") @db.VarChar(2000)
+  /// 24-bit colour; default is the brand green #00FFA8.
+  color         Int             @default(65448)
+  style         RolePanelStyle  @default(buttons)
+  /// Picking one role removes the panel's other roles ("choose one").
+  exclusive     Boolean         @default(false)
+  createdByName String          @db.VarChar(100)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  roles         RolePanelRole[]
+
+  @@index([createdAt])
+}
+
+model RolePanelRole {
+  id          String    @id @default(cuid())
+  panelId     String
+  panel       RolePanel @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  roleId      String    @db.VarChar(20)
+  label       String    @db.VarChar(80)
+  /// A unicode emoji or a custom emoji ("<:name:id>" is not stored: unicode only here).
+  emoji       String    @default("") @db.VarChar(32)
+  /// Shown under the label in a menu.
+  description String    @default("") @db.VarChar(100)
+  position    Int       @default(0)
+
+  @@unique([panelId, roleId])
+  @@index([panelId, position])
+}

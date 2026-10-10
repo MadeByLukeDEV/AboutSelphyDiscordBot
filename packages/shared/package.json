@@ -21,6 +21,7 @@
     "./token-cipher": "./src/token-cipher.ts",
     "./twitch-template": "./src/twitch-template.ts",
     "./duration": "./src/duration.ts",
-    "./announcement": "./src/announcement.ts"
+    "./announcement": "./src/announcement.ts",
+    "./role-panel": "./src/role-panel.ts"
   }
 }
