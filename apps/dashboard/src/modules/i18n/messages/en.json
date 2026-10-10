@@ -12,7 +12,8 @@
         "cases": "Cases",
         "voiceRooms": "Voice rooms",
         "settings": "Settings",
-        "twitch": "Twitch"
+        "twitch": "Twitch",
+        "announcements": "Announcements"
       }
     },
     "account": {
@@ -439,6 +440,119 @@
       "author": "{name} is live on Twitch",
       "playing": "Playing",
       "thumbnail": "Stream preview"
+    }
+  },
+  "Announcements": {
+    "title": "Announcements",
+    "intro": "Write a message for a Discord channel, preview it, and send it now or at a set time. You can edit or delete it afterwards.",
+    "botOffline": "The bot is offline, so the channel and role lists aren't available. Saved drafts are kept.",
+    "new": "New announcement",
+    "removed": "Announcement deleted",
+    "list": {
+      "title": "Announcements",
+      "noText": "(no text)",
+      "by": "by {name}",
+      "edit": "Edit",
+      "retry": "Retry",
+      "delete": "Delete"
+    },
+    "empty": {
+      "title": "No announcements yet",
+      "body": "Create the first one with New announcement."
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent",
+      "failed": "Failed"
+    },
+    "failure": {
+      "permissions": "The bot isn't allowed to post in that channel. Check its permissions, then retry.",
+      "channel": "That channel doesn't exist any more or isn't a text channel. Edit it and pick another.",
+      "interrupted": "The bot restarted while sending, so it may or may not have been posted. Check Discord, then retry if needed.",
+      "discord": "Discord refused the message. Retry in a moment."
+    },
+    "dialog": {
+      "newTitle": "New announcement",
+      "editTitle": "Edit announcement",
+      "intro": "Everything you type is shown exactly as written. Only the role you pick can be pinged.",
+      "sentNote": "This was already sent. Saving changes the message in Discord. The channel can't change."
+    },
+    "confirm": {
+      "title": "Delete this announcement?",
+      "body": "It is removed from this list. Nothing has been posted yet.",
+      "bodySent": "The message is deleted from Discord too.",
+      "cancel": "Cancel"
+    },
+    "preview": {
+      "label": "Preview",
+      "botName": "AboutSelphy Bot",
+      "bot": "Bot",
+      "empty": "Nothing to show yet.",
+      "image": "Picture"
+    },
+    "form": {
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where the message is posted.",
+      "channelFixed": "A sent announcement stays in its channel.",
+      "botOffline": "The bot is offline, so the channel list isn't available.",
+      "role": "Ping a role",
+      "noRole": "Nobody",
+      "roleHelp": "This role is mentioned at the start. Nothing else you type can ping anyone.",
+      "content": "Message",
+      "contentHelp": "{count} of {max} characters. Discord formatting such as **bold** and links works.",
+      "embed": "Add a box (embed)",
+      "embedTitle": "Box title",
+      "embedDescription": "Box text",
+      "embedDescriptionHelp": "{count} of {max} characters.",
+      "image": "Picture address",
+      "imageHelp": "Optional. A link starting with https:// that Discord can show. The preview shows a box instead.",
+      "color": "Box colour",
+      "colorReset": "Brand green",
+      "when": "When",
+      "modes": {
+        "draft": "Save as draft",
+        "now": "Send now",
+        "schedule": "Schedule"
+      },
+      "time": "Send at",
+      "timeHelp": "In your own time zone, at least a minute from now.",
+      "previewNote": "The picture isn't loaded here. Discord shows it when the message is posted.",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "saveDraft": "Save draft",
+      "sendNow": "Send now",
+      "schedule": "Schedule",
+      "saveSent": "Save and update in Discord",
+      "done": {
+        "draft": "Draft saved",
+        "now": "Sending…",
+        "schedule": "Scheduled"
+      },
+      "savedBotLater": "Saved. The bot wasn't reachable, so it posts within a minute of coming back.",
+      "updatedInDiscord": "Updated in Discord",
+      "savedNotUpdated": "Saved, but the Discord message couldn't be updated. It may have been deleted there.",
+      "channelRequired": "Pick a channel."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "notFound": "That announcement doesn't exist any more. Reload the page.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "roleNotFound": "That role doesn't exist any more.",
+      "locked": "This announcement is being sent right now. Try again in a moment.",
+      "channelFixed": "A sent announcement can't move to another channel.",
+      "failed": "That didn't work. Try again.",
+      "field": {
+        "empty": "Write some text, or turn on the box and give it a title or text.",
+        "image": "The picture address must start with https:// and contain no spaces.",
+        "time": "Pick a date and time.",
+        "past": "Pick a time at least a minute from now.",
+        "tooFar": "Pick a time within the next year."
+      }
     }
   }
 }

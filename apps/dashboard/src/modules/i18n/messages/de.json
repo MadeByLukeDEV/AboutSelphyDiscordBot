@@ -12,7 +12,8 @@
         "cases": "Fälle",
         "voiceRooms": "Sprachräume",
         "settings": "Einstellungen",
-        "twitch": "Twitch"
+        "twitch": "Twitch",
+        "announcements": "Ankündigungen"
       }
     },
     "account": {
@@ -439,6 +440,119 @@
       "author": "{name} ist live auf Twitch",
       "playing": "Spielt",
       "thumbnail": "Stream-Vorschau"
+    }
+  },
+  "Announcements": {
+    "title": "Ankündigungen",
+    "intro": "Schreibe eine Nachricht für einen Discord-Kanal, sieh dir die Vorschau an und sende sie sofort oder zu einer bestimmten Zeit. Danach kannst du sie bearbeiten oder löschen.",
+    "botOffline": "Der Bot ist offline, deshalb sind die Kanal- und Rollenlisten nicht verfügbar. Gespeicherte Entwürfe bleiben erhalten.",
+    "new": "Neue Ankündigung",
+    "removed": "Ankündigung gelöscht",
+    "list": {
+      "title": "Ankündigungen",
+      "noText": "(kein Text)",
+      "by": "von {name}",
+      "edit": "Bearbeiten",
+      "retry": "Erneut versuchen",
+      "delete": "Löschen"
+    },
+    "empty": {
+      "title": "Noch keine Ankündigungen",
+      "body": "Erstelle die erste mit Neue Ankündigung."
+    },
+    "status": {
+      "draft": "Entwurf",
+      "scheduled": "Geplant",
+      "sending": "Wird gesendet",
+      "sent": "Gesendet",
+      "failed": "Fehlgeschlagen"
+    },
+    "failure": {
+      "permissions": "Der Bot darf in diesem Kanal nicht posten. Prüfe seine Rechte und versuche es erneut.",
+      "channel": "Dieser Kanal existiert nicht mehr oder ist kein Textkanal. Bearbeite die Ankündigung und wähle einen anderen.",
+      "interrupted": "Der Bot wurde beim Senden neu gestartet, die Nachricht ist vielleicht gepostet worden. Schau in Discord nach und versuche es bei Bedarf erneut.",
+      "discord": "Discord hat die Nachricht abgelehnt. Versuche es gleich noch einmal."
+    },
+    "dialog": {
+      "newTitle": "Neue Ankündigung",
+      "editTitle": "Ankündigung bearbeiten",
+      "intro": "Alles, was du schreibst, wird genau so angezeigt. Nur die gewählte Rolle kann gepingt werden.",
+      "sentNote": "Diese Ankündigung wurde schon gesendet. Speichern ändert die Nachricht in Discord. Der Kanal lässt sich nicht ändern."
+    },
+    "confirm": {
+      "title": "Diese Ankündigung löschen?",
+      "body": "Sie wird aus dieser Liste entfernt. Es wurde noch nichts gepostet.",
+      "bodySent": "Die Nachricht wird auch in Discord gelöscht.",
+      "cancel": "Abbrechen"
+    },
+    "preview": {
+      "label": "Vorschau",
+      "botName": "AboutSelphy Bot",
+      "bot": "Bot",
+      "empty": "Noch nichts zu zeigen.",
+      "image": "Bild"
+    },
+    "form": {
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin die Nachricht gepostet wird.",
+      "channelFixed": "Eine gesendete Ankündigung bleibt in ihrem Kanal.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar.",
+      "role": "Rolle pingen",
+      "noRole": "Niemanden",
+      "roleHelp": "Diese Rolle wird am Anfang erwähnt. Nichts anderes, was du schreibst, kann jemanden pingen.",
+      "content": "Nachricht",
+      "contentHelp": "{count} von {max} Zeichen. Discord-Formatierung wie **fett** und Links funktioniert.",
+      "embed": "Box hinzufügen (Embed)",
+      "embedTitle": "Titel der Box",
+      "embedDescription": "Text der Box",
+      "embedDescriptionHelp": "{count} von {max} Zeichen.",
+      "image": "Bildadresse",
+      "imageHelp": "Optional. Ein Link, der mit https:// beginnt und den Discord anzeigen kann. Die Vorschau zeigt stattdessen eine Fläche.",
+      "color": "Farbe der Box",
+      "colorReset": "Markengrün",
+      "when": "Wann",
+      "modes": {
+        "draft": "Als Entwurf speichern",
+        "now": "Jetzt senden",
+        "schedule": "Planen"
+      },
+      "time": "Senden um",
+      "timeHelp": "In deiner Zeitzone, mindestens eine Minute ab jetzt.",
+      "previewNote": "Das Bild wird hier nicht geladen. Discord zeigt es, wenn die Nachricht gepostet wird.",
+      "cancel": "Abbrechen",
+      "saving": "Speichert…",
+      "saveDraft": "Entwurf speichern",
+      "sendNow": "Jetzt senden",
+      "schedule": "Planen",
+      "saveSent": "Speichern und in Discord aktualisieren",
+      "done": {
+        "draft": "Entwurf gespeichert",
+        "now": "Wird gesendet…",
+        "schedule": "Geplant"
+      },
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und postet innerhalb einer Minute nach seiner Rückkehr.",
+      "updatedInDiscord": "In Discord aktualisiert",
+      "savedNotUpdated": "Gespeichert, aber die Discord-Nachricht konnte nicht aktualisiert werden. Vielleicht wurde sie dort gelöscht.",
+      "channelRequired": "Wähle einen Kanal."
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "notFound": "Diese Ankündigung existiert nicht mehr. Lade die Seite neu.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "roleNotFound": "Diese Rolle existiert nicht mehr.",
+      "locked": "Diese Ankündigung wird gerade gesendet. Versuche es gleich noch einmal.",
+      "channelFixed": "Eine gesendete Ankündigung kann nicht in einen anderen Kanal wechseln.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "field": {
+        "empty": "Schreibe einen Text, oder aktiviere die Box und gib ihr einen Titel oder Text.",
+        "image": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten.",
+        "time": "Wähle Datum und Uhrzeit.",
+        "past": "Wähle eine Zeit, die mindestens eine Minute in der Zukunft liegt.",
+        "tooFar": "Wähle eine Zeit innerhalb des nächsten Jahres."
+      }
     }
   }
 }

@@ -1,10 +1,14 @@
 import "server-only";
 import {
+  announcementDeleteStatus,
+  announcementEditStatus,
   channelsResponse,
   refreshCaseResponse,
   rolesResponse,
   tempVoiceOverview,
   twitchResolveResponse,
+  type AnnouncementDeleteStatus,
+  type AnnouncementEditStatus,
   type ChannelKind,
   type GuildChannel,
   type GuildRole,
@@ -86,5 +90,21 @@ export async function resolveTwitchChannel(login: string): Promise<TwitchResolve
   const res = await botFetch("/internal/twitch/resolve", { method: "POST", body: { login } });
   if (!res?.ok) return null;
   const parsed = twitchResolveResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to re-render a sent announcement's Discord message. Null if the bot can't be reached. */
+export async function editAnnouncementMessage(id: string): Promise<AnnouncementEditStatus | null> {
+  const res = await botFetch("/internal/announcements/edit", { method: "POST", body: { id } });
+  if (!res?.ok) return null;
+  const parsed = announcementEditStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to delete a sent announcement's Discord message. Null if the bot can't be reached. */
+export async function deleteAnnouncementMessage(id: string): Promise<AnnouncementDeleteStatus | null> {
+  const res = await botFetch("/internal/announcements/delete", { method: "POST", body: { id } });
+  if (!res?.ok) return null;
+  const parsed = announcementDeleteStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
