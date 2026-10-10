@@ -3,7 +3,7 @@ import type { TempVoiceConfig } from "@aboutselphy/db";
 import { errorInfo } from "@/lib/log";
 import { getTempVoiceOverview, listChannels, reloadBotModule } from "@/modules/bot-api";
 import { readConfig, updateConfig } from "./repository";
-import type { SaveSettingsResult, SettingsInput } from "./schema";
+import { isTemplateBlocked, type SaveSettingsResult, type SettingsInput } from "./schema";
 
 function toSettings(c: TempVoiceConfig): SettingsInput {
   return {
@@ -15,6 +15,7 @@ function toSettings(c: TempVoiceConfig): SettingsInput {
     allowVideoByDefault: c.allowVideoByDefault,
     allowSoundboardByDefault: c.allowSoundboardByDefault,
     blockedWords: c.blockedWords ?? [],
+    useDefaultBlocklist: c.useDefaultBlocklist,
   };
 }
 
@@ -27,6 +28,9 @@ export async function getSettings() {
 export { getTempVoiceOverview };
 
 export async function saveSettings(input: SettingsInput): Promise<SaveSettingsResult> {
+  // A template that is itself blocked would turn every new room into "Voice room".
+  if (isTemplateBlocked(input)) return { ok: false, error: "templateBlocked" };
+
   try {
     const current = await readConfig();
     const lobby = input.lobbyChannelId || null;
@@ -57,6 +61,7 @@ export async function saveSettings(input: SettingsInput): Promise<SaveSettingsRe
       allowVideoByDefault: input.allowVideoByDefault,
       allowSoundboardByDefault: input.allowSoundboardByDefault,
       blockedWords: input.blockedWords,
+      useDefaultBlocklist: input.useDefaultBlocklist,
     });
     // The bot caches this config (60 s TTL): tell it to drop the cache now.
     const botNotified = await reloadBotModule("tempvoice");

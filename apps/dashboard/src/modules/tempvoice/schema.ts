@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { snowflake } from "@aboutselphy/shared";
+import { findBlockedWord, findProfanity, snowflake } from "@aboutselphy/shared";
 
 /** No control or zero-width characters: they make names that look empty or look like something else. */
 const visible = (text: string) => !/[\p{Cc}\p{Cf}]/u.test(text);
@@ -44,6 +44,8 @@ const base = {
   defaultUserLimit: z.number().int().min(0).max(99),
   allowVideoByDefault: z.boolean(),
   allowSoundboardByDefault: z.boolean(),
+  /** Also refuse the built-in list of common insults and slurs (English and German). */
+  useDefaultBlocklist: z.boolean(),
 };
 
 const needsLobby = (v: { enabled: boolean; lobbyChannelId: string }) => !v.enabled || v.lobbyChannelId !== "";
@@ -76,9 +78,20 @@ export function fromFormValues(v: SettingsFormValues): SettingsInput {
   return { ...rest, blockedWords: parseBlockedWords(blockedWordsText) };
 }
 
+/**
+ * True when the room name template itself contains something the settings would
+ * block (the admin's own words, or the built-in list if it is on). {user} is
+ * left out: it is replaced by the owner's name later.
+ */
+export function isTemplateBlocked(s: Pick<SettingsInput, "nameTemplate" | "blockedWords" | "useDefaultBlocklist">): boolean {
+  const text = s.nameTemplate.replaceAll("{user}", " ");
+  return findBlockedWord(text, s.blockedWords) !== null || (s.useDefaultBlocklist && findProfanity(text) !== null);
+}
+
 export type SettingsError =
   | "forbidden"
   | "invalid"
+  | "templateBlocked"
   | "needsLobby"
   | "botUnavailable"
   | "lobbyNotFound"

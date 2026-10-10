@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { BUILT_IN_PATTERN_COUNT } from "@aboutselphy/shared";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getSettings } from "@/modules/tempvoice";
 import { RoomsMonitor } from "@/modules/tempvoice/components/rooms-monitor";
@@ -30,7 +31,7 @@ export default async function VoiceRoomsPage() {
         <h2 id="settings-heading" className="text-fluid-lg font-semibold">
           {t("settings.title")}
         </h2>
-        <SettingsForm initial={settings} channels={channels} />
+        <SettingsForm initial={settings} channels={channels} builtInCount={BUILT_IN_PATTERN_COUNT} />
       </section>
     </>
   );

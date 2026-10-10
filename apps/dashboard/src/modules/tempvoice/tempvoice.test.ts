@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { fromFormValues, parseBlockedWords, settingsFormSchema, settingsSchema, toFormValues, type SettingsInput } from "./schema";
+import {
+  fromFormValues,
+  isTemplateBlocked,
+  parseBlockedWords,
+  settingsFormSchema,
+  settingsSchema,
+  toFormValues,
+  type SettingsInput,
+} from "./schema";
 
 const LOBBY = "123456789012345678";
 
@@ -12,6 +20,7 @@ const valid: SettingsInput = {
   allowVideoByDefault: true,
   allowSoundboardByDefault: true,
   blockedWords: ["badword"],
+  useDefaultBlocklist: true,
 };
 
 describe("parseBlockedWords", () => {
@@ -74,6 +83,26 @@ describe("settingsSchema (what the server action accepts)", () => {
     expect(settingsSchema.safeParse({ ...valid, enabled: "true" }).success).toBe(false);
     expect(settingsSchema.safeParse({ ...valid, defaultUserLimit: "5" }).success).toBe(false);
     expect(settingsSchema.safeParse({ enabled: true }).success).toBe(false);
+  });
+});
+
+describe("isTemplateBlocked", () => {
+  const base = { blockedWords: ["secret"], useDefaultBlocklist: true };
+
+  it("lets ordinary templates through, with {user} in them", () => {
+    for (const nameTemplate of ["{user}'s room", "Hangout", "Assassin's Creed night", "Class of {user}"]) {
+      expect(isTemplateBlocked({ ...base, nameTemplate }), nameTemplate).toBe(false);
+    }
+  });
+  it("blocks a template that contains the admin's own word", () => {
+    expect(isTemplateBlocked({ ...base, nameTemplate: "Secret club {user}" })).toBe(true);
+  });
+  it("blocks a template hit by the built-in list, only while that is switched on", () => {
+    expect(isTemplateBlocked({ ...base, nameTemplate: "{user} is a sh1t" })).toBe(true);
+    expect(isTemplateBlocked({ ...base, useDefaultBlocklist: false, nameTemplate: "{user} is a sh1t" })).toBe(false);
+  });
+  it("ignores {user} itself so a placeholder can't be read as part of a word", () => {
+    expect(isTemplateBlocked({ ...base, nameTemplate: "{user}" })).toBe(false);
   });
 });
 

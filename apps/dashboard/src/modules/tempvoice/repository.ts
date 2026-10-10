@@ -15,6 +15,7 @@ export function updateConfig(data: {
   allowVideoByDefault: boolean;
   allowSoundboardByDefault: boolean;
   blockedWords: string[];
+  useDefaultBlocklist: boolean;
 }): Promise<TempVoiceConfig> {
   return prisma.tempVoiceConfig.update({ where: { id: 1 }, data });
 }

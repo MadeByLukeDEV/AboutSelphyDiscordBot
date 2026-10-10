@@ -19,10 +19,13 @@ import { fromFormValues, settingsFormSchema, toFormValues, type SettingsFormValu
 export function SettingsForm({
   initial,
   channels,
+  builtInCount,
 }: {
   initial: SettingsInput;
   /** null = the bot couldn't be reached, so the lists aren't available. */
   channels: GuildChannel[] | null;
+  /** How many patterns the built-in list has. A number only: the list itself stays on the server. */
+  builtInCount: number;
 }) {
   const t = useTranslations("TempVoice.settings");
   const router = useRouter();
@@ -69,7 +72,11 @@ export function SettingsForm({
     }),
   );
 
-  const switchField = (name: "enabled" | "allowVideoByDefault" | "allowSoundboardByDefault", label: string, help?: string) => (
+  const switchField = (
+    name: "enabled" | "allowVideoByDefault" | "allowSoundboardByDefault" | "useDefaultBlocklist",
+    label: string,
+    help?: string,
+  ) => (
     <Field orientation="horizontal">
       <Controller
         control={form.control}
@@ -145,6 +152,8 @@ export function SettingsForm({
 
         {switchField("allowVideoByDefault", t("video"))}
         {switchField("allowSoundboardByDefault", t("soundboard"), t("defaultsHelp"))}
+
+        {switchField("useDefaultBlocklist", t("defaultBlocklist"), t("defaultBlocklistHelp", { count: builtInCount }))}
 
         <Field data-invalid={Boolean(errors.blockedWordsText) || undefined}>
           <FieldLabel htmlFor="blockedWordsText">{t("blocked")}</FieldLabel>
