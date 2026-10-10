@@ -11,7 +11,8 @@
         "overview": "Übersicht",
         "cases": "Fälle",
         "voiceRooms": "Sprachräume",
-        "settings": "Einstellungen"
+        "settings": "Einstellungen",
+        "twitch": "Twitch"
       }
     },
     "account": {
@@ -293,5 +294,71 @@
     "loadFailedTitle": "Diese Seite konnte nicht geladen werden",
     "loadFailedBody": "Beim Laden ist etwas schiefgelaufen. Versuche es gleich noch einmal. Wenn es weiter auftritt, stehen die Details im Log des Dashboards.",
     "retry": "Erneut versuchen"
+  },
+  "Twitch": {
+    "title": "Twitch",
+    "intro": "Kündige in Discord an, wenn ein Kanal live geht. Der Bot hört selbst auf Twitch; du verbindest einmal ein Konto und wählst die Kanäle.",
+    "saved": "Gespeichert",
+    "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+    "outcome": {
+      "connected": "Twitch ist verbunden.",
+      "cancelled": "Der Twitch-Login wurde abgebrochen. Nichts wurde geändert.",
+      "invalidState": "Dieser Login-Link ist abgelaufen oder passte nicht. Starte neu mit dem Verbinden-Button.",
+      "noRefreshToken": "Twitch hat keinen dauerhaften Login geliefert. Versuche es erneut.",
+      "notConfigured": "Twitch ist auf dem Server noch nicht eingerichtet (Client-ID, Secret und Verschlüsselungsschlüssel).",
+      "forbidden": "Nur Admins können Twitch verbinden.",
+      "failed": "Der Twitch-Login konnte nicht abgeschlossen werden. Versuche es erneut."
+    },
+    "connection": {
+      "title": "Verbindung",
+      "connected": "Verbunden",
+      "needsReconnect": "Neu verbinden nötig",
+      "none": "Kein Twitch-Konto verbunden. Twitch lässt Bots nur mit einem Login auf Stream-Ereignisse hören, such dir also irgendein Konto aus (deins ist okay). Es fragt keine Berechtigungen an.",
+      "notConfigured": "Twitch ist auf dem Server noch nicht eingerichtet: Client-ID, Client-Secret und Verschlüsselungsschlüssel fehlen.",
+      "as": "Hört als {login} zu.",
+      "by": "verbunden von {name} am {date}",
+      "explain": "Dieser Login hat keine Berechtigungen außer der Kontoerkennung. Er wird verschlüsselt gespeichert und nur genutzt, damit der Bot mitbekommt, wann Streams starten und enden.",
+      "connect": "Twitch verbinden",
+      "reconnect": "Erneut verbinden",
+      "switchAccount": "Anderes Konto nutzen",
+      "disconnect": "Trennen",
+      "disconnected": "Twitch getrennt"
+    },
+    "settings": {
+      "title": "Ankündigungen",
+      "enabled": "Streams beim Livegehen ankündigen",
+      "enabledHelp": "Braucht ein verbundenes Konto und mindestens einen Kanal unten.",
+      "markEnded": "Nachricht bearbeiten, wenn der Stream endet",
+      "markEndedHelp": "Die Ankündigung wird grau und zeigt, wann der Stream endete."
+    },
+    "streamers": {
+      "title": "Kanäle",
+      "intro": "Jeder Kanal postet in seinen eigenen Discord-Kanal und pingt optional eine Rolle.",
+      "empty": {
+        "title": "Noch keine Kanäle",
+        "body": "Füge den ersten in Discord mit /twitch add hinzu."
+      },
+      "paused": "Pausiert",
+      "pings": "pingt eine Rolle",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "remove": "Entfernen",
+      "removed": "Kanal entfernt",
+      "addHint": "Kanäle hinzufügen oder ändern geht in Discord mit /twitch add (Kanal, wohin posten, optional Rolle und Text)."
+    },
+    "confirm": {
+      "cancel": "Abbrechen",
+      "disconnectTitle": "Twitch trennen?",
+      "disconnectBody": "Ankündigungen stoppen, bis wieder ein Konto verbunden wird. Bisherige Ankündigungen bleiben in Discord.",
+      "removeTitle": "Diesen Kanal entfernen?",
+      "removeBody": "{name} wird nicht mehr angekündigt. Bisherige Ankündigungen bleiben in Discord."
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Diese Anfrage war ungültig.",
+      "notConnected": "Verbinde zuerst ein Twitch-Konto.",
+      "notFound": "Dieser Kanal existiert nicht mehr. Lade die Seite neu.",
+      "failed": "Das wurde nicht gespeichert. Versuche es erneut."
+    }
   }
 }

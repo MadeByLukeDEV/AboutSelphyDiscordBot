@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Mic, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Mic, Radio, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -13,6 +13,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   cases: ScrollText,
   settings: Settings,
   voiceRooms: Mic,
+  twitch: Radio,
 };
 
 /** "/" matches only itself; every other item also matches its sub-pages ("/cases/12"). */

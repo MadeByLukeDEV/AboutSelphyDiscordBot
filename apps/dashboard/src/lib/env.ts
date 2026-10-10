@@ -25,6 +25,15 @@ const schema = z.object({
   BETTER_AUTH_SECRET: z.string().min(16),
   BOT_API_URL: z.url().default("http://bot:3100"),
   BOT_API_SECRET: z.string().min(32),
+  // Twitch (went live): the dashboard only runs the one-time "Connect Twitch"
+  // login and stores the refresh token encrypted; the bot does the rest.
+  TWITCH_CLIENT_ID: z.string().min(1).optional(),
+  TWITCH_CLIENT_SECRET: z.string().min(1).optional(),
+  // 32 bytes as 64 hex characters (same value as the bot's).
+  TOKEN_ENCRYPTION_KEY: z
+    .string()
+    .regex(/^[0-9a-fA-F]{64}$/)
+    .optional(),
 });
 
 export type Env = z.infer<typeof schema>;

@@ -555,7 +555,40 @@ Decided 2026-10-08:
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
 - [ ] Phase 2 — anti-bot
-- [ ] Phase 3 — went live
+- [~] Phase 3 — went live (2026-10-12, `feature_twitch-went-live`; **code done, not
+      run against Twitch yet; migration `20261012120000_twitch` written, NOT
+      applied**)
+  - Bot (`modules/twitch/`): `protocol.ts` (zod-parsed EventSub frames, reconnect
+    URLs only on `*.wss.twitch.tv`, message-id de-dup), `eventsub-client.ts` (the
+    socket: welcome → subscribe within the 10 s budget, keepalive timeout +5 s
+    slack, `session_reconnect` handoff without resubscribing, exponential
+    backoff; uses Node's built-in `WebSocket`, no `ws` dependency; 8 tests with a
+    fake socket), `helix.ts`, `tokens.ts` (access token in memory, refresh token
+    encrypted in `TwitchConnection`, rotated token always stored, a rejected
+    grant sets `needsReconnect`), `reconcile.ts` (pure plan after every
+    (re)connect: late announcement only for a known channel and a stream younger
+    than 15 min, otherwise a **silent baseline** row with `messageId` null; stale
+    open rows closed), `notification.ts` (escaped message, Twitch-CDN-only
+    thumbnail, only the configured role can ping), `service.ts` (announce is
+    serialised per stream id and unique in the DB, offline edits the message),
+    `/twitch add|remove|enable|disable|status` (admin). Off in local runs unless
+    `BOT_INTEGRATIONS_IN_DEV=true`, and without `TWITCH_CLIENT_ID/_SECRET` +
+    `TOKEN_ENCRYPTION_KEY`.
+  - Dashboard `/twitch` (admins): connect/disconnect, the two switches, the
+    channels (pause/remove). Adding channels is only `/twitch add` for now (the
+    login must be resolved through Helix, which only the bot has a token for).
+    Connect flow = `/api/twitch/connect|callback` (state cookie, admin only,
+    outcome as a code). The grant asks for **no scopes** (stream.online/offline
+    need none). **Never revoke the access token after connecting**: Twitch ends
+    the whole grant, refresh token included. Revoking is only for disconnect.
+  - Shared: `@aboutselphy/shared/token-cipher` (Node only, key passed in) and
+    `TWITCH_REFRESH_TOKEN_PURPOSE`.
+  - To go live: put `TWITCH_CLIENT_ID/_SECRET` + `TOKEN_ENCRYPTION_KEY` in
+    `.env.local`, register the redirect URL for the Client ID, apply the
+    migration (only with the user's go-ahead), restart bot and dashboard, connect
+    on `/twitch`, `/twitch add`, `/twitch enable`.
+  - [ ] Verified against real Twitch; [ ] dashboard form to add channels;
+        [ ] Kick/TikTok, clips, a "Live" role.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and

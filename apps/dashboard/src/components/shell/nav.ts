@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "community";
 
@@ -24,7 +24,13 @@ const NAV: NavGroupSpec[] = [
       { href: "/settings", label: "settings", requires: "admin" },
     ],
   },
-  { label: "community", items: [{ href: "/voice-rooms", label: "voiceRooms", requires: "admin" }] },
+  {
+    label: "community",
+    items: [
+      { href: "/voice-rooms", label: "voiceRooms", requires: "admin" },
+      { href: "/twitch", label: "twitch", requires: "admin" },
+    ],
+  },
 ];
 
 /** What the (client) navigation components receive: plain data, no components, already filtered by role. */

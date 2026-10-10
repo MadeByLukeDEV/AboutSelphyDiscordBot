@@ -11,7 +11,8 @@
         "overview": "Overview",
         "cases": "Cases",
         "voiceRooms": "Voice rooms",
-        "settings": "Settings"
+        "settings": "Settings",
+        "twitch": "Twitch"
       }
     },
     "account": {
@@ -293,5 +294,71 @@
     "loadFailedTitle": "Couldn't load this page",
     "loadFailedBody": "Something went wrong while loading it. Try again in a moment. If it keeps happening, the dashboard's log has the details.",
     "retry": "Try again"
+  },
+  "Twitch": {
+    "title": "Twitch",
+    "intro": "Announce in Discord when a channel goes live. The bot listens to Twitch itself; you connect an account once and pick the channels to announce.",
+    "saved": "Saved",
+    "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+    "outcome": {
+      "connected": "Twitch is connected.",
+      "cancelled": "The Twitch login was cancelled. Nothing changed.",
+      "invalidState": "That login link expired or didn't match. Start again with the connect button.",
+      "noRefreshToken": "Twitch didn't give a long-lived login. Try connecting again.",
+      "notConfigured": "Twitch isn't set up on the server yet (client ID, secret and encryption key).",
+      "forbidden": "Only admins can connect Twitch.",
+      "failed": "Couldn't finish the Twitch login. Try again."
+    },
+    "connection": {
+      "title": "Connection",
+      "connected": "Connected",
+      "needsReconnect": "Needs reconnecting",
+      "none": "No Twitch account is connected. Twitch only lets bots listen for stream events with a login, so pick any account (your own is fine). It asks for no permissions.",
+      "notConfigured": "Twitch isn't set up on the server yet: the client ID, client secret and encryption key are missing.",
+      "as": "Listening as {login}.",
+      "by": "connected by {name} on {date}",
+      "explain": "This login has no permissions beyond identifying the account. It is stored encrypted and only used to let the bot listen for streams going live and ending.",
+      "connect": "Connect Twitch",
+      "reconnect": "Connect again",
+      "switchAccount": "Use another account",
+      "disconnect": "Disconnect",
+      "disconnected": "Twitch disconnected"
+    },
+    "settings": {
+      "title": "Announcements",
+      "enabled": "Announce streams going live",
+      "enabledHelp": "Needs a connected account and at least one channel below.",
+      "markEnded": "Edit the message when the stream ends",
+      "markEndedHelp": "The announcement turns grey and says when the stream ended."
+    },
+    "streamers": {
+      "title": "Channels",
+      "intro": "Each channel posts into its own Discord channel, optionally pinging a role.",
+      "empty": {
+        "title": "No channels yet",
+        "body": "Add the first one in Discord with /twitch add."
+      },
+      "paused": "Paused",
+      "pings": "pings a role",
+      "pause": "Pause",
+      "resume": "Resume",
+      "remove": "Remove",
+      "removed": "Channel removed",
+      "addHint": "Add or change a channel in Discord with /twitch add (channel, where to post, optional role and message)."
+    },
+    "confirm": {
+      "cancel": "Cancel",
+      "disconnectTitle": "Disconnect Twitch?",
+      "disconnectBody": "Announcements stop until an account is connected again. Past announcements stay in Discord.",
+      "removeTitle": "Remove this channel?",
+      "removeBody": "{name} will no longer be announced. Past announcements stay in Discord."
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "That request wasn't valid.",
+      "notConnected": "Connect a Twitch account first.",
+      "notFound": "That channel doesn't exist any more. Reload the page.",
+      "failed": "That didn't save. Try again."
+    }
   }
 }

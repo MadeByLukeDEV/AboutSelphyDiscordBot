@@ -1,3 +1,4 @@
+import { TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy/shared";
 import { decryptToken, encryptToken } from "@aboutselphy/shared/token-cipher";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
@@ -8,7 +9,7 @@ import { markNeedsReconnect, readConnection, storeRefreshToken } from "./reposit
 // token lives encrypted in the database (the dashboard stored it after the
 // one-time "Connect Twitch"); access tokens live only in memory.
 
-export const REFRESH_TOKEN_PURPOSE = "twitch-bot-refresh-token";
+const REFRESH_TOKEN_PURPOSE = TWITCH_REFRESH_TOKEN_PURPOSE;
 
 /** Refresh this long before the token really expires. */
 const EARLY_MS = 120_000;
