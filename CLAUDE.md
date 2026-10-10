@@ -639,6 +639,16 @@ Decided 2026-10-08:
         category a category the bot can see, refuses channel changes while the
         bot is unreachable, then asks the bot to reload (`/internal/reload/
         tempvoice`).
+- [x] Dashboard redesign (2026-10-11, `feature_dashboard-redesign`): same palette,
+      new look. Utilities `surface` / `surface-interactive` (glass card, blur,
+      inner highlight) and an ambient brand glow live in `globals.css`. Desktop:
+      floating sidebar with grouped pill navigation (`navFor()` in
+      `components/shell/nav.ts`), a bot status pill and the account block
+      (avatar, role badge). Phone: slim top bar + account bottom sheet + tab bar.
+      `useBotStatus` (client hook, 15 s poll) feeds the pill and the status
+      card. The CSP's `img-src` allows `https://cdn.discordapp.com` for avatars.
+      Use `surface` for any new card, not `border bg-card`. Looked at by the
+      user before merge: pending feedback.
 - [ ] Phase 5 — announcements
 - [ ] Phase 6 — new video upload
 - [ ] Phase 7 — webhooks
