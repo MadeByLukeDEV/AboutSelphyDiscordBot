@@ -862,6 +862,12 @@ Decided 2026-10-08:
     counter. `Command` gained an optional `autocomplete` handler (dispatched in `interaction-create`).
     Dashboard `/custom-commands` (admins). **Auto-responders** (reacting to words in messages) are not
     built: they need the privileged Message Content intent.
+- [~] Utility commands (2026-10-24, `feature_utility-commands`, no migration; **not tried live yet**; Tier C)
+  - `modules/utility/`: `/userinfo`, `/serverinfo`, `/roleinfo`, `/avatar` (read-only embeds for every
+    member, names escaped, nothing pings) and `commands/help.ts`: `/help` lists only the commands the
+    asker may use (members, then the team; admin commands are hidden from moderators), built from the
+    registered command list at call time. No dashboard page (nothing to configure). `/afk` is not built:
+    it needs to read messages.
 - [~] Birthdays (2026-10-20, `feature_birthdays`, migration `20261020180000_birthdays`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/birthdays/`): `/birthday set|remove|show|upcoming` (open to every member;

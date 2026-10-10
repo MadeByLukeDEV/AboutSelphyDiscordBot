@@ -9,9 +9,11 @@ import { suggestionCommands } from "../modules/suggestions";
 import { ticketCommands } from "../modules/tickets";
 import { twitchCommands } from "../modules/twitch";
 import type { Command } from "./types";
+import { help } from "./help";
 import { ping } from "./ping";
+import { utilityCommands } from "../modules/utility";
 
 /** Each module contributes its own command list; add new modules here. */
-export const COMMANDS: Command[] = [ping, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands, ...pollCommands, ...birthdayCommands, ...reminderCommands, ...customCommandCommands];
+export const COMMANDS: Command[] = [ping, help, ...utilityCommands, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands, ...pollCommands, ...birthdayCommands, ...reminderCommands, ...customCommandCommands];
 
 export const COMMANDS_BY_NAME = new Map(COMMANDS.map((c) => [c.data.name, c]));
