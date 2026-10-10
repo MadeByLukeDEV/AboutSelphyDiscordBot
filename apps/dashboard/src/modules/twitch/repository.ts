@@ -6,7 +6,7 @@ export function readConfig(): Promise<TwitchConfig> {
   return prisma.twitchConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 }
 
-export function updateConfig(data: { enabled: boolean; markEndedOnOffline: boolean }): Promise<TwitchConfig> {
+export function updateConfig(data: { enabled: boolean; markEndedOnOffline: boolean; liveRoleId: string | null }): Promise<TwitchConfig> {
   return prisma.twitchConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 
@@ -38,6 +38,7 @@ export async function setStreamerEnabled(id: string, enabled: boolean): Promise<
 export type StreamerData = {
   channelId: string;
   pingRoleId: string | null;
+  discordUserId: string | null;
   messageTemplate: string;
   embedColor: number;
   showThumbnail: boolean;

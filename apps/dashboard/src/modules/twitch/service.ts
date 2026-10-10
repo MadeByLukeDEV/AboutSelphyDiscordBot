@@ -4,7 +4,7 @@ import { MAX_TWITCH_STREAMERS, TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy
 import { decryptToken, encryptToken } from "@aboutselphy/shared/token-cipher";
 import { env, siteUrl } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
-import { listChannels, listRoles, reloadBotModule, resolveTwitchChannel } from "@/modules/bot-api";
+import { getGuildMemberName, listChannels, listRoles, reloadBotModule, resolveTwitchChannel } from "@/modules/bot-api";
 import { buildAuthorizationUrl, exchangeCode, refreshAccessToken, revokeToken, TwitchOAuthError, validateToken } from "./oauth";
 import {
   countStreamers,
@@ -113,6 +113,7 @@ const toView = (s: {
   displayName: string;
   channelId: string;
   pingRoleId: string | null;
+  discordUserId: string | null;
   messageTemplate: string;
   embedColor: number;
   showThumbnail: boolean;
@@ -124,6 +125,7 @@ const toView = (s: {
   displayName: s.displayName,
   channelId: s.channelId,
   pingRoleId: s.pingRoleId,
+  discordUserId: s.discordUserId,
   messageTemplate: s.messageTemplate,
   embedColor: s.embedColor,
   showThumbnail: s.showThumbnail,
@@ -145,7 +147,7 @@ export async function getTwitchOverview(): Promise<TwitchOverview> {
           connectedAt: connection.connectedAt.toISOString(),
         }
       : null,
-    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline },
+    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId ?? "" },
     streamers: streamers.map(toView),
   };
 }
@@ -156,8 +158,14 @@ export async function saveTwitchSettings(input: TwitchSettings): Promise<SaveTwi
   try {
     // Switching on with nothing to announce or nobody connected would silently do nothing.
     if (input.enabled && !(await readConnection())) return { ok: false, error: "notConnected" };
-    const saved = await updateConfig(input);
-    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline }, botNotified: await reloadBotModule("twitch") };
+    const current = await readConfig();
+    if (input.liveRoleId && input.liveRoleId !== current.liveRoleId) {
+      const roles = await listRoles();
+      if (!roles) return { ok: false, error: "botUnavailable" };
+      if (!roles.some((r) => r.id === input.liveRoleId && r.assignable)) return { ok: false, error: "roleNotFound" };
+    }
+    const saved = await updateConfig({ enabled: input.enabled, markEndedOnOffline: input.markEndedOnOffline, liveRoleId: input.liveRoleId || null });
+    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline, liveRoleId: saved.liveRoleId ?? "" }, botNotified: await reloadBotModule("twitch") };
   } catch (error) {
     console.error("[twitch] saving the settings failed", errorInfo(error));
     return { ok: false, error: "failed" };
@@ -193,9 +201,17 @@ export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerRe
       if (!roles.some((r) => r.id === roleId)) return fail("roleNotFound");
     }
 
+    const discordUserId = input.discordUserId || null;
+    if (discordUserId && discordUserId !== (existing?.discordUserId ?? null)) {
+      const member = await getGuildMemberName(discordUserId);
+      if (member === undefined) return fail("botUnavailable");
+      if (member === null) return fail("memberNotFound");
+    }
+
     const data = {
       channelId: input.channelId,
       pingRoleId: roleId,
+      discordUserId,
       messageTemplate: input.messageTemplate,
       embedColor: input.embedColor,
       showThumbnail: input.showThumbnail,
@@ -251,7 +267,7 @@ export async function disconnectTwitch(): Promise<SimpleResult> {
     const connection = await readConnection();
     if (!connection) return { ok: false, error: "notConnected" };
     const config = await readConfig();
-    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline });
+    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId });
     if (creds && !connection.needsReconnect) {
       try {
         const refresh = decryptToken(connection.refreshTokenEnc, TWITCH_REFRESH_TOKEN_PURPOSE, creds.key);

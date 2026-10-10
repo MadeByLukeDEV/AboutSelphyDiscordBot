@@ -2,10 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
+import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,7 +15,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { disconnectTwitchAction, removeStreamerAction, saveTwitchSettingsAction, setStreamerEnabledAction } from "../actions";
-import type { ConnectOutcome, TwitchOverview, TwitchStreamerView } from "../schema";
+import type { ConnectOutcome, TwitchOverview, TwitchSettings, TwitchStreamerView } from "../schema";
 import { StreamerForm } from "./streamer-form";
 
 type Confirm = { kind: "disconnect" } | { kind: "remove"; streamer: TwitchStreamerView } | null;
@@ -146,6 +148,8 @@ export function TwitchManager({
         </Field>
       </section>
 
+      <LiveRoleForm key={settings.liveRoleId} settings={settings} roles={roles} pending={pending} onSave={saveSettings} />
+
       {/* The channels */}
       <section aria-labelledby="twitch-streamers" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -250,5 +254,34 @@ export function TwitchManager({
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+
+/** The role worn by a streamer's linked Discord member while they are live. */
+function LiveRoleForm({ settings, roles, pending, onSave }: { settings: TwitchSettings; roles: GuildRole[] | null; pending: boolean; onSave: (next: Partial<TwitchSettings>) => void }) {
+  const t = useTranslations("Twitch.liveRole");
+  const form = useForm<{ liveRoleId: string }>({ defaultValues: { liveRoleId: settings.liveRoleId } });
+  const options: SelectOption[] = [{ value: "", label: t("none") }, ...(roles ?? []).filter((r) => r.assignable).map((r) => ({ value: r.id, label: r.name }))];
+  if (settings.liveRoleId && !options.some((o) => o.value === settings.liveRoleId)) options.push({ value: settings.liveRoleId, label: settings.liveRoleId });
+  return (
+    <section aria-labelledby="twitch-live-role" className="surface flex flex-col gap-3 p-5">
+      <h2 id="twitch-live-role" className="text-fluid-lg font-bold">
+        {t("title")}
+      </h2>
+      <p className="max-w-prose text-sm text-muted-foreground">{t("intro")}</p>
+      <form onSubmit={form.handleSubmit((values) => onSave({ liveRoleId: values.liveRoleId }))} className="flex flex-col gap-3" noValidate>
+        <Field>
+          <FieldLabel htmlFor="tw-live-role">{t("role")}</FieldLabel>
+          <FormSelect control={form.control} name="liveRoleId" id="tw-live-role" options={options} placeholder={t("none")} disabled={roles === null} />
+          <FieldDescription>{roles === null ? t("botOffline") : t("help")}</FieldDescription>
+        </Field>
+        <div>
+          <Button type="submit" size="sm" disabled={pending || !form.formState.isDirty}>
+            {t("save")}
+          </Button>
+        </div>
+      </form>
+    </section>
   );
 }

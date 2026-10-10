@@ -413,7 +413,9 @@
       "channelNotFound": "Dieser Discord-Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Diese Rolle existiert nicht mehr.",
       "tooManyStreamers": "Mehr Kanäle kann eine Twitch-Verbindung nicht verfolgen. Entferne zuerst einen.",
-      "alreadyAdded": "Dieser Kanal steht schon auf der Liste."
+      "alreadyAdded": "Dieser Kanal steht schon auf der Liste.",
+      "memberNotFound": "Dieses Mitglied ist nicht auf dem Server.",
+      "memberInvalid": "Eine Discord-Mitglieds-ID besteht aus 17 bis 20 Ziffern."
     },
     "form": {
       "addTitle": "Kanal hinzufügen",
@@ -443,7 +445,10 @@
       "colorHelp": "Der Streifen am Rand der Ankündigung.",
       "showGame": "Spiel anzeigen",
       "showThumbnail": "Vorschaubild des Streams anzeigen",
-      "showThumbnailHelp": "Twitchs Live-Bild des Streams, aktualisiert beim Posten der Ankündigung."
+      "showThumbnailHelp": "Twitchs Live-Bild des Streams, aktualisiert beim Posten der Ankündigung.",
+      "member": "Discord-Mitglied (für die Live-Rolle)",
+      "memberPlaceholder": "Mitglieds-ID, z. B. 123456789012345678",
+      "memberHelp": "Optional. Das Mitglied, das die Live-Rolle erhält, solange dieser Kanal streamt. Die ID kopierst du in Discord mit aktiviertem Entwicklermodus: Rechtsklick auf das Mitglied > Nutzer-ID kopieren."
     },
     "preview": {
       "label": "Vorschau",
@@ -453,6 +458,15 @@
       "author": "{name} ist live auf Twitch",
       "playing": "Spielt",
       "thumbnail": "Stream-Vorschau"
+    },
+    "liveRole": {
+      "title": "Live-Rolle",
+      "intro": "Solange ein Kanal live ist, trägt das damit verknüpfte Discord-Mitglied diese Rolle; sie wird entfernt, sobald der Stream endet. Verknüpfe ein Mitglied in den Einstellungen des jeweiligen Kanals.",
+      "role": "Rolle während des Streams",
+      "none": "Keine Live-Rolle",
+      "help": "Wählbar sind nur Rollen ohne Sonderrechte, und die Rolle des Bots muss darüber stehen.",
+      "botOffline": "Der Bot ist offline, daher ist die Rollenliste nicht verfügbar. Die gespeicherte Rolle bleibt.",
+      "save": "Speichern"
     }
   },
   "Announcements": {

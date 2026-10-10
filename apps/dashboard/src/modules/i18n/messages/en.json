@@ -413,7 +413,9 @@
       "channelNotFound": "That Discord channel doesn't exist, or the bot can't see it.",
       "roleNotFound": "That role doesn't exist any more.",
       "tooManyStreamers": "That is the most channels one Twitch connection can follow. Remove one first.",
-      "alreadyAdded": "That channel is already on the list."
+      "alreadyAdded": "That channel is already on the list.",
+      "memberNotFound": "That member isn't in the server.",
+      "memberInvalid": "A Discord member ID is 17 to 20 digits."
     },
     "form": {
       "addTitle": "Add a channel",
@@ -443,7 +445,10 @@
       "colorHelp": "The stripe at the side of the announcement.",
       "showGame": "Show the game",
       "showThumbnail": "Show the stream preview picture",
-      "showThumbnailHelp": "Twitch's live picture of the stream, refreshed when the announcement is posted."
+      "showThumbnailHelp": "Twitch's live picture of the stream, refreshed when the announcement is posted.",
+      "member": "Discord member (for the live role)",
+      "memberPlaceholder": "Member ID, e.g. 123456789012345678",
+      "memberHelp": "Optional. The member who gets the live role while this channel streams. Copy their ID in Discord with Developer Mode on: right-click the member > Copy User ID."
     },
     "preview": {
       "label": "Preview",
@@ -453,6 +458,15 @@
       "author": "{name} is live on Twitch",
       "playing": "Playing",
       "thumbnail": "Stream preview"
+    },
+    "liveRole": {
+      "title": "Live role",
+      "intro": "While a channel is live, the Discord member linked to it wears this role; it is taken off when the stream ends. Link a member in each channel's settings.",
+      "role": "Role while live",
+      "none": "No live role",
+      "help": "Only roles without special permissions can be chosen, and the bot's own role must sit above it.",
+      "botOffline": "The bot is offline, so the role list isn't available. The saved role is kept.",
+      "save": "Save"
     }
   },
   "Announcements": {

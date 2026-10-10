@@ -48,6 +48,7 @@ export function StreamerForm({
           login: streamer.login,
           channelId: streamer.channelId,
           pingRoleId: streamer.pingRoleId ?? "",
+          discordUserId: streamer.discordUserId ?? "",
           messageTemplate: streamer.messageTemplate,
           embedColor: streamer.embedColor,
           showThumbnail: streamer.showThumbnail,
@@ -165,6 +166,13 @@ export function StreamerForm({
           <FieldLabel htmlFor="tw-role">{t("role")}</FieldLabel>
           <FormSelect control={form.control} name="pingRoleId" id="tw-role" options={roleOptions} placeholder={t("noRole")} disabled={roles === null} />
           <FieldDescription>{t("roleHelp")}</FieldDescription>
+        </Field>
+
+        <Field data-invalid={Boolean(errors.discordUserId) || undefined}>
+          <FieldLabel htmlFor="tw-member">{t("member")}</FieldLabel>
+          <Input id="tw-member" inputMode="numeric" maxLength={20} autoComplete="off" placeholder={t("memberPlaceholder")} aria-invalid={Boolean(errors.discordUserId) || undefined} {...form.register("discordUserId")} />
+          <FieldDescription>{t("memberHelp")}</FieldDescription>
+          {errors.discordUserId && <FieldError>{te("memberInvalid")}</FieldError>}
         </Field>
 
         <Field data-invalid={Boolean(errors.messageTemplate) || undefined}>

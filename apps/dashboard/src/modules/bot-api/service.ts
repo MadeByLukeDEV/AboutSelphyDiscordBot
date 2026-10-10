@@ -198,6 +198,16 @@ export async function pollAction(id: string, action: "start" | "end" | "delete")
   return parsed.success ? parsed.data : null;
 }
 
+/** A member of the server by ID. Undefined = the bot can't be reached, null = no such member. */
+export async function getGuildMemberName(id: string): Promise<{ id: string; name: string } | null | undefined> {
+  const res = await botFetch(`/internal/guild/member?id=${encodeURIComponent(id)}`);
+  if (!res) return undefined;
+  if (res.status === 404) return null;
+  if (!res.ok) return undefined;
+  const body = (await res.json().catch(() => null)) as { member?: { id?: unknown; name?: unknown } } | null;
+  return typeof body?.member?.id === "string" && typeof body.member.name === "string" ? { id: body.member.id, name: body.member.name } : undefined;
+}
+
 /** Every role with its member count, for the role manager. Null if the bot can't be reached. */
 export async function listManagedRoles(): Promise<ManagedRole[] | null> {
   const res = await botFetch("/internal/roles/manage");

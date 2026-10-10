@@ -9,6 +9,8 @@ export { DEFAULT_TEMPLATE, MAX_TEMPLATE_LENGTH };
 export const twitchSettingsSchema = z.object({
   enabled: z.boolean(),
   markEndedOnOffline: z.boolean(),
+  /** "" = no live role. */
+  liveRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
 });
 export type TwitchSettings = z.infer<typeof twitchSettingsSchema>;
 
@@ -18,6 +20,7 @@ export type TwitchStreamerView = {
   displayName: string;
   channelId: string;
   pingRoleId: string | null;
+  discordUserId: string | null;
   messageTemplate: string;
   embedColor: number;
   showThumbnail: boolean;
@@ -40,6 +43,8 @@ export const streamerSchema = z.object({
   channelId: z.string().regex(/^\d{17,20}$/),
   /** "" = nobody is pinged. */
   pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  /** "" = not linked to a Discord member. */
+  discordUserId: z.union([z.literal(""), z.string().trim().regex(/^\d{17,20}$/)]),
   messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
   embedColor: z.number().int().min(0).max(0xffffff),
   showThumbnail: z.boolean(),
@@ -53,6 +58,7 @@ export const streamerFormSchema = z.object({
   login: z.string().trim().regex(/^@?[a-zA-Z0-9_]{3,25}$/),
   channelId: z.string().regex(/^\d{17,20}$/),
   pingRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  discordUserId: z.union([z.literal(""), z.string().trim().regex(/^\d{17,20}$/)]),
   messageTemplate: z.string().trim().min(1).max(MAX_TEMPLATE_LENGTH),
   embedColor: z.number().int().min(0).max(0xffffff),
   showThumbnail: z.boolean(),
@@ -64,6 +70,7 @@ export type StreamerFormValues = {
   login: string;
   channelId: string;
   pingRoleId: string;
+  discordUserId: string;
   messageTemplate: string;
   embedColor: number;
   showThumbnail: boolean;
@@ -75,6 +82,7 @@ export const DEFAULT_STREAMER_FORM: StreamerFormValues = {
   login: "",
   channelId: "",
   pingRoleId: "",
+  discordUserId: "",
   messageTemplate: DEFAULT_TEMPLATE,
   embedColor: DEFAULT_EMBED_COLOR,
   showThumbnail: true,
@@ -91,6 +99,7 @@ export type TwitchError =
   | "twitchNotFound"
   | "channelNotFound"
   | "roleNotFound"
+  | "memberNotFound"
   | "tooManyStreamers"
   | "alreadyAdded"
   | "failed";
