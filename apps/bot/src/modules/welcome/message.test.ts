@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { welcomeSettingsSchema } from "@aboutselphy/shared/welcome";
-import { dmText, goodbyeMessage, renderWelcome, rolesOnJoin, rolesToSnapshot, welcomeMessage, type MemberFacts } from "./message";
+import { dmText, goodbyeMessage, pickTemplate, renderWelcome, rolesOnJoin, rolesToSnapshot, welcomeMessage, type MemberFacts } from "./message";
 
 const who: MemberFacts = { id: "123456789012345678", username: "Cool **Guy** <@&999999999999999999>", serverName: "Selphy's [Server]", memberCount: 42 };
 
@@ -68,7 +68,11 @@ describe("welcomeSettingsSchema", () => {
     restoreRoles: false,
     welcomeEnabled: false,
     welcomeChannelId: "",
-    welcomeTemplate: "Hi {user}",
+    welcomeTemplates: ["Hi {user}"],
+    welcomeCardEnabled: false,
+    welcomeCardMode: "background",
+    welcomeCardTitle: "Welcome",
+    welcomeCardSubtitle: "Member #{count}",
     welcomeAsEmbed: true,
     welcomeColor: 0x00ffa8,
     welcomeImageUrl: "",
@@ -101,7 +105,63 @@ describe("welcomeSettingsSchema", () => {
   it("takes only a good https picture and a template of sensible size", () => {
     expect(parse({ welcomeImageUrl: "https://cdn.example.com/w.png" }).success).toBe(true);
     expect(parse({ welcomeImageUrl: "http://a.com/x.png" }).success).toBe(false);
-    expect(parse({ welcomeTemplate: "" }).success).toBe(false);
-    expect(parse({ welcomeTemplate: "x".repeat(1001) }).success).toBe(false);
+    expect(parse({ welcomeTemplates: [""] }).success).toBe(false);
+    expect(parse({ welcomeTemplates: ["x".repeat(1001)] }).success).toBe(false);
+  });
+});
+
+describe("welcome variants and card settings", () => {
+  const base = {
+    autoRoleIds: [],
+    botAutoRoleIds: [],
+    restoreRoles: false,
+    welcomeEnabled: true,
+    welcomeChannelId: "123456789012345678",
+    welcomeTemplates: ["a", "b"],
+    welcomeAsEmbed: true,
+    welcomeColor: 0,
+    welcomeImageUrl: "",
+    welcomeCardEnabled: true,
+    welcomeCardMode: "sticker",
+    welcomeCardTitle: "Welcome",
+    welcomeCardSubtitle: "Member #{count}",
+    dmEnabled: false,
+    dmTemplate: "Hi",
+    goodbyeEnabled: false,
+    goodbyeChannelId: "",
+    goodbyeTemplate: "Bye",
+  };
+  const parse = (over: Record<string, unknown>) => welcomeSettingsSchema.safeParse({ ...base, ...over });
+
+  it("takes up to 10 texts and needs at least one while the welcome is on", () => {
+    expect(parse({}).success).toBe(true);
+    expect(parse({ welcomeTemplates: [] }).success).toBe(false);
+    expect(parse({ welcomeEnabled: false, welcomeTemplates: [] }).success).toBe(true);
+    expect(parse({ welcomeTemplates: Array.from({ length: 11 }, (_, i) => `t${i}`) }).success).toBe(false);
+  });
+
+  it("validates the card options", () => {
+    expect(parse({ welcomeCardMode: "tile" }).success).toBe(false);
+    expect(parse({ welcomeCardTitle: "" }).success).toBe(false);
+    expect(parse({ welcomeCardTitle: "x".repeat(41) }).success).toBe(false);
+    expect(parse({ welcomeCardSubtitle: "" }).success).toBe(true);
+  });
+});
+
+describe("pickTemplate", () => {
+  it("returns null for none and the only one for one", () => {
+    expect(pickTemplate([], null)).toBeNull();
+    expect(pickTemplate(["only"], 0)).toEqual({ index: 0, text: "only" });
+  });
+
+  it("never repeats the last one when there is a choice", () => {
+    for (let last = 0; last < 3; last++) {
+      for (const r of [0, 0.3, 0.6, 0.99]) expect(pickTemplate(["a", "b", "c"], last, () => r)!.index).not.toBe(last);
+    }
+  });
+
+  it("can reach every other text", () => {
+    const seen = new Set([0, 0.5, 0.99].map((r) => pickTemplate(["a", "b", "c"], 0, () => r)!.index));
+    expect(seen).toEqual(new Set([1, 2]));
   });
 });

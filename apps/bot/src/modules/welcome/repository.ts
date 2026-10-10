@@ -22,3 +22,9 @@ export function deleteSnapshot(userId: string) {
 export async function pruneSnapshots(olderThan: Date): Promise<number> {
   return (await prisma.memberRoleSnapshot.deleteMany({ where: { savedAt: { lt: olderThan } } })).count;
 }
+
+/** The image the admin uploaded for the card, or null. */
+export async function readCardImage(): Promise<Uint8Array | null> {
+  const row = await prisma.welcomeCardImage.findUnique({ where: { id: 1 } });
+  return row ? new Uint8Array(row.data) : null;
+}

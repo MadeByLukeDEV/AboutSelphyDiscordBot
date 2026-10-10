@@ -20,17 +20,37 @@ export function renderWelcome(template: string, who: MemberFacts, mention = true
 
 export type WelcomeLook = { asEmbed: boolean; color: number; imageUrl: string };
 
-/** The post in the welcome channel: plain text, or a box with the same text (the mention stays in the plain content so it pings). */
-export function welcomeMessage(template: string, who: MemberFacts, look: WelcomeLook) {
+export const CARD_FILE_NAME = "welcome-card.png";
+
+/**
+ * Which of the saved welcome texts to use: random, but never the same one twice in a row when there
+ * is a choice. `random` is injected so the rule is testable.
+ */
+export function pickTemplate(templates: string[], lastIndex: number | null, random: () => number = Math.random): { index: number; text: string } | null {
+  if (templates.length === 0) return null;
+  if (templates.length === 1) return { index: 0, text: templates[0]! };
+  const choices = templates.map((_, i) => i).filter((i) => i !== lastIndex);
+  const index = choices[Math.min(choices.length - 1, Math.floor(random() * choices.length))]!;
+  return { index, text: templates[index]! };
+}
+
+/**
+ * The post in the welcome channel: plain text, or a box with the same text (the mention stays in the
+ * plain content so it pings). With a card, the picture is attached and, in a box, shown in it.
+ */
+export function welcomeMessage(template: string, who: MemberFacts, look: WelcomeLook, card: Uint8Array | null = null) {
   const text = truncate(renderWelcome(template, who), 4000);
   const allowedMentions = { parse: [] as never[], users: [who.id] };
-  if (!look.asEmbed) return { content: truncate(text, 2000), embeds: [] as EmbedBuilder[], allowedMentions };
+  const files = card ? [{ attachment: Buffer.from(card), name: CARD_FILE_NAME }] : [];
+  if (!look.asEmbed) return { content: truncate(text, 2000), embeds: [] as EmbedBuilder[], allowedMentions, files };
 
   const embed = new EmbedBuilder().setColor(look.color).setDescription(text);
   // Re-checked here: the row is trusted, but a bad address must never reach Discord.
-  if (look.imageUrl && isAllowedImageUrl(look.imageUrl)) embed.setImage(look.imageUrl);
+  // The member's own card wins over the fixed picture.
+  if (card) embed.setImage(`attachment://${CARD_FILE_NAME}`);
+  else if (look.imageUrl && isAllowedImageUrl(look.imageUrl)) embed.setImage(look.imageUrl);
   // A mention inside a box doesn't ping, so the member is also mentioned above it.
-  return { content: `<@${who.id}>`, embeds: [embed], allowedMentions };
+  return { content: `<@${who.id}>`, embeds: [embed], allowedMentions, files };
 }
 
 /** The direct message: no mention needed, it already is addressed to them. */

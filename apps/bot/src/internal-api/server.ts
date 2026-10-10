@@ -17,6 +17,7 @@ import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
+import { renderPreviewCard } from "../modules/welcome";
 import { getTempVoiceOverview } from "../modules/tempvoice";
 import { lookupTwitchChannel } from "../modules/twitch";
 import { BodyError, readJsonBody } from "./body";
@@ -119,6 +120,11 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     if (!guild) return json(res, 503, { error: "guild not available" });
     const status = url.pathname.endsWith("/publish") ? await publishPanel(guild, body.data.id) : await deletePanelMessage(guild, body.data.id);
     return json(res, 200, { status });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/welcome/preview") {
+    const png = await renderPreviewCard();
+    return json(res, 200, { png: Buffer.from(png).toString("base64") });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/twitch/resolve") {

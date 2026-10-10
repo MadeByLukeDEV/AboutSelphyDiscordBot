@@ -14,6 +14,7 @@ export type {
   TwitchConnection,
   TwitchNotification,
   TwitchStreamer,
+  WelcomeCardImage,
   WelcomeConfig,
   MemberRoleSnapshot,
   YoutubeConfig,

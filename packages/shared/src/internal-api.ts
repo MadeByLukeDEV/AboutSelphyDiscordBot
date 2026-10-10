@@ -165,3 +165,6 @@ export type GuildEmoji = z.infer<typeof guildEmoji>;
 
 /** GET /internal/guild/emojis */
 export const emojisResponse = z.object({ emojis: z.array(guildEmoji) });
+
+/** POST /internal/welcome/preview: the welcome card as it would look for a sample member, from the SAVED settings. */
+export const welcomePreviewResponse = z.object({ png: z.string().min(1) /* base64 */ });
