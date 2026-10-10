@@ -550,7 +550,15 @@ Decided 2026-10-08:
         bot's list). The dashboard never talks to Discord: the bot's internal API
         gained `GET /internal/guild/channels` and `POST
         /internal/moderation/refresh-case`.
-  - [ ] `/purge`, escalation config, temp bans (needs a scheduler)
+  - [x] Channel tools (2026-10-12, `feature_moderation-tools`, **tried live by the
+        user**): `/purge` (count, optional member or bots, skips pinned and
+        anything older than the 14-day bulk-delete limit, scans at most 500
+        messages; `purge.ts` is pure and tested), `/slowmode` (duration or off,
+        max 6 h), `/lock` and `/unlock` (only @everyone's SendMessages,
+        SendMessagesInThreads and CreatePublicThreads; unlock resets to inherit).
+        They create no cases; each posts a note to the mod log (`postModNote`).
+        Each checks the bot's permissions in the target channel first.
+  - [ ] Escalation config, temp bans (needs a scheduler)
   - [ ] More log types (message edit/delete, joins/leaves, voice)
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
