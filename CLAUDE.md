@@ -28,8 +28,70 @@ ships its dashboard page with it.
 (anti-bot) is skipped completely for now**: don't build its engine either until
 the user brings it back.
 
-Out of scope until the user says so: leveling/XP, music, economy, ticket system,
-AI moderation, multi-guild support.
+Out of scope until the user says so: music (bots that stream YouTube/Spotify audio
+break those services' terms and keep getting shut down), economy, AI moderation, multi-guild
+support. Leveling/XP and tickets moved **into** scope on 2026-10-10 (see below).
+
+### Replacement roadmap (added 2026-10-10)
+
+Goal (the user): this bot **replaces** Streamcord, Dyno, Carl-bot, MEE6,
+Voicetemp and VoiceMaster, so one config, one dashboard, one data store. The
+anti-bot/pattern feature stays skipped. Everything below is a **proposal to
+reorder with the user**; each item ships with its dashboard page, a `Modules`
+on/off switch and the same rules as above (single guild, escaped output,
+reconcile on startup, explicit `allowedMentions`).
+
+Tier A, finish what the replaced bots are used for daily:
+- **Moderation rest** (Dyno): `/purge` (by count, user, bots, links), `/slowmode`,
+  `/lock` and `/unlock` channels, temp ban/timeout/mute via a scheduler that
+  survives restarts, warning escalation (N warnings → action), role
+  persistence (re-apply roles when a member rejoins), case notes editing, a
+  per-member history page, warn/timeout/ban **from the dashboard**, case
+  export, mod stats (cases per moderator).
+- **More logs** (Dyno/Carl): message edit and delete (with attachments listed),
+  bulk delete, joins/leaves with account age, nickname/role changes, channel
+  and role changes, invite used (who invited whom), voice join/leave/move,
+  each routable to its own channel and togglable, with a retention period.
+- **Went Live** (Streamcord, phase 3): several streamers, a "Live" role while
+  someone streams, optional offline summary, Twitch clips; later Kick and
+  TikTok live if the user streams there.
+- **Welcome + member onboarding** (Dyno/MEE6): auto-roles on join (separate for
+  bots), welcome and goodbye messages with variables and an optional image
+  card, DM welcome, rules-accept/verification button gate with a role.
+- **Role panels** (Carl): reaction, button and select-menu roles, grouped,
+  with unique-choice groups, temporary roles and a role-limit per user.
+
+Tier B, community features people expect from MEE6/Carl:
+- **Leveling/XP** (MEE6): XP per message (cooldown) and per minute in voice,
+  levels, role rewards, no-XP channels and roles, XP boosts, leaderboard (also
+  on a public dashboard page), rank card image, import from MEE6's export.
+- **Announcements** (phase 5), **YouTube uploads** (phase 6), **webhooks** (phase 7).
+- **Tickets**: panel with a button, private channel or thread, claim, close
+  with transcript saved to the dashboard, categories, staff roles.
+- **Giveaways**, **polls**, **suggestions** (up/down vote, staff approve/deny
+  with a reason), **starboard**, **birthdays** (role + announcement),
+  **reminders** (`/remind`), **counting channel**, **stat counter channels**
+  (members, online, boosts), **sticky messages**, **auto-publish** in
+  announcement channels, **custom commands / auto-responders** (Carl tags).
+- **Temp voice extras** (VoiceMaster): remember a member's room settings (name,
+  limit, locked) for their next room, per-role max channels and bitrate,
+  voice-text chat cleanup, AFK handling, voice-time leaderboard.
+
+Tier C, polish and operations:
+- Utility commands (`/userinfo`, `/serverinfo`, `/roleinfo`, `/avatar`,
+  `/afk`, `/embed` builder), a **public help command** listing only what the
+  member may use, per-command and per-channel permission overrides in the
+  dashboard, a **Modules** page (every feature on/off), a dashboard **audit
+  trail** (who changed which setting), config backup/export, German and English
+  bot replies (cookie language for the dashboard, server language for the bot),
+  GDPR tools (delete a member's data, retention jobs).
+- Basic **automod** (blocked words, invite links, mass mentions, caps, repeated
+  messages) is *not* the pattern-based anti-bot and not started: ask the user
+  before touching it, since it overlaps with the skipped anti-bot work.
+
+Proposed order after the current queue (redesign → Twitch): moderation rest +
+more logs → welcome/auto-roles/role panels → announcements → leveling →
+YouTube → tickets → the Tier B bundle → webhooks → Tier C.
 
 ## Tech stack (same as the other aboutselphy apps)
 
