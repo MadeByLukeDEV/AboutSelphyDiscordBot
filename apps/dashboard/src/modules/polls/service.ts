@@ -13,6 +13,7 @@ const toView = (p: PollWithVotes): PollView => ({
   question: p.question,
   options: p.options,
   multiple: p.multiple,
+  imageUrl: p.imageUrl,
   endsAt: p.endsAt?.toISOString() ?? null,
   createdByName: p.createdByName,
   counts: p.counts,
@@ -36,7 +37,7 @@ export async function savePoll(input: PollInput & { start: boolean }, by: StaffS
     if (!channels) return fail("botUnavailable");
     if (!channels.some((c) => c.id === input.channelId)) return fail("channelNotFound");
     const poll = await createPoll(
-      { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, endsAt: input.endsAt ? new Date(input.endsAt) : null },
+      { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, imageUrl: input.imageUrl, endsAt: input.endsAt ? new Date(input.endsAt) : null },
       { userId: by.id, name: by.name },
     );
     const startError = input.start ? fromStatus(await pollAction(poll.id, "start")) : null;

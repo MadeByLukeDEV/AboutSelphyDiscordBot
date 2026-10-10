@@ -7,7 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
-import { MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
+import { MAX_IMAGE_URL, MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
 import { MAX_OPTION, MAX_OPTIONS, MAX_QUESTION, MIN_OPTIONS, parseOptions, pollInput } from "@aboutselphy/shared/polls";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { createPollAction, deletePollAction, pollControlAction } from "../actions";
 import type { PollView } from "../schema";
 
-type FormValues = { channelId: string; question: string; optionsText: string; multiple: boolean; endsLocal: string };
+type FormValues = { channelId: string; question: string; optionsText: string; multiple: boolean; imageUrl: string; endsLocal: string };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -184,7 +184,7 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
   const [pending, startTransition] = useTransition();
   // The earliest end that can be chosen, computed once when the form opens.
   const [minLocal] = useState(() => toLocalInput(new Date(Date.now() + MIN_SCHEDULE_AHEAD_MS)));
-  const form = useForm<FormValues>({ defaultValues: { channelId: "", question: "", optionsText: "", multiple: false, endsLocal: "" } });
+  const form = useForm<FormValues>({ defaultValues: { channelId: "", question: "", optionsText: "", multiple: false, imageUrl: "", endsLocal: "" } });
   const { errors } = form.formState;
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined }));
@@ -197,6 +197,7 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
         question: values.question,
         options: parseOptions(values.optionsText),
         multiple: values.multiple,
+        imageUrl: values.imageUrl,
         endsAt: ends && !Number.isNaN(ends.getTime()) ? ends.toISOString() : "",
       });
       if (!checked.success) {
@@ -205,7 +206,7 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
           const key = issue.path[0];
           if (key === "endsAt") form.setError("endsLocal", { type: "custom", message: issue.message });
           else if (key === "options") form.setError("optionsText", { type: "custom", message: issue.message });
-          else if (key === "channelId" || key === "question") form.setError(key, { type: "custom", message: issue.message });
+          else if (key === "channelId" || key === "question" || key === "imageUrl") form.setError(key, { type: "custom", message: issue.message });
         }
         return;
       }
@@ -233,6 +234,12 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
           <Textarea id="poll-options" rows={5} aria-invalid={Boolean(errors.optionsText) || undefined} placeholder={t("optionsPlaceholder")} {...form.register("optionsText")} />
           <FieldDescription>{t("optionsHelp", { min: MIN_OPTIONS, max: MAX_OPTIONS, length: MAX_OPTION })}</FieldDescription>
           {errors.optionsText && <FieldError>{te("badOptions", { min: MIN_OPTIONS, max: MAX_OPTIONS, length: MAX_OPTION })}</FieldError>}
+        </Field>
+        <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
+          <FieldLabel htmlFor="poll-image">{t("image")}</FieldLabel>
+          <Input id="poll-image" type="url" inputMode="url" autoComplete="off" maxLength={MAX_IMAGE_URL} placeholder="https://" aria-invalid={Boolean(errors.imageUrl) || undefined} {...form.register("imageUrl")} />
+          <FieldDescription>{t("imageHelp")}</FieldDescription>
+          {errors.imageUrl && <FieldError>{te("imageInvalid")}</FieldError>}
         </Field>
         <Field data-invalid={Boolean(errors.channelId) || undefined}>
           <FieldLabel htmlFor="poll-channel">{t("channel")}</FieldLabel>

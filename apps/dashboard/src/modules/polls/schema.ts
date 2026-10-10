@@ -9,6 +9,7 @@ export type PollView = {
   question: string;
   options: string[];
   multiple: boolean;
+  imageUrl: string;
   endsAt: string | null;
   createdByName: string;
   /** Votes per option, same order as `options`. */

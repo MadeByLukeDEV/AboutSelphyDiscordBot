@@ -14,6 +14,7 @@ export type GiveawayData = {
   channelId: string;
   prize: string;
   description: string;
+  imageUrl: string;
   winnerCount: number;
   endsAt: Date;
   requiredRoleId: string | null;

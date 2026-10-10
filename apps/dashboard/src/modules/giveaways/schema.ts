@@ -8,6 +8,7 @@ export type GiveawayView = {
   channelId: string;
   prize: string;
   description: string;
+  imageUrl: string;
   winnerCount: number;
   endsAt: string;
   requiredRoleId: string;

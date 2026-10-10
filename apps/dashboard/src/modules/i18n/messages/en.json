@@ -1189,7 +1189,9 @@
       "start": "Start now",
       "saving": "Saving…",
       "saved": "Saved as a draft",
-      "started": "Giveaway started"
+      "started": "Giveaway started",
+      "image": "Picture address",
+      "imageHelp": "Optional. A link starting with https:// to a picture, shown big in the post. Tip: upload it to a Discord channel and copy its link."
     },
     "confirm": {
       "cancel": {
@@ -1231,7 +1233,8 @@
         "notFound": "It was saved as a draft, but starting failed.",
         "forbidden": "No access.",
         "invalid": "Invalid."
-      }
+      },
+      "imageInvalid": "The picture address must start with https:// and contain no spaces."
     }
   },
   "Suggestions": {
@@ -1347,7 +1350,9 @@
       "start": "Start now",
       "saving": "Saving…",
       "saved": "Saved as a draft",
-      "started": "Poll started"
+      "started": "Poll started",
+      "image": "Picture address",
+      "imageHelp": "Optional. A link starting with https:// to a picture, shown big in the post. Tip: upload it to a Discord channel and copy its link."
     },
     "confirm": {
       "end": {
@@ -1383,7 +1388,8 @@
         "notFound": "It was saved as a draft, but starting failed.",
         "forbidden": "No access.",
         "invalid": "Invalid."
-      }
+      },
+      "imageInvalid": "The picture address must start with https:// and contain no spaces."
     }
   },
   "Starboard": {

@@ -1189,7 +1189,9 @@
       "start": "Jetzt starten",
       "saving": "Speichert…",
       "saved": "Als Entwurf gespeichert",
-      "started": "Gewinnspiel gestartet"
+      "started": "Gewinnspiel gestartet",
+      "image": "Bildadresse",
+      "imageHelp": "Optional. Ein Link, der mit https:// beginnt, zu einem Bild, das groß im Beitrag angezeigt wird. Tipp: Lade es in einen Discord-Kanal hoch und kopiere den Link."
     },
     "confirm": {
       "back": "Zurück",
@@ -1231,7 +1233,8 @@
         "notFound": "Es wurde als Entwurf gespeichert, aber das Starten schlug fehl.",
         "forbidden": "Kein Zugriff.",
         "invalid": "Ungültig."
-      }
+      },
+      "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten."
     }
   },
   "Suggestions": {
@@ -1347,7 +1350,9 @@
       "start": "Jetzt starten",
       "saving": "Speichern…",
       "saved": "Als Entwurf gespeichert",
-      "started": "Umfrage gestartet"
+      "started": "Umfrage gestartet",
+      "image": "Bildadresse",
+      "imageHelp": "Optional. Ein Link, der mit https:// beginnt, zu einem Bild, das groß im Beitrag angezeigt wird. Tipp: Lade es in einen Discord-Kanal hoch und kopiere den Link."
     },
     "confirm": {
       "end": {
@@ -1383,7 +1388,8 @@
         "notFound": "Sie wurde als Entwurf gespeichert, aber das Starten ist fehlgeschlagen.",
         "forbidden": "Kein Zugriff.",
         "invalid": "Ungültig."
-      }
+      },
+      "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten."
     }
   },
   "Starboard": {

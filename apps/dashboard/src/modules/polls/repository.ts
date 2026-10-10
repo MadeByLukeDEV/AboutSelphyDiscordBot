@@ -21,7 +21,7 @@ export async function listPolls(): Promise<PollWithVotes[]> {
 
 export const findPoll = (id: string) => prisma.poll.findUnique({ where: { id } });
 
-export function createPoll(data: { channelId: string; question: string; options: string[]; multiple: boolean; endsAt: Date | null }, by: { userId: string; name: string }) {
+export function createPoll(data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null }, by: { userId: string; name: string }) {
   return prisma.poll.create({ data: { ...data, createdById: by.userId, createdByName: by.name.slice(0, 100) } });
 }
 

@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
+import { MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
 import { giveawayInput, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ type FormValues = {
   channelId: string;
   prize: string;
   description: string;
+  imageUrl: string;
   winnerCount: number;
   endsLocal: string;
   requiredRoleId: string;
@@ -102,7 +104,7 @@ export function GiveawaysManager({ giveaways, channels, roles }: { giveaways: Gi
                   {g.status === "draft" && (
                     <>
                       <Button size="sm" disabled={pending} onClick={() => run(async () => {
-                        const r = await saveGiveawayAction({ id: g.id, channelId: g.channelId, prize: g.prize, description: g.description, winnerCount: g.winnerCount, endsAt: g.endsAt, requiredRoleId: g.requiredRoleId, pingRoleId: g.pingRoleId, start: true });
+                        const r = await saveGiveawayAction({ id: g.id, channelId: g.channelId, prize: g.prize, description: g.description, imageUrl: g.imageUrl, winnerCount: g.winnerCount, endsAt: g.endsAt, requiredRoleId: g.requiredRoleId, pingRoleId: g.pingRoleId, start: true });
                         return r.ok ? (r.startError ? { ok: false as const, error: r.startError } : { ok: true as const }) : r;
                       }, t("started"))}>
                         {t("actions.start")}
@@ -195,8 +197,8 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
   const [minLocal] = useState(() => toLocalInput(new Date(Date.now() + MIN_SCHEDULE_AHEAD_MS)));
   const form = useForm<FormValues>({
     defaultValues: giveaway
-      ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId }
-      : { channelId: "", prize: "", description: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "" },
+      ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, imageUrl: giveaway.imageUrl, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId }
+      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "" },
   });
   const { errors } = form.formState;
   const [description] = useWatch({ control: form.control, name: ["description"] });
@@ -213,6 +215,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         channelId: values.channelId,
         prize: values.prize,
         description: values.description,
+        imageUrl: values.imageUrl,
         winnerCount: values.winnerCount,
         endsAt: ends && !Number.isNaN(ends.getTime()) ? ends.toISOString() : "",
         requiredRoleId: values.requiredRoleId,
@@ -224,7 +227,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         for (const issue of checked.error.issues) {
           const key = issue.path[0];
           if (key === "endsAt") form.setError("endsLocal", { type: "custom", message: issue.message });
-          else if (key === "channelId" || key === "prize" || key === "winnerCount") form.setError(key, { type: "custom", message: issue.message });
+          else if (key === "channelId" || key === "prize" || key === "winnerCount" || key === "imageUrl") form.setError(key, { type: "custom", message: issue.message });
         }
         return;
       }
@@ -251,6 +254,12 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
           <FieldLabel htmlFor="gw-desc">{t("description")}</FieldLabel>
           <Textarea id="gw-desc" rows={3} maxLength={MAX_GIVEAWAY_DESCRIPTION} {...form.register("description")} />
           <FieldDescription>{t("descriptionHelp", { count: description.length, max: MAX_GIVEAWAY_DESCRIPTION })}</FieldDescription>
+        </Field>
+        <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
+          <FieldLabel htmlFor="gw-image">{t("image")}</FieldLabel>
+          <Input id="gw-image" type="url" inputMode="url" autoComplete="off" maxLength={MAX_IMAGE_URL} placeholder="https://" aria-invalid={Boolean(errors.imageUrl) || undefined} {...form.register("imageUrl")} />
+          <FieldDescription>{t("imageHelp")}</FieldDescription>
+          {errors.imageUrl && <FieldError>{te("imageInvalid")}</FieldError>}
         </Field>
         <Field data-invalid={Boolean(errors.channelId) || undefined}>
           <FieldLabel htmlFor="gw-channel">{t("channel")}</FieldLabel>
