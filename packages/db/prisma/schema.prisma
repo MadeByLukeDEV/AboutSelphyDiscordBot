@@ -196,8 +196,15 @@ model TwitchNotification {
   id             String    @id @default(cuid())
   twitchStreamId String    @unique @db.VarChar(32)
   twitchUserId   String    @db.VarChar(32)
+  /// Snapshot for editing the message when the stream ends.
+  login          String    @db.VarChar(64)
+  displayName    String    @db.VarChar(100)
+  title          String    @default("") @db.VarChar(300)
+  game           String    @default("") @db.VarChar(200)
   channelId      String    @db.VarChar(20)
-  messageId      String    @db.VarChar(20)
+  /// Null = a silent baseline: the stream was already running when the bot
+  /// first saw it, so nothing was posted (and nothing will be edited).
+  messageId      String?   @db.VarChar(20)
   startedAt      DateTime
   endedAt        DateTime?
   createdAt      DateTime  @default(now())

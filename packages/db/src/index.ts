@@ -7,5 +7,9 @@ export type {
   TempVoiceChannel,
   TempVoiceConfig,
   TempVoiceLobby,
+  TwitchConfig,
+  TwitchConnection,
+  TwitchNotification,
+  TwitchStreamer,
 } from "./generated/prisma/client";
 export type { ModCaseType, ModCaseSource } from "./generated/prisma/enums";

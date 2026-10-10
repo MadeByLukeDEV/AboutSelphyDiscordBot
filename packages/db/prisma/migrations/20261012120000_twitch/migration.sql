@@ -43,8 +43,12 @@ CREATE TABLE "TwitchNotification" (
     "id" TEXT NOT NULL,
     "twitchStreamId" VARCHAR(32) NOT NULL,
     "twitchUserId" VARCHAR(32) NOT NULL,
+    "login" VARCHAR(64) NOT NULL,
+    "displayName" VARCHAR(100) NOT NULL,
+    "title" VARCHAR(300) NOT NULL DEFAULT '',
+    "game" VARCHAR(200) NOT NULL DEFAULT '',
     "channelId" VARCHAR(20) NOT NULL,
-    "messageId" VARCHAR(20) NOT NULL,
+    "messageId" VARCHAR(20),
     "startedAt" TIMESTAMP(3) NOT NULL,
     "endedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -70,4 +74,5 @@ ALTER TABLE "TwitchStreamer" ADD CONSTRAINT "TwitchStreamer_ids_digits"
          AND ("pingRoleId" IS NULL OR "pingRoleId" ~ '^[0-9]{17,20}$'));
 ALTER TABLE "TwitchNotification" ADD CONSTRAINT "TwitchNotification_ids_digits"
   CHECK ("twitchStreamId" ~ '^[0-9]{1,32}$' AND "twitchUserId" ~ '^[0-9]{1,32}$'
-         AND "channelId" ~ '^[0-9]{17,20}$' AND "messageId" ~ '^[0-9]{17,20}$');
+         AND "channelId" ~ '^[0-9]{17,20}$'
+         AND ("messageId" IS NULL OR "messageId" ~ '^[0-9]{17,20}$'));

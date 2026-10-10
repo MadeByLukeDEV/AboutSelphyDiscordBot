@@ -4,6 +4,7 @@ import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
 import { registerAuditLog } from "./modules/moderation";
 import { registerTempVoice } from "./modules/tempvoice";
+import { startTwitch, stopTwitch } from "./modules/twitch";
 import { startInternalApi } from "./internal-api/server";
 import { env, integrationsActive } from "./lib/env";
 import { log } from "./lib/log";
@@ -27,6 +28,7 @@ async function main() {
   registerInteractionCreate(client);
   registerAuditLog(client);
   registerTempVoice(client);
+  startTwitch(client);
   await client.login(e.DISCORD_BOT_TOKEN);
 
   let stopping = false;
@@ -35,6 +37,7 @@ async function main() {
     stopping = true;
     log.info({ signal }, "shutting down");
     api.close();
+    stopTwitch();
     await client.destroy();
     await prisma.$disconnect();
     process.exit(0);
