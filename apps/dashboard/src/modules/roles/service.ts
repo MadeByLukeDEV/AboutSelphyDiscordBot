@@ -1,7 +1,7 @@
 import "server-only";
-import type { RolePanelInput } from "@aboutselphy/shared/role-panel";
+import { parseEmoji, type RolePanelInput } from "@aboutselphy/shared/role-panel";
 import { errorInfo } from "@/lib/log";
-import { createGuildRole, deleteRolePanelMessage, listChannels, listRoles, publishRolePanel } from "@/modules/bot-api";
+import { createGuildRole, deleteRolePanelMessage, listChannels, listEmojis, listRoles, publishRolePanel } from "@/modules/bot-api";
 import type { StaffSession } from "@/modules/auth";
 import { createPanel, deletePanel, findPanel, listPanels, updatePanel, type PanelWithRoles } from "./repository";
 import type { CreateRoleInput, CreateRoleResult, DeletePanelResult, RolesError, RolePanelView, SavePanelResult } from "./schema";
@@ -21,8 +21,8 @@ const toView = (p: PanelWithRoles): RolePanelView => ({
 
 /** The panels plus the channels and roles to pick from (null = the bot can't be reached). */
 export async function getRolesPage() {
-  const [panels, channels, roles] = await Promise.all([listPanels(), listChannels(["text"]), listRoles()]);
-  return { panels: panels.map(toView), channels, roles };
+  const [panels, channels, roles, emojis] = await Promise.all([listPanels(), listChannels(["text"]), listRoles(), listEmojis()]);
+  return { panels: panels.map(toView), channels, roles, emojis };
 }
 
 const fail = (error: RolesError) => ({ ok: false as const, error });
@@ -61,6 +61,16 @@ export async function savePanel(input: RolePanelInput, by: StaffSession["user"])
       if (!known) return fail("roleNotFound");
       if (!known.assignable) return fail("roleNotAllowed");
     }
+    // A server emote must be one of this server's (checked through the bot; refused if it can't answer).
+    const customIds = input.roles.flatMap((r) => {
+      const parsed = parseEmoji(r.emoji);
+      return parsed?.kind === "custom" ? [parsed.id] : [];
+    });
+    if (customIds.length > 0) {
+      const emojis = await listEmojis();
+      if (!emojis) return fail("botUnavailable");
+      if (customIds.some((id) => !emojis.some((e) => e.id === id))) return fail("emojiNotFound");
+    }
     // A posted panel stays in its channel (the message can't move); move it by deleting and creating.
     if (existing?.messageId && existing.channelId !== input.channelId) return fail("invalid");
 
@@ -74,7 +84,7 @@ export async function savePanel(input: RolePanelInput, by: StaffSession["user"])
     if (input.publish || saved.messageId) {
       const status = await publishRolePanel(saved.id);
       if (status === "published" || status === "updated") posted = status;
-      else postError = status === null ? "botUnavailable" : status === "channel" ? "channelNotFound" : status === "roles" ? "roleNotAllowed" : "failed";
+      else postError = status === null ? "botUnavailable" : status === "channel" ? "channelNotFound" : status === "roles" ? "roleNotAllowed" : status === "emoji" ? "emojiNotFound" : "failed";
     }
     const fresh = (await findPanel(saved.id)) ?? saved;
     return { ok: true, panel: toView(fresh), posted, postError };

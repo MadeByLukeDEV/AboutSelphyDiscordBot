@@ -680,7 +680,8 @@
       "style": "Aussehen",
       "styles": {
         "buttons": "Buttons",
-        "menu": "Menü"
+        "menu": "Menü",
+        "reactions": "Reaktionen"
       },
       "buttonsHelp": "Ein Button pro Rolle, bis zu 25. Mit einem Klick bekommen Mitglieder die Rolle, mit einem weiteren verlieren sie sie.",
       "menuHelp": "Eine Auswahlliste. Mitglieder wählen daraus Rollen, um sie hinzuzufügen oder zu entfernen.",
@@ -692,7 +693,7 @@
       "role": "Rolle",
       "rolePlaceholder": "Rolle wählen",
       "label": "Beschriftung",
-      "emoji": "Emoji",
+      "emoji": "Emoji oder Emote",
       "roleDescription": "Kurzbeschreibung (Menü)",
       "addRole": "Rolle hinzufügen",
       "removeRole": "Entfernen",
@@ -703,7 +704,12 @@
       "saving": "Speichert…",
       "savedDraft": "Als Entwurf gespeichert",
       "posted": "Panel gepostet",
-      "updated": "Panel in Discord aktualisiert"
+      "updated": "Panel in Discord aktualisiert",
+      "reactionsHelp": "Mitglieder reagieren mit dem Emoji der Rolle auf die Nachricht. Jede Rolle braucht ein eigenes Emoji, und eine Nachricht fasst höchstens 20.",
+      "rolesHelpReactions": "Zwischen 1 und {max}, jede mit eigenem Emoji. Es werden nur Rollen angezeigt, die der Bot vergeben darf.",
+      "serverEmotes": "Server-Emotes",
+      "emotesOffline": "Der Bot ist offline, die Emote-Liste ist deshalb nicht verfügbar.",
+      "noEmotes": "Dieser Server hat noch keine eigenen Emotes."
     },
     "errors": {
       "forbidden": "Nur Admins können Rollen verwalten.",
@@ -719,7 +725,10 @@
       "needsText": "Gib dem Panel einen Titel oder etwas Text.",
       "rolesInvalid": "Füge zwischen 1 und 25 verschiedene Rollen hinzu.",
       "duplicateRole": "Diese Rolle steht schon auf dem Panel.",
-      "emojiInvalid": "Nutze ein Standard-Emoji, kein eigenes."
+      "emojiInvalid": "Nutze ein Standard-Emoji, kein eigenes.",
+      "emojiNotFound": "Eines dieser Emotes stammt nicht mehr von diesem Server.",
+      "needsEmoji": "Reaktions-Panels brauchen bei jeder Rolle ein Emoji.",
+      "duplicateEmoji": "Jede Rolle braucht ein anderes Emoji."
     }
   }
 }

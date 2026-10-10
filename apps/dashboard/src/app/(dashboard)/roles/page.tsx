@@ -14,7 +14,7 @@ export default async function RolesPage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("Roles");
-  const { panels, channels, roles } = await getRolesPage();
+  const { panels, channels, roles, emojis } = await getRolesPage();
 
   return (
     <>
@@ -22,7 +22,7 @@ export default async function RolesPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <RolesManager panels={panels} channels={channels} roles={roles} />
+      <RolesManager panels={panels} channels={channels} roles={roles} emojis={emojis} />
     </>
   );
 }

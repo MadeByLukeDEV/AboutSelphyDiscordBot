@@ -680,7 +680,8 @@
       "style": "Look",
       "styles": {
         "buttons": "Buttons",
-        "menu": "Menu"
+        "menu": "Menu",
+        "reactions": "Reactions"
       },
       "buttonsHelp": "One button per role, up to 25. Members press a button to add the role and press it again to remove it.",
       "menuHelp": "A drop-down list. Members choose roles from it to add or remove them.",
@@ -692,7 +693,7 @@
       "role": "Role",
       "rolePlaceholder": "Pick a role",
       "label": "Label",
-      "emoji": "Emoji",
+      "emoji": "Emoji or emote",
       "roleDescription": "Short description (menu)",
       "addRole": "Add a role",
       "removeRole": "Remove",
@@ -703,7 +704,12 @@
       "saving": "Saving…",
       "savedDraft": "Saved as a draft",
       "posted": "Panel posted",
-      "updated": "Panel updated in Discord"
+      "updated": "Panel updated in Discord",
+      "reactionsHelp": "Members react to the message with the role's emoji. Every role needs its own emoji, and a message holds at most 20.",
+      "rolesHelpReactions": "Between 1 and {max}, each with its own emoji. Only roles the bot may hand out are listed.",
+      "serverEmotes": "Server emotes",
+      "emotesOffline": "The bot is offline, so the emote list isn't available.",
+      "noEmotes": "This server has no custom emotes yet."
     },
     "errors": {
       "forbidden": "Only admins can manage roles.",
@@ -719,7 +725,10 @@
       "needsText": "Give the panel a title or some text.",
       "rolesInvalid": "Add between 1 and 25 different roles.",
       "duplicateRole": "This role is already on the panel.",
-      "emojiInvalid": "Use a standard emoji, not a custom one."
+      "emojiInvalid": "Use a standard emoji, not a custom one.",
+      "emojiNotFound": "One of these emotes isn't from this server any more.",
+      "needsEmoji": "Reaction panels need an emoji on every role.",
+      "duplicateEmoji": "Each role needs a different emoji."
     }
   }
 }

@@ -18,7 +18,7 @@ export type PanelData = {
   title: string;
   description: string;
   color: number;
-  style: "buttons" | "menu";
+  style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
 };
 

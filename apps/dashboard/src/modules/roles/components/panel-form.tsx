@@ -5,10 +5,13 @@ import { Controller, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
+import type { GuildChannel, GuildEmoji, GuildRole } from "@aboutselphy/shared";
 import {
+  customEmojiUrl,
   DEFAULT_PANEL_COLOR,
+  parseEmoji,
   MAX_LABEL,
+  MAX_REACTION_ROLES,
   MAX_PANEL_DESCRIPTION,
   MAX_PANEL_ROLES,
   MAX_PANEL_TITLE,
@@ -33,7 +36,7 @@ type FormValues = {
   title: string;
   description: string;
   color: number;
-  style: "buttons" | "menu";
+  style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: Array<{ roleId: string; label: string; emoji: string; description: string }>;
 };
@@ -45,12 +48,14 @@ export function PanelForm({
   panel,
   channels,
   roles,
+  emojis,
   onDone,
 }: {
   panel: RolePanelView | null;
   /** Text channels. null = the bot couldn't be reached. */
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  emojis: GuildEmoji[] | null;
   onDone: () => void;
 }) {
   const t = useTranslations("Roles.panel");
@@ -59,6 +64,8 @@ export function PanelForm({
   // Roles created from inside this dialog show up in the pickers at once, before the page refreshes.
   const [created, setCreated] = useState<GuildRole[]>([]);
   const posted = panel?.messageId != null;
+  // Which role row has its server-emote grid open.
+  const [pickerOpen, setPickerOpen] = useState<number | null>(null);
 
   const form = useForm<FormValues>({
     defaultValues: panel
@@ -110,8 +117,6 @@ export function PanelForm({
       });
     });
 
-  const preview = style === "menu" ? t("styles.menu") : t("styles.buttons");
-
   return (
     <form onSubmit={(e) => void submit(false)(e)} className="flex flex-col gap-6" noValidate>
       <FieldGroup>
@@ -135,7 +140,7 @@ export function PanelForm({
         <Field>
           <FieldLabel htmlFor="rp-style">{t("style")}</FieldLabel>
           <FormSelect control={form.control} name="style" id="rp-style" options={styleOptions} placeholder={t("style")} />
-          <FieldDescription>{preview === t("styles.menu") ? t("menuHelp") : t("buttonsHelp")}</FieldDescription>
+          <FieldDescription>{style === "menu" ? t("menuHelp") : style === "reactions" ? t("reactionsHelp") : t("buttonsHelp")}</FieldDescription>
         </Field>
 
         <Field orientation="horizontal">
@@ -170,7 +175,7 @@ export function PanelForm({
             <h3 id="rp-roles" className="font-semibold">
               {t("roles")}
             </h3>
-            <p className="text-sm text-muted-foreground">{t("rolesHelp", { max: MAX_PANEL_ROLES })}</p>
+            <p className="text-sm text-muted-foreground">{t(style === "reactions" ? "rolesHelpReactions" : "rolesHelp", { max: style === "reactions" ? MAX_REACTION_ROLES : MAX_PANEL_ROLES })}</p>
           </div>
           <CreateRoleDialog trigger="small" onCreated={(role) => setCreated((c) => [...c, { id: role.id, name: role.name, color: role.color, assignable: true }])} />
         </div>
@@ -201,9 +206,42 @@ export function PanelForm({
                   </Field>
                   <Field data-invalid={Boolean(rowError?.emoji) || undefined}>
                     <FieldLabel htmlFor={`rp-emoji-${index}`}>{t("emoji")}</FieldLabel>
-                    <Input id={`rp-emoji-${index}`} maxLength={32} autoComplete="off" {...form.register(`roles.${index}.emoji`)} />
-                    {rowError?.emoji && <FieldError>{te("emojiInvalid")}</FieldError>}
+                    <div className="flex items-center gap-2">
+                      <EmojiPreview value={rows[index]?.emoji ?? ""} />
+                      <Input id={`rp-emoji-${index}`} maxLength={64} autoComplete="off" {...form.register(`roles.${index}.emoji`)} />
+                    </div>
+                    {rowError?.emoji && <FieldError>{te(rowError.emoji.message === "needsEmoji" ? "needsEmoji" : rowError.emoji.message === "duplicateEmoji" ? "duplicateEmoji" : "emojiInvalid")}</FieldError>}
                   </Field>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button type="button" variant="outline" size="xs" onClick={() => setPickerOpen(pickerOpen === index ? null : index)} aria-expanded={pickerOpen === index} disabled={emojis === null || emojis.length === 0}>
+                      {t("serverEmotes")}
+                    </Button>
+                    {emojis === null && <span className="text-xs text-muted-foreground">{t("emotesOffline")}</span>}
+                    {emojis !== null && emojis.length === 0 && <span className="text-xs text-muted-foreground">{t("noEmotes")}</span>}
+                  </div>
+                  {pickerOpen === index && emojis && (
+                    <ul className="grid max-h-48 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-y-auto rounded-lg border p-2" aria-label={t("serverEmotes")}>
+                      {emojis.map((e) => (
+                        <li key={e.id}>
+                          <button
+                            type="button"
+                            title={`:${e.name}:`}
+                            aria-label={`:${e.name}:`}
+                            className="flex size-10 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                            onClick={() => {
+                              form.setValue(`roles.${index}.emoji`, e.value, { shouldDirty: true, shouldValidate: true });
+                              setPickerOpen(null);
+                            }}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element -- a small emote from Discord's CDN (allowed by the CSP) */}
+                            <img src={customEmojiUrl(e.id, e.animated, 32)} alt="" className="size-7" loading="lazy" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 {style === "menu" && (
                   <Field>
@@ -222,7 +260,7 @@ export function PanelForm({
           })}
         </ul>
         <div>
-          <Button type="button" variant="outline" size="sm" onClick={() => fields.append({ ...EMPTY_ROLE })} disabled={fields.fields.length >= MAX_PANEL_ROLES}>
+          <Button type="button" variant="outline" size="sm" onClick={() => fields.append({ ...EMPTY_ROLE })} disabled={fields.fields.length >= (style === "reactions" ? MAX_REACTION_ROLES : MAX_PANEL_ROLES)}>
             {t("addRole")}
           </Button>
         </div>
@@ -240,5 +278,20 @@ export function PanelForm({
         )}
       </DialogFooter>
     </form>
+  );
+}
+
+/** The emoji of a role row: the emote's picture for a server emote, the character itself for unicode. */
+function EmojiPreview({ value }: { value: string }) {
+  const parsed = parseEmoji(value);
+  return (
+    <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-lg border text-lg">
+      {parsed?.kind === "custom" ? (
+        // eslint-disable-next-line @next/next/no-img-element -- a small emote from Discord's CDN (allowed by the CSP)
+        <img src={customEmojiUrl(parsed.id, parsed.animated, 32)} alt="" className="size-6" />
+      ) : (
+        (parsed?.name ?? "")
+      )}
+    </span>
   );
 }

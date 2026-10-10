@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
+import type { GuildChannel, GuildEmoji, GuildRole } from "@aboutselphy/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -22,10 +22,13 @@ export function RolesManager({
   panels,
   channels,
   roles,
+  emojis,
 }: {
   panels: RolePanelView[];
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  /** The server's own emotes for the picker; null if the bot couldn't be reached. */
+  emojis: GuildEmoji[] | null;
 }) {
   const t = useTranslations("Roles");
   const te = useTranslations("Roles.errors");
@@ -134,6 +137,7 @@ export function RolesManager({
               panel={editing.panel}
               channels={channels}
               roles={roles}
+              emojis={emojis}
               onDone={() => {
                 setEditing(null);
                 router.refresh();

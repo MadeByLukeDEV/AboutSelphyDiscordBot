@@ -3,6 +3,7 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  emojisResponse,
   roleCreateResponse,
   rolePanelDeleteStatus,
   rolePanelPublishStatus,
@@ -13,6 +14,7 @@ import {
   type AnnouncementDeleteStatus,
   type AnnouncementEditStatus,
   type ChannelKind,
+  type GuildEmoji,
   type RoleCreateResponse,
   type RolePanelDeleteStatus,
   type RolePanelPublishStatus,
@@ -140,4 +142,12 @@ export async function deleteRolePanelMessage(id: string): Promise<RolePanelDelet
   if (!res?.ok) return null;
   const parsed = rolePanelDeleteStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
+}
+
+/** The server's own custom emotes, for the emoji picker. Null if the bot can't be reached. */
+export async function listEmojis(): Promise<GuildEmoji[] | null> {
+  const res = await botFetch("/internal/guild/emojis");
+  if (!res?.ok) return null;
+  const parsed = emojisResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data.emojis : null;
 }

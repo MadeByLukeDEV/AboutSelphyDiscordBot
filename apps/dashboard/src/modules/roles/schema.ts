@@ -20,7 +20,7 @@ export type RolePanelView = {
   title: string;
   description: string;
   color: number;
-  style: "buttons" | "menu";
+  style: "buttons" | "menu" | "reactions";
   exclusive: boolean;
   roles: PanelRoleView[];
   createdByName: string;
@@ -34,6 +34,7 @@ export type RolesError =
   | "channelNotFound"
   | "roleNotFound"
   | "roleNotAllowed"
+  | "emojiNotFound"
   | "needsPermission"
   | "tooManyRoles"
   | "failed";
