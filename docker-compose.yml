@@ -8,6 +8,10 @@
 #
 # Locally:   docker compose --env-file .env.local up --build
 #
+# Network: both services also join Dokploy's shared network (dokploy-network). That is what lets them
+# reach the Postgres service by its internal name (for example services-postgresql-xxxxx:5432) and lets
+# Traefik reach the dashboard. They still talk to each other as dashboard / bot.
+#
 # Start order: the dashboard container applies the database migrations when it starts and is
 # the only one that does, so the bot waits until the dashboard is healthy.
 
@@ -36,6 +40,9 @@ services:
       TWITCH_CLIENT_SECRET: ${TWITCH_CLIENT_SECRET:-}
     expose:
       - "3000"
+    networks:
+      - default
+      - dokploy-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -73,3 +80,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
     # No ports and no domain: only the dashboard talks to the bot. The image has its own HEALTHCHECK.
     stop_grace_period: 20s
+    networks:
+      - default
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
