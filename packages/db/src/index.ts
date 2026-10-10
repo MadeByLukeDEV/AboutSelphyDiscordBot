@@ -18,10 +18,12 @@ export type {
   TwitchConnection,
   TwitchNotification,
   TwitchStreamer,
+  TicketConfig,
+  Ticket,
   WelcomeCardImage,
   WelcomeConfig,
   MemberRoleSnapshot,
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";
-export type { RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";
+export type { TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

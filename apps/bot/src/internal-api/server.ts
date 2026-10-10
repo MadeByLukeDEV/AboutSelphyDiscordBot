@@ -17,6 +17,7 @@ import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
+import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
 import { getTempVoiceOverview } from "../modules/tempvoice";
 import { lookupTwitchChannel } from "../modules/twitch";
@@ -120,6 +121,12 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     if (!guild) return json(res, 503, { error: "guild not available" });
     const status = url.pathname.endsWith("/publish") ? await publishPanel(guild, body.data.id) : await deletePanelMessage(guild, body.data.id);
     return json(res, 200, { status });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/tickets/panel") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await postPanel(guild) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/welcome/preview") {

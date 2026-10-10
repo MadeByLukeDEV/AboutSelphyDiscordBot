@@ -491,3 +491,63 @@ model MemberXp {
 
   @@index([xp])
 }
+
+// ---- tickets -------------------------------------------------------------------------
+// A panel message with an "Open ticket" button; each ticket is a private channel. Closing
+// saves a transcript (when the bot can read message text) and deletes the channel. CHECK
+// constraints (singleton, digits-only IDs, ranges, status) are added by hand.
+
+enum TicketStatus {
+  open
+  closed
+}
+
+/// Singleton (id = 1).
+model TicketConfig {
+  id               Int      @id @default(1)
+  enabled          Boolean  @default(false)
+  /// Where the panel message is posted, and the posted message.
+  panelChannelId   String?  @db.VarChar(20)
+  panelMessageId   String?  @db.VarChar(20)
+  /// Category the ticket channels are created in.
+  categoryId       String?  @db.VarChar(20)
+  /// Roles that can see, claim and close every ticket (at most 5).
+  staffRoleIds     String[] @default([])
+  /// Where the summary and transcript of a closed ticket go.
+  logChannelId     String?  @db.VarChar(20)
+  /// How many tickets one member can have open at once.
+  maxOpenPerUser   Int      @default(1)
+  panelTitle       String   @default("Need help?") @db.VarChar(256)
+  panelDescription String   @default("Press the button to open a private ticket with the team.") @db.VarChar(2000)
+  panelColor       Int      @default(65448)
+  buttonLabel      String   @default("Open a ticket") @db.VarChar(80)
+  /// The first message in a new ticket. {user} mentions the opener, {number} is the ticket number.
+  welcomeTemplate  String   @default("Hi {user}, thanks for opening ticket #{number}. Tell us what you need and the team will be with you soon.") @db.VarChar(1000)
+  /// The number the next ticket gets; incremented atomically with the insert.
+  nextNumber       Int      @default(1)
+  updatedAt        DateTime @updatedAt
+}
+
+model Ticket {
+  id            String       @id @default(cuid())
+  number        Int          @unique
+  /// The private channel. Unique while it exists.
+  channelId     String       @unique @db.VarChar(20)
+  openerId      String       @db.VarChar(20)
+  openerName    String       @default("") @db.VarChar(100)
+  status        TicketStatus @default(open)
+  claimedById   String?      @db.VarChar(20)
+  claimedByName String?      @db.VarChar(100)
+  createdAt     DateTime     @default(now())
+  closedAt      DateTime?
+  closedById    String?      @db.VarChar(20)
+  closedByName  String?      @db.VarChar(100)
+  closeReason   String       @default("") @db.VarChar(300)
+  /// The conversation as JSON (see packages/shared/src/tickets.ts), kept when the ticket closes.
+  /// Null when the bot could not read message text.
+  transcript    Json?
+  messageCount  Int          @default(0)
+
+  @@index([status, createdAt])
+  @@index([openerId, status])
+}

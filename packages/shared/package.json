@@ -26,6 +26,7 @@
     "./welcome": "./src/welcome.ts",
     "./image-info": "./src/image-info.ts",
     "./logs": "./src/logs.ts",
-    "./levels": "./src/levels.ts"
+    "./levels": "./src/levels.ts",
+    "./tickets": "./src/tickets.ts"
   }
 }

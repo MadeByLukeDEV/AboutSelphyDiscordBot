@@ -4,6 +4,7 @@ import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
 import { registerReactionRoles, registerRolePanels } from "./modules/roles";
 import { registerLevels, stopLevels } from "./modules/levels";
+import { registerTicketControls, registerTicketEvents } from "./modules/tickets";
 import { registerLogs } from "./modules/logs";
 import { registerWelcome } from "./modules/welcome";
 import { startAnnouncements, stopAnnouncements } from "./modules/announcements";
@@ -40,6 +41,8 @@ async function main() {
   registerWelcome(client);
   registerLogs(client);
   registerLevels(client);
+  registerTicketControls();
+  registerTicketEvents(client);
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);

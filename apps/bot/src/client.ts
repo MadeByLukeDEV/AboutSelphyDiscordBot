@@ -23,10 +23,15 @@ export const INTENTS = [
   GatewayIntentBits.GuildMembers, // privileged: joins and leaves (welcome, auto-roles, restoring roles)
 ];
 
+/** Message text is only readable with the privileged MessageContent intent, which is opt-in (DISCORD_MESSAGE_CONTENT=true) so a portal that hasn't enabled it can't stop the bot from logging in. */
+export function intents(): GatewayIntentBits[] {
+  return process.env.DISCORD_MESSAGE_CONTENT === "true" ? [...INTENTS, GatewayIntentBits.MessageContent] : INTENTS;
+}
+
 let client: Client | undefined;
 
 /** Built on first use, never at import time (docker build has no env). */
 export function getClient(): Client {
-  client ??= new Client({ intents: INTENTS, partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User] });
+  client ??= new Client({ intents: intents(), partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User] });
   return client;
 }

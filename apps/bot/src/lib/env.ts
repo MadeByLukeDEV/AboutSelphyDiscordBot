@@ -45,6 +45,9 @@ const schema = z.object({
   YOUTUBE_API_KEY: optional(z.string().min(10)),
   // The channel's ID (starts with UC), not its @handle.
   YOUTUBE_CHANNEL_ID: optional(z.string().regex(/^UC[A-Za-z0-9_-]{22}$/)),
+  // true once the "Message Content" privileged intent is enabled in the Developer Portal (Bot ->
+  // Privileged Gateway Intents). Needed to read message text, e.g. for ticket transcripts.
+  DISCORD_MESSAGE_CONTENT: bool,
   BOT_ENV: z.enum(["local", "production"]).default("local"),
   BOT_INTEGRATIONS_IN_DEV: bool,
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),

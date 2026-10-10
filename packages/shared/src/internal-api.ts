@@ -11,6 +11,7 @@ export const RELOADABLE_MODULES = [
   "welcome",
   "logs",
   "levels",
+  "tickets",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
@@ -170,3 +171,7 @@ export const emojisResponse = z.object({ emojis: z.array(guildEmoji) });
 
 /** POST /internal/welcome/preview: the welcome card as it would look for a sample member, from the SAVED settings. */
 export const welcomePreviewResponse = z.object({ png: z.string().min(1) /* base64 */ });
+
+/** POST /internal/tickets/panel: post (or update) the ticket panel message. */
+export const ticketPanelStatus = z.enum(["posted", "updated", "channel", "needsSetup", "failed"]);
+export type TicketPanelStatus = z.infer<typeof ticketPanelStatus>;
