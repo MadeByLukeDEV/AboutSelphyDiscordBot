@@ -9,19 +9,57 @@ const KIND_OF: Partial<Record<ChannelType, ChannelKind>> = {
   [ChannelType.GuildCategory]: "category",
 };
 
-type ChannelLike = { id: string; name: string; type: ChannelType; parent?: { name: string } | null; rawPosition?: number };
+/** Inside a category Discord lists text channels first, then voice. */
+const KIND_RANK: Record<ChannelKind, number> = { category: 0, text: 1, voice: 2 };
 
-/** Pure mapping, so it can be tested without a Discord connection. */
+type ChannelLike = {
+  id: string;
+  name: string;
+  type: ChannelType;
+  parent?: { name: string; rawPosition?: number } | null;
+  rawPosition?: number;
+};
+
+function compareIds(a: string, b: string): number {
+  // Snowflakes are numeric; compare as BigInt so a longer ID is a larger ID.
+  const x = BigInt(a);
+  const y = BigInt(b);
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
+/**
+ * Pure mapping, so it can be tested without a Discord connection.
+ *
+ * The order is the one Discord's sidebar shows, so a picker matches what staff
+ * see in the server:
+ *  1. channels without a category come first, then each category by its position
+ *  2. a category is listed before its own channels
+ *  3. inside a category, text (and announcement) channels before voice channels
+ *  4. then by position; equal positions fall back to the ID (Discord does too)
+ */
 export function mapChannels(channels: Iterable<ChannelLike>, kinds: ReadonlySet<ChannelKind>): GuildChannel[] {
-  const result: Array<GuildChannel & { position: number }> = [];
+  const entries: Array<{ channel: GuildChannel; group: number; rank: number; position: number }> = [];
+
   for (const c of channels) {
     const kind = KIND_OF[c.type];
     if (!kind || !kinds.has(kind)) continue;
-    result.push({ id: c.id, name: c.name, kind, parent: c.parent?.name ?? null, position: c.rawPosition ?? 0 });
+    entries.push({
+      channel: { id: c.id, name: c.name, kind, parent: c.parent?.name ?? null },
+      // The category's own position decides where its block sits.
+      group: kind === "category" ? (c.rawPosition ?? 0) : c.parent ? (c.parent.rawPosition ?? 0) : -1,
+      rank: KIND_RANK[kind],
+      position: c.rawPosition ?? 0,
+    });
   }
-  // Group by category, then by the order shown in Discord.
-  result.sort((a, b) => (a.parent ?? "").localeCompare(b.parent ?? "") || a.position - b.position);
-  return result.slice(0, 500).map(({ position: _position, ...channel }) => channel);
+
+  entries.sort(
+    (a, b) =>
+      a.group - b.group ||
+      a.rank - b.rank ||
+      a.position - b.position ||
+      compareIds(a.channel.id, b.channel.id),
+  );
+  return entries.slice(0, 500).map((e) => e.channel);
 }
 
 export async function listGuildChannels(guild: Guild, kinds: ReadonlySet<ChannelKind>): Promise<GuildChannel[]> {

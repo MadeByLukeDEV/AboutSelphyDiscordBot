@@ -5,13 +5,17 @@ import { describe, expect, it } from "vitest";
 import { BodyError, readJsonBody } from "./body";
 import { mapChannels } from "./guild";
 
+const chat = { name: "Chat", rawPosition: 0 };
+const voice = { name: "Voice", rawPosition: 5 };
+
 const channels = [
-  { id: "100000000000000001", name: "general", type: ChannelType.GuildText, parent: { name: "Chat" }, rawPosition: 1 },
-  { id: "100000000000000002", name: "news", type: ChannelType.GuildAnnouncement, parent: { name: "Chat" }, rawPosition: 0 },
-  { id: "100000000000000003", name: "Lobby", type: ChannelType.GuildVoice, parent: { name: "Voice" }, rawPosition: 0 },
+  { id: "100000000000000001", name: "general", type: ChannelType.GuildText, parent: chat, rawPosition: 1 },
+  { id: "100000000000000002", name: "news", type: ChannelType.GuildAnnouncement, parent: chat, rawPosition: 0 },
+  { id: "100000000000000003", name: "Lobby", type: ChannelType.GuildVoice, parent: voice, rawPosition: 0 },
   { id: "100000000000000004", name: "Voice", type: ChannelType.GuildCategory, parent: null, rawPosition: 5 },
-  { id: "100000000000000005", name: "threads", type: ChannelType.PublicThread, parent: { name: "Chat" }, rawPosition: 0 },
+  { id: "100000000000000005", name: "threads", type: ChannelType.PublicThread, parent: chat, rawPosition: 0 },
   { id: "100000000000000006", name: "rules", type: ChannelType.GuildText, parent: null, rawPosition: 0 },
+  { id: "100000000000000007", name: "Chat", type: ChannelType.GuildCategory, parent: null, rawPosition: 0 },
 ];
 
 describe("mapChannels", () => {
@@ -28,18 +32,43 @@ describe("mapChannels", () => {
     expect(all.find((c) => c.name === "Voice")).toMatchObject({ kind: "category", parent: null });
   });
 
-  it("orders by category, then by the position shown in Discord", () => {
-    const text = mapChannels(channels, new Set(["text"]));
-    expect(text.map((c) => c.parent)).toEqual([null, "Chat", "Chat"]);
-    expect(text.slice(1).map((c) => c.name)).toEqual(["news", "general"]);
+  it("orders like Discord's sidebar: uncategorised first, then each category with its channels", () => {
+    const all = mapChannels(channels, new Set(["text", "voice", "category"]));
+    expect(all.map((c) => c.name)).toEqual(["rules", "Chat", "news", "general", "Voice", "Lobby"]);
   });
 
-  it("does not leak the internal position field", () => {
+  it("orders categories by their position, not by name", () => {
+    const zFirst = [
+      { id: "200000000000000001", name: "Zeta", type: ChannelType.GuildCategory, parent: null, rawPosition: 0 },
+      { id: "200000000000000002", name: "Alpha", type: ChannelType.GuildCategory, parent: null, rawPosition: 1 },
+      { id: "200000000000000003", name: "in-zeta", type: ChannelType.GuildText, parent: { name: "Zeta", rawPosition: 0 }, rawPosition: 0 },
+      { id: "200000000000000004", name: "in-alpha", type: ChannelType.GuildText, parent: { name: "Alpha", rawPosition: 1 }, rawPosition: 0 },
+    ];
+    expect(mapChannels(zFirst, new Set(["text"])).map((c) => c.name)).toEqual(["in-zeta", "in-alpha"]);
+  });
+
+  it("lists text channels before voice channels inside a category, whatever their positions", () => {
+    const cat = { name: "Mixed", rawPosition: 2 };
+    const mixed = [
+      { id: "300000000000000001", name: "voice-first", type: ChannelType.GuildVoice, parent: cat, rawPosition: 0 },
+      { id: "300000000000000002", name: "text-later", type: ChannelType.GuildText, parent: cat, rawPosition: 3 },
+    ];
+    expect(mapChannels(mixed, new Set(["text", "voice"])).map((c) => c.name)).toEqual(["text-later", "voice-first"]);
+  });
+
+  it("breaks position ties by channel ID, like Discord", () => {
+    const tie = [
+      { id: "400000000000000010", name: "newer", type: ChannelType.GuildText, parent: null, rawPosition: 0 },
+      { id: "400000000000000009", name: "older", type: ChannelType.GuildText, parent: null, rawPosition: 0 },
+    ];
+    expect(mapChannels(tie, new Set(["text"])).map((c) => c.name)).toEqual(["older", "newer"]);
+  });
+
+  it("does not leak internal sorting fields", () => {
     for (const c of mapChannels(channels, new Set(["text"]))) expect(Object.keys(c).sort()).toEqual(["id", "kind", "name", "parent"]);
   });
 });
 
-// null = send no content-type header at all (undefined would trigger the default).
 const request = (body: string | Buffer, contentType: string | null = "application/json") =>
   Object.assign(Readable.from([Buffer.from(body)]), {
     headers: contentType ? { "content-type": contentType } : {},
