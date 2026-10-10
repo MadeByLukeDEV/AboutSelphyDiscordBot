@@ -707,9 +707,9 @@
       "updated": "Panel in Discord aktualisiert",
       "reactionsHelp": "Mitglieder reagieren mit dem Emoji der Rolle auf die Nachricht. Jede Rolle braucht ein eigenes Emoji, und eine Nachricht fasst höchstens 20.",
       "rolesHelpReactions": "Zwischen 1 und {max}, jede mit eigenem Emoji. Es werden nur Rollen angezeigt, die der Bot vergeben darf.",
-      "serverEmotes": "Server-Emotes",
-      "emotesOffline": "Der Bot ist offline, die Emote-Liste ist deshalb nicht verfügbar.",
-      "noEmotes": "Dieser Server hat noch keine eigenen Emotes."
+      "emojiPlaceholder": "Emoji eintippen oder auswählen",
+      "pickEmoji": "Auswählen",
+      "clearEmoji": "Leeren"
     },
     "errors": {
       "forbidden": "Nur Admins können Rollen verwalten.",
@@ -729,6 +729,16 @@
       "emojiNotFound": "Eines dieser Emotes stammt nicht mehr von diesem Server.",
       "needsEmoji": "Reaktions-Panels brauchen bei jeder Rolle ein Emoji.",
       "duplicateEmoji": "Jede Rolle braucht ein anderes Emoji."
+    },
+    "picker": {
+      "search": "Emoji suchen",
+      "categories": "Emoji-Kategorien",
+      "server": "Server ({count})",
+      "serverHeading": "Dieser Server",
+      "standardHeading": "Standard-Emoji",
+      "loading": "Emoji werden geladen…",
+      "loadFailed": "Die Emoji-Liste konnte nicht geladen werden. Du kannst trotzdem ein Emoji eintippen.",
+      "none": "Kein Emoji gefunden."
     }
   }
 }

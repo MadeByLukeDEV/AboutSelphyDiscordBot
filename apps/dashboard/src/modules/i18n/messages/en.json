@@ -707,9 +707,9 @@
       "updated": "Panel updated in Discord",
       "reactionsHelp": "Members react to the message with the role's emoji. Every role needs its own emoji, and a message holds at most 20.",
       "rolesHelpReactions": "Between 1 and {max}, each with its own emoji. Only roles the bot may hand out are listed.",
-      "serverEmotes": "Server emotes",
-      "emotesOffline": "The bot is offline, so the emote list isn't available.",
-      "noEmotes": "This server has no custom emotes yet."
+      "emojiPlaceholder": "Type an emoji or pick one",
+      "pickEmoji": "Pick",
+      "clearEmoji": "Clear"
     },
     "errors": {
       "forbidden": "Only admins can manage roles.",
@@ -729,6 +729,16 @@
       "emojiNotFound": "One of these emotes isn't from this server any more.",
       "needsEmoji": "Reaction panels need an emoji on every role.",
       "duplicateEmoji": "Each role needs a different emoji."
+    },
+    "picker": {
+      "search": "Search emoji",
+      "categories": "Emoji categories",
+      "server": "Server ({count})",
+      "serverHeading": "This server",
+      "standardHeading": "Standard emoji",
+      "loading": "Loading emoji…",
+      "loadFailed": "The emoji list couldn't be loaded. You can still type an emoji.",
+      "none": "No emoji found."
     }
   }
 }

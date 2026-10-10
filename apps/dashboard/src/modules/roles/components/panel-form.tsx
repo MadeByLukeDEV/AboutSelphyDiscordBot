@@ -30,6 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { savePanelAction } from "../actions";
 import type { RolePanelView } from "../schema";
 import { CreateRoleDialog } from "./create-role-dialog";
+import { EmojiPicker } from "./emoji-picker";
 
 type FormValues = {
   channelId: string;
@@ -199,50 +200,35 @@ export function PanelForm({
                   />
                   {rowError?.roleId && <FieldError>{te(rowError.roleId.message === "duplicate" ? "duplicateRole" : "roleNotFound")}</FieldError>}
                 </Field>
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_6rem]">
-                  <Field data-invalid={Boolean(rowError?.label) || undefined}>
-                    <FieldLabel htmlFor={`rp-label-${index}`}>{t("label")}</FieldLabel>
-                    <Input id={`rp-label-${index}`} maxLength={MAX_LABEL} placeholder={nameOf(rows[index]?.roleId ?? "")} {...form.register(`roles.${index}.label`)} />
-                  </Field>
-                  <Field data-invalid={Boolean(rowError?.emoji) || undefined}>
-                    <FieldLabel htmlFor={`rp-emoji-${index}`}>{t("emoji")}</FieldLabel>
-                    <div className="flex items-center gap-2">
-                      <EmojiPreview value={rows[index]?.emoji ?? ""} />
-                      <Input id={`rp-emoji-${index}`} maxLength={64} autoComplete="off" {...form.register(`roles.${index}.emoji`)} />
-                    </div>
-                    {rowError?.emoji && <FieldError>{te(rowError.emoji.message === "needsEmoji" ? "needsEmoji" : rowError.emoji.message === "duplicateEmoji" ? "duplicateEmoji" : "emojiInvalid")}</FieldError>}
-                  </Field>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button type="button" variant="outline" size="xs" onClick={() => setPickerOpen(pickerOpen === index ? null : index)} aria-expanded={pickerOpen === index} disabled={emojis === null || emojis.length === 0}>
-                      {t("serverEmotes")}
+                <Field data-invalid={Boolean(rowError?.label) || undefined}>
+                  <FieldLabel htmlFor={`rp-label-${index}`}>{t("label")}</FieldLabel>
+                  <Input id={`rp-label-${index}`} maxLength={MAX_LABEL} placeholder={nameOf(rows[index]?.roleId ?? "")} {...form.register(`roles.${index}.label`)} />
+                </Field>
+                <Field data-invalid={Boolean(rowError?.emoji) || undefined}>
+                  <FieldLabel htmlFor={`rp-emoji-${index}`}>{t("emoji")}</FieldLabel>
+                  <div className="flex items-center gap-2">
+                    <EmojiPreview value={rows[index]?.emoji ?? ""} />
+                    <Input id={`rp-emoji-${index}`} maxLength={64} autoComplete="off" placeholder={t("emojiPlaceholder")} className="min-w-0 flex-1" {...form.register(`roles.${index}.emoji`)} />
+                    <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(pickerOpen === index ? null : index)} aria-expanded={pickerOpen === index}>
+                      {t("pickEmoji")}
                     </Button>
-                    {emojis === null && <span className="text-xs text-muted-foreground">{t("emotesOffline")}</span>}
-                    {emojis !== null && emojis.length === 0 && <span className="text-xs text-muted-foreground">{t("noEmotes")}</span>}
+                    {(rows[index]?.emoji ?? "") !== "" && (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue(`roles.${index}.emoji`, "", { shouldDirty: true, shouldValidate: true })}>
+                        {t("clearEmoji")}
+                      </Button>
+                    )}
                   </div>
-                  {pickerOpen === index && emojis && (
-                    <ul className="grid max-h-48 grid-cols-[repeat(auto-fill,minmax(2.5rem,1fr))] gap-1 overflow-y-auto rounded-lg border p-2" aria-label={t("serverEmotes")}>
-                      {emojis.map((e) => (
-                        <li key={e.id}>
-                          <button
-                            type="button"
-                            title={`:${e.name}:`}
-                            aria-label={`:${e.name}:`}
-                            className="flex size-10 items-center justify-center rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                            onClick={() => {
-                              form.setValue(`roles.${index}.emoji`, e.value, { shouldDirty: true, shouldValidate: true });
-                              setPickerOpen(null);
-                            }}
-                          >
-                            {/* eslint-disable-next-line @next/next/no-img-element -- a small emote from Discord's CDN (allowed by the CSP) */}
-                            <img src={customEmojiUrl(e.id, e.animated, 32)} alt="" className="size-7" loading="lazy" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
+                  {rowError?.emoji && <FieldError>{te(rowError.emoji.message === "needsEmoji" ? "needsEmoji" : rowError.emoji.message === "duplicateEmoji" ? "duplicateEmoji" : "emojiInvalid")}</FieldError>}
+                  {pickerOpen === index && (
+                    <EmojiPicker
+                      emojis={emojis}
+                      onPick={(value) => {
+                        form.setValue(`roles.${index}.emoji`, value, { shouldDirty: true, shouldValidate: true });
+                        setPickerOpen(null);
+                      }}
+                    />
                   )}
-                </div>
+                </Field>
                 {style === "menu" && (
                   <Field>
                     <FieldLabel htmlFor={`rp-rdesc-${index}`}>{t("roleDescription")}</FieldLabel>
