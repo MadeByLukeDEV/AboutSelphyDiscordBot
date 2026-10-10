@@ -728,6 +728,21 @@ Decided 2026-10-08:
       card. The CSP's `img-src` allows `https://cdn.discordapp.com` for avatars.
       Use `surface` for any new card, not `border bg-card`. Looked at by the
       user before merge: pending feedback.
+- [~] Leveling (2026-10-16, `feature_levels`, migration `20261016180000_levels` applied;
+      **not tried live yet**; Tier B of the replacement roadmap)
+  - Bot (`modules/levels/`): message XP (random in a range, per-member cooldown kept in
+    memory), voice XP once a minute (needs someone else in the channel, not deafened, not the
+    AFK channel), curve = MEE6 `5n²+50n+100` (`@aboutselphy/shared/levels`, tested),
+    no-XP channels/categories/roles, atomic increments (`MemberXp`), level-up: reward roles
+    (`planRewardRoles` stack/highest-only, **every role through `checkRole`**) and an
+    announcement (off / same channel / one channel; voice level-ups only in the one-channel
+    mode). `/rank` (canvas rank card, falls back to text), `/leaderboard`, `/xp
+    add|remove|set|reset` (admin; re-syncs reward roles). Uses the **GuildMessages** intent
+    only: message text is never read. Runs only in production or with
+    `BOT_INTEGRATIONS_IN_DEV`. Shared drawing helpers: `lib/canvas.ts`, `lib/avatar.ts`.
+  - Dashboard `/levels` (admins): all settings, the reward list, no-XP pickers, top 25.
+  - [ ] XP boosts per role, a public leaderboard page, importing MEE6 data, weekly resets,
+        voice XP only counting unmuted time.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed
