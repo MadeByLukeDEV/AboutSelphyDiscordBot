@@ -3,6 +3,7 @@ import { fillDate } from "@aboutselphy/shared/member-card";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { renderMemberCard } from "../membercards";
 import { checkRole } from "../roles";
 import { getBirthdayConfig } from "./config";
@@ -20,6 +21,7 @@ let timer: ReturnType<typeof setInterval> | undefined;
 
 export async function celebrateRound(guild: Guild): Promise<void> {
   if (running) return;
+  if (!(await moduleOn("birthdays"))) return;
   running = true;
   try {
     const config = await getBirthdayConfig();

@@ -32,7 +32,8 @@
         "autoPublish": "Automatisch veröffentlichen",
         "customCommands": "Eigene Befehle",
         "counting": "Zählkanal",
-        "autoResponders": "Auto-Antworten"
+        "autoResponders": "Auto-Antworten",
+        "modules": "Module"
       }
     },
     "account": {
@@ -1947,6 +1948,103 @@
       "needsTrigger": "Gib ein Wort oder eine Phrase ein (bis zu 100 Zeichen).",
       "needsResponse": "Schreibe die Antwort (bis zu 1500 Zeichen).",
       "badCooldown": "Gib eine Sekundenzahl von 0 bis 86400 ein."
+    }
+  },
+  "Modules": {
+    "title": "Module",
+    "intro": "Schalte ganze Funktionen ein oder aus. Eine ausgeschaltete Funktion beantwortet keine Befehle oder Buttons und tut nichts im Hintergrund, ihre Einstellungen und Daten bleiben aber erhalten. Moderation, Twitch, YouTube und Ankündigungen stehen nicht in der Liste: Moderation lässt sich nicht ausschalten, die anderen haben eigene Schalter.",
+    "off": "Aus",
+    "turnedOn": "Eingeschaltet",
+    "turnedOff": "Ausgeschaltet",
+    "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+    "groups": {
+      "community": "Community",
+      "engagement": "Interaktion",
+      "tools": "Werkzeuge",
+      "voice": "Sprache"
+    },
+    "items": {
+      "welcome": {
+        "name": "Willkommen",
+        "description": "Begrüßt neue Mitglieder, gibt ihnen Rollen und verabschiedet sie."
+      },
+      "roles": {
+        "name": "Rollen-Panels",
+        "description": "Buttons, Menüs und Reaktionen, die Rollen vergeben."
+      },
+      "levels": {
+        "name": "Level",
+        "description": "XP für Nachrichten und Sprachzeit, Ränge, Bestenliste und Rollenbelohnungen."
+      },
+      "birthdays": {
+        "name": "Geburtstage",
+        "description": "Geburtstagsgrüße und die Geburtstagsrolle."
+      },
+      "starboard": {
+        "name": "Starboard",
+        "description": "Postet beliebte Nachrichten in einem Schaukasten-Kanal erneut."
+      },
+      "counting": {
+        "name": "Zählkanal",
+        "description": "Das Hochzähl-Spiel."
+      },
+      "giveaways": {
+        "name": "Gewinnspiele",
+        "description": "Teilnahme per Button und Ziehen der Gewinner."
+      },
+      "polls": {
+        "name": "Umfragen",
+        "description": "/poll und Abstimmungs-Buttons."
+      },
+      "suggestions": {
+        "name": "Vorschläge",
+        "description": "/suggest mit Abstimmung und Team-Entscheidungen."
+      },
+      "tickets": {
+        "name": "Tickets",
+        "description": "Private Support-Kanäle, die per Button geöffnet werden."
+      },
+      "logs": {
+        "name": "Server-Logs",
+        "description": "Beitritte, Austritte, Rollen- und Kanaländerungen, Sprach- und Nachrichten-Logs."
+      },
+      "sticky": {
+        "name": "Angeheftete Nachrichten",
+        "description": "Nachrichten, die am Ende eines Kanals bleiben."
+      },
+      "autopublish": {
+        "name": "Automatisch veröffentlichen",
+        "description": "Veröffentlicht Nachrichten aus Ankündigungskanälen an Follower."
+      },
+      "statchannels": {
+        "name": "Statistik-Kanäle",
+        "description": "Sprachkanäle, die Live-Zahlen zeigen."
+      },
+      "customcommands": {
+        "name": "Eigene Befehle",
+        "description": "/tag und /tags, die gespeicherten Antworten."
+      },
+      "autoresponders": {
+        "name": "Auto-Antworten",
+        "description": "Antwortet, wenn eine Nachricht einen Auslöser enthält."
+      },
+      "reminders": {
+        "name": "Erinnerungen",
+        "description": "/remind. Solange es aus ist, bleiben Erinnerungen in der Warteschlange und kommen an, sobald es wieder an ist."
+      },
+      "utility": {
+        "name": "Info-Befehle",
+        "description": "/userinfo, /serverinfo, /roleinfo und /avatar."
+      },
+      "tempvoice": {
+        "name": "Temporäre Sprachkanäle",
+        "description": "Räume zum Erstellen per Beitritt und /voice."
+      }
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Das ist nicht gültig.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   }
 }

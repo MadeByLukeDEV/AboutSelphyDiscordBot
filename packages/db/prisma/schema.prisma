@@ -895,3 +895,12 @@ model AutoResponder {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+/// The central on/off switch of a feature (see @aboutselphy/shared/modules). No row = on. A switched-off
+/// feature answers no commands or buttons and its passive handlers do nothing; its data and settings are kept.
+model ModuleFlag {
+  key           String   @id @db.VarChar(24)
+  enabled       Boolean  @default(true)
+  updatedByName String   @db.VarChar(100)
+  updatedAt     DateTime @updatedAt
+}

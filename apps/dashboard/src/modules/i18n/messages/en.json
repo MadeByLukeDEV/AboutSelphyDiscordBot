@@ -32,7 +32,8 @@
         "autoPublish": "Auto-publish",
         "customCommands": "Custom commands",
         "counting": "Counting channel",
-        "autoResponders": "Auto-responders"
+        "autoResponders": "Auto-responders",
+        "modules": "Modules"
       }
     },
     "account": {
@@ -1947,6 +1948,103 @@
       "needsTrigger": "Enter a word or phrase (up to 100 characters).",
       "needsResponse": "Write the answer (up to 1500 characters).",
       "badCooldown": "Enter a number of seconds from 0 to 86400."
+    }
+  },
+  "Modules": {
+    "title": "Modules",
+    "intro": "Switch whole features on or off. A feature that is off answers no commands or buttons and does nothing in the background, but its settings and data are kept. Moderation, Twitch, YouTube and announcements aren't listed: moderation can't be switched off, and the others have their own switches.",
+    "off": "Off",
+    "turnedOn": "Switched on",
+    "turnedOff": "Switched off",
+    "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+    "groups": {
+      "community": "Community",
+      "engagement": "Engagement",
+      "tools": "Tools",
+      "voice": "Voice"
+    },
+    "items": {
+      "welcome": {
+        "name": "Welcome",
+        "description": "Greets and gives roles to new members, and says goodbye."
+      },
+      "roles": {
+        "name": "Role panels",
+        "description": "Buttons, menus and reactions that give roles."
+      },
+      "levels": {
+        "name": "Levels",
+        "description": "XP for messages and voice time, ranks, leaderboard and role rewards."
+      },
+      "birthdays": {
+        "name": "Birthdays",
+        "description": "Birthday greetings and the birthday role."
+      },
+      "starboard": {
+        "name": "Starboard",
+        "description": "Re-posts well-liked messages in a showcase channel."
+      },
+      "counting": {
+        "name": "Counting channel",
+        "description": "The count-up game."
+      },
+      "giveaways": {
+        "name": "Giveaways",
+        "description": "Entering with a button and drawing winners."
+      },
+      "polls": {
+        "name": "Polls",
+        "description": "/poll and voting buttons."
+      },
+      "suggestions": {
+        "name": "Suggestions",
+        "description": "/suggest with votes and team decisions."
+      },
+      "tickets": {
+        "name": "Tickets",
+        "description": "Private support channels opened with a button."
+      },
+      "logs": {
+        "name": "Server logs",
+        "description": "Joins, leaves, role and channel changes, voice and message logs."
+      },
+      "sticky": {
+        "name": "Sticky messages",
+        "description": "Messages kept at the bottom of a channel."
+      },
+      "autopublish": {
+        "name": "Auto-publish",
+        "description": "Publishes announcement channel messages to followers."
+      },
+      "statchannels": {
+        "name": "Stat channels",
+        "description": "Voice channels that show live numbers."
+      },
+      "customcommands": {
+        "name": "Custom commands",
+        "description": "/tag and /tags, the saved answers."
+      },
+      "autoresponders": {
+        "name": "Auto-responders",
+        "description": "Answers when a message contains a trigger."
+      },
+      "reminders": {
+        "name": "Reminders",
+        "description": "/remind. While off, reminders stay queued and arrive once it is on again."
+      },
+      "utility": {
+        "name": "Info commands",
+        "description": "/userinfo, /serverinfo, /roleinfo and /avatar."
+      },
+      "tempvoice": {
+        "name": "Temporary voice channels",
+        "description": "Join-to-create rooms and /voice."
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "That isn't valid.",
+      "failed": "That didn't work. Try again."
     }
   }
 }

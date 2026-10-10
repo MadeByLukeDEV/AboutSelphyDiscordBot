@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, ToggleRight, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -33,6 +33,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   autoPublish: Share2,
   customCommands: Terminal,
   counting: ListOrdered,
+  modules: ToggleRight,
   autoResponders: MessageSquareReply,
 };
 

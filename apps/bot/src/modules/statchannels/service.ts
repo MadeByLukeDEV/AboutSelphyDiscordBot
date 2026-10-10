@@ -4,6 +4,7 @@ import { renderStatName } from "@aboutselphy/shared/stat-channels";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { deleteByChannel, listStatChannels, rememberName } from "./repository";
 
 // Stat channels. A round every 10 minutes (Discord allows two renames per channel per 10 minutes,
@@ -36,6 +37,7 @@ export function statValue(guild: Guild, kind: StatKind): number {
 
 export async function updateStatChannels(guild: Guild): Promise<void> {
   if (running) return;
+  if (!(await moduleOn("statchannels"))) return;
   running = true;
   try {
     const rows = await listStatChannels();

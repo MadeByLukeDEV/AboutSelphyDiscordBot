@@ -23,6 +23,7 @@ export const RELOADABLE_MODULES = [
   "autopublish",
   "customcommands",
   "counting",
+  "modules",
   "autoresponders",
   "webhooks",
 ] as const;

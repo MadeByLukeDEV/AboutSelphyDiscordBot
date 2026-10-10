@@ -3,6 +3,7 @@ import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { acceptNumber, readConfig, resetCount } from "./repository";
 import { judge, mistakeMessage, parseCount } from "./rules";
 
@@ -64,7 +65,8 @@ export function startCounting(client: Client): void {
   });
   client.on(Events.MessageCreate, (message) => {
     if (message.guildId !== env().DISCORD_GUILD_ID || message.author.bot || message.system) return;
-    void watchedChannel()
+    void moduleOn("counting")
+      .then((on) => (on ? watchedChannel() : null))
       .then((channelId) => (channelId === message.channelId ? mutex.run(message.channelId, () => handle(message)) : undefined))
       .catch((err) => log.warn({ err }, "counting: handler failed"));
   });

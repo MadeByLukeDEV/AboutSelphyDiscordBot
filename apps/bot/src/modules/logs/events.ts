@@ -2,6 +2,7 @@ import { ChannelType, Events, type Client, type EmbedBuilder, type Guild, type G
 import type { LogCategory } from "@aboutselphy/shared/logs";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { isLogChannel, logChannelFor } from "./config";
 import { findOpenTicket } from "./repository";
 import { bulkDeleteEmbed, channelEmbed, memberJoinEmbed, memberLeaveEmbed, memberRolesEmbed, messageDeleteEmbed, messageEditEmbed, nicknameEmbed, roleEmbed, voiceEmbed } from "./embeds";
@@ -27,7 +28,7 @@ const TYPE_NAME: Partial<Record<ChannelType, string>> = {
 };
 
 async function post(guild: Guild, category: LogCategory, embed: EmbedBuilder): Promise<void> {
-  if (guild.id !== env().DISCORD_GUILD_ID || !integrationsActive()) return;
+  if (guild.id !== env().DISCORD_GUILD_ID || !integrationsActive() || !(await moduleOn("logs"))) return;
   const channelId = await logChannelFor(category);
   if (!channelId) return;
   try {

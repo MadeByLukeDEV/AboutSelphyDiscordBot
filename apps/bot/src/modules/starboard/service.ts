@@ -2,6 +2,7 @@ import { Events, type Client, type Message, type MessageReaction, type PartialMe
 import { env } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { truncate } from "../../lib/escape";
 import { getStarboardConfig } from "./config";
 import { clearBoardMessage, deletePost, findByBoardMessage, findPost, setStars, upsertPost } from "./repository";
@@ -21,7 +22,7 @@ async function reactors(reaction: MessageReaction): Promise<string[]> {
 }
 
 async function onReaction(reactionIn: MessageReaction | PartialMessageReaction, userIn: User | PartialUser): Promise<void> {
-  if (userIn.bot) return;
+  if (userIn.bot || !(await moduleOn("starboard"))) return;
   const reaction = reactionIn.partial ? await reactionIn.fetch().catch(() => null) : reactionIn;
   if (!reaction) return;
   const guild = reaction.message.guild;

@@ -1,6 +1,7 @@
 import { Events, type Client, type Guild, type GuildMember, type PartialGuildMember } from "discord.js";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { checkRole } from "../roles";
 import { getWelcomeConfig } from "./config";
 import { fillCardText } from "@aboutselphy/shared/welcome";
@@ -27,6 +28,7 @@ async function textChannel(guild: Guild, channelId: string | null) {
 }
 
 async function onJoin(member: GuildMember): Promise<void> {
+  if (!(await moduleOn("welcome"))) return;
   if (member.guild.id !== env().DISCORD_GUILD_ID || !integrationsActive()) return;
   const config = await getWelcomeConfig();
 
@@ -87,6 +89,7 @@ async function onJoin(member: GuildMember): Promise<void> {
 }
 
 async function onLeave(member: GuildMember | PartialGuildMember): Promise<void> {
+  if (!(await moduleOn("welcome"))) return;
   if (member.guild.id !== env().DISCORD_GUILD_ID || !integrationsActive()) return;
   const config = await getWelcomeConfig();
   const isBot = member.user?.bot ?? false;

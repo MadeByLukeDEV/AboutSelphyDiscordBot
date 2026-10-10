@@ -1,6 +1,7 @@
 import { AttachmentBuilder, Events, type Client, type Guild } from "discord.js";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { renderMemberCard } from "../membercards";
 import { getReminderConfig } from "./config";
 import { claimDelivery, forgetUser, listDue, pruneDelivered } from "./repository";
@@ -17,6 +18,8 @@ let timer: ReturnType<typeof setInterval> | undefined;
 
 export async function deliverDue(guild: Guild): Promise<void> {
   if (running) return;
+  // Switched off: reminders stay queued and are delivered once it is on again.
+  if (!(await moduleOn("reminders"))) return;
   running = true;
   try {
     const now = new Date();

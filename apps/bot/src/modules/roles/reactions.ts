@@ -1,6 +1,7 @@
 import { Events, type Client, type MessageReaction, type PartialMessageReaction, type PartialUser, type User } from "discord.js";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { emojiMatches, planToggle } from "./panel";
 import { findPanelByMessage } from "./repository";
 import { checkRole } from "./service";
@@ -12,7 +13,7 @@ import { checkRole } from "./service";
  * buttons). A reaction the bot doesn't want is removed again so the message stays tidy.
  */
 async function onReaction(reactionIn: MessageReaction | PartialMessageReaction, userIn: User | PartialUser, added: boolean): Promise<void> {
-  if (userIn.bot) return;
+  if (userIn.bot || !(await moduleOn("roles"))) return;
   const reaction = reactionIn.partial ? await reactionIn.fetch().catch(() => null) : reactionIn;
   if (!reaction) return;
   const guild = reaction.message.guild;

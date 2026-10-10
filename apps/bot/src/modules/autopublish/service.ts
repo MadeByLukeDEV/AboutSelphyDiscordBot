@@ -2,6 +2,7 @@ import { ChannelType, Events, MessageFlags, type Client } from "discord.js";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { listPublishChannels } from "./repository";
 
 // Auto-publish. Every message in a chosen announcement channel is published (crossposted) to the
@@ -29,7 +30,7 @@ export function startAutoPublish(client: Client): void {
   client.on(Events.MessageCreate, (message) => {
     if (message.guildId !== env().DISCORD_GUILD_ID || message.channel.type !== ChannelType.GuildAnnouncement) return;
     void (async () => {
-      if (!(await publishChannels()).has(message.channelId)) return;
+      if (!(await publishChannels()).has(message.channelId) || !(await moduleOn("autopublish"))) return;
       if (message.flags.has(MessageFlags.Crossposted) || message.system) return;
       if (!message.crosspostable) {
         log.warn({ channelId: message.channelId }, "auto-publish: the bot can't publish this message (missing Manage Messages?)");

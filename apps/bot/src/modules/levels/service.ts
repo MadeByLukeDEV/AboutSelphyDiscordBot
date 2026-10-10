@@ -3,6 +3,7 @@ import { fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
 import { env, integrationsActive } from "../../lib/env";
 import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { checkRole } from "../roles";
 import { getLevelConfig } from "./config";
 import { addXp } from "./repository";
@@ -58,6 +59,7 @@ async function handleLevelUp(member: GuildMember, level: number, here: Message["
 
 async function onMessage(message: Message): Promise<void> {
   if (!message.inGuild() || message.guildId !== env().DISCORD_GUILD_ID || message.author.bot || message.webhookId || message.system || !message.member) return;
+  if (!(await moduleOn("levels"))) return;
   const { config } = await getLevelConfig();
   if (!config.enabled) return;
 
@@ -75,6 +77,7 @@ async function onMessage(message: Message): Promise<void> {
 
 /** One minute of voice XP for everyone who is in a voice channel with someone else. */
 async function voiceTick(guild: Guild): Promise<void> {
+  if (!(await moduleOn("levels"))) return;
   const { config } = await getLevelConfig();
   if (!config.enabled || config.voiceXpPerMinute <= 0) return;
 

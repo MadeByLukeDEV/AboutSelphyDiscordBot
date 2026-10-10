@@ -1,6 +1,8 @@
 import { Events, MessageFlags, type Client, type Interaction } from "discord.js";
+import { moduleOfCommand } from "@aboutselphy/shared/modules";
 import { COMMANDS_BY_NAME } from "../commands";
 import { log } from "../lib/log";
+import { moduleOn } from "../lib/modules";
 import { staffLevel } from "../lib/permissions";
 import { dispatchComponent } from "./components";
 
@@ -12,6 +14,8 @@ async function handle(interaction: Interaction) {
   if (interaction.isAutocomplete()) {
     // Suggestions only: no permission check needed, but a failure must never leave the member waiting.
     const handler = COMMANDS_BY_NAME.get(interaction.commandName)?.autocomplete;
+    const owner = moduleOfCommand(interaction.commandName);
+    if (owner && !(await moduleOn(owner))) return void (await interaction.respond([]).catch(() => undefined));
     if (handler) await handler(interaction).catch((err) => log.warn({ err, command: interaction.commandName }, "autocomplete failed"));
     return;
   }
@@ -27,6 +31,13 @@ async function handle(interaction: Interaction) {
     interaction.replied || interaction.deferred
       ? interaction.followUp({ content, flags: MessageFlags.Ephemeral })
       : interaction.reply({ content, flags: MessageFlags.Ephemeral });
+
+  // A feature switched off in the dashboard answers nothing (moderation, /help and /ping have no switch).
+  const owner = moduleOfCommand(command.data.name);
+  if (owner && !(await moduleOn(owner))) {
+    await reply("This feature is switched off right now.");
+    return;
+  }
 
   // Checked on every call, never only through Discord's command permissions.
   if (command.requires) {

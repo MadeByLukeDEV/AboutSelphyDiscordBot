@@ -4,6 +4,7 @@ import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { findByChannel, listDirty, listStickies, setPosted } from "./repository";
 import { buildStickyMessage, STICKY_DELAY_MS } from "./rules";
 
@@ -87,8 +88,8 @@ export function startSticky(client: Client): void {
     if (message.guildId !== env().DISCORD_GUILD_ID) return;
     if (message.author.id === client.user?.id) return; // our own copy
     void stickyChannels()
-      .then((channels) => {
-        if (!channels.has(message.channelId)) return;
+      .then(async (channels) => {
+        if (!channels.has(message.channelId) || !(await moduleOn("sticky"))) return;
         const guild = guildOf();
         if (!guild) return;
         clearTimeout(timers.get(message.channelId));

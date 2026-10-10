@@ -4,6 +4,7 @@ import type { MatchType } from "@aboutselphy/shared/auto-responders";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { moduleOn } from "../../lib/modules";
 import { countUse, listEnabled } from "./repository";
 import { allowedIn, Cooldowns, matches, renderResponse } from "./rules";
 
@@ -34,6 +35,7 @@ export function startAutoResponders(client: Client): void {
   client.on(Events.MessageCreate, (message) => {
     if (message.guildId !== env().DISCORD_GUILD_ID || message.author.bot || message.system || !message.content) return;
     void (async () => {
+      if (!(await moduleOn("autoresponders"))) return;
       const hit = (await responders()).find((r) => allowedIn(r.channelIds, message.channelId) && matches(r.matchType as MatchType, r.trigger, message.content));
       if (!hit) return;
       if (!cooldowns.take(`channel:${message.channelId}`, CHANNEL_GAP_SECONDS) || !cooldowns.take(`${hit.id}:${message.channelId}`, hit.cooldownSeconds)) {

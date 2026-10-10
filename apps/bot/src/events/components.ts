@@ -4,7 +4,9 @@ import {
   type ButtonInteraction,
   type ModalSubmitInteraction,
 } from "discord.js";
+import { moduleOfPrefix } from "@aboutselphy/shared/modules";
 import { log } from "../lib/log";
+import { moduleOn } from "../lib/modules";
 
 export type ComponentInteraction = ButtonInteraction | AnySelectMenuInteraction | ModalSubmitInteraction;
 type Handler = (interaction: ComponentInteraction) => Promise<void>;
@@ -24,6 +26,11 @@ export async function dispatchComponent(interaction: ComponentInteraction): Prom
   const handler = handlers.get(prefix);
   if (!handler) {
     log.warn({ prefix }, "component interaction without a handler");
+    return;
+  }
+  const owner = moduleOfPrefix(prefix);
+  if (owner && !(await moduleOn(owner))) {
+    await interaction.reply({ content: "This feature is switched off right now.", flags: MessageFlags.Ephemeral }).catch(() => undefined);
     return;
   }
   try {
