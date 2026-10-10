@@ -789,6 +789,27 @@ Decided 2026-10-08:
     twice). Pure parts (`message.ts`, shared `welcome.ts`) are tested.
   - Dashboard `/welcome` (admins): one form with the role pickers, message editors with insert
     buttons and a preview, DM, goodbye. Roles and channels are validated through the bot.
+  - **Variants and the welcome card** (2026-10-15, `feature_welcome-cards`, migration
+    `20261015180000_welcome_cards` applied; the saved text was copied into the new list before
+    the old column was dropped, rehearsed in a rolled-back transaction first):
+    `WelcomeConfig.welcomeTemplates` holds up to 10 texts, `pickTemplate` (pure, tested) picks
+    one at random, never the same twice in a row. Optional **card**: `card.ts` draws, with
+    `@napi-rs/canvas` (prebuilt, pinned) and the bundled Plus Jakarta Sans (so no system
+    fonts are needed), a 1024x360 PNG with the member's avatar, name, heading and a line like
+    "Member #1234" on the admin's image, as the darkened **background** or as a **sticker** on
+    a plain background; attached to the welcome message (and shown in its box). The image is
+    stored in `WelcomeCardImage` (bytea, singleton): uploaded through an admin-only Server
+    Action (body limit raised to 4 MB in `next.config.ts`), accepted only after
+    `cardImageProblem` (`@aboutselphy/shared/image-info`) read its own header: real PNG/JPEG/
+    WebP, <= 3 MB, 64-4096 px a side (the bot checks again before decoding). The avatar is
+    only fetched from `cdn.discordapp.com`/`media.discordapp.net`, <= 1 MB, header-checked.
+    If drawing fails the welcome goes out without the card. Dashboard preview: the bot draws
+    a sample from the **saved** settings (`POST /internal/welcome/preview`), shown through the
+    admin-only routes `/api/welcome/card-preview` and `/api/welcome/card-image`.
+    Known limits: names in scripts the bundled font lacks (CJK, emoji) show as boxes on the
+    card (the Docker image has no system fonts); the bot image has **not** been built with
+    the canvas dependency yet (Docker is off): check `@napi-rs/canvas` on alpine/musl when it
+    is next built.
   - [ ] Join/leave **logs** (separate channel, account age), invite tracking, member
         screening/verification gate, raid protection.
 - [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
