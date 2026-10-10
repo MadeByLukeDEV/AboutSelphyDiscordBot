@@ -5,6 +5,7 @@
       "label": "Main navigation",
       "overview": "Overview",
       "cases": "Cases",
+      "voiceRooms": "Voice rooms",
       "settings": "Settings"
     },
     "signOut": "Sign out",
@@ -151,6 +152,75 @@
         "invalid": "Those settings aren't valid.",
         "botUnavailable": "Can't reach the bot to check that channel. Try again in a moment.",
         "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+        "failed": "Couldn't save the settings. Try again."
+      }
+    }
+  },
+  "TempVoice": {
+    "title": "Voice rooms",
+    "intro": "Members who join the lobby get a room of their own. See the rooms that are open now and change how new rooms are made.",
+    "monitor": {
+      "title": "Open rooms",
+      "summary": "{rooms, plural, one {# room} other {# rooms}} with {people, plural, one {# person} other {# people}} in them",
+      "updated": "Updated {time}",
+      "empty": {
+        "title": "No rooms open",
+        "body": "A room appears when someone joins the lobby and disappears when it is empty."
+      },
+      "off": {
+        "title": "Temporary rooms are switched off",
+        "body": "Joining the lobby does nothing right now. Turn them on in the settings below."
+      },
+      "offline": "The dashboard can't reach the bot, so the live view isn't available.",
+      "owner": "Owner: {name}",
+      "ownerGone": "The owner left the server",
+      "inRoom": "In the room",
+      "noPeople": "Nobody is in the room right now",
+      "locked": "Locked",
+      "open": "Open",
+      "members": "{count} in the room",
+      "membersOfMax": "{count} of {max}",
+      "videoOff": "Video off",
+      "soundboardOff": "Soundboard off",
+      "allowed": "{count} let in",
+      "blocked": "{count} blocked",
+      "created": "Created {time}",
+      "missingTitle": "The bot is missing permissions",
+      "missingBody": "It can't create or manage rooms until its role has: {list}. Give it these on the lobby's category."
+    },
+    "settings": {
+      "title": "Settings",
+      "botOffline": "The bot is offline, so the channel lists aren't available. Your saved channels are kept.",
+      "enabled": "Temporary rooms are on",
+      "enabledHelp": "When off, joining the lobby does nothing. Open rooms are still deleted once they are empty.",
+      "lobby": "Lobby channel",
+      "lobbyHelp": "The voice channel members join to get their own room.",
+      "noLobby": "No lobby",
+      "lobbyPlaceholder": "Pick a voice channel",
+      "category": "Category for new rooms",
+      "categoryHelp": "New rooms are created here. Leave it empty to put them next to the lobby.",
+      "noCategory": "Next to the lobby",
+      "categoryPlaceholder": "Pick a category",
+      "nameTemplate": "Room name",
+      "nameTemplateHelp": "Use '{user}' for the owner's name.",
+      "defaultLimit": "Member limit for new rooms",
+      "defaultLimitHelp": "0 means no limit. Owners can change it for their own room.",
+      "video": "Allow video and screen sharing in new rooms",
+      "soundboard": "Allow the soundboard in new rooms",
+      "defaultsHelp": "Owners can switch these for their own room.",
+      "blocked": "Blocked words",
+      "blockedHelp": "Room names containing one of these are refused. One per line or separated by commas. Capital letters and invisible characters don't get around it.",
+      "save": "Save settings",
+      "saving": "Saving…",
+      "saved": "Settings saved",
+      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute.",
+      "errors": {
+        "forbidden": "Only admins can change these settings.",
+        "invalid": "Some of these values aren't valid.",
+        "needsLobby": "Pick a lobby channel before switching temporary rooms on.",
+        "botUnavailable": "Can't reach the bot to check those channels. Try again in a moment.",
+        "lobbyNotFound": "That lobby isn't a voice channel the bot can see.",
+        "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
         "failed": "Couldn't save the settings. Try again."
       }
     }
