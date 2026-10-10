@@ -749,6 +749,12 @@ model BirthdayConfig {
   /// IANA time zone that decides when a day starts for everyone.
   timeZone  String   @default("Europe/Berlin") @db.VarChar(64)
   updatedAt DateTime @updatedAt
+  /// Optional picture the bot draws (avatar, name, date) on the admin's own image; see MemberCardImage.
+  cardEnabled  Boolean @default(false)
+  cardMode     String  @default("background") @db.VarChar(12)
+  cardTitle    String  @default("Happy birthday") @db.VarChar(40)
+  /// {date} is replaced.
+  cardSubtitle String  @default("{date}") @db.VarChar(80)
 }
 
 model Birthday {
@@ -772,6 +778,10 @@ model ReminderConfig {
   /// Pending reminders one member may have.
   maxPerUser Int      @default(10)
   updatedAt  DateTime @updatedAt
+  /// Optional picture drawn for each reminder; see MemberCardImage.
+  cardEnabled Boolean @default(false)
+  cardMode    String  @default("background") @db.VarChar(12)
+  cardTitle   String  @default("Reminder") @db.VarChar(40)
 }
 
 model Reminder {
@@ -801,4 +811,15 @@ model StatChannel {
   lastName  String?  @db.VarChar(100)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// The image an admin uploaded for a member card (birthday, reminder). One row per kind.
+model MemberCardImage {
+  kind           String   @id @db.VarChar(12)
+  data           Bytes
+  contentType    String   @db.VarChar(20)
+  width          Int
+  height         Int
+  uploadedByName String   @db.VarChar(100)
+  uploadedAt     DateTime @default(now())
 }

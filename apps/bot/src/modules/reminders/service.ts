@@ -1,6 +1,8 @@
-import { Events, type Client, type Guild } from "discord.js";
+import { AttachmentBuilder, Events, type Client, type Guild } from "discord.js";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { renderMemberCard } from "../membercards";
+import { getReminderConfig } from "./config";
 import { claimDelivery, forgetUser, listDue, pruneDelivered } from "./repository";
 import { reminderText } from "./rules";
 
@@ -18,11 +20,25 @@ export async function deliverDue(guild: Guild): Promise<void> {
   running = true;
   try {
     const now = new Date();
+    const config = await getReminderConfig();
     for (const r of await listDue(now)) {
       if (!(await claimDelivery(r.id))) continue;
       const text = reminderText(r, now);
       const user = await guild.client.users.fetch(r.userId).catch(() => null);
-      const dmed = user ? await user.send({ content: text, allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false;
+      let files: AttachmentBuilder[] = [];
+      if (config.cardEnabled && user) {
+        const member = await guild.members.fetch(r.userId).catch(() => null);
+        const card = await renderMemberCard({
+          kind: "reminder",
+          username: member?.displayName ?? user.displayName,
+          avatarUrl: (member ?? user).displayAvatarURL({ extension: "png", size: 256 }),
+          title: config.cardTitle,
+          subtitle: r.message.replace(/\s+/g, " ").slice(0, 90),
+          mode: config.cardMode === "sticker" ? "sticker" : "background",
+        });
+        if (card) files = [new AttachmentBuilder(Buffer.from(card), { name: "reminder.png" })];
+      }
+      const dmed = user ? await user.send({ content: text, files, allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false;
       if (dmed) {
         log.info({ reminder: r.id }, "reminder delivered by DM");
         continue;
@@ -30,7 +46,7 @@ export async function deliverDue(guild: Guild): Promise<void> {
       const channel = await guild.channels.fetch(r.channelId).catch(() => null);
       if (channel?.isTextBased() && "send" in channel) {
         await channel
-          .send({ content: text, allowedMentions: { parse: [], users: [r.userId] } })
+          .send({ content: text, files, allowedMentions: { parse: [], users: [r.userId] } })
           .then(() => log.info({ reminder: r.id }, "reminder delivered in the channel (DMs closed)"))
           .catch((err) => log.warn({ err, reminder: r.id }, "reminder could not be delivered"));
       } else {

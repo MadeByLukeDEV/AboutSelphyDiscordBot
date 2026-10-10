@@ -18,7 +18,7 @@ describe("isValidTimeZone", () => {
 });
 
 describe("settings", () => {
-  const base = { enabled: true, channelId: "123456789012345678", roleId: "", message: "Hi {user}", timeZone: "Europe/Berlin" };
+  const base = { enabled: true, channelId: "123456789012345678", roleId: "", message: "Hi {user}", timeZone: "Europe/Berlin", cardEnabled: false, cardMode: "background", cardTitle: "Happy birthday", cardSubtitle: "{date}" };
   it("needs a channel or a role when on, a message and a real time zone", () => {
     expect(birthdaySettingsSchema.safeParse(base).success).toBe(true);
     expect(birthdaySettingsSchema.safeParse({ ...base, channelId: "", roleId: "123456789012345678" }).success).toBe(true);
@@ -74,4 +74,12 @@ describe("renderGreeting", () => {
 
 describe("formatDay", () => {
   it("prints day and month name", () => expect(formatDay(2, 29)).toBe("29 February"));
+});
+
+describe("fillDate", () => {
+  it("fills {date} in the card subtitle", async () => {
+    const { fillDate } = await import("@aboutselphy/shared/member-card");
+    expect(fillDate("Born on {date}!", "29 February")).toBe("Born on 29 February!");
+    expect(fillDate("{date}", "1 May")).toBe("1 May");
+  });
 });

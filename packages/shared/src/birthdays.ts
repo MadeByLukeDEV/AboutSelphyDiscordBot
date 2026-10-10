@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { memberCardFields, memberCardSubtitle } from "./member-card";
 
 // Birthday rules and settings. One definition for the dashboard (form, Server Action) and the bot.
 // Pure (Intl only). Import it from "@aboutselphy/shared/birthdays" in client components.
@@ -35,6 +36,9 @@ export const birthdaySettingsSchema = z
     roleId: optionalSnowflake,
     message: z.string().trim().min(1).max(MAX_BIRTHDAY_MESSAGE),
     timeZone: z.string().max(64).refine(isValidTimeZone, "timeZone"),
+    ...memberCardFields,
+    /** {date} is replaced. */
+    cardSubtitle: memberCardSubtitle,
   })
   .superRefine((v, ctx) => {
     if (v.enabled && !v.channelId && !v.roleId) ctx.addIssue({ code: "custom", path: ["channelId"], message: "needsTarget" });

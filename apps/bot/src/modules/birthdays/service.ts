@@ -1,11 +1,13 @@
-import { Events, type Client, type Guild } from "discord.js";
+import { AttachmentBuilder, Events, type Client, type Guild } from "discord.js";
+import { fillDate } from "@aboutselphy/shared/member-card";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
+import { renderMemberCard } from "../membercards";
 import { checkRole } from "../roles";
 import { getBirthdayConfig } from "./config";
 import { allBirthdays, claimDay, removeBirthday } from "./repository";
-import { dayKey, isBirthdayToday, renderGreeting, todayIn } from "./rules";
+import { dayKey, formatDay, isBirthdayToday, renderGreeting, todayIn } from "./rules";
 
 // The birthday round. Every 10 minutes (and when the settings change) it greets the members whose
 // birthday is today in the configured time zone, once per day (claimed with one conditional
@@ -41,8 +43,22 @@ export async function celebrateRound(guild: Guild): Promise<void> {
       if (roleOk && config.roleId && !member.roles.cache.has(config.roleId)) await member.roles.add(config.roleId, "Birthday").catch((err) => log.warn({ err, user: b.userId }, "birthdays: could not give the role"));
       if (!(await claimDay(b.userId, key))) continue; // greeted already today
       if (channel && channel.isTextBased() && "send" in channel) {
+        const card = config.cardEnabled
+          ? await renderMemberCard({
+              kind: "birthday",
+              username: member.displayName,
+              avatarUrl: member.displayAvatarURL({ extension: "png", size: 256 }),
+              title: config.cardTitle,
+              subtitle: fillDate(config.cardSubtitle, formatDay(b.month, b.day)),
+              mode: config.cardMode === "sticker" ? "sticker" : "background",
+            })
+          : null;
         await channel
-          .send({ content: renderGreeting(config.message, { id: member.id, name: member.displayName }), allowedMentions: { parse: [], users: [member.id] } })
+          .send({
+            content: renderGreeting(config.message, { id: member.id, name: member.displayName }),
+            files: card ? [new AttachmentBuilder(Buffer.from(card), { name: "birthday.png" })] : [],
+            allowedMentions: { parse: [], users: [member.id] },
+          })
           .then(() => log.info({ user: b.userId }, "birthdays: greeted"))
           .catch((err) => log.warn({ err, user: b.userId }, "birthdays: could not post the greeting"));
       }

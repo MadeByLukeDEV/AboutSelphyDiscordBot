@@ -850,6 +850,12 @@ Decided 2026-10-08:
     The greeting template has `{user}` (mention, the only ping) and `{name}`; the rest is escaped.
     A member who leaves is deleted (GDPR).
   - Dashboard `/birthdays` (admins): settings and the next 50 birthdays.
+  - **Birthday card** (2026-10-23, `feature_member-cards`, migration `20261023100000_member_cards`):
+    optional picture attached to the greeting (avatar, name, heading, `{date}` line) on the admin's
+    own image, drawn by the welcome card renderer (`membercards` module wraps `renderWelcomeCard`).
+    Settings on the same form; the image lives in `MemberCardImage` (one row per kind, same header
+    checks as the welcome image: PNG/JPEG/WebP, <= 3 MB, 64-4096 px). Drawing failures send the
+    greeting without the card.
   - [ ] Announce milestones with the year, staff-set birthdays, a monthly summary post.
 - [~] Reminders (2026-10-21, `feature_reminders`, migration `20261021100000_reminders`
       applied; **not tried live yet**; Tier B)
@@ -862,6 +868,8 @@ Decided 2026-10-08:
     rows are pruned after a day; a member who leaves loses their reminders (GDPR).
   - Dashboard `/reminders` (admins): on/off, the per-member limit, and counts only (the text
     of members' reminders is never shown).
+  - **Reminder card** (same branch): optional picture with the avatar, name and the reminder text under
+    the name, attached to the DM or the channel message (`MemberCardImage` kind `reminder`).
   - [ ] Repeating reminders, `/remind` for a channel or another member, snooze button.
 - [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
       asked for by the user)

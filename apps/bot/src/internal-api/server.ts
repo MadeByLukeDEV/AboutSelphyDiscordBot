@@ -5,6 +5,7 @@ import {
   announcementIdBody,
   giveawayActionBody,
   pollActionBody,
+  memberCardPreviewBody,
   roleDeleteBody,
   roleMergeBody,
   roleUpdateBody,
@@ -25,6 +26,7 @@ import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
+import { renderMemberCardPreview } from "../modules/membercards";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
@@ -211,6 +213,16 @@ async function route(req: IncomingMessage, res: ServerResponse) {
   if (req.method === "POST" && url.pathname === "/internal/welcome/preview") {
     const png = await renderPreviewCard();
     return json(res, 200, { png: Buffer.from(png).toString("base64") });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/membercards/preview") {
+    const body = memberCardPreviewBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    try {
+      return json(res, 200, { png: Buffer.from(await renderMemberCardPreview(body.data.kind)).toString("base64") });
+    } catch {
+      return json(res, 500, { error: "could not draw the card" });
+    }
   }
 
   if (req.method === "POST" && url.pathname === "/internal/twitch/resolve") {
