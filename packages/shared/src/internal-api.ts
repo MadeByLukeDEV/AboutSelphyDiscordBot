@@ -12,6 +12,7 @@ export const RELOADABLE_MODULES = [
   "logs",
   "levels",
   "tickets",
+  "giveaways",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
@@ -175,3 +176,8 @@ export const welcomePreviewResponse = z.object({ png: z.string().min(1) /* base6
 /** POST /internal/tickets/panel: post (or update) the ticket panel message. */
 export const ticketPanelStatus = z.enum(["posted", "updated", "channel", "needsSetup", "failed"]);
 export type TicketPanelStatus = z.infer<typeof ticketPanelStatus>;
+
+/** POST /internal/giveaways/action */
+export const giveawayActionBody = z.object({ id: z.string().min(1).max(64), action: z.enum(["start", "end", "reroll", "cancel"]) });
+export const giveawayActionStatus = z.enum(["done", "channel", "role", "not-found", "wrong-state", "failed"]);
+export type GiveawayActionStatus = z.infer<typeof giveawayActionStatus>;

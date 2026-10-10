@@ -3,6 +3,8 @@ export type {
   Prisma,
   PrismaClient,
   Announcement,
+  Giveaway,
+  GiveawayEntry,
   LevelConfig,
   LevelReward,
   LogRoute,
@@ -26,4 +28,4 @@ export type {
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";
-export type { TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";
+export type { GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

@@ -3,6 +3,7 @@ import { getClient } from "./client";
 import { registerInteractionCreate } from "./events/interaction-create";
 import { registerLifecycle } from "./events/lifecycle";
 import { registerReactionRoles, registerRolePanels } from "./modules/roles";
+import { registerGiveawayControls, startGiveaways, stopGiveaways } from "./modules/giveaways";
 import { registerLevels, stopLevels } from "./modules/levels";
 import { registerTicketControls, registerTicketEvents } from "./modules/tickets";
 import { registerLogs } from "./modules/logs";
@@ -41,6 +42,8 @@ async function main() {
   registerWelcome(client);
   registerLogs(client);
   registerLevels(client);
+  registerGiveawayControls();
+  startGiveaways(client);
   registerTicketControls();
   registerTicketEvents(client);
   startTwitch(client);
@@ -57,6 +60,7 @@ async function main() {
     stopTwitch();
     stopAnnouncements();
     stopLevels();
+    stopGiveaways();
     stopYoutube();
     stopModerationJobs();
     await client.destroy();

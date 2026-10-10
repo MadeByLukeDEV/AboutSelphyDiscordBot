@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@aboutselphy/db";
 import {
   announcementIdBody,
+  giveawayActionBody,
   channelKind,
   refreshCaseBody,
   roleCreateBody,
@@ -17,6 +18,7 @@ import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
+import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
 import { getTempVoiceOverview } from "../modules/tempvoice";
@@ -121,6 +123,18 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     if (!guild) return json(res, 503, { error: "guild not available" });
     const status = url.pathname.endsWith("/publish") ? await publishPanel(guild, body.data.id) : await deletePanelMessage(guild, body.data.id);
     return json(res, 200, { status });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/giveaways/action") {
+    const body = giveawayActionBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const { id, action } = body.data;
+    if (action === "start") return json(res, 200, { status: await startGiveaway(guild, id) });
+    if (action === "cancel") return json(res, 200, { status: await cancelGiveaway(guild, id) });
+    const result = await endGiveaway(guild, id, action === "reroll");
+    return json(res, 200, { status: result.status, winners: result.winners ?? [] });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/tickets/panel") {

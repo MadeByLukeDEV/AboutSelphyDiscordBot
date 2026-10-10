@@ -1,0 +1,114 @@
+import { describe, expect, it } from "vitest";
+import { giveawayInput } from "@aboutselphy/shared/giveaways";
+import { buildGiveawayMessage, enterControlId, parseEnterControl, pickWinners, winnerAnnouncement, type GiveawayView } from "./rules";
+
+describe("pickWinners", () => {
+  const people = Array.from({ length: 10 }, (_, i) => `u${i}`);
+
+  it("picks the requested number of different people", () => {
+    const winners = pickWinners(people, 3);
+    expect(winners).toHaveLength(3);
+    expect(new Set(winners).size).toBe(3);
+    for (const w of winners) expect(people).toContain(w);
+  });
+
+  it("returns everyone when there are fewer than asked, and nobody for none", () => {
+    expect(pickWinners(["a", "b"], 5).sort()).toEqual(["a", "b"]);
+    expect(pickWinners([], 3)).toEqual([]);
+    expect(pickWinners(people, 0)).toEqual([]);
+  });
+
+  it("ignores duplicates in the pool", () => {
+    expect(pickWinners(["a", "a", "a"], 2)).toEqual(["a"]);
+  });
+
+  it("is uniform: over many draws everyone wins about equally often", () => {
+    const counts = new Map<string, number>();
+    const draws = 20_000;
+    for (let i = 0; i < draws; i++) for (const w of pickWinners(["a", "b", "c", "d"], 1)) counts.set(w, (counts.get(w) ?? 0) + 1);
+    for (const c of counts.values()) expect(Math.abs(c / draws - 0.25)).toBeLessThan(0.02);
+  });
+
+  it("does not modify the input", () => {
+    const copy = [...people];
+    pickWinners(people, 4);
+    expect(people).toEqual(copy);
+  });
+});
+
+describe("control id", () => {
+  it("round-trips and rejects anything else", () => {
+    expect(parseEnterControl(enterControlId("cm1abc2def3ghi"))).toBe("cm1abc2def3ghi");
+    for (const bad of ["gw:enter:", "gw:enter:short", "gw:leave:cm1abc2def3ghi", "tk:open", "gw:enter:CM1ABC2DEF3GHI", "gw:enter:cm1abc2def3ghi:x"]) {
+      expect(parseEnterControl(bad), bad).toBeNull();
+    }
+  });
+});
+
+describe("the message", () => {
+  const view = (over: Partial<GiveawayView> = {}): GiveawayView => ({
+    id: "cm1abc2def3ghi",
+    prize: "**Nitro** <@&999999999999999999>",
+    description: "Good luck [link](https://x.test)",
+    winnerCount: 2,
+    endsAt: new Date("2026-10-20T12:00:00Z"),
+    hostName: "Selphy",
+    requiredRoleId: null,
+    ended: false,
+    winners: [],
+    ...over,
+  });
+  const text = (m: ReturnType<typeof buildGiveawayMessage>) => JSON.stringify(m.embeds[0]!.toJSON());
+
+  it("escapes the prize and the text, so they can't ping or link", () => {
+    const t = text(buildGiveawayMessage(view()));
+    expect(t).toContain("\\\\*\\\\*Nitro\\\\*\\\\*");
+    expect(t).not.toMatch(/(?<!\\\\)<@&99/);
+    expect(buildGiveawayMessage(view()).allowedMentions).toEqual({ parse: [] });
+  });
+
+  it("shows how it ends, the winner count and the needed role while running, with an enabled button", () => {
+    const m = buildGiveawayMessage(view({ requiredRoleId: "123456789012345678" }));
+    expect(text(m)).toContain("Press the button to enter");
+    expect(text(m)).toContain("<@&123456789012345678>");
+    expect((m.components[0]!.toJSON().components[0] as { disabled?: boolean }).disabled).toBeFalsy();
+  });
+
+  it("shows the winners once ended and disables the button", () => {
+    const m = buildGiveawayMessage(view({ ended: true, winners: ["111111111111111111", "222222222222222222"], entryCount: 40 }));
+    expect(text(m)).toContain("<@111111111111111111>");
+    expect(text(m)).toContain("Entries");
+    expect((m.components[0]!.toJSON().components[0] as { disabled?: boolean }).disabled).toBe(true);
+    expect(text(buildGiveawayMessage(view({ ended: true, winners: [] })))).toContain("nobody won");
+  });
+
+  it("pings only the winners in the announcement", () => {
+    const a = winnerAnnouncement("Nitro", ["111111111111111111"], false);
+    expect(a.content).toContain("<@111111111111111111>");
+    expect(a.allowedMentions).toEqual({ parse: [], users: ["111111111111111111"] });
+    expect(winnerAnnouncement("Nitro", [], false).allowedMentions).toEqual({ parse: [], users: [] });
+  });
+});
+
+describe("giveawayInput", () => {
+  const base = { channelId: "123456789012345678", prize: "Nitro", description: "", winnerCount: 1, endsAt: new Date(Date.now() + 3_600_000).toISOString(), requiredRoleId: "", pingRoleId: "", start: true };
+  const parse = (over: Record<string, unknown>) => giveawayInput.safeParse({ ...base, ...over });
+
+  it("accepts a normal giveaway", () => {
+    expect(parse({}).success).toBe(true);
+  });
+
+  it("needs a prize, 1 to 20 winners and an end between a minute and a year ahead", () => {
+    expect(parse({ prize: "  " }).success).toBe(false);
+    expect(parse({ winnerCount: 0 }).success).toBe(false);
+    expect(parse({ winnerCount: 21 }).success).toBe(false);
+    expect(parse({ endsAt: "soon" }).success).toBe(false);
+    expect(parse({ endsAt: new Date(Date.now() + 5000).toISOString() }).success).toBe(false);
+    expect(parse({ endsAt: new Date(Date.now() + 400 * 86_400_000).toISOString() }).success).toBe(false);
+  });
+
+  it("refuses bad ids", () => {
+    expect(parse({ channelId: "abc" }).success).toBe(false);
+    expect(parse({ requiredRoleId: "everyone" }).success).toBe(false);
+  });
+});

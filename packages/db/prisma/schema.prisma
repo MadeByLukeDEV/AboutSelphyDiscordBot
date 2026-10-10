@@ -551,3 +551,50 @@ model Ticket {
   @@index([status, createdAt])
   @@index([openerId, status])
 }
+
+// ---- giveaways ---------------------------------------------------------------------
+// Staff create a giveaway in the dashboard; the bot posts it with an "Enter" button, ends it
+// at the set time (restart-safe) and picks the winners at random. CHECK constraints
+// (digits-only IDs, winner count, ends after it was made) are added by hand.
+
+enum GiveawayStatus {
+  draft
+  active
+  ended
+  cancelled
+}
+
+model Giveaway {
+  id             String          @id @default(cuid())
+  status         GiveawayStatus  @default(draft)
+  channelId      String          @db.VarChar(20)
+  /// The posted message. Null until the giveaway is started.
+  messageId      String?         @db.VarChar(20)
+  prize          String          @db.VarChar(200)
+  description    String          @default("") @db.VarChar(1000)
+  winnerCount    Int             @default(1)
+  endsAt         DateTime
+  /// Only members with this role can enter (and win). Null = everyone.
+  requiredRoleId String?         @db.VarChar(20)
+  /// Role mentioned when the giveaway starts. Null = nobody.
+  pingRoleId     String?         @db.VarChar(20)
+  hostName       String          @db.VarChar(100)
+  hostUserId     String          @db.VarChar(64)
+  /// Discord IDs of the winners of the last draw (a re-roll replaces them).
+  winners        String[]        @default([])
+  endedAt        DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  entries        GiveawayEntry[]
+
+  @@index([status, endsAt])
+}
+
+model GiveawayEntry {
+  giveawayId String
+  giveaway   Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  userId     String   @db.VarChar(20)
+  createdAt  DateTime @default(now())
+
+  @@id([giveawayId, userId])
+}

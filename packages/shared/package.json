@@ -27,6 +27,7 @@
     "./image-info": "./src/image-info.ts",
     "./logs": "./src/logs.ts",
     "./levels": "./src/levels.ts",
-    "./tickets": "./src/tickets.ts"
+    "./tickets": "./src/tickets.ts",
+    "./giveaways": "./src/giveaways.ts"
   }
 }
