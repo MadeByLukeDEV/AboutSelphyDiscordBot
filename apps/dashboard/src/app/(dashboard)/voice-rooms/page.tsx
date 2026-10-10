@@ -22,7 +22,7 @@ export default async function VoiceRoomsPage() {
   return (
     <>
       <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
 

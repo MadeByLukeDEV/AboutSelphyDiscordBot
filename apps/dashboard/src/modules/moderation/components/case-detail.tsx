@@ -43,7 +43,7 @@ export async function CaseDetail({ row, others }: { row: ModCase; others: ModCas
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <span className={cn("h-8 w-1.5 rounded-full", CASE_STYLE[row.type].bar)} aria-hidden />
-          <h1 className="text-fluid-2xl font-semibold tracking-tight tabular-nums">
+          <h1 className="text-fluid-2xl font-bold tracking-tight tabular-nums">
             {t("detail.title", { number: row.caseNumber })}
           </h1>
           <CaseTypeBadge type={row.type} label={t(`types.${row.type}`)} />
@@ -55,7 +55,7 @@ export async function CaseDetail({ row, others }: { row: ModCase; others: ModCas
         </div>
       </header>
 
-      <dl className="divide-y rounded-xl border bg-card px-4">
+      <dl className="surface divide-y divide-border/60 px-4">
         <Row label={t("detail.member")}>
           <p className="font-medium">{row.targetName ?? row.targetId}</p>
           <p className="text-sm text-muted-foreground tabular-nums">{row.targetId}</p>

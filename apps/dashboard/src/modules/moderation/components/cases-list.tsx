@@ -20,7 +20,7 @@ export async function CasesList({ rows }: { rows: ModCase[] }) {
         <li key={c.id}>
           <Link
             href={`/cases/${c.caseNumber}`}
-            className="group flex items-stretch overflow-hidden rounded-xl border bg-card transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            className="group flex items-stretch surface surface-interactive overflow-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           >
             <span className={cn("w-1.5 shrink-0", CASE_STYLE[c.type].bar)} aria-hidden />
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">

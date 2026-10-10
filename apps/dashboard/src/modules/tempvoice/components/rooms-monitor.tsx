@@ -50,7 +50,7 @@ function Room({ room }: { room: TempVoiceRoom }) {
   const shownLimit = room.userLimit > 0 ? t("membersOfMax", { count: room.memberCount, max: room.userLimit }) : t("members", { count: room.memberCount });
 
   return (
-    <li className="flex overflow-hidden rounded-xl border bg-card">
+    <li className="surface flex overflow-hidden">
       <span className={cn("w-1.5 shrink-0", room.locked ? "bg-amber-500" : "bg-emerald-500")} aria-hidden />
       <div className="flex min-w-0 flex-1 flex-col gap-2 px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

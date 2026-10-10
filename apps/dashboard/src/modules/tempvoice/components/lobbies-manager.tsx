@@ -87,7 +87,7 @@ export function LobbiesManager({
       ) : (
         <ul className="flex flex-col gap-2">
           {lobbies.map((lobby) => (
-            <li key={lobby.id} className="flex overflow-hidden rounded-xl border bg-card">
+            <li key={lobby.id} className="surface flex overflow-hidden">
               <span className={cn("w-1.5 shrink-0", lobby.enabled ? "bg-primary" : "bg-muted-foreground/40")} aria-hidden />
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
                 <div className="min-w-[12rem] flex-1">
