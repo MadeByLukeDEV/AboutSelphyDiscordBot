@@ -555,9 +555,10 @@ Decided 2026-10-08:
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
 - [ ] Phase 2 — anti-bot
-- [~] Phase 3 — went live (2026-10-12, `feature_twitch-went-live`; **code done, not
-      run against Twitch yet; migration `20261012120000_twitch` written, NOT
-      applied**)
+- [x] Phase 3 — went live (2026-10-12, `feature_twitch-went-live`; migrations
+      `20261012120000_twitch` and `20261012180000_twitch_message_options` applied;
+      connect, add/edit and the socket **tried live by the user**; a real
+      announcement of a stream going live is not confirmed yet)
   - Bot (`modules/twitch/`): `protocol.ts` (zod-parsed EventSub frames, reconnect
     URLs only on `*.wss.twitch.tv`, message-id de-dup), `eventsub-client.ts` (the
     socket: welcome → subscribe within the 10 s budget, keepalive timeout +5 s
@@ -587,8 +588,20 @@ Decided 2026-10-08:
     `.env.local`, register the redirect URL for the Client ID, apply the
     migration (only with the user's go-ahead), restart bot and dashboard, connect
     on `/twitch`, `/twitch add`, `/twitch enable`.
-  - [ ] Verified against real Twitch; [ ] dashboard form to add channels;
-        [ ] Kick/TikTok, clips, a "Live" role.
+  - Add/edit from the dashboard (dialog on `/twitch`): the login is looked up
+    through the bot (`POST /internal/twitch/resolve`, the bot holds the Twitch
+    token), roles come from `GET /internal/guild/roles`; the Discord channel and
+    role are validated against the server, a sixth channel is refused
+    (`MAX_TWITCH_STREAMERS = 5`: one WebSocket allows a subscription cost of 10 and
+    online + offline cost 1 each per channel).
+  - Per channel: message template (`{name} {login} {title} {game} {url}`), embed
+    colour, show game, show stream picture. The template function lives in
+    `@aboutselphy/shared/twitch-template` and is used by the bot **and** the
+    dashboard's live preview, so they can't drift apart.
+  - Lessons: in next-intl catalogs a literal `{name}` must be written `'{name}'`,
+    otherwise the key is shown raw. After a schema change restart bot **and**
+    dashboard (a stale client throws `PrismaClientValidationError` on save).
+  - [ ] Kick/TikTok, clips, a "Live" role, more than 5 channels (second connection).
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and
