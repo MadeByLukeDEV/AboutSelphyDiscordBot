@@ -146,6 +146,38 @@ export type RoleDeleteStatus = z.infer<typeof roleDeleteStatus>;
 export const roleDeleteResponse = z.object({ results: z.array(z.object({ id: z.string(), status: roleDeleteStatus })) });
 export type RoleDeleteResponse = z.infer<typeof roleDeleteResponse>;
 
+/** POST /internal/roles/update: rename and/or recolour (0 = no colour). */
+export const roleUpdateBody = z
+  .object({
+    id: z.string().regex(/^\d{17,20}$/),
+    name: z.string().trim().min(1).max(100).optional(),
+    color: z.number().int().min(0).max(0xffffff).optional(),
+    by: z.string().max(60),
+  })
+  .refine((v) => v.name !== undefined || v.color !== undefined, "nothing to change");
+export const roleUpdateStatus = z.enum(["updated", "not-found", "protected", "failed"]);
+export type RoleUpdateStatus = z.infer<typeof roleUpdateStatus>;
+
+/** POST /internal/roles/merge: everyone who has a source role gets the target; optionally the sources are deleted afterwards. */
+export const MAX_MERGE_SOURCES = 10;
+export const roleMergeBody = z.object({
+  sourceIds: z.array(z.string().regex(/^\d{17,20}$/)).min(1).max(MAX_MERGE_SOURCES),
+  targetId: z.string().regex(/^\d{17,20}$/),
+  deleteSources: z.boolean(),
+  by: z.string().max(60),
+});
+export const roleMergeResponse = z.object({
+  status: z.enum(["done", "target-invalid", "source-invalid", "failed"]),
+  /** Members who received the target role. */
+  added: z.number().int().min(0),
+  /** Members who already had it. */
+  alreadyHad: z.number().int().min(0),
+  /** Members the bot couldn't give it to. */
+  failed: z.number().int().min(0),
+  deleted: z.array(z.string()),
+});
+export type RoleMergeResponse = z.infer<typeof roleMergeResponse>;
+
 /** POST /internal/twitch/resolve: look a Twitch channel up by its login name. */
 export const twitchResolveBody = z.object({ login: z.string().regex(/^[a-zA-Z0-9_]{3,25}$/) });
 export const twitchResolveResponse = z.discriminatedUnion("status", [

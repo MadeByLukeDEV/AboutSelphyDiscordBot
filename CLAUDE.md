@@ -867,8 +867,18 @@ Decided 2026-10-08:
     from `DISCORD_ADMIN_ROLE_IDS`/`DISCORD_MODERATOR_ROLE_IDS` are refused; each delete carries the
     admin's name as the audit-log reason and is logged. Deleting is irreversible and the settings
     pointing at a deleted role are not cleaned up (they are flagged in the dialog instead).
-  - [ ] Rename / recolour / reorder, copy permissions, merge two roles, clean up settings that
-        point at a deleted role.
+  - **Edit, merge and clean up** (2026-10-21, `feature_role-manager-tools`, no migration; **not
+    tried live yet**): a pencil on each role renames and recolours it (`POST /internal/roles/update`,
+    same protections as deleting). **Merge** (`POST /internal/roles/merge`): everyone holding any of
+    up to 10 source roles gets the target, optionally deleting the sources afterwards, but only if
+    nobody was missed. `checkMerge` (pure, tested) refuses a target that is staff, managed, above the
+    bot, @everyone or has powerful permissions, so a merge can never hand out power. **Clean up**:
+    the page lists settings that still point at roles that no longer exist (recomputed from the bot's
+    current role list, never from the client) and removes those entries; tickets left without staff
+    roles and birthdays left without channel or role are switched off, and the affected bot modules
+    reload. Already posted role panels must be posted again. Long calls use their own timeout in
+    `botFetch` (`timeoutMs`).
+  - [ ] Reorder roles, copy permissions between roles.
 - [x] Phase 5 — announcements (2026-10-13, `feature_announcements`, migration
       `20261013100000_announcements` applied; **not tried live yet**)
   - `Announcement` table (draft/scheduled/sending/sent/failed, text, optional embed

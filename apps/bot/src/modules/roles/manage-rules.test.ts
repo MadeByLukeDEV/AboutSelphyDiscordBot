@@ -1,6 +1,6 @@
 import { PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
-import { isPowerful, protectionOf, type ManageFacts } from "./manage-rules";
+import { checkMerge, isPowerful, protectionOf, type ManageFacts } from "./manage-rules";
 
 const base: ManageFacts = { id: "222222222222222222", guildId: "111111111111111111", managed: false, position: 3, permissions: 0n };
 const none = new Set<string>();
@@ -30,5 +30,19 @@ describe("isPowerful", () => {
     expect(isPowerful(P.Administrator | P.SendMessages)).toBe(true);
     expect(isPowerful(P.SendMessages | P.ViewChannel)).toBe(false);
     expect(isPowerful(0n)).toBe(false);
+  });
+});
+
+describe("checkMerge", () => {
+  const input = { sourceIds: ["222222222222222222"], targetId: "333333333333333333", guildId: "111111111111111111" };
+  it("accepts an assignable target and ordinary sources", () => expect(checkMerge(input, { assignable: true }, none)).toEqual({ ok: true }));
+  it("refuses a missing, unassignable or staff target", () => {
+    expect(checkMerge(input, null, none)).toEqual({ ok: false, reason: "target-invalid" });
+    expect(checkMerge(input, { assignable: false }, none)).toEqual({ ok: false, reason: "target-invalid" });
+    expect(checkMerge(input, { assignable: true }, new Set([input.targetId]))).toEqual({ ok: false, reason: "target-invalid" });
+  });
+  it("refuses @everyone or the target as a source", () => {
+    expect(checkMerge({ ...input, sourceIds: [input.guildId] }, { assignable: true }, none)).toEqual({ ok: false, reason: "source-invalid" });
+    expect(checkMerge({ ...input, sourceIds: [input.targetId] }, { assignable: true }, none)).toEqual({ ok: false, reason: "source-invalid" });
   });
 });

@@ -6,6 +6,8 @@ import {
   giveawayActionBody,
   pollActionBody,
   roleDeleteBody,
+  roleMergeBody,
+  roleUpdateBody,
   suggestionDecideBody,
   channelKind,
   refreshCaseBody,
@@ -23,7 +25,7 @@ import { refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
-import { deleteRoles, listManagedRoles } from "../modules/roles";
+import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
@@ -134,6 +136,22 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     if (!guild) return json(res, 503, { error: "guild not available" });
     const member = await guild.members.fetch(id).catch(() => null);
     return member ? json(res, 200, { member: { id: member.id, name: member.displayName.slice(0, 100) } }) : json(res, 404, { error: "not found" });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/update") {
+    const body = roleUpdateBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await updateRole(guild, body.data, body.data.by) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/merge") {
+    const body = roleMergeBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await mergeRoles(guild, body.data, body.data.by));
   }
 
   if (req.method === "POST" && url.pathname === "/internal/roles/create") {

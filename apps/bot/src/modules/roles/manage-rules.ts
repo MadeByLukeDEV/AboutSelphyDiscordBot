@@ -20,3 +20,21 @@ export function protectionOf(role: ManageFacts, botTopPosition: number, staffRol
 }
 
 export const isPowerful = (permissions: bigint): boolean => (permissions & DANGEROUS_PERMISSIONS) !== 0n;
+
+export type MergeCheck = { ok: true } | { ok: false; reason: "target-invalid" | "source-invalid" };
+
+/**
+ * May these roles be merged? The target is handed to many members, so it must be a role the bot
+ * could hand out anyway (no special permissions, below the bot, not managed, not @everyone) and
+ * must not be a staff role (a merge must never grant dashboard rights). Sources are only read;
+ * @everyone and the target itself are refused as sources.
+ */
+export function checkMerge(
+  input: { sourceIds: string[]; targetId: string; guildId: string },
+  target: { assignable: boolean } | null,
+  staffRoleIds: ReadonlySet<string>,
+): MergeCheck {
+  if (!target || !target.assignable || staffRoleIds.has(input.targetId)) return { ok: false, reason: "target-invalid" };
+  if (input.sourceIds.some((id) => id === input.targetId || id === input.guildId)) return { ok: false, reason: "source-invalid" };
+  return { ok: true };
+}
