@@ -165,6 +165,33 @@
         "botUnavailable": "Can't reach the bot to check that channel. Try again in a moment.",
         "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
         "failed": "Couldn't save the settings. Try again."
+      },
+      "escalation": {
+        "title": "Warning escalation",
+        "intro": "Act automatically when a member keeps collecting warnings. Pardoned warnings don't count.",
+        "enabled": "Escalate repeated warnings",
+        "warnings": "Every this many active warnings",
+        "warningsHelp": "Between {min} and {max}. With 3, the 3rd warning acts, then the 6th, and so on.",
+        "action": "Then",
+        "actions": {
+          "timeout": "Time the member out",
+          "kick": "Kick the member",
+          "ban": "Ban the member"
+        },
+        "duration": {
+          "timeout": "Timeout length",
+          "ban": "Ban length (optional)"
+        },
+        "durationHelp": {
+          "timeout": "For example 1h, 12h or 3d. Between 1 minute and 28 days.",
+          "ban": "Leave empty for a permanent ban, or write for example 3d or 2w for a temporary one."
+        },
+        "durationErrors": {
+          "unreadable": "Use something like 30m, 1h, 3d or 2w.",
+          "timeoutRange": "A timeout needs a length between 1 minute and 28 days.",
+          "kickNoDuration": "A kick has no length.",
+          "tooShort": "At least 1 minute."
+        }
       }
     }
   },

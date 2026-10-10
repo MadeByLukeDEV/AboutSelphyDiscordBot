@@ -47,7 +47,13 @@ export function readConfig(): Promise<ModConfig> {
   return prisma.modConfig.findUniqueOrThrow({ where: { id: 1 } });
 }
 
-export function updateConfig(data: { logChannelId: string | null; dmOnAction: boolean }) {
+export function updateConfig(data: {
+  logChannelId: string | null;
+  dmOnAction: boolean;
+  escalationThreshold: number | null;
+  escalationAction: "timeout" | "kick" | "ban" | null;
+  escalationDurationSeconds: number | null;
+}) {
   return prisma.modConfig.update({ where: { id: 1 }, data });
 }
 

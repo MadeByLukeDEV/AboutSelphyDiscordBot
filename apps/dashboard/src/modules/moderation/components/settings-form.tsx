@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -9,9 +9,12 @@ import type { GuildChannel } from "@aboutselphy/shared";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { saveSettingsAction } from "../actions";
-import { settingsSchema, type SettingsInput } from "../schema";
+import { ESCALATION_ACTIONS, MAX_ESCALATION_WARNINGS, MIN_ESCALATION_WARNINGS, settingsSchema, type SettingsInput } from "../schema";
+
+const DURATION_ERRORS = ["unreadable", "timeoutRange", "kickNoDuration", "tooShort"] as const;
 
 export function SettingsForm({
   initial,
@@ -27,6 +30,9 @@ export function SettingsForm({
   const [pending, startTransition] = useTransition();
   const form = useForm<SettingsInput>({ resolver: zodResolver(settingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
+  const escalationOn = useWatch({ control: form.control, name: "escalationEnabled" });
+  const escalationAction = useWatch({ control: form.control, name: "escalationAction" });
+  const actionOptions: SelectOption[] = ESCALATION_ACTIONS.map((a) => ({ value: a, label: t(`escalation.actions.${a}`) }));
 
   // The bot sends channels in Discord's own order (uncategorised first, then
   // each category, text before voice), and the list keeps it, with the category
@@ -52,7 +58,7 @@ export function SettingsForm({
       const result = await saveSettingsAction(values);
       if (result.ok) {
         toast.success(result.botNotified ? t("saved") : t("savedBotLater"));
-        form.reset({ logChannelId: result.logChannelId, dmOnAction: result.dmOnAction });
+        form.reset(result.settings);
       } else {
         toast.error(t(`errors.${result.error}`));
       }
@@ -97,6 +103,70 @@ export function SettingsForm({
           </div>
         </Field>
       </FieldGroup>
+
+      <section aria-labelledby="escalation-heading" className="surface flex flex-col gap-4 p-5">
+        <div className="flex flex-col gap-1">
+          <h2 id="escalation-heading" className="text-fluid-lg font-bold">
+            {t("escalation.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t("escalation.intro")}</p>
+        </div>
+        <FieldGroup>
+          <Field orientation="horizontal">
+            <Controller
+              control={form.control}
+              name="escalationEnabled"
+              render={({ field }) => (
+                <Switch id="escalationEnabled" checked={field.value} onCheckedChange={field.onChange} disabled={!canEdit} />
+              )}
+            />
+            <FieldLabel htmlFor="escalationEnabled">{t("escalation.enabled")}</FieldLabel>
+          </Field>
+
+          {escalationOn && (
+            <>
+              <Field data-invalid={Boolean(errors.escalationThreshold) || undefined}>
+                <FieldLabel htmlFor="escalationThreshold">{t("escalation.warnings")}</FieldLabel>
+                <Input
+                  id="escalationThreshold"
+                  type="number"
+                  inputMode="numeric"
+                  min={MIN_ESCALATION_WARNINGS}
+                  max={MAX_ESCALATION_WARNINGS}
+                  className="max-w-[8rem]"
+                  disabled={!canEdit}
+                  aria-invalid={Boolean(errors.escalationThreshold) || undefined}
+                  {...form.register("escalationThreshold", { valueAsNumber: true })}
+                />
+                <FieldDescription>{t("escalation.warningsHelp", { min: MIN_ESCALATION_WARNINGS, max: MAX_ESCALATION_WARNINGS })}</FieldDescription>
+                {errors.escalationThreshold && <FieldError>{t("errors.invalid")}</FieldError>}
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="escalationAction">{t("escalation.action")}</FieldLabel>
+                <FormSelect control={form.control} name="escalationAction" id="escalationAction" options={actionOptions} placeholder={t("escalation.action")} disabled={!canEdit} />
+              </Field>
+
+              {escalationAction !== "kick" && (
+                <Field data-invalid={Boolean(errors.escalationDuration) || undefined}>
+                  <FieldLabel htmlFor="escalationDuration">{t(`escalation.duration.${escalationAction}`)}</FieldLabel>
+                  <Input
+                    id="escalationDuration"
+                    className="max-w-[10rem]"
+                    autoComplete="off"
+                    maxLength={20}
+                    disabled={!canEdit}
+                    aria-invalid={Boolean(errors.escalationDuration) || undefined}
+                    {...form.register("escalationDuration")}
+                  />
+                  <FieldDescription>{t(`escalation.durationHelp.${escalationAction}`)}</FieldDescription>
+                  {errors.escalationDuration && <FieldError>{t(`escalation.durationErrors.${DURATION_ERRORS.find((k) => k === errors.escalationDuration?.message) ?? "unreadable"}`)}</FieldError>}
+                </Field>
+              )}
+            </>
+          )}
+        </FieldGroup>
+      </section>
 
       {canEdit ? (
         <div>

@@ -22,7 +22,7 @@ export default async function SettingsPage() {
       {/* Moderators see the values but can't change them; saveSettingsAction
           re-checks the role either way. */}
       <SettingsForm
-        initial={{ logChannelId: settings.logChannelId, dmOnAction: settings.dmOnAction }}
+        initial={settings.settings}
         channels={settings.channels}
         canEdit={isAdmin(session.user.role)}
       />

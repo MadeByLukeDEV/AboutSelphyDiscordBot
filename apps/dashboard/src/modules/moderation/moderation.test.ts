@@ -84,15 +84,60 @@ describe("caseNumberSchema", () => {
 });
 
 describe("settingsSchema", () => {
+  const base = {
+    logChannelId: "",
+    dmOnAction: true,
+    escalationEnabled: false,
+    escalationThreshold: 3,
+    escalationAction: "timeout",
+    escalationDuration: "1h",
+  } as const;
+  const parse = (over: Record<string, unknown>) => settingsSchema.safeParse({ ...base, ...over });
+
   it("accepts a channel ID or none", () => {
-    expect(settingsSchema.safeParse({ logChannelId: "123456789012345678", dmOnAction: true }).success).toBe(true);
-    expect(settingsSchema.safeParse({ logChannelId: "", dmOnAction: false }).success).toBe(true);
+    expect(parse({ logChannelId: "123456789012345678" }).success).toBe(true);
+    expect(parse({ logChannelId: "", dmOnAction: false }).success).toBe(true);
   });
+
   it("rejects anything that isn't a Discord ID", () => {
     for (const bad of ["abc", "123", "123456789012345678<script>", " 123456789012345678"]) {
-      expect(settingsSchema.safeParse({ logChannelId: bad, dmOnAction: true }).success, bad).toBe(false);
+      expect(parse({ logChannelId: bad }).success, bad).toBe(false);
     }
-    expect(settingsSchema.safeParse({ logChannelId: "", dmOnAction: "yes" }).success).toBe(false);
+    expect(parse({ dmOnAction: "yes" }).success).toBe(false);
     expect(settingsSchema.safeParse({ logChannelId: "" }).success).toBe(false);
+  });
+
+  describe("escalation", () => {
+    const on = { escalationEnabled: true };
+
+    it("is not checked while it is off", () => {
+      expect(parse({ escalationAction: "kick", escalationDuration: "nonsense" }).success).toBe(true);
+    });
+
+    it("needs a readable timeout length within Discord's limits", () => {
+      expect(parse({ ...on, escalationAction: "timeout", escalationDuration: "1h" }).success).toBe(true);
+      expect(parse({ ...on, escalationAction: "timeout", escalationDuration: "" }).success).toBe(false);
+      expect(parse({ ...on, escalationAction: "timeout", escalationDuration: "10s" }).success).toBe(false);
+      expect(parse({ ...on, escalationAction: "timeout", escalationDuration: "5w" }).success).toBe(false);
+      expect(parse({ ...on, escalationAction: "timeout", escalationDuration: "soon" }).success).toBe(false);
+    });
+
+    it("gives a kick no length, and a ban an optional one", () => {
+      expect(parse({ ...on, escalationAction: "kick", escalationDuration: "" }).success).toBe(true);
+      expect(parse({ ...on, escalationAction: "kick", escalationDuration: "1h" }).success).toBe(false);
+      expect(parse({ ...on, escalationAction: "ban", escalationDuration: "" }).success).toBe(true);
+      expect(parse({ ...on, escalationAction: "ban", escalationDuration: "3d" }).success).toBe(true);
+      expect(parse({ ...on, escalationAction: "ban", escalationDuration: "5s" }).success).toBe(false);
+    });
+
+    it("keeps the warning count between 2 and 20", () => {
+      expect(parse({ ...on, escalationThreshold: 1 }).success).toBe(false);
+      expect(parse({ ...on, escalationThreshold: 21 }).success).toBe(false);
+      expect(parse({ ...on, escalationThreshold: 2 }).success).toBe(true);
+    });
+
+    it("refuses an unknown action", () => {
+      expect(parse({ ...on, escalationAction: "mute" }).success).toBe(false);
+    });
   });
 });

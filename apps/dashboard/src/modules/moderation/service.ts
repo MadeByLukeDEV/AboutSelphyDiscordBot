@@ -1,5 +1,5 @@
 import "server-only";
-import type { ModCase } from "@aboutselphy/db";
+import type { ModCase, ModConfig } from "@aboutselphy/db";
 import { errorInfo } from "@/lib/log";
 import { listChannels, refreshCaseLog, reloadBotModule } from "@/modules/bot-api";
 import type { StaffSession } from "@/modules/auth";
@@ -13,7 +13,8 @@ import {
   recentCases,
   updateConfig,
 } from "./repository";
-import { PAGE_SIZE, type CaseQuery, type PardonResult, type SaveSettingsResult, type SettingsInput } from "./schema";
+import { formatDuration, parseDuration } from "@aboutselphy/shared/duration";
+import { DEFAULT_ESCALATION, PAGE_SIZE, type CaseQuery, type PardonResult, type SaveSettingsResult, type SettingsInput } from "./schema";
 
 export async function getCasesPage(query: CaseQuery) {
   const { rows, total } = await listCases(query);
@@ -34,10 +35,19 @@ export async function getOverview() {
   return { ...stats, recent };
 }
 
+const toSettings = (c: ModConfig): SettingsInput => ({
+  logChannelId: c.logChannelId ?? "",
+  dmOnAction: c.dmOnAction,
+  escalationEnabled: c.escalationThreshold !== null && c.escalationAction !== null,
+  escalationThreshold: c.escalationThreshold ?? DEFAULT_ESCALATION.escalationThreshold,
+  escalationAction: c.escalationAction ?? DEFAULT_ESCALATION.escalationAction,
+  escalationDuration: c.escalationDurationSeconds ? formatDuration(c.escalationDurationSeconds).replaceAll(" ", "") : c.escalationAction ? "" : DEFAULT_ESCALATION.escalationDuration,
+});
+
 /** Current settings plus the channels to pick from (null channels = the bot is unreachable). */
 export async function getSettings() {
   const [config, channels] = await Promise.all([readConfig(), listChannels(["text"])]);
-  return { logChannelId: config.logChannelId ?? "", dmOnAction: config.dmOnAction, channels };
+  return { settings: toSettings(config), channels };
 }
 
 export async function saveSettings(input: SettingsInput): Promise<SaveSettingsResult> {
@@ -54,10 +64,18 @@ export async function saveSettings(input: SettingsInput): Promise<SaveSettingsRe
       if (!channels.some((c) => c.id === wanted)) return { ok: false, error: "channelNotFound" };
     }
 
-    const saved = await updateConfig({ logChannelId: wanted, dmOnAction: input.dmOnAction });
+    // Off = all three columns empty (the database insists on it). A kick has no length.
+    const seconds = input.escalationEnabled && input.escalationAction !== "kick" && input.escalationDuration ? parseDuration(input.escalationDuration) : null;
+    const saved = await updateConfig({
+      logChannelId: wanted,
+      dmOnAction: input.dmOnAction,
+      escalationThreshold: input.escalationEnabled ? input.escalationThreshold : null,
+      escalationAction: input.escalationEnabled ? input.escalationAction : null,
+      escalationDurationSeconds: input.escalationEnabled ? seconds : null,
+    });
     // The bot caches this config (60 s TTL); tell it to drop the cache now.
     const botNotified = await reloadBotModule("moderation");
-    return { ok: true, logChannelId: saved.logChannelId ?? "", dmOnAction: saved.dmOnAction, botNotified };
+    return { ok: true, settings: toSettings(saved), botNotified };
   } catch (error) {
     console.error("[moderation] saving settings failed", errorInfo(error));
     return { ok: false, error: "failed" };

@@ -165,6 +165,33 @@
         "botUnavailable": "Der Bot ist nicht erreichbar, um den Kanal zu prüfen. Versuche es gleich noch einmal.",
         "channelNotFound": "Diesen Kanal gibt es nicht oder der Bot kann ihn nicht sehen.",
         "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+      },
+      "escalation": {
+        "title": "Eskalation bei Verwarnungen",
+        "intro": "Handle automatisch, wenn ein Mitglied immer wieder verwarnt wird. Zurückgenommene Verwarnungen zählen nicht.",
+        "enabled": "Wiederholte Verwarnungen eskalieren",
+        "warnings": "Bei jeder so vielten aktiven Verwarnung",
+        "warningsHelp": "Zwischen {min} und {max}. Bei 3 greift die 3. Verwarnung, dann die 6. und so weiter.",
+        "action": "Dann",
+        "actions": {
+          "timeout": "Mitglied timeouten",
+          "kick": "Mitglied kicken",
+          "ban": "Mitglied bannen"
+        },
+        "duration": {
+          "timeout": "Dauer des Timeouts",
+          "ban": "Dauer des Banns (optional)"
+        },
+        "durationHelp": {
+          "timeout": "Zum Beispiel 1h, 12h oder 3d. Zwischen 1 Minute und 28 Tagen.",
+          "ban": "Leer lassen für einen dauerhaften Bann oder zum Beispiel 3d oder 2w für einen befristeten."
+        },
+        "durationErrors": {
+          "unreadable": "Nutze etwas wie 30m, 1h, 3d oder 2w.",
+          "timeoutRange": "Ein Timeout braucht eine Dauer zwischen 1 Minute und 28 Tagen.",
+          "kickNoDuration": "Ein Kick hat keine Dauer.",
+          "tooShort": "Mindestens 1 Minute."
+        }
       }
     }
   },
