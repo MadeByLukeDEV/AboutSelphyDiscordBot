@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLevelSettingsAction } from "../actions";
 import type { LeaderboardRow } from "../schema";
-import { MultiPicker, type PickItem } from "./multi-picker";
+import { MultiPicker, type PickItem } from "@/components/form/multi-picker";
 
 /** Settings, level rewards and the leaderboard. */
 export function LevelsManager({

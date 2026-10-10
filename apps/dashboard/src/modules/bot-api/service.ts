@@ -3,6 +3,7 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  ticketPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
   roleCreateResponse,
@@ -15,6 +16,7 @@ import {
   type AnnouncementDeleteStatus,
   type AnnouncementEditStatus,
   type ChannelKind,
+  type TicketPanelStatus,
   type GuildEmoji,
   type RoleCreateResponse,
   type RolePanelDeleteStatus,
@@ -159,4 +161,12 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   if (!res?.ok) return null;
   const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
+/** Asks the bot to post (or update) the ticket panel message. Null if the bot can't be reached. */
+export async function postTicketPanel(): Promise<TicketPanelStatus | null> {
+  const res = await botFetch("/internal/tickets/panel", { method: "POST" });
+  if (!res?.ok) return null;
+  const parsed = ticketPanelStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
 }

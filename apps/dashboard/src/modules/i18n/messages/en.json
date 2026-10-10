@@ -18,7 +18,8 @@
         "roles": "Roles",
         "welcome": "Welcome",
         "logs": "Logs",
-        "levels": "Levels"
+        "levels": "Levels",
+        "tickets": "Tickets"
       }
     },
     "account": {
@@ -1001,6 +1002,105 @@
       "channelNotFound": "One of these channels doesn't exist, or the bot can't see it.",
       "roleNotFound": "One of these roles doesn't exist any more.",
       "roleNotAllowed": "A reward role can't be handed out: it is above the bot's role, managed by an integration, or has powerful permissions.",
+      "failed": "Couldn't save the settings. Try again."
+    }
+  },
+  "Tickets": {
+    "title": "Tickets",
+    "intro": "Members press a button to open a private channel with the team. Closed tickets keep a transcript here.",
+    "noChannel": "Not chosen",
+    "channelPlaceholder": "Pick a channel",
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these.",
+      "enabled": "Tickets are on",
+      "enabledHelp": "Needs the panel channel, a category and at least one staff role.",
+      "panelChannel": "Panel channel",
+      "panelChannelHelp": "Where the message with the \"Open a ticket\" button is posted.",
+      "category": "Category for new tickets",
+      "categoryHelp": "Each ticket becomes a private channel in this category. The bot needs Manage Channels there.",
+      "staff": "Staff roles (up to {max})",
+      "staffHelp": "These roles can see, claim and close every ticket. Moderators and admins of the bot always can.",
+      "staffSelected": "Selected roles",
+      "staffNone": "No roles selected",
+      "staffSearch": "Search roles",
+      "staffFull": "That's the most you can add ({max}).",
+      "noMatch": "Nothing found.",
+      "remove": "Remove {name}",
+      "logChannel": "Log channel",
+      "logChannelHelp": "A summary and the transcript of every closed ticket are posted here. Optional.",
+      "maxOpen": "Open tickets per member",
+      "maxOpenHelp": "How many tickets one member can have open at once.",
+      "panelTitle": "Panel title",
+      "panelDescription": "Panel text",
+      "buttonLabel": "Button text",
+      "welcome": "First message in a ticket",
+      "welcomeHelp": "Use '{user}' (mentions the member) and '{number}' (the ticket number).",
+      "color": "Colour",
+      "colorReset": "Brand green",
+      "botOffline": "The bot is offline, so the lists aren't available. Saved choices are kept.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "panel": {
+      "post": "Post the panel",
+      "update": "Update the panel",
+      "postHelp": "Posts the message with the button in the panel channel.",
+      "updateHelp": "Edits the posted message after you changed its text.",
+      "saveFirst": "Save your changes first.",
+      "posted": "Panel posted",
+      "updated": "Panel updated",
+      "errors": {
+        "forbidden": "Only admins can do that.",
+        "botUnavailable": "Can't reach the bot. Try again in a moment.",
+        "needsSetup": "Pick the panel channel, a category and a staff role, and save first.",
+        "channel": "The panel channel doesn't exist or isn't a text channel the bot can post in.",
+        "failed": "That didn't work. Try again."
+      }
+    },
+    "list": {
+      "title": "Tickets",
+      "open": "Open",
+      "closed": "Closed",
+      "claimed": "claimed by {name}",
+      "closedBy": "closed by {name}",
+      "messages": "{count} messages",
+      "noTranscript": "no transcript",
+      "empty": {
+        "title": "No tickets yet",
+        "body": "They appear here once members start opening them."
+      }
+    },
+    "detail": {
+      "back": "← All tickets",
+      "title": "Ticket #{number}",
+      "opener": "Opened by",
+      "status": "Status",
+      "open": "Open",
+      "closed": "Closed",
+      "opened": "Opened",
+      "closedAt": "Closed",
+      "claimedBy": "Claimed by",
+      "reason": "Reason",
+      "stillOpen": "This ticket is still open. Its transcript is saved when it is closed.",
+      "noTranscript": "No transcript was saved. The bot can only keep one when it is allowed to read message text (the Message Content setting).",
+      "transcript": "Transcript ({count} messages)",
+      "truncated": "This ticket was very long: only the latest messages are kept.",
+      "bot": "Bot",
+      "embeds": "{count, plural, one {# embed} other {# embeds}} (not kept)"
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Some of these values aren't valid.",
+      "needsPanelChannel": "Pick the panel channel before switching tickets on.",
+      "needsCategory": "Pick a category before switching tickets on.",
+      "needsStaff": "Add at least one staff role before switching tickets on.",
+      "botUnavailable": "Can't reach the bot to check that. Try again in a moment.",
+      "channelNotFound": "One of those channels doesn't exist, or the bot can't see it.",
+      "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
+      "roleNotFound": "One of those roles doesn't exist any more.",
       "failed": "Couldn't save the settings. Try again."
     }
   }

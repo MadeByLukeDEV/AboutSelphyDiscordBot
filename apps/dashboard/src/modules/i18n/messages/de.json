@@ -18,7 +18,8 @@
         "roles": "Rollen",
         "welcome": "Willkommen",
         "logs": "Protokolle",
-        "levels": "Level"
+        "levels": "Level",
+        "tickets": "Tickets"
       }
     },
     "account": {
@@ -1001,6 +1002,105 @@
       "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "roleNotAllowed": "Eine Belohnungsrolle kann nicht vergeben werden: Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
+  },
+  "Tickets": {
+    "title": "Tickets",
+    "intro": "Mitglieder drücken einen Button und öffnen einen privaten Kanal mit dem Team. Geschlossene Tickets behalten hier ein Protokoll.",
+    "noChannel": "Nicht gewählt",
+    "channelPlaceholder": "Kanal wählen",
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern.",
+      "enabled": "Tickets sind an",
+      "enabledHelp": "Braucht den Panel-Kanal, eine Kategorie und mindestens eine Team-Rolle.",
+      "panelChannel": "Panel-Kanal",
+      "panelChannelHelp": "Wohin die Nachricht mit dem Button „Ticket öffnen“ gepostet wird.",
+      "category": "Kategorie für neue Tickets",
+      "categoryHelp": "Jedes Ticket wird ein privater Kanal in dieser Kategorie. Der Bot braucht dort „Kanäle verwalten“.",
+      "staff": "Team-Rollen (bis zu {max})",
+      "staffHelp": "Diese Rollen können jedes Ticket sehen, übernehmen und schließen. Moderatoren und Admins des Bots können das immer.",
+      "staffSelected": "Ausgewählte Rollen",
+      "staffNone": "Keine Rollen ausgewählt",
+      "staffSearch": "Rollen suchen",
+      "staffFull": "Mehr kannst du nicht hinzufügen ({max}).",
+      "noMatch": "Nichts gefunden.",
+      "remove": "{name} entfernen",
+      "logChannel": "Log-Kanal",
+      "logChannelHelp": "Eine Zusammenfassung und das Protokoll jedes geschlossenen Tickets werden hier gepostet. Optional.",
+      "maxOpen": "Offene Tickets pro Mitglied",
+      "maxOpenHelp": "Wie viele Tickets ein Mitglied gleichzeitig offen haben kann.",
+      "panelTitle": "Panel-Titel",
+      "panelDescription": "Panel-Text",
+      "buttonLabel": "Button-Text",
+      "welcome": "Erste Nachricht in einem Ticket",
+      "welcomeHelp": "Nutze '{user}' (erwähnt das Mitglied) und '{number}' (die Ticketnummer).",
+      "color": "Farbe",
+      "colorReset": "Markengrün",
+      "botOffline": "Der Bot ist offline, die Listen sind deshalb nicht verfügbar. Gespeicherte Auswahlen bleiben erhalten.",
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "panel": {
+      "post": "Panel posten",
+      "update": "Panel aktualisieren",
+      "postHelp": "Postet die Nachricht mit dem Button im Panel-Kanal.",
+      "updateHelp": "Bearbeitet die gepostete Nachricht, nachdem du den Text geändert hast.",
+      "saveFirst": "Speichere zuerst deine Änderungen.",
+      "posted": "Panel gepostet",
+      "updated": "Panel aktualisiert",
+      "errors": {
+        "forbidden": "Nur Admins können das tun.",
+        "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+        "needsSetup": "Wähle Panel-Kanal, Kategorie und eine Team-Rolle und speichere zuerst.",
+        "channel": "Der Panel-Kanal existiert nicht oder ist kein Textkanal, in dem der Bot posten kann.",
+        "failed": "Das hat nicht geklappt. Versuche es erneut."
+      }
+    },
+    "list": {
+      "title": "Tickets",
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "claimed": "übernommen von {name}",
+      "closedBy": "geschlossen von {name}",
+      "messages": "{count} Nachrichten",
+      "noTranscript": "kein Protokoll",
+      "empty": {
+        "title": "Noch keine Tickets",
+        "body": "Sie erscheinen hier, sobald Mitglieder welche öffnen."
+      }
+    },
+    "detail": {
+      "back": "← Alle Tickets",
+      "title": "Ticket #{number}",
+      "opener": "Geöffnet von",
+      "status": "Status",
+      "open": "Offen",
+      "closed": "Geschlossen",
+      "opened": "Geöffnet",
+      "closedAt": "Geschlossen",
+      "claimedBy": "Übernommen von",
+      "reason": "Grund",
+      "stillOpen": "Dieses Ticket ist noch offen. Sein Protokoll wird beim Schließen gespeichert.",
+      "noTranscript": "Es wurde kein Protokoll gespeichert. Der Bot kann nur eines behalten, wenn er Nachrichtentext lesen darf (die Einstellung „Message Content“).",
+      "transcript": "Protokoll ({count} Nachrichten)",
+      "truncated": "Dieses Ticket war sehr lang: Nur die neuesten Nachrichten werden behalten.",
+      "bot": "Bot",
+      "embeds": "{count, plural, one {# Embed} other {# Embeds}} (nicht gespeichert)"
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "needsPanelChannel": "Wähle den Panel-Kanal, bevor du Tickets einschaltest.",
+      "needsCategory": "Wähle eine Kategorie, bevor du Tickets einschaltest.",
+      "needsStaff": "Füge mindestens eine Team-Rolle hinzu, bevor du Tickets einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um das zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot kann ihn nicht sehen.",
+      "categoryNotFound": "Diese Kategorie existiert nicht oder der Bot kann sie nicht sehen.",
+      "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
