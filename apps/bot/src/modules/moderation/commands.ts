@@ -12,6 +12,7 @@ import type { Command } from "../../commands/types";
 import { escapeText, truncate } from "../../lib/escape";
 import { saveModConfig, getModConfig } from "./config";
 import { formatDuration, MAX_TIMEOUT_SECONDS, MIN_TIMEOUT_SECONDS, parseDuration } from "./duration";
+import { channelToolCommands } from "./channel-tools";
 import { buildCaseEmbed, typeLabel } from "./embed";
 import { performAction, getCase, getInfractions, type ActionRequest } from "./service";
 
@@ -292,4 +293,4 @@ const modlog: Command = {
   },
 };
 
-export const moderationCommands: Command[] = [warn, timeout, untimeout, kick, ban, unban, note, caseCommand, infractions, modlog];
+export const moderationCommands: Command[] = [warn, timeout, untimeout, kick, ban, unban, note, caseCommand, infractions, modlog, ...channelToolCommands];

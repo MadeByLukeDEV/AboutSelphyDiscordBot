@@ -1,4 +1,4 @@
-import { PermissionFlagsBits, type Guild, type GuildMember, type User } from "discord.js";
+import { PermissionFlagsBits, type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
 import type { ModCase } from "@aboutselphy/db";
 import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
@@ -224,6 +224,19 @@ export async function postCaseLog(guild: Guild, row: ModCase): Promise<void> {
     await setCaseLogMessage(row.id, channel.id, message.id);
   } catch (err) {
     log.error({ err, case: row.caseNumber }, "could not post case to the mod log");
+  }
+}
+
+/** Posts a log entry that isn't a case (a purge, a lock, slow mode) to the mod log channel. Best effort. */
+export async function postModNote(guild: Guild, embed: EmbedBuilder): Promise<void> {
+  try {
+    const { logChannelId } = await getModConfig();
+    if (!logChannelId) return;
+    const channel = await guild.channels.fetch(logChannelId).catch(() => null);
+    if (!channel?.isTextBased() || !("send" in channel)) return;
+    await channel.send({ embeds: [embed], allowedMentions: { parse: [] } });
+  } catch (err) {
+    log.error({ err }, "could not post a moderation note to the mod log");
   }
 }
 
