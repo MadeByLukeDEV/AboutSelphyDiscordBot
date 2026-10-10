@@ -2,6 +2,7 @@ export { prisma } from "./prisma";
 export type {
   Prisma,
   PrismaClient,
+  Announcement,
   ModCase,
   ModConfig,
   TempVoiceChannel,
@@ -12,4 +13,4 @@ export type {
   TwitchNotification,
   TwitchStreamer,
 } from "./generated/prisma/client";
-export type { ModCaseType, ModCaseSource } from "./generated/prisma/enums";
+export type { AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

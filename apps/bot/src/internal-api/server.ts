@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@aboutselphy/db";
 import {
+  announcementIdBody,
   channelKind,
   refreshCaseBody,
   reloadModule as reloadModuleSchema,
@@ -11,6 +12,7 @@ import {
 import { getClient } from "../client";
 import { env } from "../lib/env";
 import { log } from "../lib/log";
+import { deleteSent, editSent } from "../modules/announcements";
 import { refreshCaseLog } from "../modules/moderation";
 import { getTempVoiceOverview } from "../modules/tempvoice";
 import { lookupTwitchChannel } from "../modules/twitch";
@@ -110,6 +112,13 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await refreshCaseLog(guild, body.data.caseNumber) });
+  }
+
+  if (req.method === "POST" && (url.pathname === "/internal/announcements/edit" || url.pathname === "/internal/announcements/delete")) {
+    const body = announcementIdBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const status = url.pathname.endsWith("/edit") ? await editSent(body.data.id) : await deleteSent(body.data.id);
+    return json(res, 200, { status });
   }
 
   const reload = /^\/internal\/reload\/([a-z]+)$/.exec(url.pathname);

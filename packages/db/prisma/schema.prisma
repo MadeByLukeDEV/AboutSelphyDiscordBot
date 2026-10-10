@@ -235,3 +235,48 @@ model TwitchNotification {
 
   @@index([twitchUserId, endedAt])
 }
+
+// ---- announcements ----------------------------------------------------------
+// Staff compose a message in the dashboard; the bot sends it (now or at a set
+// time) and can edit or delete it afterwards. CHECK constraints (digits-only
+// Discord IDs, a colour range, "has something to say", scheduled has a time)
+// are added to the migration by hand.
+
+enum AnnouncementStatus {
+  draft
+  scheduled
+  sending
+  sent
+  failed
+}
+
+model Announcement {
+  id               String             @id @default(cuid())
+  status           AnnouncementStatus @default(draft)
+  /// Plain text above the embed (may be empty when there is an embed).
+  content          String             @default("") @db.VarChar(2000)
+  embedEnabled     Boolean            @default(false)
+  embedTitle       String             @default("") @db.VarChar(256)
+  embedDescription String             @default("") @db.VarChar(4000)
+  /// 24-bit colour; default is the brand green #00FFA8.
+  embedColor       Int                @default(65448)
+  /// https only; Discord loads it, the dashboard never does.
+  embedImageUrl    String             @default("") @db.VarChar(500)
+  channelId        String             @db.VarChar(20)
+  /// The one role that is mentioned, or null for no ping.
+  pingRoleId       String?            @db.VarChar(20)
+  /// When to send it. "Send now" sets this to the current time.
+  scheduledFor     DateTime?
+  sentAt           DateTime?
+  /// The posted message, so it can be edited or deleted later.
+  messageId        String?            @db.VarChar(20)
+  /// A short code (never Discord's text) when sending failed.
+  lastError        String             @default("") @db.VarChar(40)
+  createdByUserId  String             @db.VarChar(64)
+  createdByName    String             @db.VarChar(100)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([status, scheduledFor])
+  @@index([createdAt])
+}

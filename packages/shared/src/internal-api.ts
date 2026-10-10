@@ -115,3 +115,10 @@ export const twitchResolveResponse = z.discriminatedUnion("status", [
   z.object({ status: z.literal("unavailable") }),
 ]);
 export type TwitchResolveResponse = z.infer<typeof twitchResolveResponse>;
+
+/** POST /internal/announcements/{edit,delete}: which announcement to change on Discord. */
+export const announcementIdBody = z.object({ id: z.string().min(1).max(64) });
+export const announcementEditStatus = z.enum(["edited", "not-sent", "message-gone", "failed"]);
+export const announcementDeleteStatus = z.enum(["deleted", "not-sent", "already-gone", "failed"]);
+export type AnnouncementEditStatus = z.infer<typeof announcementEditStatus>;
+export type AnnouncementDeleteStatus = z.infer<typeof announcementDeleteStatus>;

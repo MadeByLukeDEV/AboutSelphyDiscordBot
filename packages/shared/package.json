@@ -20,6 +20,7 @@
     ".": "./src/index.ts",
     "./token-cipher": "./src/token-cipher.ts",
     "./twitch-template": "./src/twitch-template.ts",
-    "./duration": "./src/duration.ts"
+    "./duration": "./src/duration.ts",
+    "./announcement": "./src/announcement.ts"
   }
 }
