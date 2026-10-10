@@ -13,6 +13,7 @@ export const RELOADABLE_MODULES = [
   "levels",
   "tickets",
   "giveaways",
+  "suggestions",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);
@@ -181,3 +182,13 @@ export type TicketPanelStatus = z.infer<typeof ticketPanelStatus>;
 export const giveawayActionBody = z.object({ id: z.string().min(1).max(64), action: z.enum(["start", "end", "reroll", "cancel"]) });
 export const giveawayActionStatus = z.enum(["done", "channel", "role", "not-found", "wrong-state", "failed"]);
 export type GiveawayActionStatus = z.infer<typeof giveawayActionStatus>;
+
+/** POST /internal/suggestions/decide: a team member decides from the dashboard (`by` is their name, only a label). */
+export const suggestionDecideBody = z.object({
+  id: z.string().min(1).max(64),
+  status: z.enum(["approved", "denied", "implemented"]),
+  reason: z.string().max(300),
+  by: z.string().min(1).max(100),
+});
+export const suggestionDecideStatus = z.enum(["done", "not-found", "wrong-state", "failed"]);
+export type SuggestionDecideStatus = z.infer<typeof suggestionDecideStatus>;

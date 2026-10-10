@@ -20,6 +20,9 @@ export type {
   TwitchConnection,
   TwitchNotification,
   TwitchStreamer,
+  SuggestionConfig,
+  Suggestion,
+  SuggestionVote,
   TicketConfig,
   Ticket,
   WelcomeCardImage,
@@ -28,4 +31,4 @@ export type {
   YoutubeConfig,
   YoutubeVideo,
 } from "./generated/prisma/client";
-export type { GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";
+export type { SuggestionStatus, GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

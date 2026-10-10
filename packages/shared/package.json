@@ -28,6 +28,7 @@
     "./logs": "./src/logs.ts",
     "./levels": "./src/levels.ts",
     "./tickets": "./src/tickets.ts",
-    "./giveaways": "./src/giveaways.ts"
+    "./giveaways": "./src/giveaways.ts",
+    "./suggestions": "./src/suggestions.ts"
   }
 }

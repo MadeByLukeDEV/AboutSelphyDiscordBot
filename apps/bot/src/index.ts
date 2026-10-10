@@ -5,6 +5,7 @@ import { registerLifecycle } from "./events/lifecycle";
 import { registerReactionRoles, registerRolePanels } from "./modules/roles";
 import { registerGiveawayControls, startGiveaways, stopGiveaways } from "./modules/giveaways";
 import { registerLevels, stopLevels } from "./modules/levels";
+import { registerSuggestionControls } from "./modules/suggestions";
 import { registerTicketControls, registerTicketEvents } from "./modules/tickets";
 import { registerLogs } from "./modules/logs";
 import { registerWelcome } from "./modules/welcome";
@@ -45,6 +46,7 @@ async function main() {
   registerGiveawayControls();
   startGiveaways(client);
   registerTicketControls();
+  registerSuggestionControls();
   registerTicketEvents(client);
   startTwitch(client);
   startAnnouncements(client);
