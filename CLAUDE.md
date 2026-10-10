@@ -775,6 +775,22 @@ Decided 2026-10-08:
   - [ ] Auto-roles on join, welcome/goodbye messages, roles re-applied on rejoin: these
         need the **GuildMembers** privileged intent. Add it behind a flag, the bot refuses
         to log in if the intent isn't enabled in the Developer Portal.
+- [~] Welcome (2026-10-15, `feature_welcome`, migration `20261015100000_welcome`
+      applied; the bot logs in with the privileged **GuildMembers** intent (user enabled it);
+      **joins and leaves not tried live yet**)
+  - Bot (`modules/welcome/`): on join: auto-roles (one list for members, one for bots, max 5
+    each), restoring a returning member's roles (optional; snapshot kept **90 days** in
+    `MemberRoleSnapshot`, pruned daily, personal data), welcome message (plain or as a box with
+    colour and https picture; the new member is mentioned so they are pinged, nobody else can
+    be), optional DM. On leave: snapshot + goodbye line (no mentions). **Every role is
+    checked with `checkRole` at the moment it is given**, so a restored role can never bring
+    back power. Needs the bot's Manage Roles and its role above the offered roles. Only runs
+    in production or with `BOT_INTEGRATIONS_IN_DEV` (two processes on one token would greet
+    twice). Pure parts (`message.ts`, shared `welcome.ts`) are tested.
+  - Dashboard `/welcome` (admins): one form with the role pickers, message editors with insert
+    buttons and a preview, DM, goodbye. Roles and channels are validated through the bot.
+  - [ ] Join/leave **logs** (separate channel, account age), invite tracking, member
+        screening/verification gate, raid protection.
 - [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
       `20261013180000_youtube` applied; the first poll against the real API ran and
       only remembered the current 10 videos; **no real announcement seen yet**)
