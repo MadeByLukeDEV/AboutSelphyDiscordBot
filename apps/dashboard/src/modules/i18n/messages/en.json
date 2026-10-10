@@ -26,7 +26,8 @@
         "starboard": "Starboard",
         "birthdays": "Birthdays",
         "reminders": "Reminders",
-        "roleManager": "Role manager"
+        "roleManager": "Role manager",
+        "statChannels": "Stat channels"
       }
     },
     "account": {
@@ -1599,6 +1600,61 @@
       "button": "Clean up",
       "cleaning": "Cleaning up…",
       "done": "{count, plural, one {1 entry removed} other {# entries removed}}"
+    }
+  },
+  "StatChannels": {
+    "title": "Stat channels",
+    "intro": "Voice channels whose name shows a live number, like \"Members: 1,234\". The bot renames them every 10 minutes, only when the number changed. Make the channel locked for everyone (deny Connect) so nobody can join it, and give the bot Manage Channels there.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "add": "Add a stat channel",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Stat channel removed (its name stays as it is)",
+    "list": {
+      "title": "Stat channels",
+      "count": "({count} of {max})",
+      "notYet": "not renamed yet"
+    },
+    "empty": {
+      "title": "No stat channels yet",
+      "body": "Create a voice channel in Discord, lock it, and add it here."
+    },
+    "dialog": {
+      "newTitle": "Add a stat channel",
+      "editTitle": "Edit stat channel",
+      "intro": "The number is filled in where '{count}' stands. The bot renames the channel within about 10 minutes."
+    },
+    "kinds": {
+      "members": "All members",
+      "humans": "People (no bots)",
+      "bots": "Bots",
+      "boosts": "Server boosts",
+      "channels": "Channels",
+      "roles": "Roles",
+      "voice": "People in voice channels"
+    },
+    "form": {
+      "channel": "Voice channel",
+      "channelPlaceholder": "Pick a voice channel",
+      "channelHelp": "Fixed once added. To use another channel, remove this one and add the other.",
+      "kind": "Shows",
+      "template": "Name",
+      "templateHelp": "Must contain '{count}', e.g. Members: '{count}'.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsCount": "The name must contain '{count}'.",
+      "botUnavailable": "Can't reach the bot, so the channel can't be checked. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a voice channel.",
+      "alreadyAdded": "That channel is already a stat channel.",
+      "tooMany": "That's the maximum number of stat channels.",
+      "notFound": "That stat channel doesn't exist any more. Reload the page.",
+      "failed": "That didn't work. Try again."
     }
   }
 }

@@ -26,7 +26,8 @@
         "starboard": "Starboard",
         "birthdays": "Geburtstage",
         "reminders": "Erinnerungen",
-        "roleManager": "Rollenverwaltung"
+        "roleManager": "Rollenverwaltung",
+        "statChannels": "Statistik-Kanäle"
       }
     },
     "account": {
@@ -1599,6 +1600,61 @@
       "button": "Aufräumen",
       "cleaning": "Räume auf…",
       "done": "{count, plural, one {1 Eintrag entfernt} other {# Einträge entfernt}}"
+    }
+  },
+  "StatChannels": {
+    "title": "Statistik-Kanäle",
+    "intro": "Sprachkanäle, deren Name eine Live-Zahl zeigt, z. B. \"Mitglieder: 1,234\". Der Bot benennt sie alle 10 Minuten um, nur wenn sich die Zahl geändert hat. Sperre den Kanal für alle (Verbinden verweigern), damit niemand beitreten kann, und gib dem Bot dort Kanäle verwalten.",
+    "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+    "add": "Statistik-Kanal hinzufügen",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Statistik-Kanal entfernt (sein Name bleibt, wie er ist)",
+    "list": {
+      "title": "Statistik-Kanäle",
+      "count": "({count} von {max})",
+      "notYet": "noch nicht umbenannt"
+    },
+    "empty": {
+      "title": "Noch keine Statistik-Kanäle",
+      "body": "Erstelle in Discord einen Sprachkanal, sperre ihn und füge ihn hier hinzu."
+    },
+    "dialog": {
+      "newTitle": "Statistik-Kanal hinzufügen",
+      "editTitle": "Statistik-Kanal bearbeiten",
+      "intro": "Die Zahl wird dort eingesetzt, wo '{count}' steht. Der Bot benennt den Kanal innerhalb von etwa 10 Minuten um."
+    },
+    "kinds": {
+      "members": "Alle Mitglieder",
+      "humans": "Personen (ohne Bots)",
+      "bots": "Bots",
+      "boosts": "Server-Boosts",
+      "channels": "Kanäle",
+      "roles": "Rollen",
+      "voice": "Personen in Sprachkanälen"
+    },
+    "form": {
+      "channel": "Sprachkanal",
+      "channelPlaceholder": "Sprachkanal wählen",
+      "channelHelp": "Nach dem Hinzufügen fest. Um einen anderen Kanal zu nutzen, entferne diesen und füge den anderen hinzu.",
+      "kind": "Zeigt",
+      "template": "Name",
+      "templateHelp": "Muss '{count}' enthalten, z. B. Mitglieder: '{count}'.",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsCount": "Der Name muss '{count}' enthalten.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, daher kann der Kanal nicht geprüft werden. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Sprachkanal.",
+      "alreadyAdded": "Dieser Kanal ist bereits ein Statistik-Kanal.",
+      "tooMany": "Das ist die maximale Anzahl an Statistik-Kanälen.",
+      "notFound": "Diesen Statistik-Kanal gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   }
 }
