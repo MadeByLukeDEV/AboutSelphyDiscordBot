@@ -593,8 +593,15 @@ Decided 2026-10-08:
         plain data (`embeds.ts`, tested): people as mention + raw id, every name escaped, no
         pings. Routes cached 60 s + reload. Only runs in production or with
         `BOT_INTEGRATIONS_IN_DEV`. Moderation actions keep their own log (`/modlog`).
-  - [ ] **Message edit/delete logs**: need the privileged **MessageContent** intent (and
-        GuildMessages) so the old text is known; invite tracking (GuildInvites intent).
+  - [x] **Message logs** (2026-10-24, `feature_message-content`, migration `20261024180000_log_messages`
+        only loosens the `LogRoute` CHECK; **not tried live yet**): a fifth kind `messages` (own channel and
+        switch on `/logs`): deleted messages (author, text and attachment names when the bot still has
+        them cached, else a note that they weren't saved), edits (text before and after; only real text
+        changes, not link previews), bulk deletes (a count). Bots, the log channels themselves and open
+        ticket channels are never logged. Each line is escaped on its own so breaks stay, nothing pings.
+        Registered only when `DISCORD_MESSAGE_CONTENT=true` (the privileged intent is **on** since
+        2026-10-24, flag added to `.env.local` and documented in `.env.example`; ticket transcripts work
+        with it too). Invite tracking (GuildInvites intent) is still open.
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
 - [ ] Phase 2 — anti-bot

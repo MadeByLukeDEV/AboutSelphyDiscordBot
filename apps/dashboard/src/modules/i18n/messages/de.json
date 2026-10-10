@@ -927,6 +927,10 @@
       "server": {
         "title": "Kanäle und Rollen",
         "body": "Kanäle und Rollen, die erstellt, gelöscht oder umbenannt werden, sowie Änderungen an Rollenrechten oder -farben."
+      },
+      "messages": {
+        "title": "Nachrichten",
+        "body": "Bearbeitete und gelöschte Nachrichten, bei Bearbeitungen mit dem Text davor und danach, solange der Bot ihn noch kennt. Bots, die Log-Kanäle und offene Ticket-Kanäle sind ausgenommen. Braucht den Message-Content-Intent."
       }
     },
     "save": "Speichern",

@@ -93,3 +93,37 @@ export function roleEmbed(m: { kind: "create" | "delete" | "update"; name: strin
   }
   return embed;
 }
+
+// -- messages ------------------------------------------------------------------------------------
+// Message text is written by other people: each line is escaped on its own (so line breaks stay),
+// and the whole thing is cut to fit an embed field.
+const quote = (text: string, max = 1000) => truncate(text.split("\n").map((line) => escapeText(line)).join("\n"), max);
+const attachmentList = (names: string[]) => (names.length === 0 ? null : truncate(names.slice(0, 10).map((n) => escapeText(n)).join(", ") + (names.length > 10 ? ` and ${names.length - 10} more` : ""), 1000));
+
+export function messageDeleteEmbed(m: { channelId: string; messageId: string; author: { id: string; name: string } | null; content: string | null; attachmentNames: string[]; sentAt: Date | null }) {
+  const embed = new EmbedBuilder().setColor(COLORS.bad).setTitle("Message deleted").setTimestamp();
+  embed.setDescription(m.author ? `${who(m.author.id, m.author.name)}\nin <#${m.channelId}>` : `in <#${m.channelId}>\n*The author and text weren't saved, because the message is older than the bot's memory.*`);
+  if (m.content) embed.addFields({ name: "Message", value: quote(m.content) });
+  const files = attachmentList(m.attachmentNames);
+  if (files) embed.addFields({ name: "Attachments", value: files });
+  if (m.sentAt) embed.addFields({ name: "Sent", value: `<t:${unix(m.sentAt)}:R>`, inline: true });
+  embed.setFooter({ text: `Message ID ${m.messageId}` });
+  return embed;
+}
+
+export function messageEditEmbed(m: { channelId: string; messageId: string; url: string; author: { id: string; name: string }; before: string | null; after: string }) {
+  return new EmbedBuilder()
+    .setColor(COLORS.info)
+    .setTitle("Message edited")
+    .setDescription(`${who(m.author.id, m.author.name)}\nin <#${m.channelId}> · [Jump to message](${m.url})`)
+    .addFields(
+      { name: "Before", value: m.before === null ? "*not saved*" : m.before === "" ? "*empty*" : quote(m.before) },
+      { name: "After", value: m.after === "" ? "*empty*" : quote(m.after) },
+    )
+    .setFooter({ text: `Message ID ${m.messageId}` })
+    .setTimestamp();
+}
+
+export function bulkDeleteEmbed(m: { channelId: string; count: number }) {
+  return new EmbedBuilder().setColor(COLORS.bad).setTitle("Messages deleted in bulk").setDescription(`${m.count} messages in <#${m.channelId}>`).setTimestamp();
+}

@@ -2,8 +2,9 @@ import { ChannelType, Events, type Client, type EmbedBuilder, type Guild, type G
 import type { LogCategory } from "@aboutselphy/shared/logs";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
-import { logChannelFor } from "./config";
-import { channelEmbed, memberJoinEmbed, memberLeaveEmbed, memberRolesEmbed, nicknameEmbed, roleEmbed, voiceEmbed } from "./embeds";
+import { isLogChannel, logChannelFor } from "./config";
+import { findOpenTicket } from "./repository";
+import { bulkDeleteEmbed, channelEmbed, memberJoinEmbed, memberLeaveEmbed, memberRolesEmbed, messageDeleteEmbed, messageEditEmbed, nicknameEmbed, roleEmbed, voiceEmbed } from "./embeds";
 
 // Server logs: joins and leaves, nickname and role changes, voice, and changes to the server's
 // channels and roles. Each kind has its own channel and switch (dashboard). Best effort: a missing
@@ -43,7 +44,17 @@ async function post(guild: Guild, category: LogCategory, embed: EmbedBuilder): P
 
 const guarded = (name: string, fn: () => Promise<void>) => void fn().catch((err) => log.error({ err }, `${name} log handler failed`));
 
+/** Channels whose messages are never logged: the log channels themselves (no loops) and open ticket channels (private by design). */
+async function ignoredChannel(channelId: string): Promise<boolean> {
+  if (await isLogChannel(channelId)) return true;
+  return (await findOpenTicket(channelId)) !== null;
+}
+
 export function registerLogs(client: Client): void {
+  // Message logs read message text, which needs the privileged MessageContent intent (DISCORD_MESSAGE_CONTENT=true).
+  if (env().DISCORD_MESSAGE_CONTENT) registerMessageLogs(client);
+  else log.info({}, "message logs: not registered (DISCORD_MESSAGE_CONTENT is off)");
+
   client.on(Events.GuildMemberAdd, (m) =>
     guarded("join", async () => {
       recentJoins.set(m.id, Date.now());
@@ -105,4 +116,57 @@ export function registerLogs(client: Client): void {
     if (before.name === after.name && !permissionsChanged && !colorChanged) return; // position moves are noise
     guarded("role update", () => post(after.guild, "server", roleEmbed({ kind: "update", name: after.name, before: before.name, permissionsChanged, colorChanged })));
   });
+}
+
+function registerMessageLogs(client: Client): void {
+  client.on(Events.MessageDelete, (message) =>
+    guarded("message delete", async () => {
+      if (!message.guild || message.guildId !== env().DISCORD_GUILD_ID) return;
+      if (message.author?.bot) return;
+      if (await ignoredChannel(message.channelId)) return;
+      const known = message.author && !message.partial;
+      await post(
+        message.guild,
+        "messages",
+        messageDeleteEmbed({
+          channelId: message.channelId,
+          messageId: message.id,
+          author: message.author ? { id: message.author.id, name: message.member?.displayName ?? message.author.username } : null,
+          content: known ? message.content || null : null,
+          attachmentNames: known ? [...message.attachments.values()].map((a) => a.name) : [],
+          sentAt: message.createdAt ?? null,
+        }),
+      );
+    }),
+  );
+
+  client.on(Events.MessageUpdate, (before, after) =>
+    guarded("message edit", async () => {
+      if (!after.guild || after.guildId !== env().DISCORD_GUILD_ID) return;
+      if (after.partial || !after.author || after.author.bot) return;
+      // Link previews and pins also fire this event: only a real change of the text is news.
+      if (after.content === null || (!before.partial && before.content === after.content)) return;
+      if (await ignoredChannel(after.channelId)) return;
+      await post(
+        after.guild,
+        "messages",
+        messageEditEmbed({
+          channelId: after.channelId,
+          messageId: after.id,
+          url: after.url,
+          author: { id: after.author.id, name: after.member?.displayName ?? after.author.username },
+          before: before.partial ? null : before.content,
+          after: after.content,
+        }),
+      );
+    }),
+  );
+
+  client.on(Events.MessageBulkDelete, (messages, channel) =>
+    guarded("bulk delete", async () => {
+      if (channel.guildId !== env().DISCORD_GUILD_ID) return;
+      if (await ignoredChannel(channel.id)) return;
+      await post(channel.guild, "messages", bulkDeleteEmbed({ channelId: channel.id, count: messages.size }));
+    }),
+  );
 }

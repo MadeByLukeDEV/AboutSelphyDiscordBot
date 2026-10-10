@@ -60,3 +60,27 @@ describe("voice and server logs", () => {
     expect(json(roleEmbed({ kind: "delete", name: "Gone" })).title).toBe("Role deleted");
   });
 });
+
+describe("message log entries", () => {
+  const text = (e: { toJSON(): unknown }) => JSON.stringify(e.toJSON());
+
+  it("escape the text, keep line breaks and never contain a live mention", async () => {
+    const { messageDeleteEmbed } = await import("./embeds");
+    const out = text(messageDeleteEmbed({ channelId: "222222222222222222", messageId: "333333333333333333", author: { id: "111111111111111111", name: "Se*lphy" }, content: "hello **x**\n<@&999999999999999999> @everyone", attachmentNames: ["a_b.png"], sentAt: new Date(0) }));
+    expect(out).toContain("hello \\\\*\\\\*x\\\\*\\\\*\\n");
+    expect(out).not.toMatch(/(?<!\\)<@&99/);
+    expect(out).toContain("a\\\\_b.png");
+  });
+
+  it("say so when the old message wasn't remembered", async () => {
+    const { messageDeleteEmbed, messageEditEmbed } = await import("./embeds");
+    expect(text(messageDeleteEmbed({ channelId: "222222222222222222", messageId: "333333333333333333", author: null, content: null, attachmentNames: [], sentAt: null }))).toContain("weren't saved");
+    expect(text(messageEditEmbed({ channelId: "222222222222222222", messageId: "333333333333333333", url: "https://discord.com/channels/1/2/3", author: { id: "111111111111111111", name: "x" }, before: null, after: "new" }))).toContain("not saved");
+  });
+
+  it("cut very long text to fit a field", async () => {
+    const { messageEditEmbed } = await import("./embeds");
+    const e = messageEditEmbed({ channelId: "222222222222222222", messageId: "333333333333333333", url: "https://discord.com/channels/1/2/3", author: { id: "111111111111111111", name: "x" }, before: "y".repeat(5000), after: "z".repeat(5000) }).toJSON();
+    for (const f of e.fields ?? []) expect(f.value.length).toBeLessThanOrEqual(1024);
+  });
+});

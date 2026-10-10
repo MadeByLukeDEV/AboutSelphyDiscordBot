@@ -4,7 +4,7 @@ import { z } from "zod";
 // dashboard (form and Server Action) and the bot. Pure and free of Node APIs.
 // Import it from "@aboutselphy/shared/logs" in client components.
 
-export const LOG_CATEGORIES = ["members", "memberUpdates", "voice", "server"] as const;
+export const LOG_CATEGORIES = ["members", "memberUpdates", "voice", "server", "messages"] as const;
 export type LogCategory = (typeof LOG_CATEGORIES)[number];
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -15,7 +15,7 @@ const route = z.object({
 });
 
 export const logSettingsSchema = z
-  .object({ members: route, memberUpdates: route, voice: route, server: route })
+  .object({ members: route, memberUpdates: route, voice: route, server: route, messages: route })
   .superRefine((v, ctx) => {
     for (const c of LOG_CATEGORIES) {
       if (v[c].enabled && !v[c].channelId) ctx.addIssue({ code: "custom", path: [c, "channelId"], message: "needsChannel" });
@@ -28,4 +28,5 @@ export const DEFAULT_LOG_SETTINGS: LogSettings = {
   memberUpdates: { enabled: false, channelId: "" },
   voice: { enabled: false, channelId: "" },
   server: { enabled: false, channelId: "" },
+  messages: { enabled: false, channelId: "" },
 };

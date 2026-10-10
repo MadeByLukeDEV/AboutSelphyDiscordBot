@@ -927,6 +927,10 @@
       "server": {
         "title": "Channels and roles",
         "body": "Channels and roles that are created, deleted or renamed, and role permission or colour changes."
+      },
+      "messages": {
+        "title": "Messages",
+        "body": "Edited and deleted messages, with the text before and after an edit when the bot still remembers it. Bots, the log channels and open ticket channels are left out. Needs the Message Content intent."
       }
     },
     "save": "Save",

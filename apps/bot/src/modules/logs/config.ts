@@ -26,3 +26,9 @@ export async function logChannelFor(category: LogCategory): Promise<string | nul
 onReload("logs", () => {
   cached = undefined;
 });
+
+/** Whether a channel is one of the log channels (messages posted there are never logged again). */
+export async function isLogChannel(channelId: string): Promise<boolean> {
+  for (const route of (await load()).values()) if (route.channelId === channelId) return true;
+  return false;
+}
