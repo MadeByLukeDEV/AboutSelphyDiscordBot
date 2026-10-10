@@ -17,6 +17,7 @@ export const RELOADABLE_MODULES = [
   "polls",
   "starboard",
   "birthdays",
+  "reminders",
   "webhooks",
 ] as const;
 export const reloadModule = z.enum(RELOADABLE_MODULES);

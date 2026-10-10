@@ -32,6 +32,7 @@
     "./suggestions": "./src/suggestions.ts",
     "./polls": "./src/polls.ts",
     "./starboard": "./src/starboard.ts",
-    "./birthdays": "./src/birthdays.ts"
+    "./birthdays": "./src/birthdays.ts",
+    "./reminders": "./src/reminders.ts"
   }
 }

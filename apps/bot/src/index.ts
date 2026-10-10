@@ -7,6 +7,7 @@ import { registerGiveawayControls, startGiveaways, stopGiveaways } from "./modul
 import { registerLevels, stopLevels } from "./modules/levels";
 import { registerPollControls, startPolls, stopPolls } from "./modules/polls";
 import { startBirthdays, stopBirthdays } from "./modules/birthdays";
+import { startReminders, stopReminders } from "./modules/reminders";
 import { registerStarboard } from "./modules/starboard";
 import { registerSuggestionControls } from "./modules/suggestions";
 import { registerTicketControls, registerTicketEvents } from "./modules/tickets";
@@ -53,6 +54,7 @@ async function main() {
   registerPollControls();
   registerStarboard(client);
   startBirthdays(client);
+  startReminders(client);
   startPolls(client);
   registerTicketEvents(client);
   startTwitch(client);
@@ -72,6 +74,7 @@ async function main() {
     stopGiveaways();
     stopPolls();
     stopBirthdays();
+    stopReminders();
     stopYoutube();
     stopModerationJobs();
     await client.destroy();

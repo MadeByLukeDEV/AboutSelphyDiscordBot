@@ -756,3 +756,27 @@ model Birthday {
 
   @@index([month, day])
 }
+
+/// Reminders: /remind in:2h message:... pings the member (DM first) when the time comes.
+model ReminderConfig {
+  id         Int      @id @default(1)
+  enabled    Boolean  @default(true)
+  /// Pending reminders one member may have.
+  maxPerUser Int      @default(10)
+  updatedAt  DateTime @updatedAt
+}
+
+model Reminder {
+  id          String    @id @default(cuid())
+  userId      String    @db.VarChar(20)
+  /// Where it was set; used if the member's DMs are closed.
+  channelId   String    @db.VarChar(20)
+  message     String    @db.VarChar(500)
+  remindAt    DateTime
+  createdAt   DateTime  @default(now())
+  /// Set when delivery was claimed; a reminder is delivered once.
+  deliveredAt DateTime?
+
+  @@index([deliveredAt, remindAt])
+  @@index([userId, deliveredAt])
+}
