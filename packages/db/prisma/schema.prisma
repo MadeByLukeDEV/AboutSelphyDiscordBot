@@ -58,27 +58,32 @@ model ModConfig {
 }
 
 model ModCase {
-  id              String        @id @default(cuid())
-  caseNumber      Int           @unique
-  type            ModCaseType
-  source          ModCaseSource
+  id               String        @id @default(cuid())
+  caseNumber       Int           @unique
+  type             ModCaseType
+  source           ModCaseSource
   /// Discord ID of the member the case is about.
-  targetId        String        @db.VarChar(20)
+  targetId         String        @db.VarChar(20)
   /// Name at the time of the action (members can rename or leave).
-  targetName      String?       @db.VarChar(100)
+  targetName       String?       @db.VarChar(100)
   /// Discord ID of the moderator, or "system" for automatic rules.
-  moderatorId     String        @db.VarChar(20)
-  moderatorName   String?       @db.VarChar(100)
-  reason          String?       @db.VarChar(1000)
+  moderatorId      String        @db.VarChar(20)
+  moderatorName    String?       @db.VarChar(100)
+  reason           String?       @db.VarChar(1000)
   /// Timeouts: how long it lasts. Null for everything else.
-  durationSeconds Int?
-  expiresAt       DateTime?
+  durationSeconds  Int?
+  expiresAt        DateTime?
   /// Warnings can be pardoned (false) without deleting the history.
-  active          Boolean       @default(true)
+  active           Boolean       @default(true)
+  /// Who pardoned it and when. The pardoner is a dashboard user: their id in
+  /// the central auth service (not a Discord ID) plus a name snapshot.
+  pardonedAt       DateTime?
+  pardonedByUserId String?       @db.VarChar(64)
+  pardonedByName   String?       @db.VarChar(100)
   /// Where the case embed was posted, so edits can update it.
-  logChannelId    String?       @db.VarChar(20)
-  logMessageId    String?       @db.VarChar(20)
-  createdAt       DateTime      @default(now())
+  logChannelId     String?       @db.VarChar(20)
+  logMessageId     String?       @db.VarChar(20)
+  createdAt        DateTime      @default(now())
 
   @@index([targetId, createdAt])
   @@index([type, createdAt])
