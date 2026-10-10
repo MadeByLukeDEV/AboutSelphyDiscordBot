@@ -19,7 +19,8 @@
         "welcome": "Willkommen",
         "logs": "Protokolle",
         "levels": "Level",
-        "tickets": "Tickets"
+        "tickets": "Tickets",
+        "giveaways": "Gewinnspiele"
       }
     },
     "account": {
@@ -1102,6 +1103,114 @@
       "categoryNotFound": "Diese Kategorie existiert nicht oder der Bot kann sie nicht sehen.",
       "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
+  },
+  "Giveaways": {
+    "title": "Gewinnspiele",
+    "intro": "Mitglieder drücken einen Button, um teilzunehmen. Ist die Zeit um, zieht der Bot zufällig die Gewinner und gibt sie bekannt. Entwürfe lassen sich bis zum Start bearbeiten.",
+    "botOffline": "Der Bot ist offline, deshalb sind die Kanal- und Rollenlisten nicht verfügbar.",
+    "new": "Neues Gewinnspiel",
+    "started": "Gewinnspiel gestartet",
+    "ended": "Gewinnspiel beendet und die Gewinner gezogen",
+    "rerolled": "Neue Gewinner gezogen",
+    "cancelled": "Gewinnspiel abgebrochen",
+    "deleted": "Gewinnspiel entfernt",
+    "list": {
+      "title": "Gewinnspiele",
+      "ends": "endet {time}",
+      "ended": "endete {time}",
+      "winners": "{count, plural, one {# Gewinner} other {# Gewinner}}",
+      "needs": "braucht {role}",
+      "entries": "{count, plural, one {# Teilnahme} other {# Teilnahmen}}",
+      "by": "von {name}",
+      "wonBy": "{count, plural, one {1 Gewinner gezogen} other {# Gewinner gezogen}}",
+      "noWinners": "Niemand hat teilgenommen, also hat niemand gewonnen."
+    },
+    "status": {
+      "draft": "Entwurf",
+      "active": "Läuft",
+      "ended": "Beendet",
+      "cancelled": "Abgebrochen"
+    },
+    "actions": {
+      "start": "Starten",
+      "edit": "Bearbeiten",
+      "end": "Jetzt beenden",
+      "reroll": "Neu ziehen",
+      "cancel": "Abbrechen",
+      "delete": "Entfernen"
+    },
+    "empty": {
+      "title": "Noch keine Gewinnspiele",
+      "body": "Erstelle das erste mit Neues Gewinnspiel."
+    },
+    "dialog": {
+      "newTitle": "Neues Gewinnspiel",
+      "editTitle": "Gewinnspiel bearbeiten",
+      "intro": "Alles, was du schreibst, wird als normaler Text angezeigt. Beim Ende werden nur die Gewinner gepingt."
+    },
+    "form": {
+      "prize": "Preis",
+      "description": "Details",
+      "descriptionHelp": "Optional. {count} von {max} Zeichen.",
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "winners": "Gewinner",
+      "ends": "Endet um",
+      "required": "Wer teilnehmen darf",
+      "everyone": "Alle",
+      "requiredHelp": "Wähle eine Rolle, um das Gewinnspiel auf Mitglieder mit dieser Rolle zu beschränken.",
+      "ping": "Rolle beim Start pingen",
+      "nobody": "Niemanden",
+      "pingHelp": "Diese Rolle wird erwähnt, wenn das Gewinnspiel gepostet wird.",
+      "cancel": "Abbrechen",
+      "saveDraft": "Als Entwurf speichern",
+      "start": "Jetzt starten",
+      "saving": "Speichert…",
+      "saved": "Als Entwurf gespeichert",
+      "started": "Gewinnspiel gestartet"
+    },
+    "confirm": {
+      "back": "Zurück",
+      "end": {
+        "title": "Dieses Gewinnspiel jetzt beenden?",
+        "body": "Der Bot zieht sofort die Gewinner für {prize}.",
+        "button": "Beenden und ziehen"
+      },
+      "cancel": {
+        "title": "Dieses Gewinnspiel abbrechen?",
+        "body": "{prize} wird ohne Ziehung abgebrochen und der Beitrag gelöscht.",
+        "button": "Gewinnspiel abbrechen"
+      },
+      "delete": {
+        "title": "Dieses Gewinnspiel entfernen?",
+        "body": "{prize} wird mit allen Teilnahmen aus der Liste entfernt.",
+        "button": "Entfernen"
+      }
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "notFound": "Dieses Gewinnspiel existiert nicht mehr. Lade die Seite neu.",
+      "wrongState": "Dieses Gewinnspiel ist nicht mehr in einem Zustand, in dem das funktioniert. Lade die Seite neu.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann dort nicht posten.",
+      "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsPrize": "Gib dem Gewinnspiel einen Preis.",
+      "endTime": "Wähle Datum und Uhrzeit.",
+      "endPast": "Wähle eine Zeit, die mindestens eine Minute in der Zukunft liegt.",
+      "endTooFar": "Wähle eine Zeit innerhalb des nächsten Jahres.",
+      "start": {
+        "channelNotFound": "Es wurde als Entwurf gespeichert, aber der Bot konnte in diesem Kanal nicht posten.",
+        "roleNotFound": "Es wurde als Entwurf gespeichert, aber eine Rolle existiert nicht mehr.",
+        "botUnavailable": "Es wurde als Entwurf gespeichert, aber der Bot ist nicht erreichbar. Starte es gleich noch einmal.",
+        "wrongState": "Es wurde gespeichert, lässt sich aber nicht starten (ist die Endzeit schon vorbei?).",
+        "failed": "Es wurde als Entwurf gespeichert, aber das Starten schlug fehl. Versuche es erneut.",
+        "notFound": "Es wurde als Entwurf gespeichert, aber das Starten schlug fehl.",
+        "forbidden": "Kein Zugriff.",
+        "invalid": "Ungültig."
+      }
     }
   }
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -45,6 +45,7 @@ export function TicketsManager({
   const [pending, startTransition] = useTransition();
   const form = useForm<TicketSettings>({ resolver: zodResolver(ticketSettingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
+  const color = useWatch({ control: form.control, name: "panelColor" });
 
   const opt = (kind: "text" | "category", empty: string): SelectOption[] => [
     { value: "", label: empty },
@@ -150,7 +151,7 @@ export function TicketsManager({
                 <input
                   id="tk-color"
                   type="color"
-                  value={colorToHex(form.watch("panelColor"))}
+                  value={colorToHex(color)}
                   onChange={(e) => {
                     const next = hexToColor(e.target.value);
                     if (next !== undefined) form.setValue("panelColor", next, { shouldDirty: true });

@@ -19,7 +19,8 @@
         "welcome": "Welcome",
         "logs": "Logs",
         "levels": "Levels",
-        "tickets": "Tickets"
+        "tickets": "Tickets",
+        "giveaways": "Giveaways"
       }
     },
     "account": {
@@ -1102,6 +1103,114 @@
       "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
       "roleNotFound": "One of those roles doesn't exist any more.",
       "failed": "Couldn't save the settings. Try again."
+    }
+  },
+  "Giveaways": {
+    "title": "Giveaways",
+    "intro": "Members press a button to enter. When time is up the bot picks the winners at random and announces them. Drafts can be edited until you start them.",
+    "botOffline": "The bot is offline, so the channel and role lists aren't available.",
+    "new": "New giveaway",
+    "started": "Giveaway started",
+    "ended": "Giveaway ended and the winners were drawn",
+    "rerolled": "New winners drawn",
+    "cancelled": "Giveaway cancelled",
+    "deleted": "Giveaway removed",
+    "list": {
+      "title": "Giveaways",
+      "ends": "ends {time}",
+      "ended": "ended {time}",
+      "winners": "{count, plural, one {# winner} other {# winners}}",
+      "needs": "needs {role}",
+      "entries": "{count, plural, one {# entry} other {# entries}}",
+      "by": "by {name}",
+      "wonBy": "{count, plural, one {1 winner drawn} other {# winners drawn}}",
+      "noWinners": "Nobody entered, so nobody won."
+    },
+    "status": {
+      "draft": "Draft",
+      "active": "Running",
+      "ended": "Ended",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "start": "Start",
+      "edit": "Edit",
+      "end": "End now",
+      "reroll": "Re-roll",
+      "cancel": "Cancel",
+      "delete": "Remove"
+    },
+    "empty": {
+      "title": "No giveaways yet",
+      "body": "Create the first one with New giveaway."
+    },
+    "dialog": {
+      "newTitle": "New giveaway",
+      "editTitle": "Edit giveaway",
+      "intro": "Everything you type is shown as plain text. Only the winners are pinged when it ends."
+    },
+    "form": {
+      "prize": "Prize",
+      "description": "Details",
+      "descriptionHelp": "Optional. {count} of {max} characters.",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "winners": "Winners",
+      "ends": "Ends at",
+      "required": "Who can enter",
+      "everyone": "Everyone",
+      "requiredHelp": "Pick a role to limit the giveaway to members who have it.",
+      "ping": "Ping a role when it starts",
+      "nobody": "Nobody",
+      "pingHelp": "That role is mentioned when the giveaway is posted.",
+      "cancel": "Cancel",
+      "saveDraft": "Save as draft",
+      "start": "Start now",
+      "saving": "Saving…",
+      "saved": "Saved as a draft",
+      "started": "Giveaway started"
+    },
+    "confirm": {
+      "cancel": {
+        "title": "Cancel this giveaway?",
+        "body": "{prize} is cancelled without drawing winners, and its post is deleted.",
+        "button": "Cancel giveaway"
+      },
+      "end": {
+        "title": "End this giveaway now?",
+        "body": "The bot draws the winners for {prize} right away.",
+        "button": "End and draw"
+      },
+      "delete": {
+        "title": "Remove this giveaway?",
+        "body": "{prize} is removed from the list, with its entries.",
+        "button": "Remove"
+      },
+      "back": "Back"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "notFound": "That giveaway doesn't exist any more. Reload the page.",
+      "wrongState": "That giveaway isn't in a state where this works any more. Reload the page.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't post in it.",
+      "roleNotFound": "One of those roles doesn't exist any more.",
+      "failed": "That didn't work. Try again.",
+      "needsPrize": "Give the giveaway a prize.",
+      "endTime": "Pick a date and time.",
+      "endPast": "Pick a time at least a minute from now.",
+      "endTooFar": "Pick a time within the next year.",
+      "start": {
+        "channelNotFound": "It was saved as a draft, but the bot couldn't post in that channel.",
+        "roleNotFound": "It was saved as a draft, but a role no longer exists.",
+        "botUnavailable": "It was saved as a draft, but the bot can't be reached. Start it again in a moment.",
+        "wrongState": "It was saved, but it can't be started (is the end time already past?).",
+        "failed": "It was saved as a draft, but starting failed. Try again.",
+        "notFound": "It was saved as a draft, but starting failed.",
+        "forbidden": "No access.",
+        "invalid": "Invalid."
+      }
     }
   }
 }

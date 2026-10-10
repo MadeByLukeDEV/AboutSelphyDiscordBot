@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -21,6 +21,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   logs: FileClock,
   levels: Trophy,
   tickets: Ticket,
+  giveaways: Gift,
 };
 
 /** "/" matches only itself; every other item also matches its sub-pages ("/cases/12"). */

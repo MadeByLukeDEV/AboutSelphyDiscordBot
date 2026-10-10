@@ -3,6 +3,7 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  giveawayActionStatus,
   ticketPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
@@ -16,6 +17,7 @@ import {
   type AnnouncementDeleteStatus,
   type AnnouncementEditStatus,
   type ChannelKind,
+  type GiveawayActionStatus,
   type TicketPanelStatus,
   type GuildEmoji,
   type RoleCreateResponse,
@@ -28,6 +30,7 @@ import {
   type TempVoiceOverview,
   type TwitchResolveResponse,
 } from "@aboutselphy/shared";
+import type { GiveawayAction } from "@aboutselphy/shared/giveaways";
 import { env } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
 
@@ -168,5 +171,13 @@ export async function postTicketPanel(): Promise<TicketPanelStatus | null> {
   const res = await botFetch("/internal/tickets/panel", { method: "POST" });
   if (!res?.ok) return null;
   const parsed = ticketPanelStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to start, end, re-roll or cancel a giveaway. Null if the bot can't be reached. */
+export async function giveawayAction(id: string, action: GiveawayAction): Promise<GiveawayActionStatus | null> {
+  const res = await botFetch("/internal/giveaways/action", { method: "POST", body: { id, action } });
+  if (!res?.ok) return null;
+  const parsed = giveawayActionStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
