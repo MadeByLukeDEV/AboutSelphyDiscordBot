@@ -43,6 +43,14 @@ services:
     networks:
       - default
       - dokploy-network
+    # Defence in depth: the process runs as the unprivileged "node" user already; this also removes every
+    # Linux capability and forbids gaining new privileges. A runaway process can't fork without limit.
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    pids_limit: 512
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -83,6 +91,12 @@ services:
     networks:
       - default
       - dokploy-network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    init: true
+    pids_limit: 512
 
 networks:
   dokploy-network:

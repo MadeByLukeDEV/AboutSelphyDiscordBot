@@ -28,6 +28,14 @@ const securityHeaders = [
   // Legacy twin of CSP frame-ancestors 'none'.
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // Nobody else may embed or read our responses (pages, the logo, the API).
+  { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+  { key: "Origin-Agent-Cluster", value: "?1" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+  { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
+  // Staff-only: on EVERY response (pages, errors, /api, static files) tell search engines, archives
+  // and AI crawlers to keep out. robots.txt (src/app/robots.ts) and the <meta> tag say the same.
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai" },
   {
     key: "Permissions-Policy",
     value: [
@@ -39,6 +47,14 @@ const securityHeaders = [
       "serial=()",
       "bluetooth=()",
       "browsing-topics=()",
+      "interest-cohort=()",
+      "accelerometer=()",
+      "gyroscope=()",
+      "magnetometer=()",
+      "midi=()",
+      "display-capture=()",
+      "hid=()",
+      "xr-spatial-tracking=()",
     ].join(", "),
   },
 ];
@@ -46,7 +62,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The welcome card picture (up to 3 MB) is uploaded through a Server Action; the default limit is 1 MB.
-  experimental: { serverActions: { bodySizeLimit: "4mb" } },
+  // Server Actions are public POST endpoints: besides Next's own same-origin check, only our own site
+  // may call them (the host of NEXT_PUBLIC_SITE_URL, which is also what Traefik forwards).
+  experimental: { serverActions: { bodySizeLimit: "4mb", allowedOrigins: [new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://bot.aboutselphy.com").host] } },
   // The workspace packages export TypeScript sources.
   transpilePackages: ["@aboutselphy/shared", "@aboutselphy/db"],
   async headers() {

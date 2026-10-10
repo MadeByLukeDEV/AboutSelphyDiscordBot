@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: { default: "AboutSelphy Bot", template: "%s — AboutSelphy Bot" },
   description: "Staff dashboard for the AboutSelphy Discord bot.",
   // Staff-only: keep it out of search results.
-  robots: { index: false, follow: false },
+  robots: { index: false, follow: false, nocache: true, noarchive: true, nosnippet: true, noimageindex: true, googleBot: { index: false, follow: false, noimageindex: true, noarchive: true, nosnippet: true } },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

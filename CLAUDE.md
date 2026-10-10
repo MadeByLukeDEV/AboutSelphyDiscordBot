@@ -502,6 +502,17 @@ Decided 2026-10-08:
 - **Integration tests** (10, `repository.integration.test.ts`) ran against a
   Docker Postgres 18.6: gap-free case numbering under parallel inserts, counter
   rollback on a failed insert, every CHECK constraint.
+- **Hardening and no-index** (2026-10-26, `chore_security-hardening`): every dashboard response (pages,
+  errors, `/api`, static files) carries `X-Robots-Tag: noindex, nofollow, noarchive, nosnippet,
+  noimageindex, noai, noimageai`; `robots.txt` disallows everything (plus named AI crawlers) and the
+  `<meta>` robots tag says the same. Added `Cross-Origin-Resource-Policy: same-origin`,
+  `Origin-Agent-Cluster`, `X-DNS-Prefetch-Control`, `X-Permitted-Cross-Domain-Policies` and a longer
+  Permissions-Policy; Server Actions only accept the host of `NEXT_PUBLIC_SITE_URL`
+  (`allowedOrigins`). The compose services drop all Linux capabilities, forbid new privileges, run an
+  init process and cap processes. Verified on a production build. `next` and `eslint-config-next` are
+  pinned to 16.3.8 (fixes seven advisories incl. an image-optimizer SSRF). `pnpm audit --prod` still
+  lists `deepmerge-ts` 7.1.5 inside Prisma 7.10.0's config loader (it only merges our own config files,
+  no untrusted input): accepted until Prisma moves it, re-check at every Prisma bump.
 - **Docker / Dokploy** (2026-10-26, `chore_dockerfiles-v2`): `docker-compose.yml` at the repo root starts
   both services: `dashboard` (applies migrations on start, healthcheck `/api/health`, `expose 3000`, the
   Dokploy domain goes on this service) and `bot` (waits for a healthy dashboard, no ports, internal API on
