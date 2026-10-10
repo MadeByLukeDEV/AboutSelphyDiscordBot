@@ -35,7 +35,10 @@
         "autoResponders": "Auto-Antworten",
         "modules": "Module",
         "webhooks": "Webhooks"
-      }
+      },
+      "more": "Mehr",
+      "moreTitle": "Alle Seiten",
+      "moreDescription": "Alle Seiten des Dashboards, gruppiert."
     },
     "account": {
       "open": "Kontomenü öffnen",

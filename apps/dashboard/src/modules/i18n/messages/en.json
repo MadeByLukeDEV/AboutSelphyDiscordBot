@@ -35,7 +35,10 @@
         "autoResponders": "Auto-responders",
         "modules": "Modules",
         "webhooks": "Webhooks"
-      }
+      },
+      "more": "More",
+      "moreTitle": "All pages",
+      "moreDescription": "Every page of the dashboard, grouped."
     },
     "account": {
       "open": "Open account menu",
