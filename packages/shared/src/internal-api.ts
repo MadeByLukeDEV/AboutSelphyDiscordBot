@@ -37,6 +37,35 @@ export const refreshCaseResponse = z.object({
 });
 export type RefreshCaseStatus = z.infer<typeof refreshCaseResponse>["status"];
 
+/** One open temporary voice room, as the bot reports it for the dashboard's live view. */
+export const tempVoiceRoom = z.object({
+  channelId: z.string().regex(/^\d{17,20}$/),
+  name: z.string(),
+  ownerId: z.string().regex(/^\d{17,20}$/),
+  /** Display name, or null if the owner isn't in the server any more. */
+  ownerName: z.string().nullable(),
+  memberCount: z.number().int().min(0),
+  /** Capped (the first few), the count above is the real number. */
+  members: z.array(z.object({ id: z.string(), name: z.string() })).max(25),
+  locked: z.boolean(),
+  /** 0 = no limit. */
+  userLimit: z.number().int().min(0).max(99),
+  videoAllowed: z.boolean(),
+  soundboardAllowed: z.boolean(),
+  allowedCount: z.number().int().min(0),
+  blockedCount: z.number().int().min(0),
+  createdAt: z.string(),
+});
+export type TempVoiceRoom = z.infer<typeof tempVoiceRoom>;
+
+/** GET /internal/tempvoice/overview */
+export const tempVoiceOverview = z.object({
+  /** Permissions the bot still needs where rooms are created (empty = all good). */
+  missingPermissions: z.array(z.string()),
+  rooms: z.array(tempVoiceRoom),
+});
+export type TempVoiceOverview = z.infer<typeof tempVoiceOverview>;
+
 /** Response of the bot's GET /health. */
 export const botHealth = z.object({
   ok: z.boolean(),
