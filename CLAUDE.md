@@ -545,6 +545,27 @@ Decided 2026-10-08:
         the list, add an entry to `ENGLISH`/`GERMAN` and a catch + a
         false-positive case to `profanity.test.ts` (slurs are assembled from
         fragments there). Mild words (damn, hell, crap) are deliberately out.
+  - [x] **Multiple lobbies** (2026-10-11, `feature_tempvoice-multi-lobby`): up to
+        10 lobbies (`MAX_TEMP_VOICE_LOBBIES`), each a row in `TempVoiceLobby` with
+        its **own** category, name template, member limit, video/soundboard
+        defaults and on/off; the master switch, blocked words and built-in list
+        stay in `TempVoiceConfig`. Joining any switched-on lobby creates a room
+        from that lobby's settings (`planTransition` returns `createFromLobby`);
+        a member still gets **one room at a time**, whichever lobby they use; a
+        configured lobby is never deleted as an "empty room". Rooms remember
+        their lobby (`TempVoiceChannel.lobbyChannelId`, no foreign key, so removing
+        a lobby leaves open rooms alone). `/tempvoice` is now `lobby add|set|
+        remove`, `enable`, `disable`, `status`. The migration **copies the old
+        single lobby into the new table before dropping the old columns** (the
+        generated script dropped them first); it was rehearsed on the real data in
+        a rolled-back transaction. Dashboard: rooms grouped by lobby, a lobby
+        manager (add/edit/remove in a dialog; the channel is fixed once created, to
+        move a lobby remove + add), and a general-settings form. Saving a lobby
+        checks the channel is a voice channel and the category a category the bot
+        sees, that it isn't already a lobby or a room, the 10-lobby cap and that the
+        template isn't blocked. Client components must not import
+        `@aboutselphy/shared`'s index (it carries the word list): constants are
+        passed down from the server page.
   - [x] Dashboard (2026-10-11, `feature_dashboard-tempvoice`, admins only):
         `/voice-rooms` with a **live view** of the open rooms (owner, who is in
         them, locked/open, limit, video and soundboard off, let-in/blocked counts,
