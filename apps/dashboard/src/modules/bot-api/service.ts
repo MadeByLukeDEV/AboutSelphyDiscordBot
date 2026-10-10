@@ -3,6 +3,7 @@ import {
   announcementDeleteStatus,
   announcementEditStatus,
   channelsResponse,
+  suggestionDecideStatus,
   giveawayActionStatus,
   ticketPanelStatus,
   welcomePreviewResponse,
@@ -17,6 +18,7 @@ import {
   type AnnouncementDeleteStatus,
   type AnnouncementEditStatus,
   type ChannelKind,
+  type SuggestionDecideStatus,
   type GiveawayActionStatus,
   type TicketPanelStatus,
   type GuildEmoji,
@@ -179,5 +181,13 @@ export async function giveawayAction(id: string, action: GiveawayAction): Promis
   const res = await botFetch("/internal/giveaways/action", { method: "POST", body: { id, action } });
   if (!res?.ok) return null;
   const parsed = giveawayActionStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** A team member's decision on a suggestion, carried out by the bot (it edits the post and tells the author). Null if the bot can't be reached. */
+export async function decideSuggestionViaBot(input: { id: string; status: "approved" | "denied" | "implemented"; reason: string; by: string }): Promise<SuggestionDecideStatus | null> {
+  const res = await botFetch("/internal/suggestions/decide", { method: "POST", body: input });
+  if (!res?.ok) return null;
+  const parsed = suggestionDecideStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }

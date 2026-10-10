@@ -20,7 +20,8 @@
         "logs": "Protokolle",
         "levels": "Level",
         "tickets": "Tickets",
-        "giveaways": "Gewinnspiele"
+        "giveaways": "Gewinnspiele",
+        "suggestions": "Vorschläge"
       }
     },
     "account": {
@@ -1211,6 +1212,69 @@
         "forbidden": "Kein Zugriff.",
         "invalid": "Ungültig."
       }
+    }
+  },
+  "Suggestions": {
+    "title": "Vorschläge",
+    "intro": "Mitglieder teilen Ideen mit /suggest und stimmen per Button ab. Das Team nimmt sie an, lehnt sie ab oder markiert sie als umgesetzt, und der Autor wird informiert.",
+    "noChannel": "Nicht gewählt",
+    "decided": "Entscheidung gespeichert",
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können diese ändern.",
+      "enabled": "Vorschläge sind offen",
+      "channel": "Vorschläge posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "channelHelp": "Wohin /suggest die Idee postet. Der Bot muss dort Nachrichten senden dürfen.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist deshalb nicht verfügbar. Der gespeicherte Kanal bleibt erhalten.",
+      "cooldown": "Wartezeit zwischen Vorschlägen (Sekunden)",
+      "cooldownHelp": "Wie lange ein Mitglied bis zum nächsten warten muss. 0 = keine Wartezeit.",
+      "save": "Speichern",
+      "saving": "Speichert…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+    },
+    "list": {
+      "title": "Alle Vorschläge",
+      "filter": "Nach Status filtern",
+      "all": "Alle",
+      "decidedBy": "Entschieden von {name}",
+      "team": "dem Team",
+      "empty": {
+        "title": "Hier sind keine Vorschläge",
+        "body": "Sie erscheinen, sobald Mitglieder /suggest nutzen."
+      }
+    },
+    "status": {
+      "open": "Offen",
+      "approved": "Angenommen",
+      "denied": "Abgelehnt",
+      "implemented": "Umgesetzt"
+    },
+    "actions": {
+      "approved": "Annehmen",
+      "denied": "Ablehnen",
+      "implemented": "Als umgesetzt markieren"
+    },
+    "dialog": {
+      "approved": "Vorschlag #{number} annehmen",
+      "denied": "Vorschlag #{number} ablehnen",
+      "implemented": "Vorschlag #{number} als umgesetzt markieren",
+      "intro": "Der Beitrag in Discord wird aktualisiert und der Autor bekommt eine Nachricht.",
+      "reason": "Grund (optional)",
+      "reasonHelp": "{count} von {max} Zeichen. Er wird im Beitrag angezeigt.",
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind nicht gültig.",
+      "needsChannel": "Wähle einen Kanal, bevor du Vorschläge einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
+      "notFound": "Dieser Vorschlag existiert nicht mehr. Lade die Seite neu.",
+      "wrongState": "Dieser Vorschlag kann nicht mehr dahin geändert werden. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   }
 }

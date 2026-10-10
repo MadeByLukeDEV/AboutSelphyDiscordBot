@@ -20,7 +20,8 @@
         "logs": "Logs",
         "levels": "Levels",
         "tickets": "Tickets",
-        "giveaways": "Giveaways"
+        "giveaways": "Giveaways",
+        "suggestions": "Suggestions"
       }
     },
     "account": {
@@ -1211,6 +1212,69 @@
         "forbidden": "No access.",
         "invalid": "Invalid."
       }
+    }
+  },
+  "Suggestions": {
+    "title": "Suggestions",
+    "intro": "Members share ideas with /suggest and vote with buttons. The team approves, denies or marks them as implemented, and the author is told.",
+    "noChannel": "Not chosen",
+    "decided": "Decision saved",
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these.",
+      "enabled": "Suggestions are open",
+      "channel": "Post suggestions in",
+      "channelPlaceholder": "Pick a channel",
+      "channelHelp": "Where /suggest posts the idea. The bot needs to send messages there.",
+      "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
+      "cooldown": "Wait between suggestions (seconds)",
+      "cooldownHelp": "How long a member must wait before the next one. 0 = no wait.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "list": {
+      "title": "All suggestions",
+      "filter": "Filter by status",
+      "all": "All",
+      "decidedBy": "Decided by {name}",
+      "team": "the team",
+      "empty": {
+        "title": "No suggestions here",
+        "body": "They show up as members use /suggest."
+      }
+    },
+    "status": {
+      "open": "Open",
+      "approved": "Approved",
+      "denied": "Denied",
+      "implemented": "Implemented"
+    },
+    "actions": {
+      "approved": "Approve",
+      "denied": "Deny",
+      "implemented": "Mark implemented"
+    },
+    "dialog": {
+      "approved": "Approve suggestion #{number}",
+      "denied": "Deny suggestion #{number}",
+      "implemented": "Mark suggestion #{number} as implemented",
+      "intro": "The post in Discord is updated and the author gets a message.",
+      "reason": "Reason (optional)",
+      "reasonHelp": "{count} of {max} characters. It is shown on the post.",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel before switching suggestions on.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
+      "notFound": "That suggestion doesn't exist any more. Reload the page.",
+      "wrongState": "That suggestion can't be changed to that any more. Reload the page.",
+      "failed": "That didn't work. Try again."
     }
   }
 }
