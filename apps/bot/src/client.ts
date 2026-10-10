@@ -32,6 +32,10 @@ let client: Client | undefined;
 
 /** Built on first use, never at import time (docker build has no env). */
 export function getClient(): Client {
-  client ??= new Client({ intents: intents(), partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User] });
+  if (!client) {
+    client = new Client({ intents: intents(), partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User] });
+    // Every module registers its own ready handler; the default of 10 is too low for that.
+    client.setMaxListeners(30);
+  }
   return client;
 }
