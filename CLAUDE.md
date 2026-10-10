@@ -527,8 +527,17 @@ Decided 2026-10-08:
         modals are routed by custom-ID prefix (`events/components.ts`, `tv:...`,
         strict parse). Needs the bot to send messages and embeds in the voice
         channels' chat.
-  - [ ] Dashboard page for the settings (lobby, category, template, defaults,
-        blocked words, open rooms)
+  - [x] Dashboard (2026-10-11, `feature_dashboard-tempvoice`, admins only):
+        `/voice-rooms` with a **live view** of the open rooms (owner, who is in
+        them, locked/open, limit, video and soundboard off, let-in/blocked counts,
+        age; polled every 8 s from the bot's `GET /internal/tempvoice/overview`,
+        read from the gateway cache, plus a warning when the bot lacks
+        permissions for the lobby's category) and the **settings form** (on/off,
+        lobby, category, name template, default limit, video/soundboard defaults,
+        blocked words). Saving validates the lobby is a voice channel and the
+        category a category the bot can see, refuses channel changes while the
+        bot is unreachable, then asks the bot to reload (`/internal/reload/
+        tempvoice`).
 - [ ] Phase 5 — announcements
 - [ ] Phase 6 — new video upload
 - [ ] Phase 7 — webhooks
