@@ -1,3 +1,4 @@
+import { emitEvent } from "../webhooks";
 import { PermissionFlagsBits, type EmbedBuilder, type Guild, type GuildMember, type User } from "discord.js";
 import type { ModCase, ModCaseSource } from "@aboutselphy/db";
 import { escapeText, truncate } from "../../lib/escape";
@@ -245,6 +246,19 @@ async function escalateIfDue(guild: Guild, targetId: string, user: User | null):
 
 /** Posts the case embed to the log channel. Best effort: never breaks the action. */
 export async function postCaseLog(guild: Guild, row: ModCase): Promise<void> {
+  emitEvent("mod.case", {
+    caseNumber: row.caseNumber,
+    type: row.type,
+    source: row.source,
+    targetId: row.targetId,
+    targetName: row.targetName,
+    moderatorId: row.moderatorId,
+    moderatorName: row.moderatorName,
+    reason: row.reason,
+    durationSeconds: row.durationSeconds,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    createdAt: row.createdAt.toISOString(),
+  });
   try {
     const { logChannelId } = await getModConfig();
     if (!logChannelId) {

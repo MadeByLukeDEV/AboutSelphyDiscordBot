@@ -1080,4 +1080,29 @@ Decided 2026-10-08:
   - Dashboard `/youtube` (admins): poller status, settings with preview, latest
     videos and whether they were announced.
   - [ ] Several channels, members-only/premieres, a "watch" button
-- [ ] Phase 7 — webhooks
+- [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
+      endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)
+  - **Incoming** (`/webhooks` admin page, public route `POST /api/webhooks/in/<id>`, outside the sign-in gate):
+    `WebhookEndpoint` rows (name, channel, secret). Request = `X-Webhook-Timestamp` (unix s, +-5 min) +
+    `X-Webhook-Signature: sha256=<hex HMAC-SHA256 of "<timestamp>.<raw body>">`; `@aboutselphy/shared/
+    webhook-signature` (Node only) signs and verifies (constant-time compare). Order in `receive.ts`: id
+    format, size (8 KB, read with a hard 16 KB cap), per-IP limit (120/min), timestamp, lookup, decrypt,
+    **signature over the raw body**, replay cache (signature seen in the last 10 min = 401), per-endpoint
+    limit (30/min), strict JSON (`title`, `content`, https `url`, `color`; unknown fields refused), then the
+    bot posts an embed (`POST /internal/webhooks/relay`: escaped, no pings, link only if https). Every
+    authentication failure is the same plain 401; only 400/413/429/502/503 differ. Secrets are 32 random
+    bytes, stored AES-256-GCM encrypted (purpose `webhook-endpoint-secret`), **shown once** when made or
+    rotated, never returned again. The rate and replay caches are in memory (one dashboard process).
+    **Cloudflare**: add a path-scoped WAF rule skipping Bot Fight Mode for `/api/webhooks/in/*` before using
+    it from a service, or the sender gets a challenge page.
+  - **Outgoing**: `OutboundWebhook` (a Discord webhook address, or any https address with a signed JSON
+    body `{id,event,timestamp,data}` and the same two headers). Events: `mod.case` (every case, from
+    `postCaseLog`) and `twitch.live`. The address is stored encrypted (`webhook-outbound-url`); the page
+    shows only the host. `lib/safe-http.ts` connects only after checking the address the name resolves to
+    **at connect time** (blocks loopback, private, link-local/metadata, CGNAT, multicast, reserved, IPv6
+    and IPv4-mapped forms; tested), no redirects, answer body never read, one attempt, 5 s timeout, the
+    result (`ok`, `http 500`, `blocked`...) is remembered. "Send a test" calls `POST /internal/webhooks/test`.
+    Sending only runs in production or with `BOT_INTEGRATIONS_IN_DEV`. Both directions need
+    `TOKEN_ENCRYPTION_KEY`.
+  - [ ] Provider presets (GitHub, Ko-fi, Stripe-style signatures), more events (member joined, level up),
+        retries with backoff, disabling a webhook after repeated failures.

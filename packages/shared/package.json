@@ -40,6 +40,8 @@
     "./custom-commands": "./src/custom-commands.ts",
     "./counting": "./src/counting.ts",
     "./modules": "./src/modules.ts",
+    "./webhooks": "./src/webhooks.ts",
+    "./webhook-signature": "./src/webhook-signature.ts",
     "./auto-responders": "./src/auto-responders.ts"
   }
 }

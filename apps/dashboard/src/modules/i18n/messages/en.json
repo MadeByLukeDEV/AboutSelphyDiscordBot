@@ -33,7 +33,8 @@
         "customCommands": "Custom commands",
         "counting": "Counting channel",
         "autoResponders": "Auto-responders",
-        "modules": "Modules"
+        "modules": "Modules",
+        "webhooks": "Webhooks"
       }
     },
     "account": {
@@ -2045,6 +2046,124 @@
       "forbidden": "You don't have access to this.",
       "invalid": "That isn't valid.",
       "failed": "That didn't work. Try again."
+    }
+  },
+  "Webhooks": {
+    "title": "Webhooks",
+    "intro": "Connect other tools to the bot, in both directions. Incoming: a service sends a signed message to an address and the bot posts it in a channel. Outgoing: the bot tells another service, or a Discord webhook, when something happens.",
+    "notReady": "Webhooks need TOKEN_ENCRYPTION_KEY in the environment, because addresses and secrets are stored encrypted. Set it and restart.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "count": "({count} of {max})",
+    "never": "never",
+    "on": "On",
+    "off": "Off",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Removed",
+    "testOk": "Test sent",
+    "kinds": {
+      "generic": "Any service (signed JSON)",
+      "discord": "Discord webhook"
+    },
+    "events": {
+      "mod.case": "A moderation case is created",
+      "twitch.live": "A Twitch channel goes live"
+    },
+    "incoming": {
+      "title": "Incoming endpoints",
+      "intro": "Each endpoint has its own address and secret. Requests must carry a timestamp and an HMAC-SHA256 signature of the exact body, and are limited to 8 KB and 30 per minute. The body is JSON with a title, text, an optional https link and an optional colour; the bot posts it as an embed that pings nobody.",
+      "add": "Add an endpoint",
+      "empty": "No endpoints yet.",
+      "posts": "Posts in {channel}",
+      "used": "{uses, plural, one {used once} other {used # times}}, last {time}",
+      "rotate": "New secret",
+      "newTitle": "Add an endpoint",
+      "editTitle": "Edit endpoint",
+      "dialogIntro": "The address and the secret are made when you save. The secret is shown once."
+    },
+    "outgoing": {
+      "title": "Outgoing webhooks",
+      "intro": "The addresses are stored encrypted and only the host is shown here. The bot never connects to local or private addresses, doesn't follow redirects and makes one attempt per event.",
+      "add": "Add a webhook",
+      "empty": "No outgoing webhooks yet.",
+      "test": "Send a test",
+      "neverSent": "Nothing sent yet",
+      "last": "Last: {status}, {time}",
+      "newTitle": "Add an outgoing webhook",
+      "editTitle": "Edit outgoing webhook",
+      "dialogIntro": "Pick where the events go and which ones."
+    },
+    "endpointForm": {
+      "name": "Name",
+      "nameHelp": "Shown as \"Via\" and this name under each message.",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "enabled": "Accepting requests",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "outboundForm": {
+      "name": "Name",
+      "kind": "Type",
+      "kindHelp": "Discord: a formatted message for a Discord webhook address. Any service: a JSON body signed with a secret you get once.",
+      "url": "Address",
+      "urlHelp": "Discord: the webhook address from the channel's integrations. Any service: an https address.",
+      "urlKeep": "Leave empty to keep the saved address",
+      "urlEditHelp": "Saved address: {host}. Enter a new one to replace it.",
+      "events": "Send these events",
+      "enabled": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "reveal": {
+      "createdTitle": "Your endpoint is ready",
+      "rotatedTitle": "New secret made",
+      "outboundTitle": "Your signing secret",
+      "once": "Copy the secret now. It is shown only this once and can't be read again; if you lose it, make a new one.",
+      "url": "Address",
+      "secret": "Secret",
+      "howIncoming": "Send POST requests with the headers X-Webhook-Timestamp (unix seconds) and X-Webhook-Signature, which is sha256= plus the hex HMAC-SHA256, with the secret as key, of the timestamp, a dot and the exact request body.",
+      "howOutgoing": "Every request carries X-Webhook-Timestamp and X-Webhook-Signature (sha256= plus the hex HMAC-SHA256, with this secret as key, of the timestamp, a dot and the exact body). Check the signature and refuse old timestamps.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "copyFailed": "Couldn't copy. Select the text and copy it by hand.",
+      "done": "I saved it"
+    },
+    "confirm": {
+      "endpoint": {
+        "title": "Remove this endpoint?",
+        "body": "{name} stops accepting requests at once and its address is gone for good.",
+        "button": "Remove"
+      },
+      "outbound": {
+        "title": "Remove this webhook?",
+        "body": "{name} stops receiving events.",
+        "button": "Remove"
+      },
+      "rotate": {
+        "title": "Make a new secret?",
+        "body": "The old secret of {name} stops working at once. Update the sender with the new one.",
+        "button": "Make a new secret"
+      },
+      "back": "Back"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "notReady": "TOKEN_ENCRYPTION_KEY isn't set, so secrets can't be stored.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "tooMany": "That's the maximum number.",
+      "notFound": "That doesn't exist any more. Reload the page.",
+      "failed": "That didn't work. Try again.",
+      "deliveryFailed": "The test wasn't delivered. The result is shown on the webhook.",
+      "needsName": "Give it a name.",
+      "badUrl": "Enter a valid address: a Discord webhook address, or an https address of a public host.",
+      "needsEvent": "Pick at least one event."
     }
   }
 }

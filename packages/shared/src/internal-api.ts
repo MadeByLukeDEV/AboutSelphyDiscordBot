@@ -255,6 +255,23 @@ export const stickyClearBody = z.object({ channelId: z.string().regex(/^\d{17,20
 export const stickyClearStatus = z.enum(["done", "failed"]);
 export type StickyClearStatus = z.infer<typeof stickyClearStatus>;
 
+/** POST /internal/webhooks/relay: a message that arrived at an endpoint, to be posted by the bot. */
+export const webhookRelayBody = z.object({
+  channelId: z.string().regex(/^\d{17,20}$/),
+  source: z.string().max(60),
+  title: z.string().max(256).optional(),
+  content: z.string().max(2000).optional(),
+  url: z.string().max(500).optional(),
+  color: z.number().int().min(0).max(0xffffff).optional(),
+});
+export const webhookRelayStatus = z.enum(["done", "channel", "failed"]);
+export type WebhookRelayStatus = z.infer<typeof webhookRelayStatus>;
+
+/** POST /internal/webhooks/test: send a test event to one outbound webhook. */
+export const webhookTestBody = z.object({ id: z.string().min(1).max(64) });
+export const webhookTestStatus = z.enum(["ok", "not-found", "not-configured", "failed"]);
+export type WebhookTestStatus = z.infer<typeof webhookTestStatus>;
+
 /** POST /internal/tickets/panel: post (or update) the ticket panel message. */
 export const ticketPanelStatus = z.enum(["posted", "updated", "channel", "needsSetup", "failed"]);
 export type TicketPanelStatus = z.infer<typeof ticketPanelStatus>;

@@ -7,6 +7,8 @@ import {
   pollActionBody,
   memberCardPreviewBody,
   roleDeleteBody,
+  webhookRelayBody,
+  webhookTestBody,
   stickyClearBody,
   roleMergeBody,
   roleUpdateBody,
@@ -29,6 +31,7 @@ import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
 import { renderMemberCardPreview } from "../modules/membercards";
 import { clearSticky } from "../modules/sticky";
+import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
@@ -215,6 +218,20 @@ async function route(req: IncomingMessage, res: ServerResponse) {
   if (req.method === "POST" && url.pathname === "/internal/welcome/preview") {
     const png = await renderPreviewCard();
     return json(res, 200, { png: Buffer.from(png).toString("base64") });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/webhooks/relay") {
+    const body = webhookRelayBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await relayMessage(guild, body.data) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/webhooks/test") {
+    const body = webhookTestBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    return json(res, 200, { status: await sendTest(body.data.id) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/sticky/clear") {

@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  WebhookEndpoint,
+  OutboundWebhook,
   ModuleFlag,
   CountingConfig,
   AutoResponder,

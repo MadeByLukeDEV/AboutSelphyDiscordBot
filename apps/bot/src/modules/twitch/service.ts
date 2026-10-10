@@ -6,6 +6,7 @@ import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { EventSubClient, type SocketLike } from "./eventsub-client";
+import { emitEvent } from "../webhooks";
 import { syncLiveRole } from "./live-role";
 import { getLiveStreams, getUsersByLogin, subscribe, TwitchError, type LiveStream } from "./helix";
 import { endedMessage, liveMessage, type StreamView } from "./notification";
@@ -219,6 +220,7 @@ function announce(streamer: TwitchStreamer, broadcast: Broadcast): Promise<void>
       startedAt: broadcast.startedAt,
     });
     log.info({ streamId: broadcast.id, login: broadcast.login, channelId: streamer.channelId }, "twitch: announced");
+    emitEvent("twitch.live", { login: broadcast.login, displayName: broadcast.displayName, title: broadcast.title, game: broadcast.game, url: `https://www.twitch.tv/${broadcast.login}`, startedAt: broadcast.startedAt.toISOString() });
   });
 }
 

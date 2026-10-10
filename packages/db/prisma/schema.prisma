@@ -904,3 +904,39 @@ model ModuleFlag {
   updatedByName String   @db.VarChar(100)
   updatedAt     DateTime @updatedAt
 }
+
+/// An address other services POST to (/api/webhooks/in/<id>, signed with HMAC); the bot relays the message into a Discord channel.
+model WebhookEndpoint {
+  id            String    @id @default(cuid())
+  name          String    @db.VarChar(60)
+  channelId     String    @db.VarChar(20)
+  /// The shared signing secret, AES-256-GCM encrypted (purpose "webhook-endpoint-secret"). Shown once, when created.
+  secretEnc     String
+  enabled       Boolean   @default(true)
+  lastUsedAt    DateTime?
+  uses          Int       @default(0)
+  createdByName String    @db.VarChar(100)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+/// A place the bot sends events to: a Discord webhook (formatted message) or any https address (signed JSON).
+model OutboundWebhook {
+  id            String    @id @default(cuid())
+  name          String    @db.VarChar(60)
+  /// discord | generic (CHECK in the migration).
+  kind          String    @db.VarChar(10)
+  /// The address, encrypted (purpose "webhook-outbound-url"): a Discord webhook address is a secret.
+  urlEnc        String
+  /// Generic only: the signing secret, encrypted (purpose "webhook-outbound-secret"). Shown once.
+  secretEnc     String?
+  /// Which events it receives (see @aboutselphy/shared/webhooks).
+  events        String[]  @default([])
+  enabled       Boolean   @default(true)
+  /// "ok", "http 500", "blocked", "error" ... of the last attempt.
+  lastStatus    String?   @db.VarChar(24)
+  lastAt        DateTime?
+  createdByName String    @db.VarChar(100)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

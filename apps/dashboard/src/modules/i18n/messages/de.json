@@ -33,7 +33,8 @@
         "customCommands": "Eigene Befehle",
         "counting": "Zählkanal",
         "autoResponders": "Auto-Antworten",
-        "modules": "Module"
+        "modules": "Module",
+        "webhooks": "Webhooks"
       }
     },
     "account": {
@@ -2045,6 +2046,124 @@
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Das ist nicht gültig.",
       "failed": "Das hat nicht geklappt. Versuche es erneut."
+    }
+  },
+  "Webhooks": {
+    "title": "Webhooks",
+    "intro": "Verbinde andere Werkzeuge mit dem Bot, in beide Richtungen. Eingehend: Ein Dienst sendet eine signierte Nachricht an eine Adresse und der Bot postet sie in einem Kanal. Ausgehend: Der Bot meldet einem anderen Dienst oder einem Discord-Webhook, wenn etwas passiert.",
+    "notReady": "Webhooks brauchen TOKEN_ENCRYPTION_KEY in der Umgebung, weil Adressen und Geheimnisse verschlüsselt gespeichert werden. Setze ihn und starte neu.",
+    "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+    "count": "({count} von {max})",
+    "never": "nie",
+    "on": "An",
+    "off": "Aus",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Entfernt",
+    "testOk": "Test gesendet",
+    "kinds": {
+      "generic": "Beliebiger Dienst (signiertes JSON)",
+      "discord": "Discord-Webhook"
+    },
+    "events": {
+      "mod.case": "Ein Moderationsfall wird angelegt",
+      "twitch.live": "Ein Twitch-Kanal geht live"
+    },
+    "incoming": {
+      "title": "Eingehende Endpunkte",
+      "intro": "Jeder Endpunkt hat eine eigene Adresse und ein eigenes Geheimnis. Anfragen müssen einen Zeitstempel und eine HMAC-SHA256-Signatur des genauen Inhalts tragen und sind auf 8 KB und 30 pro Minute begrenzt. Der Inhalt ist JSON mit Titel, Text, optionalem https-Link und optionaler Farbe; der Bot postet ihn als Embed, das niemanden pingt.",
+      "add": "Endpunkt hinzufügen",
+      "empty": "Noch keine Endpunkte.",
+      "posts": "Postet in {channel}",
+      "used": "{uses, plural, one {einmal benutzt} other {# Mal benutzt}}, zuletzt {time}",
+      "rotate": "Neues Geheimnis",
+      "newTitle": "Endpunkt hinzufügen",
+      "editTitle": "Endpunkt bearbeiten",
+      "dialogIntro": "Adresse und Geheimnis entstehen beim Speichern. Das Geheimnis wird einmal angezeigt."
+    },
+    "outgoing": {
+      "title": "Ausgehende Webhooks",
+      "intro": "Die Adressen werden verschlüsselt gespeichert und hier wird nur der Host angezeigt. Der Bot verbindet sich nie mit lokalen oder privaten Adressen, folgt keinen Weiterleitungen und unternimmt pro Ereignis einen Versuch.",
+      "add": "Webhook hinzufügen",
+      "empty": "Noch keine ausgehenden Webhooks.",
+      "test": "Test senden",
+      "neverSent": "Noch nichts gesendet",
+      "last": "Zuletzt: {status}, {time}",
+      "newTitle": "Ausgehenden Webhook hinzufügen",
+      "editTitle": "Ausgehenden Webhook bearbeiten",
+      "dialogIntro": "Wähle, wohin die Ereignisse gehen und welche."
+    },
+    "endpointForm": {
+      "name": "Name",
+      "nameHelp": "Wird als \"Via\" und dieser Name unter jeder Nachricht angezeigt.",
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "enabled": "Nimmt Anfragen an",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "outboundForm": {
+      "name": "Name",
+      "kind": "Art",
+      "kindHelp": "Discord: eine formatierte Nachricht für eine Discord-Webhook-Adresse. Beliebiger Dienst: ein mit einem Geheimnis signierter JSON-Inhalt, das du einmal erhältst.",
+      "url": "Adresse",
+      "urlHelp": "Discord: die Webhook-Adresse aus den Integrationen des Kanals. Beliebiger Dienst: eine https-Adresse.",
+      "urlKeep": "Leer lassen, um die gespeicherte Adresse zu behalten",
+      "urlEditHelp": "Gespeicherte Adresse: {host}. Gib eine neue ein, um sie zu ersetzen.",
+      "events": "Diese Ereignisse senden",
+      "enabled": "Aktiv",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "reveal": {
+      "createdTitle": "Dein Endpunkt ist bereit",
+      "rotatedTitle": "Neues Geheimnis erstellt",
+      "outboundTitle": "Dein Signatur-Geheimnis",
+      "once": "Kopiere das Geheimnis jetzt. Es wird nur dieses eine Mal angezeigt und kann nicht erneut gelesen werden; wenn du es verlierst, erstelle ein neues.",
+      "url": "Adresse",
+      "secret": "Geheimnis",
+      "howIncoming": "Sende POST-Anfragen mit den Headern X-Webhook-Timestamp (Unix-Sekunden) und X-Webhook-Signature, also sha256= plus dem Hex-HMAC-SHA256 von Zeitstempel, einem Punkt und dem genauen Anfrage-Inhalt, mit dem Geheimnis als Schlüssel.",
+      "howOutgoing": "Jede Anfrage trägt X-Webhook-Timestamp und X-Webhook-Signature (sha256= plus dem Hex-HMAC-SHA256 von Zeitstempel, einem Punkt und dem genauen Inhalt, mit diesem Geheimnis als Schlüssel). Prüfe die Signatur und lehne alte Zeitstempel ab.",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "copyFailed": "Kopieren nicht möglich. Markiere den Text und kopiere ihn von Hand.",
+      "done": "Ich habe es gespeichert"
+    },
+    "confirm": {
+      "endpoint": {
+        "title": "Diesen Endpunkt entfernen?",
+        "body": "{name} nimmt sofort keine Anfragen mehr an und seine Adresse ist endgültig weg.",
+        "button": "Entfernen"
+      },
+      "outbound": {
+        "title": "Diesen Webhook entfernen?",
+        "body": "{name} erhält keine Ereignisse mehr.",
+        "button": "Entfernen"
+      },
+      "rotate": {
+        "title": "Neues Geheimnis erstellen?",
+        "body": "Das alte Geheimnis von {name} funktioniert sofort nicht mehr. Aktualisiere den Absender mit dem neuen.",
+        "button": "Neues Geheimnis erstellen"
+      },
+      "back": "Zurück"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "notReady": "TOKEN_ENCRYPTION_KEY ist nicht gesetzt, daher können Geheimnisse nicht gespeichert werden.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "tooMany": "Das ist die maximale Anzahl.",
+      "notFound": "Das gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "deliveryFailed": "Der Test wurde nicht zugestellt. Das Ergebnis steht am Webhook.",
+      "needsName": "Gib einen Namen an.",
+      "badUrl": "Gib eine gültige Adresse ein: eine Discord-Webhook-Adresse oder eine https-Adresse eines öffentlichen Hosts.",
+      "needsEvent": "Wähle mindestens ein Ereignis."
     }
   }
 }

@@ -8,6 +8,8 @@ import {
   pollActionStatus,
   manageRolesResponse,
   roleDeleteResponse,
+  webhookRelayStatus,
+  webhookTestStatus,
   stickyClearStatus,
   roleMergeResponse,
   roleUpdateStatus,
@@ -184,6 +186,22 @@ export async function clearStickyViaBot(channelId: string): Promise<"done" | "fa
   const res = await botFetch("/internal/sticky/clear", { method: "POST", body: { channelId } });
   if (!res?.ok) return null;
   const parsed = stickyClearStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post a message that arrived at a webhook endpoint. Null if the bot can't be reached. */
+export async function relayWebhookViaBot(message: { channelId: string; source: string; title?: string; content?: string; url?: string; color?: number }): Promise<"done" | "channel" | "failed" | null> {
+  const res = await botFetch("/internal/webhooks/relay", { method: "POST", body: message });
+  if (!res?.ok) return null;
+  const parsed = webhookRelayStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to send a test event to an outbound webhook. Null if the bot can't be reached. */
+export async function testOutboundWebhookViaBot(id: string): Promise<"ok" | "not-found" | "not-configured" | "failed" | null> {
+  const res = await botFetch("/internal/webhooks/test", { method: "POST", body: { id }, timeoutMs: 15_000 });
+  if (!res?.ok) return null;
+  const parsed = webhookTestStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 
