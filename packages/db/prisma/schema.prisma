@@ -143,3 +143,64 @@ model TempVoiceChannel {
 
   @@index([ownerId])
 }
+
+// ---- twitch (went live) -------------------------------------------------
+// CHECK constraints (singleton ids, digits-only Discord IDs) are added to the
+// migration by hand.
+
+/// Singleton (id = 1): the Twitch account the bot listens with. EventSub over
+/// WebSocket needs a USER access token (an app token is refused), but no scopes
+/// for stream.online/offline, so the stored grant can do nothing else.
+model TwitchConnection {
+  id              Int      @id @default(1)
+  twitchUserId    String   @db.VarChar(32)
+  login           String   @db.VarChar(64)
+  /// AES-256-GCM (purpose "twitch-bot-refresh-token"); never the plain token.
+  refreshTokenEnc String   @db.Text
+  /// The refresh token was rejected: someone must connect again.
+  needsReconnect  Boolean  @default(false)
+  connectedByName String?  @db.VarChar(100)
+  connectedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+/// Singleton (id = 1): switches for the whole module.
+model TwitchConfig {
+  id                 Int      @id @default(1)
+  enabled            Boolean  @default(false)
+  /// Edit the message when the stream ends (title struck through, "ended").
+  markEndedOnOffline Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+/// A channel to announce. Up to a handful; each has its own Discord channel.
+model TwitchStreamer {
+  id              String   @id @default(cuid())
+  twitchUserId    String   @unique @db.VarChar(32)
+  login           String   @db.VarChar(64)
+  displayName     String   @db.VarChar(100)
+  /// Discord channel the announcement goes to.
+  channelId       String   @db.VarChar(20)
+  /// Role to ping, or null for no ping.
+  pingRoleId      String?  @db.VarChar(20)
+  /// Text above the embed; {name} {title} {game} {url} are replaced.
+  messageTemplate String   @default("{name} is live: {title}") @db.VarChar(300)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+/// One row per announced broadcast. Unique on Twitch's stream id, so a replay
+/// after a reconnect or restart never posts twice.
+model TwitchNotification {
+  id             String    @id @default(cuid())
+  twitchStreamId String    @unique @db.VarChar(32)
+  twitchUserId   String    @db.VarChar(32)
+  channelId      String    @db.VarChar(20)
+  messageId      String    @db.VarChar(20)
+  startedAt      DateTime
+  endedAt        DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([twitchUserId, endedAt])
+}
