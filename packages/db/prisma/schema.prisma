@@ -88,3 +88,40 @@ model ModCase {
   @@index([targetId, createdAt])
   @@index([type, createdAt])
 }
+
+// ---- temporary voice channels -------------------------------------------
+// The room's live state (locked, limit, video, soundboard, who may join) is the
+// Discord channel itself: its permission overwrites and settings are the source
+// of truth, so nothing here can drift from what members actually experience.
+
+/// Singleton (id = 1): how the "join to create" lobby behaves.
+model TempVoiceConfig {
+  id                       Int      @id @default(1)
+  enabled                  Boolean  @default(false)
+  /// The voice channel people join to get their own room.
+  lobbyChannelId           String?  @db.VarChar(20)
+  /// Category the rooms are created in. Null = the lobby's own category.
+  categoryId               String?  @db.VarChar(20)
+  /// Room name; {user} becomes the owner's display name.
+  nameTemplate             String   @default("{user}'s room") @db.VarChar(100)
+  /// 0 = no limit.
+  defaultUserLimit         Int      @default(0)
+  allowVideoByDefault      Boolean  @default(true)
+  allowSoundboardByDefault Boolean  @default(true)
+  /// Names containing one of these (case-insensitive) are refused.
+  blockedWords             String[] @default([])
+  updatedAt                DateTime @updatedAt
+}
+
+/// One row per room the bot created, so it can find them again after a restart
+/// and never touches a channel it didn't make.
+model TempVoiceChannel {
+  id             String   @id @default(cuid())
+  channelId      String   @unique @db.VarChar(20)
+  ownerId        String   @db.VarChar(20)
+  /// The control panel message posted in the room, so it can be edited.
+  panelMessageId String?  @db.VarChar(20)
+  createdAt      DateTime @default(now())
+
+  @@index([ownerId])
+}
