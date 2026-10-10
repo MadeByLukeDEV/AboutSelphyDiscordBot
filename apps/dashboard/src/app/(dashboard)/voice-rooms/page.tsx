@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { BUILT_IN_PATTERN_COUNT } from "@aboutselphy/shared";
+import { BUILT_IN_PATTERN_COUNT, MAX_TEMP_VOICE_LOBBIES } from "@aboutselphy/shared";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getSettings } from "@/modules/tempvoice";
+import { GeneralSettingsForm } from "@/modules/tempvoice/components/general-settings-form";
+import { LobbiesManager } from "@/modules/tempvoice/components/lobbies-manager";
 import { RoomsMonitor } from "@/modules/tempvoice/components/rooms-monitor";
-import { SettingsForm } from "@/modules/tempvoice/components/settings-form";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("TempVoice"))("title") };
@@ -12,11 +13,11 @@ export async function generateMetadata() {
 
 export default async function VoiceRoomsPage() {
   const session = await requireStaffPage("/voice-rooms");
-  // Admins only (the nav hides it from moderators; this and the action enforce it).
+  // Admins only (the nav hides it from moderators; this and the actions enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("TempVoice");
-  const { settings, channels } = await getSettings();
+  const { global, lobbies, channels } = await getSettings();
 
   return (
     <>
@@ -25,13 +26,18 @@ export default async function VoiceRoomsPage() {
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
 
-      <RoomsMonitor enabled={settings.enabled} />
+      <RoomsMonitor enabled={global.enabled} />
 
-      <section aria-labelledby="settings-heading" className="flex flex-col gap-4">
-        <h2 id="settings-heading" className="text-fluid-lg font-semibold">
-          {t("settings.title")}
-        </h2>
-        <SettingsForm initial={settings} channels={channels} builtInCount={BUILT_IN_PATTERN_COUNT} />
+      <LobbiesManager lobbies={lobbies} channels={channels} maxLobbies={MAX_TEMP_VOICE_LOBBIES} />
+
+      <section aria-labelledby="general-heading" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="general-heading" className="text-fluid-lg font-semibold">
+            {t("general.title")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t("general.intro")}</p>
+        </div>
+        <GeneralSettingsForm initial={global} builtInCount={BUILT_IN_PATTERN_COUNT} maxLobbies={MAX_TEMP_VOICE_LOBBIES} />
       </section>
     </>
   );

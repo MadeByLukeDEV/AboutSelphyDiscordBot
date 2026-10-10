@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
-import type { TempVoiceOverview, TempVoiceRoom } from "@aboutselphy/shared";
+import type { TempVoiceLobbyStatus, TempVoiceOverview, TempVoiceRoom } from "@aboutselphy/shared";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -54,7 +54,7 @@ function Room({ room }: { room: TempVoiceRoom }) {
       <span className={cn("w-1.5 shrink-0", room.locked ? "bg-amber-500" : "bg-emerald-500")} aria-hidden />
       <div className="flex min-w-0 flex-1 flex-col gap-2 px-4 py-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h3 className="min-w-0 truncate font-semibold">{room.name}</h3>
+          <h4 className="min-w-0 truncate font-semibold">{room.name}</h4>
           <Badge variant={room.locked ? "secondary" : "outline"}>{room.locked ? t("locked") : t("open")}</Badge>
           <span className="text-sm text-muted-foreground tabular-nums">{shownLimit}</span>
         </div>
@@ -81,33 +81,64 @@ function Room({ room }: { room: TempVoiceRoom }) {
   );
 }
 
+function LobbyGroup({ title, paused, rooms }: { title: string; paused?: boolean; rooms: TempVoiceRoom[] }) {
+  const t = useTranslations("TempVoice.monitor");
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h3 className="font-semibold">{title}</h3>
+        {paused && <Badge variant="secondary">{t("lobbyPaused")}</Badge>}
+        <span className="text-sm text-muted-foreground tabular-nums">{t("lobbyRooms", { count: rooms.length })}</span>
+      </div>
+      {rooms.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {rooms.map((room) => (
+            <Room key={room.channelId} room={room} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function RoomsMonitor({ enabled }: { enabled: boolean }) {
   const t = useTranslations("TempVoice.monitor");
   const format = useFormatter();
   const { state, at } = useOverview();
 
-  const rooms = state?.online ? state.overview.rooms : [];
+  const overview = state?.online ? state.overview : null;
+  const rooms = overview?.rooms ?? [];
   const people = rooms.reduce((n, r) => n + r.memberCount, 0);
 
+  const lobbyName = (l: TempVoiceLobbyStatus) => (l.name ? l.name : t("lobbyGone"));
+  const known = new Set((overview?.lobbies ?? []).map((l) => l.channelId));
+  const orphans = rooms.filter((r) => !r.lobbyChannelId || !known.has(r.lobbyChannelId));
+  const withProblems = (overview?.lobbies ?? []).filter((l) => l.missingPermissions.length > 0);
+
   return (
-    <section aria-labelledby="rooms-heading" className="flex flex-col gap-3">
+    <section aria-labelledby="rooms-heading" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="rooms-heading" className="text-fluid-lg font-semibold">
           {t("title")}
         </h2>
-        {state?.online && (
+        {overview && (
           <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
             {t("summary", { rooms: rooms.length, people })}
           </p>
         )}
       </div>
 
-      {state?.online && state.overview.missingPermissions.length > 0 && (
+      {withProblems.length > 0 && (
         <div role="alert" className="flex gap-3 rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 text-sm">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-300" aria-hidden />
-          <div>
+          <div className="flex flex-col gap-1">
             <p className="font-medium">{t("missingTitle")}</p>
-            <p className="text-muted-foreground">{t("missingBody", { list: state.overview.missingPermissions.join(", ") })}</p>
+            {withProblems.map((l) => (
+              <p key={l.channelId} className="text-muted-foreground">
+                {t("missingLine", { lobby: lobbyName(l), list: l.missingPermissions.join(", ") })}
+              </p>
+            ))}
+            <p className="text-muted-foreground">{t("missingBody")}</p>
           </div>
         </div>
       )}
@@ -118,24 +149,25 @@ export function RoomsMonitor({ enabled }: { enabled: boolean }) {
             <Skeleton key={i} className="h-[6.5rem] rounded-xl" />
           ))}
         </div>
-      ) : !state.online ? (
+      ) : !overview ? (
         <p className="rounded-xl border border-dashed px-4 py-6 text-sm text-muted-foreground">{t("offline")}</p>
-      ) : rooms.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {rooms.map((room) => (
-            <Room key={room.channelId} room={room} />
-          ))}
-        </ul>
-      ) : (
+      ) : rooms.length === 0 ? (
         <div className="flex flex-col items-center gap-1 rounded-xl border border-dashed px-6 py-10 text-center">
           <h3 className="font-semibold">{enabled ? t("empty.title") : t("off.title")}</h3>
           <p className="max-w-md text-sm text-muted-foreground">{enabled ? t("empty.body") : t("off.body")}</p>
         </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {overview.lobbies
+            .filter((l) => l.openRooms > 0)
+            .map((l) => (
+              <LobbyGroup key={l.channelId} title={lobbyName(l)} paused={!l.enabled} rooms={rooms.filter((r) => r.lobbyChannelId === l.channelId)} />
+            ))}
+          {orphans.length > 0 && <LobbyGroup title={t("otherRooms")} rooms={orphans} />}
+        </div>
       )}
 
-      {at && state?.online && (
-        <p className="text-xs text-muted-foreground">{t("updated", { time: format.dateTime(at, { timeStyle: "medium" }) })}</p>
-      )}
+      {at && overview && <p className="text-xs text-muted-foreground">{t("updated", { time: format.dateTime(at, { timeStyle: "medium" }) })}</p>}
     </section>
   );
 }

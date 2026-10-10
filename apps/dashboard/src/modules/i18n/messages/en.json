@@ -158,20 +158,24 @@
   },
   "TempVoice": {
     "title": "Voice rooms",
-    "intro": "Members who join the lobby get a room of their own. See the rooms that are open now and change how new rooms are made.",
+    "intro": "Members who join a lobby get a room of their own. See the rooms that are open now, manage your lobbies and change the rules every room follows.",
     "monitor": {
       "title": "Open rooms",
       "summary": "{rooms, plural, one {# room} other {# rooms}} with {people, plural, one {# person} other {# people}} in them",
       "updated": "Updated {time}",
       "empty": {
         "title": "No rooms open",
-        "body": "A room appears when someone joins the lobby and disappears when it is empty."
+        "body": "A room appears when someone joins a lobby and disappears when it is empty."
       },
       "off": {
         "title": "Temporary rooms are switched off",
-        "body": "Joining the lobby does nothing right now. Turn them on in the settings below."
+        "body": "Joining a lobby does nothing right now. Turn them on under General settings below."
       },
       "offline": "The dashboard can't reach the bot, so the live view isn't available.",
+      "lobbyRooms": "{count, plural, one {# room} other {# rooms}}",
+      "lobbyPaused": "Paused",
+      "lobbyGone": "Lobby channel deleted",
+      "otherRooms": "Other rooms",
       "owner": "Owner: {name}",
       "ownerGone": "The owner left the server",
       "inRoom": "In the room",
@@ -186,28 +190,67 @@
       "blocked": "{count} blocked",
       "created": "Created {time}",
       "missingTitle": "The bot is missing permissions",
-      "missingBody": "It can't create or manage rooms until its role has: {list}. Give it these on the lobby's category."
+      "missingLine": "{lobby}: {list}",
+      "missingBody": "It can't create rooms from these lobbies until its role has the permissions listed, on the lobby's category."
     },
-    "settings": {
-      "title": "Settings",
-      "botOffline": "The bot is offline, so the channel lists aren't available. Your saved channels are kept.",
+    "lobbies": {
+      "title": "Lobbies",
+      "intro": "Each lobby is a voice channel members join to get a room. Every lobby has its own category, name, member limit and defaults.",
+      "count": "{count} of {max} lobbies",
+      "botOffline": "The bot is offline, so the channel lists aren't available. You can still see and remove your lobbies.",
+      "empty": {
+        "title": "No lobbies yet",
+        "body": "Add a voice channel as a lobby. Members who join it get their own room."
+      },
+      "add": "Add a lobby",
+      "edit": "Edit",
+      "remove": "Remove",
+      "paused": "Paused",
+      "channelGone": "Channel deleted",
+      "inCategory": "Rooms in {category}",
+      "nextToLobby": "Rooms next to the lobby",
+      "noLimit": "No member limit",
+      "limit": "Up to {count} members",
+      "videoOff": "Video off",
+      "soundboardOff": "Soundboard off",
+      "dialog": {
+        "addTitle": "Add a lobby",
+        "editTitle": "Edit lobby",
+        "channel": "Lobby channel",
+        "channelHelp": "The voice channel members join. Pick one that isn't a lobby yet.",
+        "channelFixed": "The channel can't be changed. To use another channel, remove this lobby and add a new one.",
+        "channelPlaceholder": "Pick a voice channel",
+        "noChannelsLeft": "Every voice channel the bot can see is already a lobby.",
+        "category": "Category for its rooms",
+        "categoryHelp": "Rooms from this lobby are created here. Leave it empty to put them next to the lobby.",
+        "noCategory": "Next to the lobby",
+        "categoryPlaceholder": "Pick a category",
+        "nameTemplate": "Room name",
+        "nameTemplateHelp": "Use '{user}' for the owner's name.",
+        "limit": "Member limit",
+        "limitHelp": "0 means no limit. Owners can change it for their own room.",
+        "video": "Allow video and screen sharing in its rooms",
+        "soundboard": "Allow the soundboard in its rooms",
+        "defaultsHelp": "Owners can switch these for their own room.",
+        "enabled": "This lobby is on",
+        "enabledHelp": "Switch it off to pause only this lobby.",
+        "save": "Save lobby",
+        "saving": "Saving…",
+        "cancel": "Cancel"
+      },
+      "added": "Lobby added",
+      "saved": "Lobby saved",
+      "savedBotLater": "Lobby saved. The bot wasn't reachable, so it picks it up within a minute.",
+      "removeTitle": "Remove this lobby?",
+      "removeBody": "Members can't create rooms from it any more. Rooms that are open now stay until they are empty.",
+      "removeConfirm": "Remove lobby",
+      "removed": "Lobby removed"
+    },
+    "general": {
+      "title": "General settings",
+      "intro": "These apply to every lobby.",
       "enabled": "Temporary rooms are on",
-      "enabledHelp": "When off, joining the lobby does nothing. Open rooms are still deleted once they are empty.",
-      "lobby": "Lobby channel",
-      "lobbyHelp": "The voice channel members join to get their own room.",
-      "noLobby": "No lobby",
-      "lobbyPlaceholder": "Pick a voice channel",
-      "category": "Category for new rooms",
-      "categoryHelp": "New rooms are created here. Leave it empty to put them next to the lobby.",
-      "noCategory": "Next to the lobby",
-      "categoryPlaceholder": "Pick a category",
-      "nameTemplate": "Room name",
-      "nameTemplateHelp": "Use '{user}' for the owner's name.",
-      "defaultLimit": "Member limit for new rooms",
-      "defaultLimitHelp": "0 means no limit. Owners can change it for their own room.",
-      "video": "Allow video and screen sharing in new rooms",
-      "soundboard": "Allow the soundboard in new rooms",
-      "defaultsHelp": "Owners can switch these for their own room.",
+      "enabledHelp": "The master switch. When off, joining any lobby does nothing. Open rooms are still deleted once they are empty.",
       "defaultBlocklist": "Block common insults and slurs",
       "defaultBlocklistHelp": "A built-in list of {count} patterns, English and German. It also catches disguised spellings like sh1t or f*ck, but leaves innocent words such as \"class\" alone. It applies to new rooms and to renames.",
       "blocked": "Your own blocked words",
@@ -215,17 +258,20 @@
       "save": "Save settings",
       "saving": "Saving…",
       "saved": "Settings saved",
-      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute.",
-      "errors": {
-        "forbidden": "Only admins can change these settings.",
-        "invalid": "Some of these values aren't valid.",
-        "templateBlocked": "The room name contains a blocked word. Change it, or every new room would be called \"Voice room\".",
-        "needsLobby": "Pick a lobby channel before switching temporary rooms on.",
-        "botUnavailable": "Can't reach the bot to check those channels. Try again in a moment.",
-        "lobbyNotFound": "That lobby isn't a voice channel the bot can see.",
-        "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
-        "failed": "Couldn't save the settings. Try again."
-      }
+      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute."
+    },
+    "errors": {
+      "forbidden": "Only admins can change these settings.",
+      "invalid": "Some of these values aren't valid.",
+      "templateBlocked": "The room name contains a blocked word. Change it, or every new room would be called \"Voice room\".",
+      "needsLobby": "Add a lobby before switching temporary rooms on.",
+      "botUnavailable": "Can't reach the bot to check those channels. Try again in a moment.",
+      "lobbyNotFound": "That isn't a voice channel the bot can see.",
+      "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
+      "alreadyALobby": "That channel is already a lobby, or it is one of the temporary rooms.",
+      "tooManyLobbies": "There can be at most {max} lobbies. Remove one first.",
+      "notFound": "That lobby doesn't exist any more. Reload the page.",
+      "failed": "That didn't save. Try again."
     }
   },
   "Errors": {

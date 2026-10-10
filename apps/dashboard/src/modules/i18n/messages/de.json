@@ -158,20 +158,24 @@
   },
   "TempVoice": {
     "title": "Sprachräume",
-    "intro": "Wer die Lobby betritt, bekommt einen eigenen Raum. Sieh dir die gerade offenen Räume an und ändere, wie neue Räume erstellt werden.",
+    "intro": "Wer eine Lobby betritt, bekommt einen eigenen Raum. Sieh dir die gerade offenen Räume an, verwalte deine Lobbys und ändere die Regeln, die für alle Räume gelten.",
     "monitor": {
       "title": "Offene Räume",
       "summary": "{rooms, plural, one {# Raum} other {# Räume}} mit {people, plural, one {# Person} other {# Personen}} darin",
       "updated": "Aktualisiert {time}",
       "empty": {
         "title": "Keine Räume offen",
-        "body": "Ein Raum erscheint, sobald jemand die Lobby betritt, und verschwindet, wenn er leer ist."
+        "body": "Ein Raum erscheint, sobald jemand eine Lobby betritt, und verschwindet, wenn er leer ist."
       },
       "off": {
         "title": "Temporäre Räume sind ausgeschaltet",
-        "body": "Das Betreten der Lobby bewirkt gerade nichts. Schalte sie unten in den Einstellungen ein."
+        "body": "Das Betreten einer Lobby bewirkt gerade nichts. Schalte sie unten unter Allgemeine Einstellungen ein."
       },
       "offline": "Das Dashboard erreicht den Bot nicht, deshalb ist die Live-Ansicht nicht verfügbar.",
+      "lobbyRooms": "{count, plural, one {# Raum} other {# Räume}}",
+      "lobbyPaused": "Pausiert",
+      "lobbyGone": "Lobby-Kanal gelöscht",
+      "otherRooms": "Andere Räume",
       "owner": "Besitzer: {name}",
       "ownerGone": "Der Besitzer hat den Server verlassen",
       "inRoom": "Im Raum",
@@ -186,28 +190,67 @@
       "blocked": "{count} blockiert",
       "created": "Erstellt {time}",
       "missingTitle": "Dem Bot fehlen Berechtigungen",
-      "missingBody": "Er kann keine Räume erstellen oder verwalten, bis seine Rolle diese hat: {list}. Gib sie ihr auf der Kategorie der Lobby."
+      "missingLine": "{lobby}: {list}",
+      "missingBody": "Er kann aus diesen Lobbys keine Räume erstellen, bis seine Rolle die genannten Berechtigungen auf der Kategorie der Lobby hat."
     },
-    "settings": {
-      "title": "Einstellungen",
-      "botOffline": "Der Bot ist offline, deshalb sind die Kanallisten nicht verfügbar. Deine gespeicherten Kanäle bleiben erhalten.",
+    "lobbies": {
+      "title": "Lobbys",
+      "intro": "Jede Lobby ist ein Sprachkanal, den Mitglieder betreten, um einen Raum zu bekommen. Jede Lobby hat eigene Kategorie, eigenen Namen, eigenes Mitgliederlimit und eigene Voreinstellungen.",
+      "count": "{count} von {max} Lobbys",
+      "botOffline": "Der Bot ist offline, deshalb sind die Kanallisten nicht verfügbar. Du kannst deine Lobbys trotzdem ansehen und entfernen.",
+      "empty": {
+        "title": "Noch keine Lobbys",
+        "body": "Füge einen Sprachkanal als Lobby hinzu. Wer ihn betritt, bekommt einen eigenen Raum."
+      },
+      "add": "Lobby hinzufügen",
+      "edit": "Bearbeiten",
+      "remove": "Entfernen",
+      "paused": "Pausiert",
+      "channelGone": "Kanal gelöscht",
+      "inCategory": "Räume in {category}",
+      "nextToLobby": "Räume neben der Lobby",
+      "noLimit": "Kein Mitgliederlimit",
+      "limit": "Bis zu {count} Mitglieder",
+      "videoOff": "Video aus",
+      "soundboardOff": "Soundboard aus",
+      "dialog": {
+        "addTitle": "Lobby hinzufügen",
+        "editTitle": "Lobby bearbeiten",
+        "channel": "Lobby-Kanal",
+        "channelHelp": "Der Sprachkanal, den Mitglieder betreten. Wähle einen, der noch keine Lobby ist.",
+        "channelFixed": "Der Kanal kann nicht geändert werden. Um einen anderen Kanal zu nutzen, entferne diese Lobby und füge eine neue hinzu.",
+        "channelPlaceholder": "Sprachkanal wählen",
+        "noChannelsLeft": "Jeder Sprachkanal, den der Bot sehen kann, ist schon eine Lobby.",
+        "category": "Kategorie für die Räume",
+        "categoryHelp": "Räume aus dieser Lobby werden hier erstellt. Leer lassen, um sie neben der Lobby anzulegen.",
+        "noCategory": "Neben der Lobby",
+        "categoryPlaceholder": "Kategorie wählen",
+        "nameTemplate": "Raumname",
+        "nameTemplateHelp": "Verwende '{user}' für den Namen des Besitzers.",
+        "limit": "Mitgliederlimit",
+        "limitHelp": "0 bedeutet kein Limit. Besitzer können es für ihren eigenen Raum ändern.",
+        "video": "Video und Bildschirmfreigabe in den Räumen erlauben",
+        "soundboard": "Soundboard in den Räumen erlauben",
+        "defaultsHelp": "Besitzer können diese Einstellungen für ihren eigenen Raum ändern.",
+        "enabled": "Diese Lobby ist eingeschaltet",
+        "enabledHelp": "Schalte sie aus, um nur diese Lobby zu pausieren.",
+        "save": "Lobby speichern",
+        "saving": "Speichern…",
+        "cancel": "Abbrechen"
+      },
+      "added": "Lobby hinzugefügt",
+      "saved": "Lobby gespeichert",
+      "savedBotLater": "Lobby gespeichert. Der Bot war nicht erreichbar und übernimmt sie innerhalb einer Minute.",
+      "removeTitle": "Diese Lobby entfernen?",
+      "removeBody": "Mitglieder können daraus keine Räume mehr erstellen. Räume, die gerade offen sind, bleiben bestehen, bis sie leer sind.",
+      "removeConfirm": "Lobby entfernen",
+      "removed": "Lobby entfernt"
+    },
+    "general": {
+      "title": "Allgemeine Einstellungen",
+      "intro": "Diese gelten für alle Lobbys.",
       "enabled": "Temporäre Räume sind eingeschaltet",
-      "enabledHelp": "Wenn aus, passiert beim Betreten der Lobby nichts. Offene Räume werden trotzdem gelöscht, sobald sie leer sind.",
-      "lobby": "Lobby-Kanal",
-      "lobbyHelp": "Der Sprachkanal, den Mitglieder betreten, um einen eigenen Raum zu bekommen.",
-      "noLobby": "Keine Lobby",
-      "lobbyPlaceholder": "Sprachkanal wählen",
-      "category": "Kategorie für neue Räume",
-      "categoryHelp": "Neue Räume werden hier erstellt. Leer lassen, um sie neben der Lobby anzulegen.",
-      "noCategory": "Neben der Lobby",
-      "categoryPlaceholder": "Kategorie wählen",
-      "nameTemplate": "Raumname",
-      "nameTemplateHelp": "Verwende '{user}' für den Namen des Besitzers.",
-      "defaultLimit": "Mitgliederlimit für neue Räume",
-      "defaultLimitHelp": "0 bedeutet kein Limit. Besitzer können es für ihren eigenen Raum ändern.",
-      "video": "Video und Bildschirmfreigabe in neuen Räumen erlauben",
-      "soundboard": "Soundboard in neuen Räumen erlauben",
-      "defaultsHelp": "Besitzer können diese Einstellungen für ihren eigenen Raum ändern.",
+      "enabledHelp": "Der Hauptschalter. Wenn aus, passiert beim Betreten einer Lobby nichts. Offene Räume werden trotzdem gelöscht, sobald sie leer sind.",
       "defaultBlocklist": "Häufige Beleidigungen und Schimpfwörter sperren",
       "defaultBlocklistHelp": "Eine eingebaute Liste mit {count} Mustern, Englisch und Deutsch. Sie erkennt auch verschleierte Schreibweisen wie sh1t oder f*ck, lässt harmlose Wörter wie \"Class\" aber in Ruhe. Sie gilt für neue Räume und Umbenennungen.",
       "blocked": "Deine eigenen gesperrten Wörter",
@@ -215,17 +258,20 @@
       "save": "Einstellungen speichern",
       "saving": "Speichern…",
       "saved": "Einstellungen gespeichert",
-      "savedBotLater": "Einstellungen gespeichert. Der Bot war nicht erreichbar und übernimmt sie innerhalb einer Minute.",
-      "errors": {
-        "forbidden": "Nur Admins können diese Einstellungen ändern.",
-        "invalid": "Einige dieser Werte sind ungültig.",
-        "templateBlocked": "Der Raumname enthält ein gesperrtes Wort. Ändere ihn, sonst hieße jeder neue Raum \"Voice room\".",
-        "needsLobby": "Wähle einen Lobby-Kanal, bevor du temporäre Räume einschaltest.",
-        "botUnavailable": "Der Bot ist nicht erreichbar, um diese Kanäle zu prüfen. Versuche es gleich noch einmal.",
-        "lobbyNotFound": "Diese Lobby ist kein Sprachkanal, den der Bot sehen kann.",
-        "categoryNotFound": "Diese Kategorie gibt es nicht oder der Bot kann sie nicht sehen.",
-        "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
-      }
+      "savedBotLater": "Einstellungen gespeichert. Der Bot war nicht erreichbar und übernimmt sie innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Nur Admins können diese Einstellungen ändern.",
+      "invalid": "Einige dieser Werte sind ungültig.",
+      "templateBlocked": "Der Raumname enthält ein gesperrtes Wort. Ändere ihn, sonst hieße jeder neue Raum \"Voice room\".",
+      "needsLobby": "Füge eine Lobby hinzu, bevor du temporäre Räume einschaltest.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um diese Kanäle zu prüfen. Versuche es gleich noch einmal.",
+      "lobbyNotFound": "Das ist kein Sprachkanal, den der Bot sehen kann.",
+      "categoryNotFound": "Diese Kategorie gibt es nicht oder der Bot kann sie nicht sehen.",
+      "alreadyALobby": "Dieser Kanal ist schon eine Lobby oder einer der temporären Räume.",
+      "tooManyLobbies": "Es kann höchstens {max} Lobbys geben. Entferne zuerst eine.",
+      "notFound": "Diese Lobby gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das wurde nicht gespeichert. Versuche es erneut."
     }
   },
   "Errors": {
