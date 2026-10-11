@@ -24,9 +24,16 @@ describe("isBlockedAddress", () => {
   });
 });
 
+// A resolver that answers the way Node's resolver does: a list when asked for all addresses, one address otherwise.
+const resolverOf = (...addresses: string[]) =>
+  ((_h: string, o: { all?: boolean }, cb: (...a: unknown[]) => void) => {
+    const list = addresses.map((address) => ({ address, family: address.includes(":") ? 6 : 4 }));
+    return o.all ? cb(null, list) : cb(null, list[0]!.address, list[0]!.family);
+  }) as never;
+
 describe("postJson", () => {
   it("refuses a name that resolves to a private address, without connecting", async () => {
-    const lookup = ((_h: string, _o: unknown, cb: (e: null, a: string, f: number) => void) => cb(null, "10.0.0.5", 4)) as never;
+    const lookup = resolverOf("10.0.0.5");
     expect(await postJson("https://example.test/hook", "{}", {}, { lookup })).toEqual({ ok: false, reason: "blocked" });
   });
 
@@ -38,7 +45,7 @@ describe("postJson", () => {
 });
 
 describe("getText", () => {
-  const privateLookup = ((_h: string, _o: unknown, cb: (e: null, a: string, f: number) => void) => cb(null, "10.0.0.5", 4)) as never;
+  const privateLookup = resolverOf("10.0.0.5");
 
   it("refuses a public-looking name that resolves to a private address", async () => {
     expect(await getText("https://feeds.example.test/rss", { lookup: privateLookup })).toEqual({ ok: false, reason: "blocked", detail: "address" });
@@ -50,5 +57,32 @@ describe("getText", () => {
     expect(await getText("ftp://feeds.example.test/rss", { internalHosts: ["feeds.example.test"] })).toEqual({ ok: false, reason: "blocked", detail: "scheme" });
     expect(await getText("http://rsshub:1200/x", { internalHosts: ["other"] })).toEqual({ ok: false, reason: "blocked", detail: "http" });
     expect(await getText("not a url")).toEqual({ ok: false, reason: "error" });
+  });
+});
+
+describe("the connect-time check answers the shape Node asks for", () => {
+  it("blocks a name when ANY of its addresses is private (a public one next to a private one is still refused)", async () => {
+    expect(await getText("https://feeds.example.test/rss", { lookup: resolverOf("93.184.216.34", "10.0.0.5") })).toEqual({ ok: false, reason: "blocked", detail: "address" });
+    expect(await getText("https://feeds.example.test/rss", { lookup: resolverOf("::1") })).toEqual({ ok: false, reason: "blocked", detail: "address" });
+  });
+
+  it("does not report a resolver failure as a block", async () => {
+    const failing = ((_h: string, _o: unknown, cb: (e: Error) => void) => cb(Object.assign(new Error("nx"), { code: "ENOTFOUND" }))) as never;
+    const result = await getText("https://feeds.example.test/rss", { lookup: failing });
+    expect(result.ok).toBe(false);
+    expect(result).not.toMatchObject({ reason: "blocked" });
+  });
+});
+
+describe("addresses typed as raw IPs never reach DNS, so they are checked directly", () => {
+  const never = (() => {
+    throw new Error("the lookup must not run for a blocked literal");
+  }) as never;
+
+  it("refuses private, loopback and metadata IP addresses without connecting", async () => {
+    for (const url of ["https://169.254.169.254/latest/meta-data/", "https://10.0.0.5/x", "https://127.0.0.1/x", "https://[::1]/x", "https://[::ffff:10.0.0.5]/x", "https://192.168.1.1/x"]) {
+      expect(await getText(url, { lookup: never }), url).toEqual({ ok: false, reason: "blocked", detail: "address" });
+      expect(await postJson(url, "{}", {}, { lookup: never }), url).toEqual({ ok: false, reason: "blocked" });
+    }
   });
 });

@@ -1,4 +1,4 @@
-import { lookup as dnsLookup } from "node:dns";
+import { lookup as dnsLookup, type LookupAddress } from "node:dns";
 import { isIP } from "node:net";
 import { request as httpRequest } from "node:http";
 import { request } from "node:https";
@@ -47,6 +47,34 @@ export function isBlockedAddress(ip: string): boolean {
   return true;
 }
 
+/**
+ * A DNS lookup for http.request that refuses private addresses. Node's connection logic asks for every
+ * address of a name (`options.all`), so this answers in whichever shape it was asked for. Every address
+ * is checked, and one blocked address blocks the name (nothing is ever connected to a mix).
+ */
+function checkedLookup(resolver: typeof dnsLookup, onBlocked: () => void) {
+  return (hostname: string, options: { all?: boolean; family?: number; hints?: number }, callback: (...args: unknown[]) => void): void => {
+    const wantAll = options.all === true;
+    resolver(hostname, { ...options, all: true }, (err, addresses) => {
+      const fail = (e: Error) => (wantAll ? callback(e, []) : callback(e, "", 4));
+      if (err) return fail(err);
+      const list = addresses as unknown as LookupAddress[];
+      if (list.length === 0 || list.some((a) => isBlockedAddress(a.address))) {
+        onBlocked();
+        return fail(new Error("blocked address"));
+      }
+      if (wantAll) callback(null, list);
+      else callback(null, list[0]!.address, list[0]!.family);
+    });
+  };
+}
+
+/** A host typed as a raw IP address skips DNS (so the connect-time lookup never runs): check it directly. */
+function literalIsBlocked(target: URL): boolean {
+  const host = target.hostname.replace(/^\[|\]$/g, "");
+  return isIP(host) !== 0 && isBlockedAddress(host);
+}
+
 export type PostResult = { ok: true; status: number } | { ok: false; reason: "blocked" | "timeout" | "error" };
 
 /** POSTs a JSON body. `lookup` is injectable for tests. */
@@ -59,6 +87,7 @@ export function postJson(url: string, body: string, headers: Record<string, stri
       return resolve({ ok: false, reason: "error" });
     }
     if (target.protocol !== "https:" || target.username || target.password) return resolve({ ok: false, reason: "blocked" });
+    if (literalIsBlocked(target)) return resolve({ ok: false, reason: "blocked" });
     const resolver = opts.lookup ?? dnsLookup;
     let blocked = false;
     const req = request(
@@ -68,16 +97,9 @@ export function postJson(url: string, body: string, headers: Record<string, stri
         headers: { "content-type": "application/json", "content-length": String(Buffer.byteLength(body)), "user-agent": "AboutSelphy-Bot-Webhook/1", ...headers },
         timeout: opts.timeoutMs ?? 5000,
         // The connection uses exactly the address validated here.
-        lookup: (hostname, options, callback) => {
-          resolver(hostname, { ...options, all: false }, (err, address, family) => {
-            if (err) return callback(err, "", 4);
-            if (isBlockedAddress(address as string)) {
-              blocked = true;
-              return callback(new Error("blocked address"), "", 4);
-            }
-            callback(null, address as string, family as number);
-          });
-        },
+        lookup: checkedLookup(resolver, () => {
+          blocked = true;
+        }) as never,
       },
       (res) => {
         res.resume(); // the answer is never read
@@ -113,6 +135,7 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
     const internal = (opts.internalHosts ?? []).includes(target.hostname.toLowerCase());
     if (!internal && target.protocol !== "https:") return resolve({ ok: false, reason: "blocked", detail: target.protocol === "http:" ? "http" : "scheme" });
     if (target.protocol !== "https:" && target.protocol !== "http:") return resolve({ ok: false, reason: "blocked", detail: "scheme" });
+    if (!internal && literalIsBlocked(target)) return resolve({ ok: false, reason: "blocked", detail: "address" });
     const maxBytes = opts.maxBytes ?? 1_000_000;
     const resolver = opts.lookup ?? dnsLookup;
     let blocked = false;
@@ -126,16 +149,9 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
         ...(internal
           ? {}
           : {
-              lookup: (hostname: string, options: unknown, callback: (err: Error | null, address: string, family: number) => void) => {
-                resolver(hostname, { ...(options as object), all: false }, (err, address, family) => {
-                  if (err) return callback(err, "", 4);
-                  if (isBlockedAddress(address as string)) {
-                    blocked = true;
-                    return callback(new Error("blocked address"), "", 4);
-                  }
-                  callback(null, address as string, family as number);
-                });
-              },
+              lookup: checkedLookup(resolver, () => {
+                blocked = true;
+              }) as never,
             }),
       },
       (res) => {
