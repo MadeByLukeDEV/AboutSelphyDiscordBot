@@ -700,7 +700,11 @@ Decided 2026-10-08:
     channel is live (`twitch/live-role.ts`, every change through `checkRole`); it is given on
     `stream.online`, taken off on `stream.offline`, repaired from Helix on every (re)connect, and
     removed from paused channels. A failure is logged and never blocks the announcement.
-  - [ ] Kick/TikTok, clips, more than 5 channels (second connection).
+  - **Fix 2026-10-28** (`fix_twitch-poll-first-stream`): the very first stream of a freshly added channel was
+    baselined silently (no history yet), which for polled channels (no events) meant no announcement and only the
+    live role. `reconcile` now treats a stream as new when the channel was added **before it started**
+    (`addedBeforeStart`); a channel added while already live is still baselined. Not tried live yet.
+  - [ ] Kick/TikTok, clips, more than 30 channels.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and

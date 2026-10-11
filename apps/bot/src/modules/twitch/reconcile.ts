@@ -4,6 +4,14 @@
 /** A stream that started longer ago than this is not announced late. */
 export const LATE_ANNOUNCE_WINDOW_MS = 15 * 60_000;
 
+/**
+ * A channel counts as "known" for a stream when we already announced it before, or when it was added
+ * before this stream started: then the stream is genuinely new, not one that was live when the channel
+ * was added. Without the second rule the very first stream of a freshly added channel is baselined
+ * silently, which for channels that are only polled (no events) means no announcement ever.
+ */
+export const addedBeforeStart = (addedAt: Date, startedAt: Date): boolean => addedAt.getTime() < startedAt.getTime();
+
 export type LiveNow = { id: string; userId: string; startedAt: Date };
 export type OpenRow = { id: string; twitchStreamId: string; twitchUserId: string };
 

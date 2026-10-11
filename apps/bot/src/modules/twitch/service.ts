@@ -11,7 +11,7 @@ import { syncLiveRole } from "./live-role";
 import { getLiveStreams, getUsersByLogin, subscribe, TwitchError, type LiveStream } from "./helix";
 import { endedMessage, liveMessage, type StreamView } from "./notification";
 import type { StreamOfflineEvent, StreamOnlineEvent } from "./protocol";
-import { planReconcile } from "./reconcile";
+import { addedBeforeStart, planReconcile } from "./reconcile";
 import {
   createNotification,
   findNotification,
@@ -314,7 +314,8 @@ async function reconcile(streamers: TwitchStreamer[], quietWhenIdle = false): Pr
   const history = new Set<string>();
   for (const s of live) {
     if (await findNotification(s.id)) known.add(s.id);
-    if (await hasAnyNotification(s.userId)) history.add(s.userId);
+    const owner = streamers.find((x) => x.twitchUserId === s.userId);
+    if ((owner && addedBeforeStart(owner.createdAt, s.startedAt)) || (await hasAnyNotification(s.userId))) history.add(s.userId);
   }
 
   const plan = planReconcile({

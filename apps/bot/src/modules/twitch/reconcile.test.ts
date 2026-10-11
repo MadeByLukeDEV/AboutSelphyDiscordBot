@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LATE_ANNOUNCE_WINDOW_MS, planReconcile } from "./reconcile";
+import { addedBeforeStart, LATE_ANNOUNCE_WINDOW_MS, planReconcile } from "./reconcile";
 
 const now = new Date("2026-10-12T12:00:00Z");
 const ago = (ms: number) => new Date(now.getTime() - ms);
@@ -53,5 +53,12 @@ describe("planReconcile", () => {
     });
     expect(plan.close.map((r) => r.id)).toEqual(["row1"]);
     expect(plan.announce.map((s) => s.id)).toEqual(["2"]);
+  });
+});
+
+describe("addedBeforeStart", () => {
+  it("is true for a stream that began after the channel was added, false for one already live then", () => {
+    expect(addedBeforeStart(new Date("2026-10-01T10:00:00Z"), new Date("2026-10-01T12:00:00Z"))).toBe(true);
+    expect(addedBeforeStart(new Date("2026-10-01T10:00:00Z"), new Date("2026-10-01T09:00:00Z"))).toBe(false);
   });
 });
