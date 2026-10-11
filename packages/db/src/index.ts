@@ -13,6 +13,8 @@ export type {
   ModConfig,
   Poll,
   PollVote,
+  FeedSource,
+  FeedItem,
   WebhookEndpoint,
   OutboundWebhook,
   ModuleFlag,

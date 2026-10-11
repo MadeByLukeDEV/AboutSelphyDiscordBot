@@ -8,6 +8,7 @@ import {
   pollActionStatus,
   manageRolesResponse,
   roleDeleteResponse,
+  feedCheckResponse,
   webhookRelayStatus,
   webhookTestStatus,
   stickyClearStatus,
@@ -202,6 +203,14 @@ export async function testOutboundWebhookViaBot(id: string): Promise<"ok" | "not
   const res = await botFetch("/internal/webhooks/test", { method: "POST", body: { id }, timeoutMs: 15_000 });
   if (!res?.ok) return null;
   const parsed = webhookTestStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to check one feed now. Null if the bot can't be reached. */
+export async function checkFeedViaBot(id: string): Promise<{ status: string; announced: number } | null> {
+  const res = await botFetch("/internal/feeds/check", { method: "POST", body: { id }, timeoutMs: 30_000 });
+  if (!res?.ok) return null;
+  const parsed = feedCheckResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;
 }
 

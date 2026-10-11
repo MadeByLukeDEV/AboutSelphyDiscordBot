@@ -1,5 +1,6 @@
 import { lookup as dnsLookup } from "node:dns";
 import { isIP } from "node:net";
+import { request as httpRequest } from "node:http";
 import { request } from "node:https";
 
 // Outgoing HTTPS calls to addresses staff typed in. A name can point anywhere, so the address the
@@ -89,5 +90,74 @@ export function postJson(url: string, body: string, headers: Record<string, stri
     });
     req.on("error", () => resolve({ ok: false, reason: blocked ? "blocked" : "error" }));
     req.end(body);
+  });
+}
+
+export type GetResult = { ok: true; status: number; body: string } | { ok: false; reason: "blocked" | "timeout" | "error" | "too-large" };
+
+/**
+ * GETs a text document (a feed). A host in `internalHosts` (exact name match: a feed bridge on the
+ * private network) may be http or https and is connected to normally; every other address must be
+ * https and passes the same connect-time address check as postJson. Redirects are not followed (the
+ * status is returned) and at most `maxBytes` of the body are read.
+ */
+export function getText(url: string, opts: { internalHosts?: readonly string[]; maxBytes?: number; timeoutMs?: number; lookup?: typeof dnsLookup } = {}): Promise<GetResult> {
+  return new Promise((resolve) => {
+    let target: URL;
+    try {
+      target = new URL(url);
+    } catch {
+      return resolve({ ok: false, reason: "error" });
+    }
+    if (target.username || target.password) return resolve({ ok: false, reason: "blocked" });
+    const internal = (opts.internalHosts ?? []).includes(target.hostname.toLowerCase());
+    if (!internal && target.protocol !== "https:") return resolve({ ok: false, reason: "blocked" });
+    if (target.protocol !== "https:" && target.protocol !== "http:") return resolve({ ok: false, reason: "blocked" });
+    const maxBytes = opts.maxBytes ?? 1_000_000;
+    const resolver = opts.lookup ?? dnsLookup;
+    let blocked = false;
+    const send = target.protocol === "https:" ? request : httpRequest;
+    const req = send(
+      target,
+      {
+        method: "GET",
+        headers: { accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5", "user-agent": "AboutSelphy-Bot-Feeds/1" },
+        timeout: opts.timeoutMs ?? 10_000,
+        ...(internal
+          ? {}
+          : {
+              lookup: (hostname: string, options: unknown, callback: (err: Error | null, address: string, family: number) => void) => {
+                resolver(hostname, { ...(options as object), all: false }, (err, address, family) => {
+                  if (err) return callback(err, "", 4);
+                  if (isBlockedAddress(address as string)) {
+                    blocked = true;
+                    return callback(new Error("blocked address"), "", 4);
+                  }
+                  callback(null, address as string, family as number);
+                });
+              },
+            }),
+      },
+      (res) => {
+        const chunks: Buffer[] = [];
+        let total = 0;
+        res.on("data", (chunk: Buffer) => {
+          total += chunk.length;
+          if (total > maxBytes) {
+            req.destroy();
+            return resolve({ ok: false, reason: "too-large" });
+          }
+          chunks.push(chunk);
+        });
+        res.on("end", () => resolve({ ok: true, status: res.statusCode ?? 0, body: Buffer.concat(chunks).toString("utf8") }));
+        res.on("error", () => resolve({ ok: false, reason: "error" }));
+      },
+    );
+    req.on("timeout", () => {
+      req.destroy();
+      resolve({ ok: false, reason: "timeout" });
+    });
+    req.on("error", () => resolve({ ok: false, reason: blocked ? "blocked" : "error" }));
+    req.end();
   });
 }

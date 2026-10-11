@@ -24,6 +24,7 @@ export const RELOADABLE_MODULES = [
   "customcommands",
   "counting",
   "modules",
+  "feeds",
   "autoresponders",
   "webhooks",
 ] as const;
@@ -271,6 +272,11 @@ export type WebhookRelayStatus = z.infer<typeof webhookRelayStatus>;
 export const webhookTestBody = z.object({ id: z.string().min(1).max(64) });
 export const webhookTestStatus = z.enum(["ok", "not-found", "not-configured", "failed"]);
 export type WebhookTestStatus = z.infer<typeof webhookTestStatus>;
+
+/** POST /internal/feeds/check: check one feed now (the dashboard's "Check now"). */
+export const feedCheckBody = z.object({ id: z.string().min(1).max(64) });
+export const feedCheckResponse = z.object({ status: z.string().max(24), announced: z.number().int().min(0) });
+export type FeedCheckResponse = z.infer<typeof feedCheckResponse>;
 
 /** POST /internal/tickets/panel: post (or update) the ticket panel message. */
 export const ticketPanelStatus = z.enum(["posted", "updated", "channel", "needsSetup", "failed"]);

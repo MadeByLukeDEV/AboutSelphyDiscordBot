@@ -1101,6 +1101,29 @@ Decided 2026-10-08:
   - Dashboard `/youtube` (admins): poller status, settings with preview, latest
     videos and whether they were announced.
   - [ ] Several channels, members-only/premieres, a "watch" button
+- [~] Feed announcer (2026-10-27, `feature_feeds`, migration `20261027100000_feeds`; **not tried with a real
+      feed yet**; asked for by the user: TikTok upload notifications through RSSHub)
+  - Bot (`modules/feeds/`): `FeedSource` rows (name, address, channel, optional ping role, message template
+    `{name} {title} {link}`, interval 5-1440 min) and `FeedItem` (seen guids, unique per feed). A round every
+    minute checks due feeds; `getText` (`lib/safe-http.ts`) fetches with a 10 s timeout and a 1 MB cap, no
+    redirects, and the same connect-time address check as the webhooks: only **public https** hosts, plus
+    the exact hosts in `RSS_INTERNAL_HOSTS` (the name of an RSSHub service on the private network; http
+    allowed there). `parse.ts` reads RSS 2.0 and Atom with `fast-xml-parser` 5.11.2 (pinned; items capped at
+    50, fields cut, hostile input tested). **A feed's first successful check only remembers what is there**,
+    afterwards new items are announced oldest first, only if younger than 48 h, **at most 5 per check**
+    (the rest are remembered silently), and each is remembered *before* it is posted, so no restart or
+    second check announces it twice. The title is escaped, the link only shown if http(s), only the
+    configured role can ping. The address is stored AES-256-GCM encrypted (`feed-url`; bridges carry an
+    access key in it) and the dashboard only shows its host; a new address starts over silently. Needs
+    `TOKEN_ENCRYPTION_KEY`. Runs only in production or with `BOT_INTEGRATIONS_IN_DEV`; switchable on
+    `/modules`. `POST /internal/feeds/check` is the dashboard's "Check now".
+  - Dashboard `/feeds` (admins): add/edit (address write-only), check now, remove, last status per feed.
+  - **RSSHub** is a separate Dokploy service (template "RSSHub"), not part of this repo: deploy it in the same
+    project/network, set its `ACCESS_KEY`, and use a feed address like
+    `http://<service name>:1200/tiktok/user/@name?key=<ACCESS_KEY>` with that service name in
+    `RSS_INTERNAL_HOSTS`. TikTok blocks many datacenter addresses, so that route can be flaky: the status
+    on the page tells. Other projects can use the same RSSHub.
+  - [ ] A "watch" embed instead of a plain link, per-feed filters (keywords), several items in one message.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)
   - **Incoming** (`/webhooks` admin page, public route `POST /api/webhooks/in/<id>`, outside the sign-in gate):

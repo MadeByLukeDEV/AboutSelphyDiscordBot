@@ -6,6 +6,7 @@ import {
   giveawayActionBody,
   pollActionBody,
   memberCardPreviewBody,
+  feedCheckBody,
   roleDeleteBody,
   webhookRelayBody,
   webhookTestBody,
@@ -30,6 +31,7 @@ import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
 import { renderMemberCardPreview } from "../modules/membercards";
+import { checkFeedNow } from "../modules/feeds";
 import { clearSticky } from "../modules/sticky";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
@@ -218,6 +220,15 @@ async function route(req: IncomingMessage, res: ServerResponse) {
   if (req.method === "POST" && url.pathname === "/internal/welcome/preview") {
     const png = await renderPreviewCard();
     return json(res, 200, { png: Buffer.from(png).toString("base64") });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/feeds/check") {
+    const body = feedCheckBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const result = await checkFeedNow(guild, body.data.id);
+    return result ? json(res, 200, result) : json(res, 404, { error: "not found" });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/webhooks/relay") {

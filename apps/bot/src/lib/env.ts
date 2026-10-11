@@ -48,6 +48,17 @@ const schema = z.object({
   // true once the "Message Content" privileged intent is enabled in the Developer Portal (Bot ->
   // Privileged Gateway Intents). Needed to read message text, e.g. for ticket transcripts.
   DISCORD_MESSAGE_CONTENT: bool,
+  // Hosts the feed announcer may reach even though they are on the internal network, comma separated
+  // (a feed bridge such as RSSHub, e.g. "rsshub"). Everything else must be a public https host.
+  RSS_INTERNAL_HOSTS: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean),
+    ),
   BOT_ENV: z.enum(["local", "production"]).default("local"),
   BOT_INTEGRATIONS_IN_DEV: bool,
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),

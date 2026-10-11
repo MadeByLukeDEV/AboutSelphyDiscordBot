@@ -34,7 +34,8 @@
         "counting": "Counting channel",
         "autoResponders": "Auto-responders",
         "modules": "Modules",
-        "webhooks": "Webhooks"
+        "webhooks": "Webhooks",
+        "feeds": "Feed announcer"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2043,6 +2044,10 @@
       "tempvoice": {
         "name": "Temporary voice channels",
         "description": "Join-to-create rooms and /voice."
+      },
+      "feeds": {
+        "name": "Feed announcer",
+        "description": "Announces new items of RSS and Atom feeds, e.g. TikTok through RSSHub."
       }
     },
     "errors": {
@@ -2167,6 +2172,77 @@
       "needsName": "Give it a name.",
       "badUrl": "Enter a valid address: a Discord webhook address, or an https address of a public host.",
       "needsEvent": "Pick at least one event."
+    }
+  },
+  "Feeds": {
+    "title": "Feed announcer",
+    "intro": "Announce new items of an RSS or Atom feed in a channel. With a feed bridge such as RSSHub this also covers TikTok, Instagram and other sites without an official way to be notified. The first check of a new feed only remembers what is there, so nothing old is announced.",
+    "notReady": "The feed announcer needs TOKEN_ENCRYPTION_KEY in the environment, because feed addresses are stored encrypted. Set it and restart.",
+    "botOffline": "The bot is offline, so the channel list isn't available.",
+    "add": "Add a feed",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removed": "Feed removed",
+    "on": "On",
+    "off": "Off",
+    "never": "never",
+    "checkNow": "Check now",
+    "checkedAnnounced": "{count, plural, one {1 new item announced} other {# new items announced}}",
+    "checkedNothing": "Checked: nothing new",
+    "checkedBaseline": "First check done: the current items were remembered and nothing was announced",
+    "checkedFailed": "The check failed: {status}",
+    "list": {
+      "title": "Feeds",
+      "count": "({count} of {max})",
+      "every": "every {minutes} min",
+      "checked": "Last checked {time}",
+      "notChecked": "Not checked yet"
+    },
+    "empty": {
+      "title": "No feeds yet",
+      "body": "Add your RSSHub address for a TikTok account, a blog or any other feed."
+    },
+    "dialog": {
+      "newTitle": "Add a feed",
+      "editTitle": "Edit feed",
+      "intro": "The address is stored encrypted and only its host is shown here afterwards."
+    },
+    "form": {
+      "name": "Name",
+      "nameHelp": "Used in the message, e.g. the account name.",
+      "url": "Feed address",
+      "urlHelp": "An https address, for example https://rsshub.example.com/tiktok/user/@name?key=…. A bridge on your own network works if its host name is listed in RSS_INTERNAL_HOSTS.",
+      "urlKeep": "Leave empty to keep the saved address",
+      "urlEditHelp": "Saved address: {host}. Enter a new one to replace it (the first check after that only remembers the current items).",
+      "channel": "Post in",
+      "channelPlaceholder": "Pick a channel",
+      "role": "Ping a role",
+      "noRole": "Nobody",
+      "roleHelp": "Only this role is mentioned. Leave empty for no ping.",
+      "template": "Message",
+      "templateHelp": "'{name}', '{title}' and '{link}' are filled in. Keep '{link}' so Discord shows a preview of the video.",
+      "interval": "Check every (minutes)",
+      "intervalHelp": "{min} to {max}. Most bridges don't like being asked more often than every 10 minutes.",
+      "enabled": "Active",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "notReady": "TOKEN_ENCRYPTION_KEY isn't set, so addresses can't be stored.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "roleNotFound": "That role doesn't exist any more.",
+      "tooMany": "That's the maximum number of feeds.",
+      "notFound": "That feed doesn't exist any more. Reload the page.",
+      "failed": "That didn't work. Try again.",
+      "needsName": "Give the feed a name.",
+      "badUrl": "Enter a valid http or https address.",
+      "needsTemplate": "Write the message (up to 300 characters).",
+      "badInterval": "Enter a number of minutes from {min} to {max}."
     }
   }
 }

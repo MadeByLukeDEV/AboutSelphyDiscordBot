@@ -34,7 +34,8 @@
         "counting": "Zählkanal",
         "autoResponders": "Auto-Antworten",
         "modules": "Module",
-        "webhooks": "Webhooks"
+        "webhooks": "Webhooks",
+        "feeds": "Feed-Ankündigungen"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2043,6 +2044,10 @@
       "tempvoice": {
         "name": "Temporäre Sprachkanäle",
         "description": "Räume zum Erstellen per Beitritt und /voice."
+      },
+      "feeds": {
+        "name": "Feed-Ankündigungen",
+        "description": "Kündigt neue Einträge von RSS- und Atom-Feeds an, z. B. TikTok über RSSHub."
       }
     },
     "errors": {
@@ -2167,6 +2172,77 @@
       "needsName": "Gib einen Namen an.",
       "badUrl": "Gib eine gültige Adresse ein: eine Discord-Webhook-Adresse oder eine https-Adresse eines öffentlichen Hosts.",
       "needsEvent": "Wähle mindestens ein Ereignis."
+    }
+  },
+  "Feeds": {
+    "title": "Feed-Ankündigungen",
+    "intro": "Kündige neue Einträge eines RSS- oder Atom-Feeds in einem Kanal an. Mit einer Feed-Brücke wie RSSHub funktioniert das auch für TikTok, Instagram und andere Seiten ohne offiziellen Benachrichtigungsweg. Die erste Prüfung eines neuen Feeds merkt sich nur, was da ist, damit nichts Altes angekündigt wird.",
+    "notReady": "Die Feed-Ankündigungen brauchen TOKEN_ENCRYPTION_KEY in der Umgebung, weil Feed-Adressen verschlüsselt gespeichert werden. Setze ihn und starte neu.",
+    "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+    "add": "Feed hinzufügen",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removed": "Feed entfernt",
+    "on": "An",
+    "off": "Aus",
+    "never": "nie",
+    "checkNow": "Jetzt prüfen",
+    "checkedAnnounced": "{count, plural, one {1 neuer Eintrag angekündigt} other {# neue Einträge angekündigt}}",
+    "checkedNothing": "Geprüft: nichts Neues",
+    "checkedBaseline": "Erste Prüfung erledigt: die aktuellen Einträge wurden gemerkt und nichts wurde angekündigt",
+    "checkedFailed": "Die Prüfung ist fehlgeschlagen: {status}",
+    "list": {
+      "title": "Feeds",
+      "count": "({count} von {max})",
+      "every": "alle {minutes} Min.",
+      "checked": "Zuletzt geprüft {time}",
+      "notChecked": "Noch nicht geprüft"
+    },
+    "empty": {
+      "title": "Noch keine Feeds",
+      "body": "Füge deine RSSHub-Adresse für ein TikTok-Konto, einen Blog oder einen anderen Feed hinzu."
+    },
+    "dialog": {
+      "newTitle": "Feed hinzufügen",
+      "editTitle": "Feed bearbeiten",
+      "intro": "Die Adresse wird verschlüsselt gespeichert und danach wird hier nur ihr Host angezeigt."
+    },
+    "form": {
+      "name": "Name",
+      "nameHelp": "Wird in der Nachricht verwendet, z. B. der Kontoname.",
+      "url": "Feed-Adresse",
+      "urlHelp": "Eine https-Adresse, z. B. https://rsshub.example.com/tiktok/user/@name?key=…. Eine Brücke im eigenen Netzwerk funktioniert, wenn ihr Hostname in RSS_INTERNAL_HOSTS steht.",
+      "urlKeep": "Leer lassen, um die gespeicherte Adresse zu behalten",
+      "urlEditHelp": "Gespeicherte Adresse: {host}. Gib eine neue ein, um sie zu ersetzen (die erste Prüfung danach merkt sich nur die aktuellen Einträge).",
+      "channel": "Posten in",
+      "channelPlaceholder": "Kanal wählen",
+      "role": "Rolle pingen",
+      "noRole": "Niemanden",
+      "roleHelp": "Nur diese Rolle wird erwähnt. Leer lassen für keinen Ping.",
+      "template": "Nachricht",
+      "templateHelp": "'{name}', '{title}' und '{link}' werden eingesetzt. Behalte '{link}', damit Discord eine Vorschau des Videos zeigt.",
+      "interval": "Prüfen alle (Minuten)",
+      "intervalHelp": "{min} bis {max}. Die meisten Brücken mögen es nicht, öfter als alle 10 Minuten gefragt zu werden.",
+      "enabled": "Aktiv",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "notReady": "TOKEN_ENCRYPTION_KEY ist nicht gesetzt, daher können Adressen nicht gespeichert werden.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "roleNotFound": "Diese Rolle gibt es nicht mehr.",
+      "tooMany": "Das ist die maximale Anzahl an Feeds.",
+      "notFound": "Diesen Feed gibt es nicht mehr. Lade die Seite neu.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut.",
+      "needsName": "Gib dem Feed einen Namen.",
+      "badUrl": "Gib eine gültige http- oder https-Adresse ein.",
+      "needsTemplate": "Schreibe die Nachricht (bis zu 300 Zeichen).",
+      "badInterval": "Gib eine Minutenzahl von {min} bis {max} ein."
     }
   }
 }

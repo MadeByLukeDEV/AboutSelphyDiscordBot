@@ -940,3 +940,39 @@ model OutboundWebhook {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
+
+/// A feed (RSS or Atom address) the bot watches; new items are announced in a channel. TikTok, Instagram and
+/// more come through a feed bridge such as RSSHub.
+model FeedSource {
+  id              String    @id @default(cuid())
+  name            String    @db.VarChar(60)
+  /// The feed address, AES-256-GCM encrypted (purpose "feed-url"): bridges often carry an access key in it.
+  urlEnc          String
+  channelId       String    @db.VarChar(20)
+  /// Role to ping, or null for no ping.
+  pingRoleId      String?   @db.VarChar(20)
+  /// {title} {link} {name} are replaced (plain text; the title is escaped).
+  messageTemplate String    @default("{name}: {title} {link}") @db.VarChar(300)
+  intervalMinutes Int       @default(10)
+  enabled         Boolean   @default(true)
+  /// false until the first successful check, which only remembers what is there (nothing is announced).
+  baselined       Boolean   @default(false)
+  lastCheckedAt   DateTime?
+  /// "ok", "http 404", "blocked", "timeout", "parse", "empty" ... of the last check.
+  lastStatus      String?   @db.VarChar(24)
+  createdByName   String    @db.VarChar(100)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  items           FeedItem[]
+}
+
+/// Items already seen (announced or silently remembered), so nothing is announced twice.
+model FeedItem {
+  id        String     @id @default(cuid())
+  feedId    String
+  feed      FeedSource @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  guid      String     @db.VarChar(300)
+  createdAt DateTime   @default(now())
+
+  @@unique([feedId, guid])
+}

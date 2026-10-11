@@ -41,6 +41,7 @@
     "./counting": "./src/counting.ts",
     "./modules": "./src/modules.ts",
     "./webhooks": "./src/webhooks.ts",
+    "./feeds": "./src/feeds.ts",
     "./webhook-signature": "./src/webhook-signature.ts",
     "./auto-responders": "./src/auto-responders.ts"
   }
