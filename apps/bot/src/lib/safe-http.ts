@@ -93,7 +93,7 @@ export function postJson(url: string, body: string, headers: Record<string, stri
   });
 }
 
-export type GetResult = { ok: true; status: number; body: string } | { ok: false; reason: "blocked" | "timeout" | "error" | "too-large"; /** Why it was blocked: "login in url", "http" (plain http needs the host on the internal list), "scheme" or "address" (the name resolved to a private address). */ detail?: string };
+export type GetResult = { ok: true; status: number; body: string } | { ok: false; reason: "blocked" | "timeout" | "error" | "too-large"; /** For "error": the error code (ENOTFOUND = the name doesn't exist, ECONNREFUSED = nothing listens there, ECONNRESET, a certificate code ...). Why it was blocked: "login in url", "http" (plain http needs the host on the internal list), "scheme" or "address" (the name resolved to a private address). */ detail?: string };
 
 /**
  * GETs a text document (a feed). A host in `internalHosts` (exact name match: a feed bridge on the
@@ -157,7 +157,7 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
       req.destroy();
       resolve({ ok: false, reason: "timeout" });
     });
-    req.on("error", () => resolve(blocked ? { ok: false, reason: "blocked", detail: "address" } : { ok: false, reason: "error" }));
+    req.on("error", (err: NodeJS.ErrnoException) => resolve(blocked ? { ok: false, reason: "blocked", detail: "address" } : { ok: false, reason: "error", detail: typeof err.code === "string" ? err.code.slice(0, 16) : undefined }));
     req.end();
   });
 }
