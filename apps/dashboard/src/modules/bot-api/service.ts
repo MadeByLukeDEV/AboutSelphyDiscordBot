@@ -12,6 +12,10 @@ import {
   webhookRelayStatus,
   webhookTestStatus,
   stickyClearStatus,
+  modGuidePostResponse,
+  modGuidePreviewResponse,
+  type ModGuidePostResponse,
+  type ModGuidePreview,
   roleMergeResponse,
   roleUpdateStatus,
   ticketPanelStatus,
@@ -180,6 +184,22 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   if (!res?.ok) return null;
   const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
+/** The categories the bot would list in the moderators' guide. Null if the bot can't be reached. */
+export async function getModGuidePreview(): Promise<ModGuidePreview | null> {
+  const res = await botFetch("/internal/modguide/preview");
+  if (!res?.ok) return null;
+  const parsed = modGuidePreviewResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post (or update) the moderators' guide from the saved settings. Null if the bot can't be reached. */
+export async function postModGuideViaBot(): Promise<ModGuidePostResponse | null> {
+  const res = await botFetch("/internal/modguide/post", { method: "POST", timeoutMs: 20_000 });
+  if (!res?.ok) return null;
+  const parsed = modGuidePostResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
 }
 
 /** Takes a sticky message's current copy down. Null if the bot can't be reached. */

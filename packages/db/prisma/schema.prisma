@@ -976,3 +976,19 @@ model FeedItem {
 
   @@unique([feedId, guid])
 }
+
+/// The moderators' guide: the text around the command list and where the bot posted it (singleton, id 1).
+model ModGuide {
+  id          Int       @id @default(1)
+  channelId   String?   @db.VarChar(20)
+  title       String    @default("Moderator guide") @db.VarChar(100)
+  description String    @default("") @db.VarChar(1500)
+  /// Cover picture, https only (checked by the dashboard and again by the bot).
+  imageUrl    String    @default("") @db.VarChar(500)
+  color       String    @default("#00FFA8") @db.VarChar(7)
+  notes       String    @default("") @db.VarChar(1500)
+  /// The posted messages in order, so an update edits them instead of posting again.
+  messageIds  String[]
+  postedAt    DateTime?
+  updatedAt   DateTime  @updatedAt
+}

@@ -22,6 +22,7 @@ export type {
   AutoResponder,
   CustomCommand,
   StickyMessage,
+  ModGuide,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

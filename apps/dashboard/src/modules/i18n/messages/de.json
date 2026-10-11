@@ -40,7 +40,8 @@
         "autoResponders": "Auto-Antworten",
         "modules": "Module",
         "webhooks": "Webhooks",
-        "feeds": "Feed-Ankündigungen"
+        "feeds": "Feed-Ankündigungen",
+        "modGuide": "Moderatoren-Leitfaden"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2257,5 +2258,53 @@
     "contents": "Inhalt",
     "readPrivacy": "Datenschutzerklärung lesen",
     "readTerms": "Nutzungsbedingungen lesen"
+  },
+  "ModGuide": {
+    "title": "Moderatoren-Leitfaden",
+    "intro": "Postet einen Leitfaden für deine Moderatoren in einen Team-Kanal: Titelbild, Titel und Beschreibung, danach alle Befehle, die ein Moderator nutzen darf, nach Kategorien sortiert und mit Schreibweise. Die Befehlsliste kommt vom Bot, neue Moderator-Befehle erscheinen also beim nächsten Klick.",
+    "noChannel": "Noch kein Kanal",
+    "post": "Leitfaden posten",
+    "update": "Leitfaden aktualisieren",
+    "posted": "Der Leitfaden ist gepostet ({count, plural, one {# Nachricht} other {# Nachrichten}}).",
+    "lastPosted": "Zuletzt gepostet {when}.",
+    "neverPosted": "Noch nicht gepostet.",
+    "saveFirst": "Speichere zuerst deine Änderungen, dann poste.",
+    "form": {
+      "title": "Die Nachricht",
+      "intro": "Alles hier steht oben im Leitfaden. Beim Aktualisieren bearbeitet der Bot die zuvor geposteten Nachrichten, der Link bleibt also gleich.",
+      "channel": "Kanal",
+      "channelHelp": "Ein Team-Kanal. Der Bot muss ihn sehen sowie Nachrichten und Embeds senden dürfen. Ein anderer Kanal bekommt einen neuen Leitfaden; der alte bleibt, wo er war.",
+      "heading": "Titel",
+      "description": "Beschreibung",
+      "descriptionHelp": "Discord-Markdown funktioniert (**fett**, Listen, Links). Damit kann niemand gepingt werden.",
+      "image": "Adresse des Titelbilds",
+      "imageHelp": "Eine https-Adresse eines Bildes, breit unter der Beschreibung gezeigt. Leer lassen für keins.",
+      "color": "Farbe",
+      "notes": "Gut zu wissen (optional)",
+      "notesHelp": "Ein letzter Abschnitt nach den Befehlen, z. B. wie die Werkzeuge genutzt werden oder wen man fragt. Leer lassen zum Weglassen.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert"
+    },
+    "preview": {
+      "title": "Vorschau",
+      "intro": "Ein grober Eindruck. Das Titelbild wird hier nicht geladen; Discord zeigt das echte.",
+      "cover": "Titelbild",
+      "untitled": "(kein Titel)",
+      "botOffline": "Der Bot ist offline, daher ist die Befehlsliste nicht verfügbar.",
+      "none": "Der Bot listet keine Moderator-Befehle.",
+      "notesTitle": "Gut zu wissen"
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsChannel": "Wähle zuerst einen Kanal und speichere.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Diesen Kanal gibt es nicht oder er ist kein Textkanal.",
+      "channelNotUsable": "Der Bot kann in diesem Kanal nicht posten. Prüfe seine Rechte dort.",
+      "badImage": "Nutze eine https-Adresse ohne Leerzeichen oder lass das Feld leer.",
+      "badColor": "Nutze eine Farbe wie #00FFA8.",
+      "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+    }
   }
 }

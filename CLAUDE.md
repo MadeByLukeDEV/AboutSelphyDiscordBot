@@ -803,6 +803,19 @@ Decided 2026-10-08:
     (`nav-groups`). The phone "More" sheet builds from the same groups.
   - **Catalog keys never contain a dot** (next-intl reads it as nesting and throws
     INVALID_KEY on every page): `catalogs.test.ts` enforces this and equal en/de keys.
+- [~] Moderator guide (2026-10-28, `feature_mod-guide`, migration `20261028100000_mod_guide`; **not tried live
+      yet**; asked for by the user)
+  - Admin page `/mod-guide`: channel, title, description, cover picture (https only, shown big on the first
+    embed), colour, optional "Good to know" section; the **Post / Update** button asks the bot
+    (`POST /internal/modguide/post`) to post the guide, and later presses **edit the same messages** (ids kept in
+    `ModGuide.messageIds`, extra ones deleted, a changed channel starts fresh). It never posts by itself.
+  - The command list is **read from the registered commands** when posting (`modules/modguide/rules.ts`): every
+    command with `requires: "moderator"` plus `/ticket` (team-only inside its code), not `/ping`, each as its usage
+    (`/ban <user> <reason> [duration]`, sub-commands as `/suggestion approve|deny|implement`) and its description,
+    escaped. Categories: acting on members, cases and history, channel tools, community, and "Other" for any new
+    moderator command not mapped yet (**add it to `CATEGORIES`** when you add one). Embeds are packed into as few
+    messages as fit Discord's limits (10 embeds, 6000 characters). Nothing can ping (`allowedMentions: parse []`).
+    The dashboard preview comes from `GET /internal/modguide/preview`. Tests in `rules.test.ts`.
 - [~] Leveling (2026-10-16, `feature_levels`, migration `20261016180000_levels` applied;
       **not tried live yet**; Tier B of the replacement roadmap)
   - Bot (`modules/levels/`): message XP (random in a range, per-member cooldown kept in

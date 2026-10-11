@@ -40,7 +40,8 @@
         "autoResponders": "Auto-responders",
         "modules": "Modules",
         "webhooks": "Webhooks",
-        "feeds": "Feed announcer"
+        "feeds": "Feed announcer",
+        "modGuide": "Moderator guide"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2257,5 +2258,53 @@
     "contents": "Contents",
     "readPrivacy": "Read the Privacy Policy",
     "readTerms": "Read the Terms of Service"
+  },
+  "ModGuide": {
+    "title": "Moderator guide",
+    "intro": "Posts a guide for your moderators in a staff channel: a cover picture, a title and a description, then every command a moderator may use, sorted into categories with how to type it. The command list is read from the bot, so new moderator commands appear the next time you press the button.",
+    "noChannel": "No channel yet",
+    "post": "Post the guide",
+    "update": "Update the guide",
+    "posted": "The guide is posted ({count, plural, one {# message} other {# messages}}).",
+    "lastPosted": "Last posted {when}.",
+    "neverPosted": "Not posted yet.",
+    "saveFirst": "Save your changes first, then post.",
+    "form": {
+      "title": "The message",
+      "intro": "Everything here is shown at the top of the guide. Updating edits the messages the bot posted before, so the link stays the same.",
+      "channel": "Channel",
+      "channelHelp": "A staff channel. The bot needs to see it, send messages and embeds there. Changing the channel posts a new guide there; the old one stays where it was.",
+      "heading": "Title",
+      "description": "Description",
+      "descriptionHelp": "Discord markdown works (**bold**, lists, links). Nobody can be pinged from it.",
+      "image": "Cover picture address",
+      "imageHelp": "An https address of a picture, shown wide under the description. Leave empty for none.",
+      "color": "Colour",
+      "notes": "Good to know (optional)",
+      "notesHelp": "A last section after the commands, e.g. how to use the tools or who to ask. Leave empty to skip it.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved"
+    },
+    "preview": {
+      "title": "Preview",
+      "intro": "A rough look. The cover picture is not loaded here; Discord shows the real thing.",
+      "cover": "Cover picture",
+      "untitled": "(no title)",
+      "botOffline": "The bot is offline, so the command list isn't available.",
+      "none": "The bot lists no moderator commands.",
+      "notesTitle": "Good to know"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel and save first.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "channelNotUsable": "The bot can't post in that channel. Check its permissions there.",
+      "badImage": "Use an https address without spaces, or leave it empty.",
+      "badColor": "Use a colour like #00FFA8.",
+      "failed": "Something went wrong. Try again."
+    }
   }
 }

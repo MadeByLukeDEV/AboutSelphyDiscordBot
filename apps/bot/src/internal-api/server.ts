@@ -33,6 +33,7 @@ import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
 import { renderMemberCardPreview } from "../modules/membercards";
 import { checkFeedNow } from "../modules/feeds";
 import { clearSticky } from "../modules/sticky";
+import { guidePreview, postGuide } from "../modules/modguide";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
@@ -243,6 +244,16 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const body = webhookTestBody.safeParse(await readJsonBody(req));
     if (!body.success) return json(res, 400, { error: "invalid body" });
     return json(res, 200, { status: await sendTest(body.data.id) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/modguide/preview") {
+    return json(res, 200, await guidePreview());
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/modguide/post") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await postGuide(guild));
   }
 
   if (req.method === "POST" && url.pathname === "/internal/sticky/clear") {

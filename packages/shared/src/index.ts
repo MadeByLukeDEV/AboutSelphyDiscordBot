@@ -5,3 +5,4 @@ export * from "./text-filter";
 export * from "./profanity";
 export * from "./tempvoice";
 export * from "./twitch";
+export * from "./modguide";

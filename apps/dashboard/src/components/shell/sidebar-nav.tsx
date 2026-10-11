@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronDown, LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, ToggleRight, Webhook, Rss, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { BookOpen, ChevronDown, LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, ToggleRight, Webhook, Rss, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -31,6 +31,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   roleManager: UserCog,
   statChannels: Hash,
   sticky: Pin,
+  modGuide: BookOpen,
   autoPublish: Share2,
   customCommands: Terminal,
   counting: ListOrdered,
