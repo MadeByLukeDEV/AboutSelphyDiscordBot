@@ -18,6 +18,10 @@ import { Switch } from "@/components/ui/switch";
 import { deleteEndpointAction, deleteOutboundAction, rotateEndpointSecretAction, saveEndpointAction, saveOutboundAction, testOutboundAction } from "../actions";
 import type { EndpointRow, OutboundRow } from "../schema";
 
+/** Message keys can't contain dots, so "mod.case" is looked up as "mod_case". */
+const EVENT_KEYS = { "mod.case": "mod_case", "twitch.live": "twitch_live" } as const satisfies Record<OutboundEvent, string>;
+const eventKey = (ev: OutboundEvent) => EVENT_KEYS[ev];
+
 type Reveal = { title: string; url?: string; secret: string } | null;
 
 /** Incoming endpoints and outgoing webhooks. A secret is shown once, in a dialog, right after it is made. State flows in as props; changes call router.refresh(). */
@@ -149,7 +153,7 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
                     <Badge variant={o.enabled ? "default" : "secondary"}>{o.enabled ? t("on") : t("off")}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {o.host} · {o.events.map((ev) => t(`events.${ev}`)).join(", ")}
+                    {o.host} · {o.events.map((ev) => t(`events.${eventKey(ev)}`)).join(", ")}
                   </p>
                   <p className="text-xs text-muted-foreground">{o.lastStatus ? t("outgoing.last", { status: o.lastStatus, time: when(o.lastAt) }) : t("outgoing.neverSent")}</p>
                 </div>
@@ -385,7 +389,7 @@ function OutboundForm({ row, onDone }: { row: OutboundRow | null; onDone: (secre
                       checked={field.value.includes(ev)}
                       onChange={(e) => field.onChange(e.target.checked ? [...field.value, ev] : field.value.filter((x) => x !== ev))}
                     />
-                    {tev(ev)}
+                    {tev(eventKey(ev))}
                   </label>
                 ))}
               </div>

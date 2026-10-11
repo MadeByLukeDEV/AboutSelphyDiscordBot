@@ -791,6 +791,15 @@ Decided 2026-10-08:
       card. The CSP's `img-src` allows `https://cdn.discordapp.com` for avatars.
       Use `surface` for any new card, not `border bg-card`. Looked at by the
       user before merge: pending feedback.
+  - **Navigation groups** (2026-10-27, `feature_nav-categories`): `NAV` in `nav.ts` has seven
+    headed groups (moderation, members and roles, engagement, voice, content and automation,
+    streams and feeds, system) after the heading-less overview. Add a page to the group where
+    an admin would look for it (`nav.test.ts` checks: every page once, 2-7 items per group,
+    the exact moderator list, names in en and de). The desktop sidebar groups collapse; the
+    group with the current page is open by default, hand changes are kept in `localStorage`
+    (`nav-groups`). The phone "More" sheet builds from the same groups.
+  - **Catalog keys never contain a dot** (next-intl reads it as nesting and throws
+    INVALID_KEY on every page): `catalogs.test.ts` enforces this and equal en/de keys.
 - [~] Leveling (2026-10-16, `feature_levels`, migration `20261016180000_levels` applied;
       **not tried live yet**; Tier B of the replacement roadmap)
   - Bot (`modules/levels/`): message XP (random in a range, per-member cooldown kept in

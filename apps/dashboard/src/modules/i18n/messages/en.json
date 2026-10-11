@@ -5,7 +5,12 @@
       "label": "Main navigation",
       "groups": {
         "moderation": "Moderation",
-        "community": "Community"
+        "members": "Members and roles",
+        "engagement": "Engagement",
+        "voice": "Voice",
+        "content": "Content and automation",
+        "streams": "Streams and feeds",
+        "system": "System"
       },
       "items": {
         "overview": "Overview",
@@ -2074,8 +2079,8 @@
       "discord": "Discord webhook"
     },
     "events": {
-      "mod.case": "A moderation case is created",
-      "twitch.live": "A Twitch channel goes live"
+      "mod_case": "A moderation case is created",
+      "twitch_live": "A Twitch channel goes live"
     },
     "incoming": {
       "title": "Incoming endpoints",

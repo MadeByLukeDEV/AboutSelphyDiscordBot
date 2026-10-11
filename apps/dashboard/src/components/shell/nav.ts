@@ -3,7 +3,7 @@ import type { StaffRole } from "@/modules/auth/roles";
 /** Keys under Shell.nav.items in the message catalogs. */
 export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "autoResponders" | "modules" | "webhooks" | "feeds";
 /** Keys under Shell.nav.groups; null = no heading. */
-export type NavGroupLabel = "moderation" | "community";
+export type NavGroupLabel = "moderation" | "members" | "engagement" | "voice" | "content" | "streams" | "system";
 
 type NavItemSpec = {
   href: string;
@@ -14,7 +14,9 @@ type NavItemSpec = {
 
 type NavGroupSpec = { label: NavGroupLabel | null; items: NavItemSpec[] };
 
-// A module's page is added here together with the page itself.
+// A module's page is added here together with the page itself. Groups are by what an admin is trying to do,
+// so a feature is found where it is looked for: people and roles, community games, voice, content that
+// gets posted, outside sources, and the bot's own system settings.
 const NAV: NavGroupSpec[] = [
   { label: null, items: [{ href: "/", label: "overview" }] },
   {
@@ -23,35 +25,60 @@ const NAV: NavGroupSpec[] = [
       { href: "/cases", label: "cases" },
       { href: "/tickets", label: "tickets" },
       { href: "/logs", label: "logs", requires: "admin" },
-      { href: "/modules", label: "modules", requires: "admin" },
-      { href: "/settings", label: "settings", requires: "admin" },
     ],
   },
   {
-    label: "community",
+    label: "members",
     items: [
-      { href: "/announcements", label: "announcements" },
-      { href: "/giveaways", label: "giveaways" },
-      { href: "/suggestions", label: "suggestions" },
-      { href: "/polls", label: "polls" },
-      { href: "/starboard", label: "starboard", requires: "admin" },
-      { href: "/birthdays", label: "birthdays", requires: "admin" },
-      { href: "/reminders", label: "reminders", requires: "admin" },
+      { href: "/welcome", label: "welcome", requires: "admin" },
       { href: "/roles", label: "roles", requires: "admin" },
       { href: "/role-manager", label: "roleManager", requires: "admin" },
-      { href: "/welcome", label: "welcome", requires: "admin" },
       { href: "/levels", label: "levels", requires: "admin" },
+      { href: "/birthdays", label: "birthdays", requires: "admin" },
+    ],
+  },
+  {
+    label: "engagement",
+    items: [
+      { href: "/giveaways", label: "giveaways" },
+      { href: "/polls", label: "polls" },
+      { href: "/suggestions", label: "suggestions" },
+      { href: "/starboard", label: "starboard", requires: "admin" },
+      { href: "/counting", label: "counting", requires: "admin" },
+    ],
+  },
+  {
+    label: "voice",
+    items: [
       { href: "/voice-rooms", label: "voiceRooms", requires: "admin" },
       { href: "/stat-channels", label: "statChannels", requires: "admin" },
+    ],
+  },
+  {
+    label: "content",
+    items: [
+      { href: "/announcements", label: "announcements" },
       { href: "/sticky", label: "sticky", requires: "admin" },
       { href: "/auto-publish", label: "autoPublish", requires: "admin" },
       { href: "/custom-commands", label: "customCommands", requires: "admin" },
-      { href: "/webhooks", label: "webhooks", requires: "admin" },
-      { href: "/feeds", label: "feeds", requires: "admin" },
       { href: "/auto-responders", label: "autoResponders", requires: "admin" },
-      { href: "/counting", label: "counting", requires: "admin" },
+      { href: "/reminders", label: "reminders", requires: "admin" },
+    ],
+  },
+  {
+    label: "streams",
+    items: [
       { href: "/twitch", label: "twitch", requires: "admin" },
       { href: "/youtube", label: "youtube", requires: "admin" },
+      { href: "/feeds", label: "feeds", requires: "admin" },
+    ],
+  },
+  {
+    label: "system",
+    items: [
+      { href: "/modules", label: "modules", requires: "admin" },
+      { href: "/webhooks", label: "webhooks", requires: "admin" },
+      { href: "/settings", label: "settings", requires: "admin" },
     ],
   },
 ];
