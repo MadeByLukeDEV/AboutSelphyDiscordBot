@@ -93,7 +93,7 @@ export function postJson(url: string, body: string, headers: Record<string, stri
   });
 }
 
-export type GetResult = { ok: true; status: number; body: string } | { ok: false; reason: "blocked" | "timeout" | "error" | "too-large" };
+export type GetResult = { ok: true; status: number; body: string } | { ok: false; reason: "blocked" | "timeout" | "error" | "too-large"; /** Why it was blocked: "login in url", "http" (plain http needs the host on the internal list), "scheme" or "address" (the name resolved to a private address). */ detail?: string };
 
 /**
  * GETs a text document (a feed). A host in `internalHosts` (exact name match: a feed bridge on the
@@ -109,10 +109,10 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
     } catch {
       return resolve({ ok: false, reason: "error" });
     }
-    if (target.username || target.password) return resolve({ ok: false, reason: "blocked" });
+    if (target.username || target.password) return resolve({ ok: false, reason: "blocked", detail: "login in url" });
     const internal = (opts.internalHosts ?? []).includes(target.hostname.toLowerCase());
-    if (!internal && target.protocol !== "https:") return resolve({ ok: false, reason: "blocked" });
-    if (target.protocol !== "https:" && target.protocol !== "http:") return resolve({ ok: false, reason: "blocked" });
+    if (!internal && target.protocol !== "https:") return resolve({ ok: false, reason: "blocked", detail: target.protocol === "http:" ? "http" : "scheme" });
+    if (target.protocol !== "https:" && target.protocol !== "http:") return resolve({ ok: false, reason: "blocked", detail: "scheme" });
     const maxBytes = opts.maxBytes ?? 1_000_000;
     const resolver = opts.lookup ?? dnsLookup;
     let blocked = false;
@@ -157,7 +157,7 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
       req.destroy();
       resolve({ ok: false, reason: "timeout" });
     });
-    req.on("error", () => resolve({ ok: false, reason: blocked ? "blocked" : "error" }));
+    req.on("error", () => resolve(blocked ? { ok: false, reason: "blocked", detail: "address" } : { ok: false, reason: "error" }));
     req.end();
   });
 }

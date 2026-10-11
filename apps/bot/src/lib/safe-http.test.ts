@@ -41,14 +41,14 @@ describe("getText", () => {
   const privateLookup = ((_h: string, _o: unknown, cb: (e: null, a: string, f: number) => void) => cb(null, "10.0.0.5", 4)) as never;
 
   it("refuses a public-looking name that resolves to a private address", async () => {
-    expect(await getText("https://feeds.example.test/rss", { lookup: privateLookup })).toEqual({ ok: false, reason: "blocked" });
+    expect(await getText("https://feeds.example.test/rss", { lookup: privateLookup })).toEqual({ ok: false, reason: "blocked", detail: "address" });
   });
 
   it("refuses plain http, credentials and unknown schemes for hosts that are not on the internal list", async () => {
-    expect(await getText("http://feeds.example.test/rss")).toEqual({ ok: false, reason: "blocked" });
-    expect(await getText("https://u:p@feeds.example.test/rss")).toEqual({ ok: false, reason: "blocked" });
-    expect(await getText("ftp://feeds.example.test/rss", { internalHosts: ["feeds.example.test"] })).toEqual({ ok: false, reason: "blocked" });
-    expect(await getText("http://rsshub:1200/x", { internalHosts: ["other"] })).toEqual({ ok: false, reason: "blocked" });
+    expect(await getText("http://feeds.example.test/rss")).toEqual({ ok: false, reason: "blocked", detail: "http" });
+    expect(await getText("https://u:p@feeds.example.test/rss")).toEqual({ ok: false, reason: "blocked", detail: "login in url" });
+    expect(await getText("ftp://feeds.example.test/rss", { internalHosts: ["feeds.example.test"] })).toEqual({ ok: false, reason: "blocked", detail: "scheme" });
+    expect(await getText("http://rsshub:1200/x", { internalHosts: ["other"] })).toEqual({ ok: false, reason: "blocked", detail: "http" });
     expect(await getText("not a url")).toEqual({ ok: false, reason: "error" });
   });
 });

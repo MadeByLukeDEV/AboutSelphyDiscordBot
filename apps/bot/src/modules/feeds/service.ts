@@ -42,7 +42,7 @@ export function checkFeed(guild: Guild, feed: FeedSource): Promise<FeedCheckResp
         return await done("key mismatch");
       }
       const res = await getText(url, { internalHosts: env().RSS_INTERNAL_HOSTS });
-      if (!res.ok) return await done(res.reason);
+      if (!res.ok) return await done(res.detail ? `${res.reason}: ${res.detail}` : res.reason);
       if (res.status < 200 || res.status >= 300) return await done(`http ${res.status}`);
       let items;
       try {
