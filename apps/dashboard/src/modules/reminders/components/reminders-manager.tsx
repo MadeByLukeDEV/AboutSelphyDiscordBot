@@ -6,7 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
+import type { GuildChannel } from "@aboutselphy/shared";
 import { MAX_PER_USER, MIN_PER_USER, reminderSettingsSchema, type ReminderSettings } from "@aboutselphy/shared/reminders";
+import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -17,7 +19,7 @@ import { saveReminderSettingsAction } from "../actions";
 import type { ReminderStats } from "../schema";
 
 /** The reminder settings and a count of pending reminders (their text stays private). */
-export function RemindersManager({ initial, stats, cardImage }: { initial: ReminderSettings; stats: ReminderStats; cardImage: CardImageView | null }) {
+export function RemindersManager({ initial, stats, cardImage, channels }: { initial: ReminderSettings; stats: ReminderStats; cardImage: CardImageView | null; channels: GuildChannel[] | null }) {
   const t = useTranslations("Reminders");
   const te = useTranslations("Reminders.errors");
   const format = useFormatter();
@@ -26,6 +28,12 @@ export function RemindersManager({ initial, stats, cardImage }: { initial: Remin
 
   const form = useForm<ReminderSettings>({ resolver: zodResolver(reminderSettingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
+
+  const channelOptions: SelectOption[] = [
+    { value: "", label: t("form.anywhere") },
+    ...(channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined })),
+  ];
+  if (initial.channelId && !channelOptions.some((o) => o.value === initial.channelId)) channelOptions.push({ value: initial.channelId, label: initial.channelId });
 
   const onSubmit = form.handleSubmit((values) =>
     startTransition(async () => {
@@ -65,6 +73,11 @@ export function RemindersManager({ initial, stats, cardImage }: { initial: Remin
             <Input id="rm-max" type="number" inputMode="numeric" min={MIN_PER_USER} max={MAX_PER_USER} className="max-w-[7rem]" {...form.register("maxPerUser", { valueAsNumber: true })} />
             <FieldDescription>{t("form.maxHelp", { min: MIN_PER_USER, max: MAX_PER_USER })}</FieldDescription>
             {errors.maxPerUser && <FieldError>{te("badMax", { min: MIN_PER_USER, max: MAX_PER_USER })}</FieldError>}
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="rm-channel">{t("form.channel")}</FieldLabel>
+            <FormSelect control={form.control} name="channelId" id="rm-channel" options={channelOptions} placeholder={t("form.anywhere")} disabled={channels === null} />
+            <FieldDescription>{channels === null ? t("form.botOffline") : t("form.channelHelp")}</FieldDescription>
           </Field>
         </FieldGroup>
         <MemberCardSettings kind="reminder" form={form} cardImage={cardImage} withSubtitle={false} />

@@ -12,11 +12,13 @@ describe("isAllowedDelay", () => {
 
 describe("settings", () => {
   it("keeps the per-member limit sane", () => {
-    const card = { cardEnabled: false, cardMode: "background", cardTitle: "Reminder" };
+    const card = { channelId: "", cardEnabled: false, cardMode: "background", cardTitle: "Reminder" };
     expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 10, ...card }).success).toBe(true);
     expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 0, ...card }).success).toBe(false);
     expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 51, ...card }).success).toBe(false);
     expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 5, ...card, cardMode: "stretch" }).success).toBe(false);
+    expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 5, ...card, channelId: "123456789012345678" }).success).toBe(true);
+    expect(reminderSettingsSchema.safeParse({ enabled: true, maxPerUser: 5, ...card, channelId: "general" }).success).toBe(false);
   });
 });
 

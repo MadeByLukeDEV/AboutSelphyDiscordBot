@@ -777,6 +777,8 @@ model ReminderConfig {
   enabled    Boolean  @default(true)
   /// Pending reminders one member may have.
   maxPerUser Int      @default(10)
+  /// The one channel /remind works in; null = anywhere.
+  channelId  String?  @db.VarChar(20)
   updatedAt  DateTime @updatedAt
   /// Optional picture drawn for each reminder; see MemberCardImage.
   cardEnabled Boolean @default(false)
@@ -791,6 +793,8 @@ model Reminder {
   channelId   String    @db.VarChar(20)
   message     String    @db.VarChar(500)
   remindAt    DateTime
+  /// Where the member wants it: dm (the channel is the fallback) or channel (the DM is the fallback).
+  delivery    String    @default("dm") @db.VarChar(8)
   createdAt   DateTime  @default(now())
   /// Set when delivery was claimed; a reminder is delivered once.
   deliveredAt DateTime?

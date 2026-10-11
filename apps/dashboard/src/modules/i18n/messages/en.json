@@ -8,7 +8,7 @@
         "members": "Members and roles",
         "engagement": "Engagement",
         "voice": "Voice",
-        "content": "Content and automation",
+        "content": "Content",
         "streams": "Streams and feeds",
         "system": "System"
       },
@@ -1504,7 +1504,7 @@
   },
   "Reminders": {
     "title": "Reminders",
-    "intro": "Members use /remind me to get a message later, by DM or, if their DMs are closed, in the channel where they set it. The text of their reminders is private and not shown here.",
+    "intro": "Members use /remind me to get a message later, in a DM or in the channel where they set it, as they choose. You can limit /remind to one channel. The text of their reminders is private and not shown here.",
     "stats": {
       "title": "Right now",
       "pending": "{count, plural, one {# pending reminder} other {# pending reminders}}",
@@ -1519,13 +1519,19 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Saved",
-      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "channel": "Channel for /remind",
+      "anywhere": "Anywhere",
+      "channelHelp": "When a channel is picked, /remind only works there; elsewhere members are told where to use it. Reminders delivered in the channel are posted there too.",
+      "botOffline": "The bot is offline, so the channel list isn't available."
     },
     "errors": {
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
       "failed": "Couldn't save the settings. Try again.",
-      "badMax": "Enter a number from {min} to {max}."
+      "badMax": "Enter a number from {min} to {max}.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel."
     }
   },
   "RoleManager": {

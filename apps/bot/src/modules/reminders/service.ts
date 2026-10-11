@@ -41,20 +41,29 @@ export async function deliverDue(guild: Guild): Promise<void> {
         });
         if (card) files = [new AttachmentBuilder(Buffer.from(card), { name: "reminder.png" })];
       }
-      const dmed = user ? await user.send({ content: text, files, allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false;
-      if (dmed) {
-        log.info({ reminder: r.id }, "reminder delivered by DM");
-        continue;
+      // The member's choice goes first, the other way is the fallback (closed DMs, deleted channel).
+      const byDm = async () => (user ? user.send({ content: text, files, allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false);
+      const byChannel = async () => {
+        const channel = await guild.channels.fetch(r.channelId).catch(() => null);
+        if (!channel?.isTextBased() || !("send" in channel)) return false;
+        return channel.send({ content: text, files, allowedMentions: { parse: [], users: [r.userId] } }).then(
+          () => true,
+          (err) => {
+            log.warn({ err, reminder: r.id }, "reminder could not be posted in the channel");
+            return false;
+          },
+        );
+      };
+      const order = r.delivery === "channel" ? ([["the channel", byChannel], ["a DM", byDm]] as const) : ([["a DM", byDm], ["the channel", byChannel]] as const);
+      let done = false;
+      for (const [how, send] of order) {
+        if (await send()) {
+          log.info({ reminder: r.id, how, wanted: r.delivery }, "reminder delivered");
+          done = true;
+          break;
+        }
       }
-      const channel = await guild.channels.fetch(r.channelId).catch(() => null);
-      if (channel?.isTextBased() && "send" in channel) {
-        await channel
-          .send({ content: text, files, allowedMentions: { parse: [], users: [r.userId] } })
-          .then(() => log.info({ reminder: r.id }, "reminder delivered in the channel (DMs closed)"))
-          .catch((err) => log.warn({ err, reminder: r.id }, "reminder could not be delivered"));
-      } else {
-        log.warn({ reminder: r.id }, "reminder could not be delivered (DMs closed, channel gone)");
-      }
+      if (!done) log.warn({ reminder: r.id }, "reminder could not be delivered (DMs closed, channel gone)");
     }
     await pruneDelivered(new Date(now.getTime() - 86_400_000));
   } catch (err) {

@@ -5,7 +5,7 @@ export const readConfig = (): Promise<ReminderConfig> => prisma.reminderConfig.u
 
 export const pendingCount = (userId: string) => prisma.reminder.count({ where: { userId, deliveredAt: null } });
 
-export const createReminder = (data: { userId: string; channelId: string; message: string; remindAt: Date }) => prisma.reminder.create({ data });
+export const createReminder = (data: { userId: string; channelId: string; message: string; remindAt: Date; delivery: "dm" | "channel" }) => prisma.reminder.create({ data });
 
 export const listPending = (userId: string): Promise<Reminder[]> => prisma.reminder.findMany({ where: { userId, deliveredAt: null }, orderBy: { remindAt: "asc" }, take: 50 });
 

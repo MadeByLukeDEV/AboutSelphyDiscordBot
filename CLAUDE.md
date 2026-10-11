@@ -794,7 +794,7 @@ Decided 2026-10-08:
       card. The CSP's `img-src` allows `https://cdn.discordapp.com` for avatars.
       Use `surface` for any new card, not `border bg-card`. Looked at by the
       user before merge: pending feedback.
-  - **Navigation groups** (2026-10-27, `feature_nav-categories`): `NAV` in `nav.ts` has seven
+  - **Navigation groups** (2026-10-27, `feature_nav-categories`; the long "Content and automation" heading wrapped badly and was shortened to "Content" on 2026-10-28; keep headings to one short line): `NAV` in `nav.ts` has seven
     headed groups (moderation, members and roles, engagement, voice, content and automation,
     streams and feeds, system) after the heading-less overview. Add a page to the group where
     an admin would look for it (`nav.test.ts` checks: every page once, 2-7 items per group,
@@ -997,6 +997,12 @@ Decided 2026-10-08:
     of members' reminders is never shown).
   - **Reminder card** (same branch): optional picture with the avatar, name and the reminder text under
     the name, attached to the DM or the channel message (`MemberCardImage` kind `reminder`).
+  - **Channel limit and delivery choice** (2026-10-28, `feature_reminder-channel`, migration
+    `20261028180000_reminder_channel`; **not tried live yet**): `ReminderConfig.channelId` restricts all of `/remind`
+    (me, list, cancel) to one channel (empty = anywhere; elsewhere the member gets a private note naming the
+    channel; picked on `/reminders`, validated through the bot). `/remind me where:` lets the member choose a DM
+    (default) or the channel (`Reminder.delivery`, CHECK dm|channel); the chosen way is tried first and the other
+    is the fallback (closed DMs, deleted channel), so nothing is lost.
   - [ ] Repeating reminders, `/remind` for a channel or another member, snooze button.
 - [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
       asked for by the user)

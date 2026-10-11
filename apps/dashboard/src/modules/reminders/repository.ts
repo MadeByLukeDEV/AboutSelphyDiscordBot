@@ -4,7 +4,7 @@ import { prisma, type ReminderConfig } from "@aboutselphy/db";
 
 export const readConfig = (): Promise<ReminderConfig> => prisma.reminderConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
-export const updateConfig = (data: { enabled: boolean; maxPerUser: number; cardEnabled: boolean; cardMode: string; cardTitle: string }): Promise<ReminderConfig> => prisma.reminderConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
+export const updateConfig = (data: { enabled: boolean; maxPerUser: number; channelId: string | null; cardEnabled: boolean; cardMode: string; cardTitle: string }): Promise<ReminderConfig> => prisma.reminderConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 
 /** Counts only: the text of a member's reminders is private and never shown here. */
 export async function stats() {

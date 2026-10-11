@@ -8,7 +8,7 @@
         "members": "Mitglieder und Rollen",
         "engagement": "Interaktion",
         "voice": "Sprache",
-        "content": "Inhalte und Automatik",
+        "content": "Inhalte",
         "streams": "Streams und Feeds",
         "system": "System"
       },
@@ -1504,7 +1504,7 @@
   },
   "Reminders": {
     "title": "Erinnerungen",
-    "intro": "Mitglieder nutzen /remind me, um später eine Nachricht zu bekommen, per DM oder, falls ihre DMs geschlossen sind, im Kanal, in dem sie sie gesetzt haben. Der Text ihrer Erinnerungen ist privat und wird hier nicht angezeigt.",
+    "intro": "Mitglieder nutzen /remind me, um später eine Nachricht zu bekommen, per DM oder im Kanal, in dem sie sie gesetzt haben, ganz nach Wahl. Du kannst /remind auf einen Kanal beschränken. Der Text ihrer Erinnerungen ist privat und wird hier nicht angezeigt.",
     "stats": {
       "title": "Gerade jetzt",
       "pending": "{count, plural, one {# ausstehende Erinnerung} other {# ausstehende Erinnerungen}}",
@@ -1519,13 +1519,19 @@
       "save": "Speichern",
       "saving": "Speichern…",
       "saved": "Gespeichert",
-      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+      "channel": "Kanal für /remind",
+      "anywhere": "Überall",
+      "channelHelp": "Ist ein Kanal gewählt, funktioniert /remind nur dort; anderswo wird den Mitgliedern gesagt, wo sie es nutzen können. Erinnerungen im Kanal werden ebenfalls dort gepostet.",
+      "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar."
     },
     "errors": {
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind ungültig.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
-      "badMax": "Gib eine Zahl von {min} bis {max} ein."
+      "badMax": "Gib eine Zahl von {min} bis {max} ein.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Diesen Kanal gibt es nicht oder er ist kein Textkanal."
     }
   },
   "RoleManager": {

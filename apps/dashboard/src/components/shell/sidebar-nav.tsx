@@ -114,9 +114,9 @@ export function SidebarNav({ groups }: { groups: NavGroup[] }) {
                 aria-expanded={open}
                 aria-controls={panelId}
                 onClick={() => setGroupOpen(key, !open)}
-                className="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                className="flex items-center justify-between gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium tracking-wide text-muted-foreground uppercase transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex min-w-0 flex-1 items-center gap-2">
                   {t(`groups.${group.label}`)}
                   {!open && holdsActive && <span aria-hidden className="size-1.5 rounded-full bg-primary" />}
                 </span>
