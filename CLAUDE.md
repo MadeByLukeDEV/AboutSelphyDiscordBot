@@ -513,6 +513,24 @@ Decided 2026-10-08:
   pinned to 16.3.8 (fixes seven advisories incl. an image-optimizer SSRF). `pnpm audit --prod` still
   lists `deepmerge-ts` 7.1.5 inside Prisma 7.10.0's config loader (it only merges our own config files,
   no untrusted input): accepted until Prisma moves it, re-check at every Prisma bump.
+- **Terms of Service and Privacy Policy** (2026-10-27, `feature_legal-pages`): public pages `/terms` and
+  `/privacy` (English and German, by the visitor's language), the only dashboard routes readable without
+  signing in (`lib/public-paths.ts`, an exact allow-list used by `proxy.ts`; they keep the nonce CSP, the
+  security headers and the no-index header). The text is structured data in `modules/legal/` (rendered as
+  plain text, no markup) and was written from what the code really stores: moderation cases, levels,
+  tickets and transcripts, birthdays (day and month only), reminders, suggestions/polls/giveaways,
+  starboard, role snapshots (90 days), counting, message text read live but not stored. **Keep it in sync**:
+  when a feature starts storing something new or a retention changes, edit `privacy.en.ts` AND
+  `privacy.de.ts` (the test checks both have the same sections) and bump `LEGAL_LAST_UPDATED` in
+  `modules/legal/types.ts`. The operator's details come from `LEGAL_OPERATOR_NAME`, `LEGAL_OPERATOR_ADDRESS`,
+  `LEGAL_CONTACT_EMAIL`, `LEGAL_COUNTRY`, `LEGAL_HOSTING` (dashboard env, compose, `.env.example`); an unset
+  value shows as a visible `[LEGAL_... is not set]` placeholder, never a guess. **Not legal advice**: have a
+  lawyer or the data protection officer check the wording before relying on it; a German operator with
+  income from the community (Twitch, sponsors) may also need an Impressum. The bot is **single-server**:
+  the texts say so; if it ever becomes multi-server the documents and the code need real changes (per-server
+  data separation, a processor agreement, retention tools). Known gaps the policy words carefully: there is
+  **no automatic retention** for moderation cases, ticket transcripts, suggestions, levels and starboard
+  posts (deleted on request by hand), and no self-service "delete my data" command yet.
 - **Docker / Dokploy** (2026-10-26, `chore_dockerfiles-v2`): `docker-compose.yml` at the repo root starts
   both services: `dashboard` (applies migrations on start, healthcheck `/api/health`, `expose 3000`, the
   Dokploy domain goes on this service) and `bot` (waits for a healthy dashboard, no ports, internal API on

@@ -25,6 +25,13 @@ const schema = z.object({
   BETTER_AUTH_SECRET: z.string().min(16),
   BOT_API_URL: z.url().default("http://bot:3100"),
   BOT_API_SECRET: z.string().min(32),
+  // Who runs the bot, for the public terms and privacy policy (/terms, /privacy). Not secret. A value that
+  // isn't set shows as a visible placeholder on those pages instead of an invented one.
+  LEGAL_OPERATOR_NAME: z.string().max(200).optional(),
+  LEGAL_OPERATOR_ADDRESS: z.string().max(400).optional(),
+  LEGAL_CONTACT_EMAIL: z.string().max(200).optional(),
+  LEGAL_COUNTRY: z.string().max(100).optional(),
+  LEGAL_HOSTING: z.string().max(300).optional(),
   // Twitch (went live): the dashboard only runs the one-time "Connect Twitch"
   // login and stores the refresh token encrypted; the bot does the rest.
   TWITCH_CLIENT_ID: z.string().min(1).optional(),

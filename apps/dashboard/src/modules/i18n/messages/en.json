@@ -2244,5 +2244,13 @@
       "needsTemplate": "Write the message (up to 300 characters).",
       "badInterval": "Enter a number of minutes from {min} to {max}."
     }
+  },
+  "Legal": {
+    "termsTitle": "Terms of Service",
+    "privacyTitle": "Privacy Policy",
+    "updated": "Last updated: {date}",
+    "contents": "Contents",
+    "readPrivacy": "Read the Privacy Policy",
+    "readTerms": "Read the Terms of Service"
   }
 }

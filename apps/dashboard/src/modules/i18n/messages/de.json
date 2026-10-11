@@ -2244,5 +2244,13 @@
       "needsTemplate": "Schreibe die Nachricht (bis zu 300 Zeichen).",
       "badInterval": "Gib eine Minutenzahl von {min} bis {max} ein."
     }
+  },
+  "Legal": {
+    "termsTitle": "Nutzungsbedingungen",
+    "privacyTitle": "Datenschutzerklärung",
+    "updated": "Zuletzt aktualisiert: {date}",
+    "contents": "Inhalt",
+    "readPrivacy": "Datenschutzerklärung lesen",
+    "readTerms": "Nutzungsbedingungen lesen"
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp, createNonce } from "@/lib/security/csp";
 import { env, siteUrl } from "@/lib/env";
+import { isPublicPath } from "@/lib/public-paths";
 import { canAccessDashboard } from "@/modules/auth/roles";
 import { getStaffSession, loginUrl } from "@/modules/auth/session";
 
@@ -23,9 +24,12 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set(CSP_HEADER, csp);
 
-  const session = await getStaffSession(request.cookies);
+  // The terms and the privacy policy are public (Discord and the members need to be able to read them).
+  const session = isPublicPath(request.nextUrl.pathname) ? null : await getStaffSession(request.cookies);
   let response: NextResponse;
-  if (!session || !canAccessDashboard(session.user.role)) {
+  if (isPublicPath(request.nextUrl.pathname)) {
+    response = NextResponse.next({ request: { headers: requestHeaders } });
+  } else if (!session || !canAccessDashboard(session.user.role)) {
     const { pathname, search } = request.nextUrl;
     // Return URL from the public site URL, not request.url (the container's
     // internal address behind Traefik).
