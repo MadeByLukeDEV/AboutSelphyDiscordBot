@@ -1,6 +1,6 @@
 import { Events, type Client, type GuildTextBasedChannel } from "discord.js";
 import type { TwitchNotification, TwitchStreamer } from "@aboutselphy/db";
-import { MAX_TWITCH_STREAMERS, type TwitchResolveResponse } from "@aboutselphy/shared";
+import { MAX_TWITCH_EVENTSUB_STREAMERS, MAX_TWITCH_STREAMERS, type TwitchResolveResponse } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
@@ -25,7 +25,8 @@ import {
 } from "./repository";
 import { forgetAccessToken, getAccessToken, NoTwitchToken, twitchCredentials } from "./tokens";
 
-// Went Live. One EventSub WebSocket for the whole bot; the announcements are
+// Went Live. One EventSub WebSocket for the first five channels (instant), a Helix poll once a minute for
+// the rest (up to MAX_TWITCH_STREAMERS); the announcements are
 // idempotent (unique Twitch stream id), serialised per stream, and repaired on
 // every (re)connect from Helix, so a missed event only delays an announcement.
 
@@ -33,6 +34,9 @@ let discord: Client | undefined;
 let socket: EventSubClient | undefined;
 const mutex = new KeyedMutex();
 let lastSessionAt: Date | undefined;
+let pollTimer: ReturnType<typeof setInterval> | undefined;
+let polling = false;
+const POLL_EVERY_MS = 60_000;
 
 export type TwitchRuntime = {
   /** Whether this process may touch Twitch and post at all. */
@@ -74,11 +78,20 @@ export function startTwitch(client: Client): void {
   );
 
   // The dashboard changed streamers or switches: a new session resubscribes to exactly the current set.
-  onReload("twitch", () => socket?.restart());
-  client.once(Events.ClientReady, () => socket?.start());
+  onReload("twitch", () => {
+    socket?.restart();
+    void pollExtra();
+  });
+  client.once(Events.ClientReady, () => {
+    socket?.start();
+    pollTimer = setInterval(() => void pollExtra(), POLL_EVERY_MS);
+    pollTimer.unref();
+  });
 }
 
 export function stopTwitch(): void {
+  clearInterval(pollTimer);
+  pollTimer = undefined;
   socket?.stop();
 }
 
@@ -102,9 +115,9 @@ async function subscribeAll(sessionId: string): Promise<void> {
   for (const paused of allStreamers.filter((s) => !s.enabled)) void syncLiveRole(discord, paused, false);
   const enabledStreamers = allStreamers.filter((s) => s.enabled);
   if (enabledStreamers.length > MAX_TWITCH_STREAMERS) {
-    log.warn({ configured: enabledStreamers.length, max: MAX_TWITCH_STREAMERS }, "twitch: more channels than one connection can subscribe to, the rest are ignored");
+    log.warn({ configured: enabledStreamers.length, max: MAX_TWITCH_STREAMERS }, "twitch: more channels than allowed, the rest are ignored");
   }
-  const streamers = enabledStreamers.slice(0, MAX_TWITCH_STREAMERS);
+  const streamers = enabledStreamers.slice(0, MAX_TWITCH_STREAMERS).slice(0, MAX_TWITCH_EVENTSUB_STREAMERS);
   if (streamers.length === 0) {
     log.info({}, "twitch: no streamers configured");
     return;
@@ -132,6 +145,30 @@ async function subscribeAll(sessionId: string): Promise<void> {
 
   // Not awaited: the 10 s budget for subscribing is over, repairing may take longer.
   void reconcile(streamers).catch((err) => log.error({ err }, "twitch: reconcile failed"));
+}
+
+/** Channels past the first five have no events: a minute-by-minute Helix check announces and closes for them. */
+async function pollExtra(): Promise<void> {
+  if (polling || !twitchRuntime().active) return;
+  polling = true;
+  try {
+    const config = await readConfig();
+    if (!config.enabled) return;
+    const enabled = (await listStreamers()).filter((s) => s.enabled).slice(0, MAX_TWITCH_STREAMERS);
+    const extra = enabled.slice(MAX_TWITCH_EVENTSUB_STREAMERS);
+    if (extra.length === 0) return;
+    try {
+      await getAccessToken();
+    } catch (err) {
+      if (err instanceof NoTwitchToken) return; // nothing changes until someone connects
+      throw err;
+    }
+    await reconcile(extra, true);
+  } catch (err) {
+    log.error({ err }, "twitch: polling the extra channels failed");
+  } finally {
+    polling = false;
+  }
 }
 
 // -- events ---------------------------------------------------------------------------------
@@ -261,7 +298,7 @@ async function textChannel(channelId: string): Promise<GuildTextBasedChannel | u
 
 // -- repairing after a (re)connect -------------------------------------------------------------
 
-async function reconcile(streamers: TwitchStreamer[]): Promise<void> {
+async function reconcile(streamers: TwitchStreamer[], quietWhenIdle = false): Promise<void> {
   const credentials = twitchCredentials();
   if (!credentials || streamers.length === 0) return;
   const token = await getAccessToken();
@@ -270,7 +307,9 @@ async function reconcile(streamers: TwitchStreamer[]): Promise<void> {
   // The live role follows the truth from Helix, so a missed event heals here.
   const liveUserIds = new Set(live.map((s) => s.userId));
   for (const streamer of streamers) void syncLiveRole(discord, streamer, liveUserIds.has(streamer.twitchUserId));
-  const open = await listOpenNotifications();
+  // A poll only owns its own channels; after a (re)connect every open row is checked.
+  const owned = new Set(streamers.map((s) => s.twitchUserId));
+  const open = (await listOpenNotifications()).filter((r) => !quietWhenIdle || owned.has(r.twitchUserId));
   const known = new Set<string>();
   const history = new Set<string>();
   for (const s of live) {
@@ -285,8 +324,9 @@ async function reconcile(streamers: TwitchStreamer[]): Promise<void> {
     channelsWithHistory: history,
     now: new Date(),
   });
-  log.info(
-    { live: live.length, announce: plan.announce.length, baseline: plan.baseline.length, close: plan.close.length },
+  const idle = plan.announce.length + plan.baseline.length + plan.close.length === 0;
+  log[quietWhenIdle && idle ? "debug" : "info"](
+    { live: live.length, announce: plan.announce.length, baseline: plan.baseline.length, close: plan.close.length, polled: quietWhenIdle },
     "twitch: reconciled",
   );
 

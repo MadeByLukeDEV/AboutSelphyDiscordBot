@@ -429,7 +429,7 @@
       "twitchNotFound": "Twitch kennt keinen Kanal mit diesem Namen.",
       "channelNotFound": "Dieser Discord-Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Diese Rolle existiert nicht mehr.",
-      "tooManyStreamers": "Mehr Kanäle kann eine Twitch-Verbindung nicht verfolgen. Entferne zuerst einen.",
+      "tooManyStreamers": "Mehr Kanäle werden nicht unterstützt. Entferne zuerst einen.",
       "alreadyAdded": "Dieser Kanal steht schon auf der Liste.",
       "memberNotFound": "Dieses Mitglied ist nicht auf dem Server.",
       "memberInvalid": "Eine Discord-Mitglieds-ID besteht aus 17 bis 20 Ziffern."

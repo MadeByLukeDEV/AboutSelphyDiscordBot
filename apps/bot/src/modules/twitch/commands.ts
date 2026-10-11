@@ -59,7 +59,7 @@ const twitch: Command = {
           const existing = await listStreamers();
           if (!existing.some((s) => s.twitchUserId === found.id) && existing.length >= MAX_TWITCH_STREAMERS) {
             return void (await i.editReply({
-              content: `At most ${MAX_TWITCH_STREAMERS} channels can be announced (Twitch limits one connection's subscriptions). Remove one first with \`/twitch remove\`.`,
+              content: `At most ${MAX_TWITCH_STREAMERS} channels can be announced (more would be too many to check every minute). Remove one first with \`/twitch remove\`.`,
               allowedMentions: NO_MENTIONS,
             }));
           }

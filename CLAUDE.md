@@ -680,9 +680,12 @@ Decided 2026-10-08:
   - Add/edit from the dashboard (dialog on `/twitch`): the login is looked up
     through the bot (`POST /internal/twitch/resolve`, the bot holds the Twitch
     token), roles come from `GET /internal/guild/roles`; the Discord channel and
-    role are validated against the server, a sixth channel is refused
-    (`MAX_TWITCH_STREAMERS = 5`: one WebSocket allows a subscription cost of 10 and
-    online + offline cost 1 each per channel).
+    role are validated against the server. Up to `MAX_TWITCH_STREAMERS = 30` channels
+    (2026-10-27): the first 5 (`MAX_TWITCH_EVENTSUB_STREAMERS`, one WebSocket allows a
+    subscription cost of 10 and online + offline cost 1 each) get instant EventSub events;
+    the rest are checked by `pollExtra` once a minute through Helix (`reconcile` limited to
+    those channels, so an announcement can be up to a minute late and there is no race with
+    events). Not tried live yet.
   - Per channel: message template (`{name} {login} {title} {game} {url}`), embed
     colour, show game, show stream picture. The template function lives in
     `@aboutselphy/shared/twitch-template` and is used by the bot **and** the
