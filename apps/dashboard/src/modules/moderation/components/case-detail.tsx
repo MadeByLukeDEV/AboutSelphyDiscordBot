@@ -7,6 +7,7 @@ import { caseQueryString } from "../case-filter";
 import { CASE_STYLE } from "./case-style";
 import { CaseTypeBadge } from "./case-type-badge";
 import { CasesList } from "./cases-list";
+import { EditReasonButton } from "./edit-reason-button";
 import { PardonButton } from "./pardon-button";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -73,6 +74,8 @@ export async function CaseDetail({ row, others }: { row: ModCase; others: ModCas
         <Row label={t("detail.reason")}>
           {/* Rendered as text by React: staff- and Discord-supplied text is never HTML. */}
           <p className="whitespace-pre-wrap">{row.reason ?? t("noReason")}</p>
+          {row.reasonEditedAt && <p className="text-sm text-muted-foreground">{t("detail.reasonEdited", { name: row.reasonEditedByName ?? "?", date: when(row.reasonEditedAt) })}</p>}
+          <EditReasonButton caseNumber={row.caseNumber} reason={row.reason ?? ""} />
         </Row>
         {row.durationSeconds ? <Row label={t("detail.duration")}>{formatDuration(row.durationSeconds)}</Row> : null}
         {row.expiresAt ? <Row label={t("detail.until")}>{when(row.expiresAt)}</Row> : null}
@@ -96,6 +99,9 @@ export async function CaseDetail({ row, others }: { row: ModCase; others: ModCas
           <h2 id="more-heading" className="text-fluid-lg font-semibold">
             {t("detail.more")}
           </h2>
+          <Link href={`/members/${row.targetId}`} className={cn(buttonVariants({ variant: "default", size: "sm" }))}>
+            {t("detail.openMember")}
+          </Link>
           <Link
             href={`/cases${caseQueryString({ q: row.targetId })}`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}

@@ -1,10 +1,11 @@
 import "server-only";
 import type { ModCase, ModConfig } from "@aboutselphy/db";
 import { errorInfo } from "@/lib/log";
-import { listChannels, refreshCaseLog, reloadBotModule } from "@/modules/bot-api";
+import { listChannels, moderationActViaBot, refreshCaseLog, reloadBotModule } from "@/modules/bot-api";
 import type { StaffSession } from "@/modules/auth";
 import {
   caseStats,
+  editReason,
   findCase,
   listCases,
   listCasesForTarget,
@@ -13,8 +14,9 @@ import {
   recentCases,
   updateConfig,
 } from "./repository";
-import { formatDuration, parseDuration } from "@aboutselphy/shared/duration";
-import { DEFAULT_ESCALATION, PAGE_SIZE, type CaseQuery, type PardonResult, type SaveSettingsResult, type SettingsInput } from "./schema";
+import { formatDuration, MAX_TIMEOUT_SECONDS, MIN_TIMEOUT_SECONDS, parseDuration } from "@aboutselphy/shared/duration";
+import { MAX_TEMP_BAN_SECONDS, REASON_REQUIRED, moderationActBody } from "@aboutselphy/shared/moderation-act";
+import { DEFAULT_ESCALATION, PAGE_SIZE, type ActResult, type CaseQuery, type EditReasonResult, type MemberActionInput, type PardonResult, type SaveSettingsResult, type SettingsInput } from "./schema";
 
 export async function getCasesPage(query: CaseQuery) {
   const { rows, total } = await listCases(query);
@@ -97,6 +99,64 @@ export async function pardon(caseNumber: number, by: StaffSession["user"]): Prom
     return { ok: true, logUpdated: logStatus === "updated" };
   } catch (error) {
     console.error("[moderation] pardon failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Everything about one member: the name from the newest case, how many of each kind, the active warnings, and the history (newest first, up to 100). */
+export async function getMemberPage(userId: string) {
+  const rows = await listCasesForTarget(userId, -1, 100);
+  const counts: Record<string, number> = {};
+  for (const c of rows) counts[c.type] = (counts[c.type] ?? 0) + 1;
+  return { userId, name: rows.find((c) => c.targetName)?.targetName ?? null, rows, counts, activeWarnings: rows.filter((c) => c.type === "warn" && c.active).length };
+}
+
+/**
+ * A moderation action started on the dashboard. The input is checked again here (the form is only a convenience), the length text is
+ * read the way the slash commands read it, and the bot does the rest: its permission and role-order checks, the Discord call, the case
+ * under the staff member's name. The bot refuses staff, the owner and itself as targets.
+ */
+export async function actOnMember(input: MemberActionInput, by: StaffSession["user"]): Promise<ActResult> {
+  try {
+    if (REASON_REQUIRED.has(input.type) && input.reason === "") return { ok: false, error: "needsReason" };
+    let durationSeconds: number | undefined;
+    if (input.type === "timeout" || (input.type === "ban" && input.duration !== "")) {
+      const seconds = parseDuration(input.duration);
+      const [min, max] = input.type === "timeout" ? [MIN_TIMEOUT_SECONDS, MAX_TIMEOUT_SECONDS] : [MIN_TIMEOUT_SECONDS, MAX_TEMP_BAN_SECONDS];
+      if (seconds === null || seconds < min || seconds > max) return { ok: false, error: "badDuration" };
+      durationSeconds = seconds;
+    }
+    const body = moderationActBody.safeParse({
+      type: input.type,
+      targetId: input.targetId,
+      reason: input.reason,
+      ...(durationSeconds ? { durationSeconds } : {}),
+      ...(input.type === "ban" && input.deleteDays > 0 ? { deleteDays: input.deleteDays } : {}),
+      staffName: by.name,
+    });
+    if (!body.success) return { ok: false, error: "invalid" };
+
+    const result = await moderationActViaBot(body.data);
+    if (!result) return { ok: false, error: "botUnavailable" };
+    if (!result.ok || result.caseNumber === undefined) return { ok: false, error: "refused", message: result.message };
+    return { ok: true, caseNumber: result.caseNumber, message: result.message };
+  } catch (error) {
+    console.error("[moderation] action failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Staff may correct a reason afterwards; the case shows who changed it and when, and the log message in Discord is refreshed. */
+export async function editCaseReason(caseNumber: number, reason: string, by: StaffSession["user"]): Promise<EditReasonResult> {
+  try {
+    const row = await findCase(caseNumber);
+    if (!row) return { ok: false, error: "notFound" };
+    // A reason that is required for this kind of case can't be emptied.
+    if (reason === "" && (REASON_REQUIRED as ReadonlySet<string>).has(row.type)) return { ok: false, error: "invalid" };
+    if ((await editReason(caseNumber, reason || null, by.name)) === 0) return { ok: false, error: "notFound" };
+    return { ok: true, logUpdated: (await refreshCaseLog(caseNumber)) === "updated" };
+  } catch (error) {
+    console.error("[moderation] editing a reason failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
 }

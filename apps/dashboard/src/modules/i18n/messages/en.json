@@ -44,7 +44,8 @@
         "modGuide": "Moderator guide",
         "antiBot": "Anti-bot channel",
         "twitchVip": "VIP role",
-        "retention": "Data retention"
+        "retention": "Data retention",
+        "memberLookup": "Members"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -161,7 +162,9 @@
         "dashboard": "Dashboard",
         "audit_log": "Discord (audit log)",
         "automod": "Automatic"
-      }
+      },
+      "reasonEdited": "Changed by {name} on {date}",
+      "openMember": "Open member page"
     },
     "pardon": {
       "button": "Pardon warning",
@@ -230,6 +233,24 @@
         "window": "Only count warnings from the last (days)",
         "windowHelp": "Leave empty to count every active warning, however old. Between 1 and {max} days.",
         "windowError": "Use a whole number of days between 1 and {max}, or leave it empty."
+      }
+    },
+    "editReason": {
+      "button": "Edit reason",
+      "title": "Reason for case #{number}",
+      "body": "Change the reason if it was wrong or incomplete. The case keeps a note of who changed it and when, and the log message in Discord is updated.",
+      "label": "Reason",
+      "help": "Cases of this kind need a reason, so it can't be emptied.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "done": "Reason updated",
+      "doneNoLog": "Reason updated, but the log message in Discord couldn't be refreshed.",
+      "errors": {
+        "forbidden": "You don't have access to this.",
+        "invalid": "That reason isn't valid.",
+        "notFound": "That case doesn't exist.",
+        "failed": "Something went wrong. Try again."
       }
     }
   },
@@ -2499,6 +2520,50 @@
       "forbidden": "You don't have access to this.",
       "invalid": "Enter a whole number from 0 to 3650.",
       "failed": "Couldn't save the settings. Try again."
+    }
+  },
+  "Members": {
+    "title": "Members",
+    "intro": "Look up a member by their Discord ID to see their moderation history and to warn, time out, kick, ban or add a note from here. The bot carries it out, and the case names you.",
+    "back": "Back to members",
+    "summary": "{total, plural, one {# case} other {# cases}} · {warnings, plural, one {# active warning} other {# active warnings}}",
+    "history": "History",
+    "none": "No cases for this member yet.",
+    "lookup": {
+      "label": "Discord ID",
+      "help": "In Discord turn on Developer Mode (Settings, Advanced), then right-click a member and choose Copy User ID. Case pages link here too.",
+      "open": "Open",
+      "bad": "That isn't a Discord ID (17 to 20 digits)."
+    },
+    "act": {
+      "title": "Take action",
+      "intro": "Staff and the server owner can't be acted on from here. Kicks and bans ask for confirmation.",
+      "type": "Action",
+      "reason": "Reason (optional)",
+      "reasonRequired": "Reason",
+      "duration": "How long",
+      "durationHelp": "For example 30m, 2h, 3d or 1w. Up to 28 days.",
+      "durationBan": "How long (empty = permanent)",
+      "durationBanHelp": "A temporary ban ends by itself, up to one year.",
+      "deleteDays": "Delete their messages from the last",
+      "deleteDaysOption": "{count, plural, =0 {Don't delete any} one {# day} other {# days}}",
+      "go": "Do it",
+      "working": "Working…",
+      "done": "Done. Case #{number} was created.",
+      "cancel": "Cancel",
+      "confirm": "Yes, do it",
+      "confirmTitle": "{action} {name}?",
+      "confirmBan": "The member is banned from the server and can't rejoin until unbanned.",
+      "confirmKick": "The member is removed from the server and can rejoin with an invite.",
+      "errors": {
+        "forbidden": "You don't have access to this.",
+        "invalid": "Some of these values aren't valid.",
+        "needsReason": "This action needs a reason.",
+        "badDuration": "Enter a length like 30m, 2h or 3d inside the allowed range.",
+        "botUnavailable": "Can't reach the bot. Try again in a moment.",
+        "refused": "The bot refused that action.",
+        "failed": "Something went wrong. Try again."
+      }
     }
   }
 }

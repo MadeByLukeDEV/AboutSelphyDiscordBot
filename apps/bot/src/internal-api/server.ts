@@ -11,6 +11,7 @@ import {
   webhookRelayBody,
   webhookTestBody,
   stickyClearBody,
+  moderationActBody,
   twitchVipUnlinkBody,
   twitchVipLinkedBody,
   roleMergeBody,
@@ -28,7 +29,7 @@ import { getClient } from "../client";
 import { env } from "../lib/env";
 import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
-import { refreshCaseLog } from "../modules/moderation";
+import { actFromDashboard, refreshCaseLog } from "../modules/moderation";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
@@ -303,6 +304,15 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, await getTempVoiceOverview(guild));
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/moderation/act") {
+    const body = moderationActBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const result = await actFromDashboard(guild, body.data);
+    return json(res, 200, result.ok ? { ok: true, message: result.message, caseNumber: result.caseNumber } : { ok: false, message: result.message });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/moderation/refresh-case") {

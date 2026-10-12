@@ -44,7 +44,8 @@
         "modGuide": "Moderatoren-Leitfaden",
         "antiBot": "Anti-Bot-Kanal",
         "twitchVip": "VIP-Rolle",
-        "retention": "Datenaufbewahrung"
+        "retention": "Datenaufbewahrung",
+        "memberLookup": "Mitglieder"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -161,7 +162,9 @@
         "dashboard": "Dashboard",
         "audit_log": "Discord (Audit-Log)",
         "automod": "Automatisch"
-      }
+      },
+      "reasonEdited": "Geändert von {name} am {date}",
+      "openMember": "Mitgliederseite öffnen"
     },
     "pardon": {
       "button": "Verwarnung begnadigen",
@@ -230,6 +233,24 @@
         "window": "Nur Verwarnungen der letzten (Tage) zählen",
         "windowHelp": "Leer lassen, um jede aktive Verwarnung zu zählen, egal wie alt. Zwischen 1 und {max} Tagen.",
         "windowError": "Nutze eine ganze Zahl zwischen 1 und {max} Tagen oder lass das Feld leer."
+      }
+    },
+    "editReason": {
+      "button": "Grund bearbeiten",
+      "title": "Grund für Fall #{number}",
+      "body": "Ändere den Grund, wenn er falsch oder unvollständig war. Der Fall merkt sich, wer ihn wann geändert hat, und die Log-Nachricht in Discord wird aktualisiert.",
+      "label": "Grund",
+      "help": "Fälle dieser Art brauchen einen Grund, er kann also nicht geleert werden.",
+      "cancel": "Abbrechen",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "done": "Grund aktualisiert",
+      "doneNoLog": "Grund aktualisiert, aber die Log-Nachricht in Discord konnte nicht aktualisiert werden.",
+      "errors": {
+        "forbidden": "Du hast hierauf keinen Zugriff.",
+        "invalid": "Dieser Grund ist ungültig.",
+        "notFound": "Diesen Fall gibt es nicht.",
+        "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
       }
     }
   },
@@ -2499,6 +2520,50 @@
       "forbidden": "Du hast hierauf keinen Zugriff.",
       "invalid": "Gib eine ganze Zahl von 0 bis 3650 ein.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
+  },
+  "Members": {
+    "title": "Mitglieder",
+    "intro": "Suche ein Mitglied über seine Discord-ID, um den Moderationsverlauf zu sehen und von hier aus zu verwarnen, zu timeouten, zu kicken, zu bannen oder eine Notiz anzulegen. Der Bot führt es aus, der Fall nennt dich.",
+    "back": "Zurück zu Mitglieder",
+    "summary": "{total, plural, one {# Fall} other {# Fälle}} · {warnings, plural, one {# aktive Verwarnung} other {# aktive Verwarnungen}}",
+    "history": "Verlauf",
+    "none": "Noch keine Fälle für dieses Mitglied.",
+    "lookup": {
+      "label": "Discord-ID",
+      "help": "Aktiviere in Discord den Entwicklermodus (Einstellungen, Erweitert), klicke dann ein Mitglied mit rechts an und wähle Benutzer-ID kopieren. Auch die Fallseiten verlinken hierher.",
+      "open": "Öffnen",
+      "bad": "Das ist keine Discord-ID (17 bis 20 Ziffern)."
+    },
+    "act": {
+      "title": "Aktion ausführen",
+      "intro": "Team und Server-Inhaber können von hier aus nicht angefasst werden. Kicks und Banns fragen nach.",
+      "type": "Aktion",
+      "reason": "Grund (optional)",
+      "reasonRequired": "Grund",
+      "duration": "Wie lange",
+      "durationHelp": "Zum Beispiel 30m, 2h, 3d oder 1w. Bis zu 28 Tage.",
+      "durationBan": "Wie lange (leer = dauerhaft)",
+      "durationBanHelp": "Ein befristeter Bann endet von selbst, bis zu einem Jahr.",
+      "deleteDays": "Nachrichten löschen aus den letzten",
+      "deleteDaysOption": "{count, plural, =0 {Keine löschen} one {# Tag} other {# Tagen}}",
+      "go": "Ausführen",
+      "working": "Wird ausgeführt…",
+      "done": "Erledigt. Fall #{number} wurde angelegt.",
+      "cancel": "Abbrechen",
+      "confirm": "Ja, ausführen",
+      "confirmTitle": "{action} {name}?",
+      "confirmBan": "Das Mitglied wird vom Server gebannt und kann erst nach einem Unban wieder beitreten.",
+      "confirmKick": "Das Mitglied wird vom Server entfernt und kann mit einer Einladung wieder beitreten.",
+      "errors": {
+        "forbidden": "Du hast hierauf keinen Zugriff.",
+        "invalid": "Einige Werte sind ungültig.",
+        "needsReason": "Diese Aktion braucht einen Grund.",
+        "badDuration": "Gib eine Dauer wie 30m, 2h oder 3d im erlaubten Bereich ein.",
+        "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+        "refused": "Der Bot hat diese Aktion abgelehnt.",
+        "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+      }
     }
   }
 }

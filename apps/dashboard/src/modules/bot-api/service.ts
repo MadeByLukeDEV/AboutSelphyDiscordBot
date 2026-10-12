@@ -12,6 +12,9 @@ import {
   webhookRelayStatus,
   webhookTestStatus,
   stickyClearStatus,
+  moderationActResponse,
+  type ModerationActBody,
+  type ModerationActResponse,
   twitchVipUnlinkStatus,
   twitchVipLinkedStatus,
   type TwitchVipLinkedStatus,
@@ -112,6 +115,14 @@ export async function refreshCaseLog(caseNumber: number): Promise<RefreshCaseSta
   if (!res?.ok) return null;
   const parsed = refreshCaseResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data.status : null;
+}
+
+/** Runs a moderation action as the bot, recorded under the staff member's name. Null if the bot can't be reached. */
+export async function moderationActViaBot(body: ModerationActBody): Promise<ModerationActResponse | null> {
+  const res = await botFetch("/internal/moderation/act", { method: "POST", body, timeoutMs: 20_000 });
+  if (!res?.ok) return null;
+  const parsed = moderationActResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
 }
 
 /** Roles of the server for a "ping this role" picker, or null if the bot can't be reached. */

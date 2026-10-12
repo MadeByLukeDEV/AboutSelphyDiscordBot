@@ -2,6 +2,7 @@ import { z } from "zod";
 import { snowflake } from "@aboutselphy/shared";
 import type { ModCaseType } from "@aboutselphy/db";
 import { MAX_TIMEOUT_SECONDS, MIN_TIMEOUT_SECONDS, parseDuration } from "@aboutselphy/shared/duration";
+import { DASHBOARD_ACTIONS, MAX_ACT_REASON } from "@aboutselphy/shared/moderation-act";
 
 /** Same values as the Prisma enum; `satisfies` makes a mismatch a type error. */
 export const CASE_TYPES = [
@@ -91,3 +92,23 @@ export type SaveSettingsResult =
 
 export type PardonError = "forbidden" | "invalid" | "notFound" | "notActiveWarning" | "failed";
 export type PardonResult = { ok: true; logUpdated: boolean } | { ok: false; error: PardonError };
+
+// -- actions from the dashboard ---------------------------------------------------------------------
+
+/** The member page's action form. `duration` is text like "1h" or "3d" (timeout: required, ban: optional). */
+export const memberActionSchema = z.object({
+  type: z.enum(DASHBOARD_ACTIONS),
+  targetId: snowflake,
+  reason: z.string().trim().max(MAX_ACT_REASON),
+  duration: z.string().trim().max(20),
+  deleteDays: z.number().int().min(0).max(7),
+});
+export type MemberActionInput = z.infer<typeof memberActionSchema>;
+
+export type ActError = "forbidden" | "invalid" | "needsReason" | "badDuration" | "botUnavailable" | "refused" | "failed";
+/** `message` is the bot's own short sentence (never raw Discord or database text). */
+export type ActResult = { ok: true; caseNumber: number; message: string } | { ok: false; error: ActError; message?: string };
+
+export const reasonSchema = z.string().trim().max(MAX_ACT_REASON);
+export type EditReasonError = "forbidden" | "invalid" | "notFound" | "failed";
+export type EditReasonResult = { ok: true; logUpdated: boolean } | { ok: false; error: EditReasonError };

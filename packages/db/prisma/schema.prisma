@@ -92,6 +92,9 @@ model ModCase {
   /// Who pardoned it and when. The pardoner is a dashboard user: their id in
   /// the central auth service (not a Discord ID) plus a name snapshot.
   pardonedAt       DateTime?
+  /// The reason was changed afterwards by staff (who and when); the log message is refreshed.
+  reasonEditedAt     DateTime?
+  reasonEditedByName String?       @db.VarChar(100)
   pardonedByUserId String?       @db.VarChar(64)
   pardonedByName   String?       @db.VarChar(100)
   /// Where the case embed was posted, so edits can update it.

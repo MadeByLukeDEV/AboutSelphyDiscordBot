@@ -41,6 +41,7 @@
     "./antibot": "./src/antibot.ts",
     "./twitchvip": "./src/twitchvip.ts",
     "./retention": "./src/retention.ts",
+    "./moderation-act": "./src/moderation-act.ts",
     "./custom-commands": "./src/custom-commands.ts",
     "./counting": "./src/counting.ts",
     "./modules": "./src/modules.ts",

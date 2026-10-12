@@ -73,3 +73,9 @@ export async function pardonWarning(
   });
   return count;
 }
+
+/** Changes a case's reason and records who did it and when. Returns how many rows changed (0 or 1). */
+export async function editReason(caseNumber: number, reason: string | null, by: string): Promise<number> {
+  const { count } = await prisma.modCase.updateMany({ where: { caseNumber }, data: { reason, reasonEditedAt: new Date(), reasonEditedByName: by.slice(0, 100) } });
+  return count;
+}

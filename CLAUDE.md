@@ -641,8 +641,18 @@ Decided 2026-10-08:
         Registered only when `DISCORD_MESSAGE_CONTENT=true` (the privileged intent is **on** since
         2026-10-24, flag added to `.env.local` and documented in `.env.example`; ticket transcripts work
         with it too). Invite tracking (GuildInvites intent) is still open.
-  - [ ] Case notes editing, a per-member history page, and dashboard-issued
-        actions (warn/timeout from the dashboard)
+  - [x] **Dashboard actions, member page, reason editing** (2026-10-31, `feature_dashboard-mod-actions`, migration
+        `20261031100000_case_reason_edit`; **not tried live yet**): `/members` (any staff, nav "Members") opens a member by
+        Discord ID; `/members/<id>` shows their history (up to 100 cases, counts, active warnings) and an action form: warn,
+        timeout, untimeout, kick, ban (optional length up to a year, delete 0-7 days of messages), unban, note. The dashboard
+        validates and turns "3d" into seconds (`memberActionSchema`, shared `moderationActBody`, same reason rules as the slash
+        commands), then `POST /internal/moderation/act`: the **bot** acts (its own permission and role-order checks), through the
+        normal `performAction`, with `source: "dashboard"` and `actor` = the staff member's name (moderator id "dashboard"), so
+        the case, the log embed, DMs, temp-ban expiry and escalation all work as for a command. **Staff, the server owner and
+        the bot are refused as targets** (`protectedTarget`, tested). Kick and ban ask for confirmation. A case's reason can be
+        corrected by any staff on the case page (`ModCase.reasonEditedAt/ByName`, shown under the reason, log message refreshed
+        through the bot; reasons that are required for that kind can't be emptied).
+  - [ ] Still open: case export and mod stats, a member search by name.
 - [~] Phase 2 — anti-bot: **only the trap channel exists** (2026-10-29, `feature_calendar-honeypot`, migration
       `20261029100000_antibot`; **not tried live yet**; asked for by the user). The pattern engine (regex via `re2`,
       rules, hit counters) is still **not built**; the user brings it back when ready.

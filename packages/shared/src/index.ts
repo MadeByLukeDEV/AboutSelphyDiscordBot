@@ -8,3 +8,4 @@ export * from "./twitch";
 export * from "./modguide";
 export * from "./twitchvip";
 export * from "./retention";
+export * from "./moderation-act";

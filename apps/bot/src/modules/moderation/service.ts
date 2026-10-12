@@ -29,6 +29,8 @@ export type ActionRequest = {
   reason: string | null;
   /** Timeout length, or how long a ban lasts (omit for a permanent ban). */
   durationSeconds?: number;
+  /** Who the case names as moderator when it isn't the Discord member doing it (the dashboard acts as the bot). */
+  actor?: { id: string; name: string };
   /** Where the action came from; defaults to a command. */
   source?: ModCaseSource;
   /** Ban only: delete this many days of the user's messages (0-7). */
@@ -56,8 +58,8 @@ const PERMISSION_NAME = {
 } as const;
 
 /** Audit-log reasons are capped at 512 characters by Discord. */
-function auditReason(moderator: GuildMember, reason: string | null) {
-  return truncate(`${moderator.user.username}: ${reason ?? "no reason given"}`, 500);
+function auditReason(by: { name: string }, reason: string | null) {
+  return truncate(`${by.name}: ${reason ?? "no reason given"}`, 500);
 }
 
 async function tryDm(user: User, text: string): Promise<boolean> {
@@ -97,6 +99,7 @@ function dmText(type: ActionType, guild: Guild, reason: string | null, durationS
 export async function performAction(req: ActionRequest): Promise<ActionResult> {
   const { guild, moderator, type, targetId } = req;
   const me = guild.members.me ?? (await guild.members.fetchMe());
+  const by = req.actor ?? { id: moderator.id, name: moderator.user.username };
 
   // -- bot permission -------------------------------------------------------
   const needed = REQUIRED_PERMISSION[type];
@@ -157,22 +160,22 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
 
     switch (type) {
       case "timeout":
-        await member!.timeout(req.durationSeconds! * 1000, auditReason(moderator, reason));
+        await member!.timeout(req.durationSeconds! * 1000, auditReason(by, reason));
         break;
       case "untimeout":
-        await member!.timeout(null, auditReason(moderator, reason));
+        await member!.timeout(null, auditReason(by, reason));
         break;
       case "kick":
-        await member!.kick(auditReason(moderator, reason));
+        await member!.kick(auditReason(by, reason));
         break;
       case "ban":
         await guild.members.ban(targetId, {
-          reason: auditReason(moderator, reason),
+          reason: auditReason(by, reason),
           deleteMessageSeconds: Math.min(7, Math.max(0, req.deleteDays ?? 0)) * 86_400,
         });
         break;
       case "unban":
-        await guild.members.unban(targetId, auditReason(moderator, reason));
+        await guild.members.unban(targetId, auditReason(by, reason));
         break;
       case "warn":
       case "note":
@@ -193,8 +196,8 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
       source: req.source ?? "command",
       targetId,
       targetName: user?.username ?? null,
-      moderatorId: moderator.id,
-      moderatorName: moderator.user.username,
+      moderatorId: by.id,
+      moderatorName: by.name,
       reason,
       durationSeconds: req.durationSeconds ?? null,
       expiresAt,
@@ -204,7 +207,7 @@ export async function performAction(req: ActionRequest): Promise<ActionResult> {
     return fail("The action was done, but I couldn't record the case. Tell an admin.");
   }
 
-  log.info({ case: row.caseNumber, type, target: targetId, moderator: moderator.id }, "moderation action");
+  log.info({ case: row.caseNumber, type, target: targetId, moderator: by.id, source: req.source ?? "command" }, "moderation action");
   await postCaseLog(guild, row);
 
   // A warning may be the one that tips the member over the escalation threshold.
