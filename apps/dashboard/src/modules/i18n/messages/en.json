@@ -2693,5 +2693,13 @@
       "invalid": "Some of these values aren't valid.",
       "failed": "Couldn't save the settings. Try again."
     }
+  },
+  "EmoteInsert": {
+    "button": "Emote",
+    "loading": "Loading the server's emotes…",
+    "failed": "Couldn't load the emotes. Try again in a moment.",
+    "none": "This server has no custom emotes yet.",
+    "search": "Search emotes",
+    "hint": "Inserts the emote at the cursor. You can also type :name: by hand. Only this server's emotes work."
   }
 }

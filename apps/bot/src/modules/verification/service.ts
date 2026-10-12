@@ -18,6 +18,7 @@ import {
 import type { VerificationPanelStatus } from "@aboutselphy/shared";
 import { onComponent, type ComponentInteraction } from "../../events/components";
 import { env, integrationsActive } from "../../lib/env";
+import { withEmotes } from "../../lib/emotes";
 import { truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { SlidingWindowLimiter } from "../../lib/sliding-window";
@@ -57,8 +58,8 @@ export async function postVerificationPanel(guild: Guild): Promise<VerificationP
     if (!config.channelId || !config.verifiedRoleId) return "needsSetup";
     const channel = await asText(guild, config.channelId);
     if (!channel || !("send" in channel)) return "channel";
-    const embed = new EmbedBuilder().setColor(0x00ffa8).setTitle(truncate(config.panelTitle, 256));
-    if (config.panelDescription) embed.setDescription(truncate(config.panelDescription, 4000));
+    const embed = new EmbedBuilder().setColor(0x00ffa8).setTitle(truncate(withEmotes(config.panelTitle), 256));
+    if (config.panelDescription) embed.setDescription(truncate(withEmotes(config.panelDescription), 4000));
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(VERIFY_BUTTON_ID).setLabel(truncate(config.buttonLabel, 80)).setStyle(ButtonStyle.Success).setEmoji("✅"));
     const payload = { embeds: [embed], components: [row], allowedMentions: NO_MENTIONS };
     if (config.panelMessageId) {

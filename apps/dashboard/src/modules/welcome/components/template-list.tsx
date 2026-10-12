@@ -6,6 +6,7 @@ import { DEFAULT_WELCOME_TEMPLATE, MAX_WELCOME_TEMPLATE, MAX_WELCOME_TEMPLATES, 
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /**
  * The welcome texts: up to 10, the bot picks one at random for each new member. Each has insert
@@ -46,6 +47,7 @@ export function TemplateList({ value, onChange, invalid }: { value: string[]; on
             <Field data-invalid={(invalid && text.trim() === "") || undefined}>
               <FieldLabel htmlFor={`w-tpl-${index}`}>{t("variant", { number: index + 1 })}</FieldLabel>
               <Textarea id={`w-tpl-${index}`} rows={2} maxLength={MAX_WELCOME_TEMPLATE} value={text} onChange={(e) => update(index, e.target.value)} />
+<EmoteInsert targetId={`w-tpl-${index}`} />
               <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("insert")}>
                 <span className="text-xs text-muted-foreground">{t("insert")}</span>
                 {WELCOME_PLACEHOLDERS.map((p) => (

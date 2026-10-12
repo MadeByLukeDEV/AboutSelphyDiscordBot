@@ -1,3 +1,4 @@
+import { withEmotes } from "../../lib/emotes";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
 import { parseEmoji } from "@aboutselphy/shared/role-panel";
@@ -56,7 +57,7 @@ export function emojiMatches(stored: string, reaction: { id: string | null; name
 
 export function buildPanelMessage(panel: PanelView) {
   const embed = new EmbedBuilder().setColor(panel.color);
-  if (panel.title) embed.setTitle(truncate(panel.title, 256));
+  if (panel.title) embed.setTitle(truncate(withEmotes(panel.title), 256));
   // Re-checked here: the row is trusted, but a bad address must never reach Discord.
   if (panel.imageUrl && isAllowedImageUrl(panel.imageUrl)) embed.setImage(panel.imageUrl);
   const reactions = panel.style === "reactions";
@@ -69,7 +70,7 @@ export function buildPanelMessage(panel: PanelView) {
       : "Press a role to add it. Press it again to remove it.";
   // A reaction panel has no buttons, so the message itself lists which emoji gives which role.
   const legend = reactions ? panel.roles.map((r) => `${r.emoji} ${r.label}`).join("\n") : null;
-  embed.setDescription(truncate([panel.description, legend, `*${hint}*`].filter((x) => x).join("\n\n"), 4000));
+  embed.setDescription(truncate(withEmotes([panel.description, legend, `*${hint}*`].filter((x) => x).join("\n\n")), 4000));
 
   const components =
     panel.style === "reactions"

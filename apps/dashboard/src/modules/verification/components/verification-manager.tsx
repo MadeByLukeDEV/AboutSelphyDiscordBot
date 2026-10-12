@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { postVerificationPanelAction, saveVerificationAction } from "../actions";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** The verification gate: settings, the panel button, and the optional automatic kick. */
 export function VerificationManager({ initial, panelPosted, channels, roles }: { initial: VerificationSettings; panelPosted: boolean; channels: GuildChannel[] | null; roles: GuildRole[] | null }) {
@@ -104,6 +105,7 @@ export function VerificationManager({ initial, panelPosted, channels, roles }: {
         <Field>
           <FieldLabel htmlFor="vf-desc">{t("form.panelDescription")}</FieldLabel>
           <Textarea id="vf-desc" rows={3} maxLength={2000} {...form.register("panelDescription")} />
+<EmoteInsert targetId="vf-desc" />
         </Field>
         <Field>
           <FieldLabel htmlFor="vf-button">{t("form.buttonLabel")}</FieldLabel>

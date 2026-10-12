@@ -2693,5 +2693,13 @@
       "invalid": "Einige Werte sind ungültig.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
+  },
+  "EmoteInsert": {
+    "button": "Emote",
+    "loading": "Emotes des Servers werden geladen…",
+    "failed": "Die Emotes konnten nicht geladen werden. Versuche es gleich noch einmal.",
+    "none": "Dieser Server hat noch keine eigenen Emotes.",
+    "search": "Emotes suchen",
+    "hint": "Fügt das Emote an der Cursorposition ein. Du kannst auch :name: von Hand tippen. Nur Emotes dieses Servers funktionieren."
   }
 }

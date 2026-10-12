@@ -13,6 +13,7 @@ import { startFeeds, stopFeeds } from "./modules/feeds";
 import { startAutoResponders } from "./modules/autoresponders";
 import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
+import { startEmotes } from "./lib/emotes";
 import { loginWithRetry } from "./lib/login";
 import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
@@ -84,6 +85,7 @@ async function main() {
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);
+  startEmotes(client);
   await loginWithRetry(client, e.DISCORD_BOT_TOKEN);
 
   let stopping = false;

@@ -898,6 +898,18 @@ Decided 2026-10-08:
       "YYYY-MM-DDTHH:mm" text. After `shadcn add`, `cn` imports were fixed to `@/lib/utils`.
       **Dialog lesson**: never put a `sticky` column and the footer in the same grid, the column slides over the footer
       (the announcement buttons were covered); keep the footer outside the grid.
+- [x] **The server's emotes in bot text** (2026-11-03, `feature_emotes-in-text`, no migration; **not tried live yet**): `lib/emotes.ts`
+      keeps the server's custom emotes in memory (loaded when the bot connects, kept current by Discord's emoji events).
+      Text can use an emote as markup (`<:name:id>` / `<a:name:id>`, what the dashboard's picker inserts, robust against
+      renames because it is matched by id) or as `:name:`; **only this server's emotes become real**, markup for anything else
+      or a made-up id stays plain text. `escapeText` keeps real emotes and escapes everything around them as before (so
+      suggestions, giveaway prizes, poll questions, names etc. all support them); the sites that keep staff markdown unescaped
+      call `withEmotes()` **before** truncating (a shortcode grows to ~25 characters): announcements, sticky, custom commands,
+      welcome/goodbye/DM, level-up message, role panels, ticket panel and welcome, verification panel, mod guide, Twitch and
+      YouTube templates. Dashboard: `components/form/emote-insert.tsx` ("Emote" button) inserts an emote at the cursor of a text
+      field (`insertIntoField` uses the native setter so react-hook-form sees it) next to the main text boxes; it loads the
+      emotes from `GET /api/bot/emojis` (staff only) on first open. Previews in the dashboard show the markup, not the picture.
+      Buttons and select menu labels can't contain custom emote text (use the emoji field of a role panel for those).
 - [~] Moderator guide (2026-10-28, `feature_mod-guide`, migration `20261028100000_mod_guide`; **not tried live
       yet**; asked for by the user)
   - Admin page `/mod-guide`: channel, title, description, cover picture (https only, shown big on the first

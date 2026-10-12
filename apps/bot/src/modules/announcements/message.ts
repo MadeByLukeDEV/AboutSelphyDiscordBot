@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
+import { withEmotes } from "../../lib/emotes";
 import { truncate } from "../../lib/escape";
 
 // An announcement row as Discord gets it. Staff write the text themselves, so
@@ -20,13 +21,13 @@ export type AnnouncementView = {
 
 export function buildAnnouncement(a: AnnouncementView) {
   const ping = [a.pingEveryone ? "@everyone" : "", a.pingRoleId ? `<@&${a.pingRoleId}>` : ""].filter(Boolean).join(" ");
-  const text = [ping, a.content.trim()].filter(Boolean).join(" ");
+  const text = [ping, withEmotes(a.content.trim())].filter(Boolean).join(" ");
 
   const embeds: EmbedBuilder[] = [];
   if (a.embedEnabled && (a.embedTitle.trim() || a.embedDescription.trim())) {
     const embed = new EmbedBuilder().setColor(a.embedColor);
-    if (a.embedTitle.trim()) embed.setTitle(truncate(a.embedTitle.trim(), 256));
-    if (a.embedDescription.trim()) embed.setDescription(truncate(a.embedDescription.trim(), 4000));
+    if (a.embedTitle.trim()) embed.setTitle(truncate(withEmotes(a.embedTitle.trim()), 256));
+    if (a.embedDescription.trim()) embed.setDescription(truncate(withEmotes(a.embedDescription.trim()), 4000));
     // Re-checked here: the row is trusted, but a bad address must never reach Discord.
     if (a.embedImageUrl && isAllowedImageUrl(a.embedImageUrl)) embed.setImage(a.embedImageUrl);
     embeds.push(embed);

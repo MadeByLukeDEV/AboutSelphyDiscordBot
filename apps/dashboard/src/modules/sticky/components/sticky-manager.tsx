@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { removeStickyAction, saveStickyAction } from "../actions";
 import type { StickyRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = { channelId: string; content: string; enabled: boolean };
 
@@ -148,6 +149,7 @@ function StickyForm({ row, channels, taken, onDone }: { row: StickyRow | null; c
         <Field data-invalid={Boolean(errors.content) || undefined}>
           <FieldLabel htmlFor="st-content">{t("content")}</FieldLabel>
           <Textarea id="st-content" rows={6} maxLength={MAX_STICKY_CONTENT} aria-invalid={Boolean(errors.content) || undefined} {...form.register("content")} />
+<EmoteInsert targetId="st-content" />
           <FieldDescription>{t("contentHelp")}</FieldDescription>
           {errors.content && <FieldError>{te("needsContent")}</FieldError>}
         </Field>

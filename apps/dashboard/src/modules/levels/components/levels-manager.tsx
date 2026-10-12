@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { saveLevelSettingsAction } from "../actions";
 import type { LeaderboardRow } from "../schema";
 import { MultiPicker, type PickItem } from "@/components/form/multi-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** Settings, level rewards and the leaderboard. */
 export function LevelsManager({
@@ -148,6 +149,7 @@ export function LevelsManager({
               <Field>
                 <FieldLabel htmlFor="lv-template">{t("announce.message")}</FieldLabel>
                 <Textarea id="lv-template" rows={2} maxLength={MAX_ANNOUNCE_TEMPLATE} {...form.register("announceTemplate")} />
+<EmoteInsert targetId="lv-template" />
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Button type="button" variant="ghost" size="xs" onClick={() => form.setValue("announceTemplate", DEFAULT_ANNOUNCE_TEMPLATE, { shouldDirty: true })}>
                     {t("announce.reset")}

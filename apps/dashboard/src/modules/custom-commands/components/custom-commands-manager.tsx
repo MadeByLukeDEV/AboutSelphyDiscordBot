@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { removeCustomCommandAction, saveCustomCommandAction } from "../actions";
 import type { CustomCommandRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = { name: string; response: string; ephemeral: boolean; enabled: boolean };
 
@@ -141,6 +142,7 @@ function CommandForm({ row, onDone }: { row: CustomCommandRow | null; onDone: ()
         <Field data-invalid={Boolean(errors.response) || undefined}>
           <FieldLabel htmlFor="cc-response">{t("response")}</FieldLabel>
           <Textarea id="cc-response" rows={7} maxLength={MAX_COMMAND_RESPONSE} aria-invalid={Boolean(errors.response) || undefined} {...form.register("response")} />
+<EmoteInsert targetId="cc-response" />
           <FieldDescription>{t("responseHelp")}</FieldDescription>
           {errors.response && <FieldError>{te("needsResponse")}</FieldError>}
         </Field>

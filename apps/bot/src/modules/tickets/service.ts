@@ -17,6 +17,7 @@ import {
 import type { Ticket, TicketConfig } from "@aboutselphy/db";
 import type { TicketPanelStatus } from "@aboutselphy/shared";
 import { fillTicketTemplate, ticketChannelName } from "@aboutselphy/shared/tickets";
+import { withEmotes } from "../../lib/emotes";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { env } from "../../lib/env";
 import { escapeText, truncate } from "../../lib/escape";
@@ -51,8 +52,8 @@ export async function postPanel(guild: Guild): Promise<TicketPanelStatus> {
     const channel = await asText(guild, config.panelChannelId);
     if (!channel || !("send" in channel)) return "channel";
 
-    const embed = new EmbedBuilder().setColor(config.panelColor).setTitle(truncate(config.panelTitle, 256));
-    if (config.panelDescription) embed.setDescription(truncate(config.panelDescription, 4000));
+    const embed = new EmbedBuilder().setColor(config.panelColor).setTitle(truncate(withEmotes(config.panelTitle), 256));
+    if (config.panelDescription) embed.setDescription(truncate(withEmotes(config.panelDescription), 4000));
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(OPEN_CONTROL_ID).setLabel(truncate(config.buttonLabel, 80)).setStyle(ButtonStyle.Primary).setEmoji("🎫"));
     const payload = { embeds: [embed], components: [row], allowedMentions: NO_MENTIONS };
 
@@ -113,7 +114,7 @@ export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteracti
       const welcome = new EmbedBuilder()
         .setColor(config.panelColor)
         .setTitle(`Ticket #${number}`)
-        .setDescription(truncate(fillTicketTemplate(config.welcomeTemplate, { user: `<@${i.user.id}>`, number: String(number) }), 4000));
+        .setDescription(truncate(withEmotes(fillTicketTemplate(config.welcomeTemplate, { user: `<@${i.user.id}>`, number: String(number) })), 4000));
       // What they said it is about is theirs to write: shown as plain text, nothing in it can ping.
       if (topic) welcome.addFields({ name: "What it is about", value: truncate(escapeText(topic), 1000) });
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

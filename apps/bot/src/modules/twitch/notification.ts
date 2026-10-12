@@ -1,3 +1,4 @@
+import { withEmotes } from "../../lib/emotes";
 import { EmbedBuilder } from "discord.js";
 import { DEFAULT_EMBED_COLOR, fillTemplate, twitchChannelUrl } from "@aboutselphy/shared/twitch-template";
 import { escapeText, truncate } from "../../lib/escape";
@@ -35,13 +36,13 @@ export function thumbnail(template: string, bust: number): string | undefined {
 
 /** {name} {login} {title} {game} {url} in the staff template; all values escaped, unknown placeholders left as they are. */
 export function renderTemplate(template: string, stream: StreamView): string {
-  return fillTemplate(template, {
+  return withEmotes(fillTemplate(template, {
     name: escapeText(stream.displayName),
     login: escapeText(stream.login),
     title: escapeText(stream.title) || "a new stream",
     game: escapeText(stream.game) || "something fun",
     url: channelUrl(stream.login),
-  });
+  }));
 }
 
 export function liveMessage(stream: StreamView, template: string, pingRoleId: string | null, look: LookOptions = DEFAULT_LOOK, now = Date.now()) {

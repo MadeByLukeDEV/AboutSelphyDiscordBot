@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { postModGuideAction, saveModGuideAction } from "../actions";
 import type { ModGuidePageData } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** The moderators' guide: the text around it, a look at the commands it lists, and the post button. */
 export function ModGuideManager({ data, channels }: { data: ModGuidePageData; channels: GuildChannel[] | null }) {
@@ -85,6 +86,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
           <Field data-invalid={Boolean(errors.description) || undefined}>
             <FieldLabel htmlFor="mg-description">{t("form.description")}</FieldLabel>
             <Textarea id="mg-description" rows={4} maxLength={MAX_GUIDE_DESCRIPTION} {...form.register("description")} />
+<EmoteInsert targetId="mg-description" />
             <FieldDescription>{t("form.descriptionHelp")}</FieldDescription>
           </Field>
           <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
@@ -104,6 +106,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
           <Field data-invalid={Boolean(errors.notes) || undefined}>
             <FieldLabel htmlFor="mg-notes">{t("form.notes")}</FieldLabel>
             <Textarea id="mg-notes" rows={4} maxLength={MAX_GUIDE_NOTES} {...form.register("notes")} />
+<EmoteInsert targetId="mg-notes" />
             <FieldDescription>{t("form.notesHelp")}</FieldDescription>
           </Field>
         </FieldGroup>

@@ -1,5 +1,6 @@
 import { Events, type Client, type Guild, type GuildMember, type Message } from "discord.js";
 import { applyBoost, boostPercent, fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
+import { withEmotes } from "../../lib/emotes";
 import { env, integrationsActive } from "../../lib/env";
 import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
@@ -33,7 +34,7 @@ export async function syncRewardRoles(member: GuildMember, level: number): Promi
 async function announce(member: GuildMember, level: number, where: { channelId: string | null; here: Message["channel"] | null }): Promise<void> {
   const { config } = await getLevelConfig();
   if (config.announce === "off") return;
-  const text = fillLevelTemplate(config.announceTemplate, { user: `<@${member.id}>`, username: escapeText(member.user.username), level: String(level) });
+  const text = withEmotes(fillLevelTemplate(config.announceTemplate, { user: `<@${member.id}>`, username: escapeText(member.user.username), level: String(level) }));
   const payload = { content: text.slice(0, 2000), allowedMentions: { parse: [] as never[], users: [member.id] } };
   try {
     if (config.announce === "same" && where.here && "send" in where.here) await where.here.send(payload);

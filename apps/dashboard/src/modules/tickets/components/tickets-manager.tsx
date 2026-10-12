@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { postPanelAction, saveTicketSettingsAction } from "../actions";
 import type { TicketRow } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** The ticket list for staff, and (for admins) the settings and the button that posts the panel. */
 export function TicketsManager({
@@ -151,11 +152,13 @@ export function TicketsManager({
             </Field>
 
             <Field><FieldLabel htmlFor="tk-title">{t("form.panelTitle")}</FieldLabel><Input id="tk-title" maxLength={256} {...form.register("panelTitle")} /></Field>
-            <Field><FieldLabel htmlFor="tk-desc">{t("form.panelDescription")}</FieldLabel><Textarea id="tk-desc" rows={2} maxLength={2000} {...form.register("panelDescription")} /></Field>
+            <Field><FieldLabel htmlFor="tk-desc">{t("form.panelDescription")}</FieldLabel><Textarea id="tk-desc" rows={2} maxLength={2000} {...form.register("panelDescription")} />
+<EmoteInsert targetId="tk-desc" /></Field>
             <Field><FieldLabel htmlFor="tk-button">{t("form.buttonLabel")}</FieldLabel><Input id="tk-button" maxLength={80} {...form.register("buttonLabel")} /></Field>
             <Field>
               <FieldLabel htmlFor="tk-welcome">{t("form.welcome")}</FieldLabel>
               <Textarea id="tk-welcome" rows={3} maxLength={MAX_TICKET_TEXT} {...form.register("welcomeTemplate")} />
+<EmoteInsert targetId="tk-welcome" />
               <FieldDescription>{t("form.welcomeHelp")}</FieldDescription>
             </Field>
             <Field>

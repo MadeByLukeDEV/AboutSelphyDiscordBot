@@ -1,4 +1,5 @@
 import type { APIEmbed, RESTPostAPIChatInputApplicationCommandsJSONBody } from "discord.js";
+import { withEmotes } from "../../lib/emotes";
 import { escapeText, truncate } from "../../lib/escape";
 
 // Pure part of the moderators' guide: which commands are listed, how a command's usage is written, and how
@@ -83,15 +84,15 @@ const colorNumber = (hex: string): number => (/^#[0-9a-fA-F]{6}$/.test(hex) ? pa
 export function buildGuidePages(text: GuideText, categories: readonly GuideCategory[]): APIEmbed[][] {
   const color = colorNumber(text.color);
   const embeds: APIEmbed[] = [];
-  const cover: APIEmbed = { title: truncate(text.title.trim() || "Moderator guide", 256), color };
-  if (text.description.trim()) cover.description = truncate(text.description.trim(), 1500);
+  const cover: APIEmbed = { title: truncate(withEmotes(text.title.trim() || "Moderator guide"), 256), color };
+  if (text.description.trim()) cover.description = truncate(withEmotes(text.description.trim()), 1500);
   if (text.imageUrl.startsWith("https://")) cover.image = { url: text.imageUrl };
   embeds.push(cover);
 
   for (const cat of categories) {
     chunkDescription(cat.lines).forEach((chunk, n) => embeds.push({ title: n === 0 ? cat.title : `${cat.title} (continued)`, description: chunk, color }));
   }
-  if (text.notes.trim()) embeds.push({ title: "Good to know", description: truncate(text.notes.trim(), 1500), color });
+  if (text.notes.trim()) embeds.push({ title: "Good to know", description: truncate(withEmotes(text.notes.trim()), 1500), color });
 
   const size = (e: APIEmbed) => (e.title?.length ?? 0) + (e.description?.length ?? 0);
   const pages: APIEmbed[][] = [];

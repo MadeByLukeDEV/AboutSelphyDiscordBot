@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { deleteGiveawayAction, giveawayControlAction, saveGiveawayAction } from "../actions";
 import type { GiveawayView } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = {
   channelId: string;
@@ -258,6 +259,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         <Field>
           <FieldLabel htmlFor="gw-desc">{t("description")}</FieldLabel>
           <Textarea id="gw-desc" rows={3} maxLength={MAX_GIVEAWAY_DESCRIPTION} {...form.register("description")} />
+<EmoteInsert targetId="gw-desc" />
           <FieldDescription>{t("descriptionHelp", { count: description.length, max: MAX_GIVEAWAY_DESCRIPTION })}</FieldDescription>
         </Field>
         <Field data-invalid={Boolean(errors.imageUrl) || undefined}>

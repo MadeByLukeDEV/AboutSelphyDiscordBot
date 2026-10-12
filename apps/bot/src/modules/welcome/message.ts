@@ -1,3 +1,4 @@
+import { withEmotes } from "../../lib/emotes";
 import { EmbedBuilder } from "discord.js";
 import { isAllowedImageUrl } from "@aboutselphy/shared/announcement";
 import { fillWelcome } from "@aboutselphy/shared/welcome";
@@ -10,12 +11,12 @@ import { escapeText, truncate } from "../../lib/escape";
 export type MemberFacts = { id: string; username: string; serverName: string; memberCount: number };
 
 export function renderWelcome(template: string, who: MemberFacts, mention = true): string {
-  return fillWelcome(template, {
+  return withEmotes(fillWelcome(template, {
     user: mention ? `<@${who.id}>` : escapeText(who.username),
     username: escapeText(who.username),
     server: escapeText(who.serverName),
     count: String(who.memberCount),
-  });
+  }));
 }
 
 export type WelcomeLook = { asEmbed: boolean; color: number; imageUrl: string };

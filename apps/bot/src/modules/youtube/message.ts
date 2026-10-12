@@ -1,3 +1,4 @@
+import { withEmotes } from "../../lib/emotes";
 import { EmbedBuilder } from "discord.js";
 import { escapeText, truncate } from "../../lib/escape";
 
@@ -16,7 +17,7 @@ export function safeThumbnail(url: string | null): string | undefined {
 /** {title} {channel} {url} in the template; the title and channel are escaped. */
 export function renderTemplate(template: string, video: VideoView): string {
   const values: Record<string, string> = { title: escapeText(video.title), channel: escapeText(video.channelTitle), url: videoUrl(video.videoId) };
-  return template.replace(/\{(title|channel|url)\}/g, (_, key: string) => values[key] ?? "");
+  return withEmotes(template.replace(/\{(title|channel|url)\}/g, (_, key: string) => values[key] ?? ""));
 }
 
 export function videoMessage(video: VideoView, template: string, pingRoleId: string | null, color: number) {

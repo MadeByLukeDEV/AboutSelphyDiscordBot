@@ -28,6 +28,7 @@ import { colorToHexString, hexStringToColor, toLocalInputValue } from "../color"
 import type { AnnouncementView } from "../schema";
 import { AnnouncementPreview } from "./announcement-preview";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = {
   content: string;
@@ -208,6 +209,7 @@ export function AnnouncementForm({
         <Field data-invalid={Boolean(errors.content) || undefined}>
           <FieldLabel htmlFor="ann-content">{t("content")}</FieldLabel>
           <Textarea id="ann-content" rows={4} maxLength={MAX_CONTENT} aria-invalid={Boolean(errors.content) || undefined} {...form.register("content")} />
+<EmoteInsert targetId="ann-content" />
           <FieldDescription>{t("contentHelp", { count: content.length, max: MAX_CONTENT })}</FieldDescription>
           {fieldError("content", "content")}
         </Field>
@@ -230,6 +232,7 @@ export function AnnouncementForm({
             <Field>
               <FieldLabel htmlFor="ann-embed-description">{t("embedDescription")}</FieldLabel>
               <Textarea id="ann-embed-description" rows={5} maxLength={MAX_EMBED_DESCRIPTION} {...form.register("embedDescription")} />
+<EmoteInsert targetId="ann-embed-description" />
               <FieldDescription>{t("embedDescriptionHelp", { count: embedDescription.length, max: MAX_EMBED_DESCRIPTION })}</FieldDescription>
             </Field>
             <Field data-invalid={Boolean(errors.embedImageUrl) || undefined}>
