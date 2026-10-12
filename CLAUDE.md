@@ -1270,8 +1270,16 @@ Decided 2026-10-08:
     from Discord first). Channel and role are validated through the bot; rules in
     `@aboutselphy/shared/announcement` are used by the form, the Server Action and
     the bot.
-  - [ ] Templates, several embeds or fields, recurring announcements, auto-publish
-        in announcement channels
+  - **Templates and recurring posts** (2026-11-07, `feature_announcement-templates`, migration
+    `20261107260000_announcement_templates`; **not tried live yet**): `AnnouncementTemplate` (name unique, <= 30; text, embed,
+    channel and role, no timing and no @everyone) is picked as a chip in the composer, or saved from what the form holds
+    (same name replaces). The channel and role in a template are only suggestions, `saveAnnouncement` checks them again.
+    `Announcement.repeat` none|daily|weekly|monthly + `repeatUntil` (only with a schedule): after a successful post the bot
+    puts the claimed row back to `scheduled` at `nextRun` (`@aboutselphy/shared/announcement`, tested: missed rounds after
+    downtime are skipped, monthly keeps the day cut to the month's end) via one conditional UPDATE from `sending`, or marks it
+    `sent` when the next time is past `repeatUntil`. Every round is a new message (`messageId` = the latest); editing or
+    deleting the row changes future rounds only.
+  - [ ] Several embeds or fields.
 - [~] Roles (2026-10-14, `feature_roles`, migration `20261014100000_role_panels`
       applied; **not tried live yet**; part of the replacement roadmap, Tier A)
   - **Create roles from the dashboard** (`/roles`, admins): the bot makes a cosmetic

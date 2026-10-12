@@ -36,3 +36,9 @@ export async function failStuck(olderThan: Date): Promise<number> {
 export function find(id: string): Promise<Announcement | null> {
   return prisma.announcement.findUnique({ where: { id } });
 }
+
+/** A recurring announcement was posted: remember the message and schedule the next round. Only from "sending", so it happens once. */
+export async function markRescheduled(id: string, messageId: string, at: Date, next: Date): Promise<boolean> {
+  const { count } = await prisma.announcement.updateMany({ where: { id, status: "sending" }, data: { status: "scheduled", messageId, sentAt: at, scheduledFor: next, lastError: "" } });
+  return count > 0;
+}

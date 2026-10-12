@@ -1,18 +1,23 @@
 import "server-only";
 import type { Announcement } from "@aboutselphy/db";
-import type { AnnouncementInput } from "@aboutselphy/shared/announcement";
+import { MAX_TEMPLATES, type AnnouncementInput, type AnnouncementTemplateInput } from "@aboutselphy/shared/announcement";
 import { errorInfo } from "@/lib/log";
 import { deleteAnnouncementMessage, editAnnouncementMessage, listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
 import type { StaffSession } from "@/modules/auth";
 import {
+  countTemplates,
   createAnnouncement,
   deleteAnnouncementRow,
+  deleteTemplate,
   findAnnouncement,
   listAnnouncements,
+  listTemplates,
+  templateNameTaken,
   updateAnnouncement,
+  upsertTemplate,
   type AnnouncementData,
 } from "./repository";
-import type { AnnouncementError, AnnouncementView, DeleteAnnouncementResult, SaveAnnouncementResult } from "./schema";
+import type { AnnouncementError, AnnouncementView, DeleteAnnouncementResult, SaveAnnouncementResult, TemplateResult, TemplateView } from "./schema";
 
 const toView = (a: Announcement): AnnouncementView => ({
   id: a.id,
@@ -27,16 +32,31 @@ const toView = (a: Announcement): AnnouncementView => ({
   pingRoleId: a.pingRoleId ?? "",
   pingEveryone: a.pingEveryone,
   scheduledFor: a.scheduledFor?.toISOString() ?? null,
+  repeat: a.repeat,
+  repeatUntil: a.repeatUntil?.toISOString() ?? null,
   sentAt: a.sentAt?.toISOString() ?? null,
   lastError: a.lastError,
   createdByName: a.createdByName,
   createdAt: a.createdAt.toISOString(),
 });
 
+const toTemplateView = (t: Awaited<ReturnType<typeof listTemplates>>[number]): TemplateView => ({
+  id: t.id,
+  name: t.name,
+  content: t.content,
+  embedEnabled: t.embedEnabled,
+  embedTitle: t.embedTitle,
+  embedDescription: t.embedDescription,
+  embedColor: t.embedColor,
+  embedImageUrl: t.embedImageUrl,
+  channelId: t.channelId ?? "",
+  pingRoleId: t.pingRoleId ?? "",
+});
+
 /** The list plus the channels and roles to pick from (null = the bot can't be reached). */
 export async function getAnnouncementsPage() {
-  const [rows, channels, roles] = await Promise.all([listAnnouncements(), listChannels(["text"]), listRoles()]);
-  return { announcements: rows.map(toView), channels, roles };
+  const [rows, channels, roles, templates] = await Promise.all([listAnnouncements(), listChannels(["text"]), listRoles(), listTemplates()]);
+  return { announcements: rows.map(toView), channels, roles, templates: templates.map(toTemplateView) };
 }
 
 const fail = (error: AnnouncementError) => ({ ok: false as const, error });
@@ -87,10 +107,11 @@ export async function saveAnnouncement(input: AnnouncementInput, by: StaffSessio
     if (wasSent) {
       data = { ...fields, status: "sent", scheduledFor: existing.scheduledFor };
     } else if (input.mode === "draft") {
-      data = { ...fields, status: "draft", scheduledFor: null };
+      data = { ...fields, status: "draft", scheduledFor: null, repeat: "none", repeatUntil: null };
     } else {
       const when = input.mode === "now" ? new Date() : new Date(input.scheduledFor!);
-      data = { ...fields, status: "scheduled", scheduledFor: when };
+      const repeating = input.mode === "schedule" && input.repeat !== "none";
+      data = { ...fields, status: "scheduled", scheduledFor: when, repeat: repeating ? input.repeat : "none", repeatUntil: repeating && input.repeatUntil ? new Date(input.repeatUntil) : null };
     }
 
     let saved: Announcement | null;
@@ -127,6 +148,40 @@ export async function removeAnnouncement(id: string): Promise<DeleteAnnouncement
     return (await deleteAnnouncementRow(id)) ? { ok: true } : fail("locked");
   } catch (error) {
     console.error("[announcements] deleting failed", errorInfo(error));
+    return fail("failed");
+  }
+}
+
+/** Saves a template under its name (an existing one with that name is replaced). The channel and role are only suggestions: they are checked again when an announcement is saved. */
+export async function saveTemplate(input: AnnouncementTemplateInput, byName: string): Promise<TemplateResult> {
+  try {
+    if (!(await templateNameTaken(input.name)) && (await countTemplates()) >= MAX_TEMPLATES) return fail("tooManyTemplates");
+    await upsertTemplate(
+      {
+        name: input.name,
+        content: input.content.trim(),
+        embedEnabled: input.embedEnabled,
+        embedTitle: input.embedTitle.trim(),
+        embedDescription: input.embedDescription.trim(),
+        embedColor: input.embedColor,
+        embedImageUrl: input.embedImageUrl,
+        channelId: input.channelId || null,
+        pingRoleId: input.pingRoleId || null,
+      },
+      byName,
+    );
+    return { ok: true };
+  } catch (error) {
+    console.error("[announcements] saving a template failed", errorInfo(error));
+    return fail("failed");
+  }
+}
+
+export async function removeTemplate(id: string): Promise<TemplateResult> {
+  try {
+    return (await deleteTemplate(id)) ? { ok: true } : fail("notFound");
+  } catch (error) {
+    console.error("[announcements] removing a template failed", errorInfo(error));
     return fail("failed");
   }
 }

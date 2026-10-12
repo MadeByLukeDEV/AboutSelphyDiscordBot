@@ -13,6 +13,7 @@ import {
   MAX_EMBED_TITLE,
   MAX_IMAGE_URL,
   MIN_SCHEDULE_AHEAD_MS,
+  REPEATS,
   type AnnouncementMode,
 } from "@aboutselphy/shared/announcement";
 import { FormDateTime } from "@/components/form/date-time-picker";
@@ -25,7 +26,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { saveAnnouncementAction } from "../actions";
 import { colorToHexString, hexStringToColor, toLocalInputValue } from "../color";
-import type { AnnouncementView } from "../schema";
+import type { AnnouncementView, TemplateView } from "../schema";
+import { TemplateBar } from "./template-bar";
 import { AnnouncementPreview } from "./announcement-preview";
 import { ColorPicker } from "@/components/form/color-picker";
 import { EmoteInsert } from "@/components/form/emote-insert";
@@ -43,9 +45,12 @@ type FormValues = {
   mode: AnnouncementMode;
   /** datetime-local value in the browser's time zone. */
   scheduledLocal: string;
+  repeat: string;
+  /** datetime-local value; empty = no end. */
+  repeatUntilLocal: string;
 };
 
-type ErrorKey = "content" | "embedImageUrl" | "scheduledFor" | "channelId";
+type ErrorKey = "content" | "embedImageUrl" | "scheduledFor" | "channelId" | "repeatUntil";
 
 const DEFAULTS: FormValues = {
   content: "",
@@ -59,6 +64,8 @@ const DEFAULTS: FormValues = {
   pingEveryone: false,
   mode: "draft",
   scheduledLocal: "",
+  repeat: "none",
+  repeatUntilLocal: "",
 };
 
 /** The form inside the composer dialog. `announcement` is the one being edited, or null for a new one. */
@@ -66,6 +73,7 @@ export function AnnouncementForm({
   announcement,
   channels,
   roles,
+  templates,
   canPingEveryone,
   onDone,
 }: {
@@ -73,6 +81,7 @@ export function AnnouncementForm({
   /** Text channels. null = the bot couldn't be reached, so the lists aren't available. */
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  templates: TemplateView[];
   canPingEveryone: boolean;
   onDone: () => void;
 }) {
@@ -97,6 +106,8 @@ export function AnnouncementForm({
           pingEveryone: announcement.pingEveryone,
           mode: announcement.status === "scheduled" ? "schedule" : "draft",
           scheduledLocal: announcement.scheduledFor ? toLocalInputValue(new Date(announcement.scheduledFor)) : "",
+          repeat: announcement.repeat,
+          repeatUntilLocal: announcement.repeatUntil ? toLocalInputValue(new Date(announcement.repeatUntil)) : "",
         }
       : DEFAULTS,
   });
@@ -106,6 +117,7 @@ export function AnnouncementForm({
     control: form.control,
     name: ["content", "embedEnabled", "embedTitle", "embedDescription", "embedColor", "embedImageUrl", "pingRoleId", "pingEveryone", "mode"],
   });
+  const repeat = useWatch({ control: form.control, name: "repeat" });
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({
     value: c.id,
@@ -120,12 +132,14 @@ export function AnnouncementForm({
   if (announcement?.pingRoleId && !roleOptions.some((o) => o.value === announcement.pingRoleId)) {
     roleOptions.push({ value: announcement.pingRoleId, label: announcement.pingRoleId });
   }
+  const repeatOptions: SelectOption[] = REPEATS.map((r) => ({ value: r, label: t(`repeats.${r}`) }));
   const modeOptions: SelectOption[] = (["draft", "now", "schedule"] as const).map((m) => ({ value: m, label: t(`modes.${m}`) }));
   const pickedRole = pingRoleId ? (roleOptions.find((o) => o.value === pingRoleId)?.label ?? null) : null;
   const roleName = [pingEveryone ? "everyone" : null, pickedRole].filter(Boolean).join(" @") || null;
 
   const submit = form.handleSubmit((values) => {
     const scheduleTime = values.mode === "schedule" && values.scheduledLocal ? new Date(values.scheduledLocal) : null;
+    const untilTime = values.mode === "schedule" && values.repeat !== "none" && values.repeatUntilLocal ? new Date(values.repeatUntilLocal) : null;
     const payload = {
       ...(announcement ? { id: announcement.id } : {}),
       content: values.content,
@@ -139,14 +153,16 @@ export function AnnouncementForm({
       pingEveryone: values.pingEveryone,
       mode: sent ? ("draft" as const) : values.mode,
       scheduledFor: scheduleTime && !Number.isNaN(scheduleTime.getTime()) ? scheduleTime.toISOString() : undefined,
+      repeat: values.mode === "schedule" ? values.repeat : "none",
+      repeatUntil: untilTime && !Number.isNaN(untilTime.getTime()) ? untilTime.toISOString() : undefined,
     };
     const checked = announcementInput.safeParse(payload);
     if (!checked.success) {
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const key = issue.path[0];
-        if (key === "content" || key === "embedImageUrl" || key === "scheduledFor" || key === "channelId") {
-          form.setError(key === "scheduledFor" ? "scheduledLocal" : key, { type: "custom", message: issue.message });
+        if (key === "content" || key === "embedImageUrl" || key === "scheduledFor" || key === "channelId" || key === "repeatUntil") {
+          form.setError(key === "scheduledFor" ? "scheduledLocal" : key === "repeatUntil" ? "repeatUntilLocal" : key, { type: "custom", message: issue.message });
         }
       }
       return;
@@ -177,6 +193,26 @@ export function AnnouncementForm({
     <form onSubmit={submit} className="flex flex-col gap-6" noValidate>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
       <FieldGroup>
+        {!sent && (
+          <TemplateBar
+            templates={templates}
+            draft={() => {
+              const v = form.getValues();
+              return { content: v.content, embedEnabled: v.embedEnabled, embedTitle: v.embedTitle, embedDescription: v.embedDescription, embedColor: v.embedColor, embedImageUrl: v.embedImageUrl.trim(), channelId: v.channelId, pingRoleId: v.pingRoleId };
+            }}
+            onApply={(tpl) => {
+              const opts = { shouldDirty: true } as const;
+              form.setValue("content", tpl.content, opts);
+              form.setValue("embedEnabled", tpl.embedEnabled, opts);
+              form.setValue("embedTitle", tpl.embedTitle, opts);
+              form.setValue("embedDescription", tpl.embedDescription, opts);
+              form.setValue("embedColor", tpl.embedColor, opts);
+              form.setValue("embedImageUrl", tpl.embedImageUrl, opts);
+              if (tpl.channelId) form.setValue("channelId", tpl.channelId, opts);
+              if (tpl.pingRoleId) form.setValue("pingRoleId", tpl.pingRoleId, opts);
+            }}
+          />
+        )}
         <Field data-invalid={Boolean(errors.channelId) || undefined}>
           <FieldLabel htmlFor="ann-channel">{t("channel")}</FieldLabel>
           <FormSelect
@@ -279,6 +315,23 @@ export function AnnouncementForm({
                 <FieldDescription>{t("timeHelp")}</FieldDescription>
                 {fieldError("scheduledLocal", "scheduledFor")}
               </Field>
+            )}
+            {mode === "schedule" && (
+              <>
+                <Field>
+                  <FieldLabel htmlFor="ann-repeat">{t("repeat")}</FieldLabel>
+                  <FormSelect control={form.control} name="repeat" id="ann-repeat" options={repeatOptions} placeholder={t("repeat")} />
+                  <FieldDescription>{t("repeatHelp")}</FieldDescription>
+                </Field>
+                {repeat !== "none" && (
+                  <Field data-invalid={Boolean(errors.repeatUntilLocal) || undefined}>
+                    <FieldLabel htmlFor="ann-until">{t("repeatUntil")}</FieldLabel>
+                    <FormDateTime control={form.control} name="repeatUntilLocal" id="ann-until" min={minLocal} invalid={Boolean(errors.repeatUntilLocal)} />
+                    <FieldDescription>{t("repeatUntilHelp")}</FieldDescription>
+                    {fieldError("repeatUntilLocal", "repeatUntil")}
+                  </Field>
+                )}
+              </>
             )}
           </>
         )}

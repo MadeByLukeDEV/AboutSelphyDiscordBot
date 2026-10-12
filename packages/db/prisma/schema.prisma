@@ -297,6 +297,10 @@ model Announcement {
   messageId        String?            @db.VarChar(20)
   /// A short code (never Discord's text) when sending failed.
   lastError        String             @default("") @db.VarChar(40)
+  /// "none" | "daily" | "weekly" | "monthly": after each send the row is scheduled again for the next time.
+  repeat           String             @default("none") @db.VarChar(8)
+  /// No further sends after this time.
+  repeatUntil      DateTime?
   createdByUserId  String             @db.VarChar(64)
   createdByName    String             @db.VarChar(100)
   createdAt        DateTime           @default(now())
@@ -1267,4 +1271,21 @@ model ScreeningEntry {
 
   @@index([status, joinedAt])
   @@index([userId])
+}
+
+/// A saved starting point for announcements (text, embed, channel and ping role), so the team doesn't retype them.
+model AnnouncementTemplate {
+  id               String   @id @default(cuid())
+  name             String   @unique @db.VarChar(60)
+  content          String   @default("") @db.VarChar(2000)
+  embedEnabled     Boolean  @default(false)
+  embedTitle       String   @default("") @db.VarChar(256)
+  embedDescription String   @default("") @db.VarChar(4000)
+  embedColor       Int      @default(65448)
+  embedImageUrl    String   @default("") @db.VarChar(500)
+  channelId        String?  @db.VarChar(20)
+  pingRoleId       String?  @db.VarChar(20)
+  createdByName    String   @db.VarChar(100)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

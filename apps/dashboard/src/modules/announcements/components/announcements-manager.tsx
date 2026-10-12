@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { deleteAnnouncementAction } from "../actions";
-import type { AnnouncementView } from "../schema";
+import type { AnnouncementView, TemplateView } from "../schema";
 import { AnnouncementForm } from "./announcement-form";
 
 type Editing = { announcement: AnnouncementView | null } | null;
@@ -29,11 +29,13 @@ export function AnnouncementsManager({
   announcements,
   channels,
   roles,
+  templates,
   canPingEveryone,
 }: {
   announcements: AnnouncementView[];
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  templates: TemplateView[];
   /** Admins only. */
   canPingEveryone: boolean;
 }) {
@@ -106,6 +108,7 @@ export function AnnouncementsManager({
                     </Badge>
                     <span className="text-sm text-muted-foreground">{channelName(a.channelId)}</span>
                     {when(a) && <span className="text-sm text-muted-foreground tabular-nums">· {when(a)}</span>}
+                    {a.repeat !== "none" && a.status === "scheduled" && <span className="text-sm text-muted-foreground">· {t(`list.repeats.${a.repeat === "weekly" || a.repeat === "monthly" ? a.repeat : "daily"}`)}</span>}
                   </div>
                   <p className="mt-1 truncate font-medium">{snippet(a) || t("list.noText")}</p>
                   {a.status === "failed" && <p className="text-sm text-destructive">{t(`failure.${a.lastError === "permissions" || a.lastError === "channel" || a.lastError === "interrupted" ? a.lastError : "discord"}`)}</p>}
@@ -142,6 +145,7 @@ export function AnnouncementsManager({
               announcement={editing.announcement}
               channels={channels}
               roles={roles}
+              templates={templates}
               canPingEveryone={canPingEveryone}
               onDone={() => {
                 setEditing(null);

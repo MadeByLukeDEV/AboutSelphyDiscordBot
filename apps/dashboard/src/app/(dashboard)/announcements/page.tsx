@@ -11,7 +11,7 @@ export default async function AnnouncementsPage() {
   // Moderators and admins may use announcements; every action re-checks the session.
   const session = await requireStaffPage("/announcements");
   const t = await getTranslations("Announcements");
-  const { announcements, channels, roles } = await getAnnouncementsPage();
+  const { announcements, channels, roles, templates } = await getAnnouncementsPage();
 
   return (
     <>
@@ -19,7 +19,7 @@ export default async function AnnouncementsPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <AnnouncementsManager announcements={announcements} channels={channels} roles={roles} canPingEveryone={isAdmin(session.user.role)} />
+      <AnnouncementsManager announcements={announcements} channels={channels} roles={roles} templates={templates} canPingEveryone={isAdmin(session.user.role)} />
     </>
   );
 }

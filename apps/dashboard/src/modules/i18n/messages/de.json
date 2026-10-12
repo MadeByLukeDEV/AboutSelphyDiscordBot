@@ -554,7 +554,24 @@
     "botOffline": "Der Bot ist offline, deshalb sind die Kanal- und Rollenlisten nicht verfügbar. Gespeicherte Entwürfe bleiben erhalten.",
     "new": "Neue Ankündigung",
     "removed": "Ankündigung gelöscht",
+    "templates": {
+      "title": "Vorlagen",
+      "none": "Noch keine Vorlagen. Fülle das Formular unten aus und speichere es als Vorlage.",
+      "nameLabel": "Name der Vorlage",
+      "namePlaceholder": "Name für eine neue Vorlage",
+      "save": "Als Vorlage speichern",
+      "saved": "Vorlage gespeichert",
+      "remove": "Vorlage {name} entfernen",
+      "help": "Eine Vorlage merkt sich Text, Embed, Kanal und Rolle (nicht die Zeit). Unter einem vorhandenen Namen speichern ersetzt sie. Ein Klick auf eine Vorlage füllt das Formular unten.",
+      "needsName": "Gib der Vorlage einen Namen.",
+      "needsContent": "Füge zuerst Text oder ein Embed hinzu."
+    },
     "list": {
+      "repeats": {
+        "daily": "wiederholt täglich",
+        "weekly": "wiederholt wöchentlich",
+        "monthly": "wiederholt monatlich"
+      },
       "title": "Ankündigungen",
       "noText": "(kein Text)",
       "by": "von {name}",
@@ -599,6 +616,16 @@
       "image": "Bild"
     },
     "form": {
+      "repeat": "Wiederholen",
+      "repeatHelp": "Postet diese Ankündigung automatisch erneut. Jede Runde ist eine neue Nachricht; die nächste Zeit steht in der Liste. War der Bot offline, werden verpasste Runden übersprungen.",
+      "repeatUntil": "Wiederholen beenden nach (optional)",
+      "repeatUntilHelp": "Leer lassen, um zu wiederholen, bis du die Ankündigung löschst oder änderst.",
+      "repeats": {
+        "none": "Nicht wiederholen",
+        "daily": "Jeden Tag",
+        "weekly": "Jede Woche",
+        "monthly": "Jeden Monat"
+      },
       "channel": "Posten in",
       "channelPlaceholder": "Kanal wählen",
       "channelHelp": "Wohin die Nachricht gepostet wird.",
@@ -646,6 +673,7 @@
       "everyoneAdminOnly": "Nur Admins können das ein- oder ausschalten."
     },
     "errors": {
+      "tooManyTemplates": "Es gibt schon 30 Vorlagen. Entferne zuerst eine.",
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind nicht gültig.",
       "notFound": "Diese Ankündigung existiert nicht mehr. Lade die Seite neu.",

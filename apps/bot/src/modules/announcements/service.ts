@@ -1,10 +1,11 @@
 import { Events, type Client } from "discord.js";
 import type { AnnouncementDeleteStatus, AnnouncementEditStatus } from "@aboutselphy/shared";
+import { nextRun, type Repeat } from "@aboutselphy/shared/announcement";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
 import { buildAnnouncement } from "./message";
-import { claim, failStuck, find, listDue, markFailed, markSent } from "./repository";
+import { claim, failStuck, find, listDue, markFailed, markRescheduled, markSent } from "./repository";
 
 // Sending announcements. The dashboard writes a row (status "scheduled", with the
 // time to send) and nudges the bot; the bot also checks on its own every 30 s, so a
@@ -44,8 +45,16 @@ export async function processDue(): Promise<number> {
           continue;
         }
         const message = await channel.send(buildAnnouncement(row));
-        await markSent(row.id, message.id, new Date());
-        log.info({ id: row.id, channelId: row.channelId, messageId: message.id }, "announcements: sent");
+        const now = new Date();
+        // A recurring announcement goes back to "scheduled" for its next time, unless that is past its end.
+        const next = row.repeat !== "none" && row.scheduledFor ? nextRun(row.scheduledFor, row.repeat as Exclude<Repeat, "none">, now) : null;
+        if (next && (!row.repeatUntil || next.getTime() <= row.repeatUntil.getTime())) {
+          await markRescheduled(row.id, message.id, now, next);
+          log.info({ id: row.id, messageId: message.id, next: next.toISOString() }, "announcements: sent (recurring), next round scheduled");
+        } else {
+          await markSent(row.id, message.id, now);
+          log.info({ id: row.id, channelId: row.channelId, messageId: message.id }, "announcements: sent");
+        }
         handled++;
       } catch (err) {
         const code = failureCode(err);

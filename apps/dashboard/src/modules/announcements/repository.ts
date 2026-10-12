@@ -14,6 +14,8 @@ export type AnnouncementData = {
   pingEveryone: boolean;
   status: AnnouncementStatus;
   scheduledFor: Date | null;
+  repeat?: string;
+  repeatUntil?: Date | null;
 };
 
 export function listAnnouncements(take = 100): Promise<Announcement[]> {
@@ -42,4 +44,30 @@ export async function updateAnnouncement(id: string, data: Partial<AnnouncementD
 export async function deleteAnnouncementRow(id: string): Promise<boolean> {
   const { count } = await prisma.announcement.deleteMany({ where: { id, status: { not: "sending" } } });
   return count > 0;
+}
+
+export type TemplateData = {
+  name: string;
+  content: string;
+  embedEnabled: boolean;
+  embedTitle: string;
+  embedDescription: string;
+  embedColor: number;
+  embedImageUrl: string;
+  channelId: string | null;
+  pingRoleId: string | null;
+};
+
+export const listTemplates = () => prisma.announcementTemplate.findMany({ orderBy: { name: "asc" }, take: 100 });
+export const countTemplates = () => prisma.announcementTemplate.count();
+export const templateNameTaken = async (name: string) => (await prisma.announcementTemplate.count({ where: { name } })) > 0;
+
+/** Saves under the name: an existing template with that name is replaced. */
+export function upsertTemplate(data: TemplateData, byName: string) {
+  const { name, ...rest } = data;
+  return prisma.announcementTemplate.upsert({ where: { name }, update: rest, create: { name, ...rest, createdByName: byName.slice(0, 100) } });
+}
+
+export async function deleteTemplate(id: string): Promise<boolean> {
+  return (await prisma.announcementTemplate.deleteMany({ where: { id } })).count > 0;
 }

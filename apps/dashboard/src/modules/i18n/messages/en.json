@@ -554,7 +554,24 @@
     "botOffline": "The bot is offline, so the channel and role lists aren't available. Saved drafts are kept.",
     "new": "New announcement",
     "removed": "Announcement deleted",
+    "templates": {
+      "title": "Templates",
+      "none": "No templates yet. Fill in the form below and save it as a template.",
+      "nameLabel": "Template name",
+      "namePlaceholder": "Name for a new template",
+      "save": "Save as template",
+      "saved": "Template saved",
+      "remove": "Remove template {name}",
+      "help": "A template keeps the text, embed, channel and role (not the time). Saving under an existing name replaces it. Clicking a template fills the form below.",
+      "needsName": "Give the template a name.",
+      "needsContent": "Add some text or an embed first."
+    },
     "list": {
+      "repeats": {
+        "daily": "repeats daily",
+        "weekly": "repeats weekly",
+        "monthly": "repeats monthly"
+      },
       "title": "Announcements",
       "noText": "(no text)",
       "by": "by {name}",
@@ -599,6 +616,16 @@
       "image": "Picture"
     },
     "form": {
+      "repeat": "Repeat",
+      "repeatHelp": "Post this again automatically. Each round is a new message; the next time is shown in the list. If the bot was offline, missed rounds are skipped.",
+      "repeatUntil": "Stop repeating after (optional)",
+      "repeatUntilHelp": "Leave empty to repeat until you stop it by deleting or editing the announcement.",
+      "repeats": {
+        "none": "Don't repeat",
+        "daily": "Every day",
+        "weekly": "Every week",
+        "monthly": "Every month"
+      },
       "channel": "Post in",
       "channelPlaceholder": "Pick a channel",
       "channelHelp": "Where the message is posted.",
@@ -646,6 +673,7 @@
       "everyoneAdminOnly": "Only admins can switch this on or off."
     },
     "errors": {
+      "tooManyTemplates": "There are already 30 templates. Remove one first.",
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
       "notFound": "That announcement doesn't exist any more. Reload the page.",

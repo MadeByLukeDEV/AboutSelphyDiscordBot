@@ -16,6 +16,9 @@ export type AnnouncementView = {
   pingEveryone: boolean;
   /** ISO time, or null for a draft. */
   scheduledFor: string | null;
+  /** "none" | "daily" | "weekly" | "monthly" */
+  repeat: string;
+  repeatUntil: string | null;
   sentAt: string | null;
   lastError: string;
   createdByName: string;
@@ -31,6 +34,7 @@ export type AnnouncementError =
   | "roleNotFound"
   | "locked"
   | "channelFixed"
+  | "tooManyTemplates"
   | "failed";
 
 export type SaveAnnouncementResult =
@@ -38,3 +42,19 @@ export type SaveAnnouncementResult =
   | { ok: false; error: AnnouncementError };
 
 export type DeleteAnnouncementResult = { ok: true } | { ok: false; error: AnnouncementError };
+
+export type TemplateView = {
+  id: string;
+  name: string;
+  content: string;
+  embedEnabled: boolean;
+  embedTitle: string;
+  embedDescription: string;
+  embedColor: number;
+  embedImageUrl: string;
+  /** "" = none. */
+  channelId: string;
+  pingRoleId: string;
+};
+
+export type TemplateResult = { ok: true } | { ok: false; error: AnnouncementError };
