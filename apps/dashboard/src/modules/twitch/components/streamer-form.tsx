@@ -55,6 +55,7 @@ export function StreamerForm({
           embedColor: streamer.embedColor,
           showThumbnail: streamer.showThumbnail,
           showGame: streamer.showGame,
+          postClips: streamer.postClips,
           enabled: streamer.enabled,
         }
       : DEFAULT_STREAMER_FORM,
@@ -114,7 +115,7 @@ export function StreamerForm({
     }),
   );
 
-  const toggle = (name: "showThumbnail" | "showGame" | "enabled", label: string, help?: string) => (
+  const toggle = (name: "showThumbnail" | "showGame" | "postClips" | "enabled", label: string, help?: string) => (
     <Field orientation="horizontal">
       <Controller
         control={form.control}
@@ -219,6 +220,7 @@ export function StreamerForm({
 
         {toggle("showGame", t("showGame"))}
         {toggle("showThumbnail", t("showThumbnail"), t("showThumbnailHelp"))}
+        {toggle("postClips", t("postClips"), t("postClipsHelp"))}
         {toggle("enabled", t("enabled"))}
       </FieldGroup>
 

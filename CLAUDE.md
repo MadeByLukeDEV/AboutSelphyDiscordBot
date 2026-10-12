@@ -756,7 +756,15 @@ Decided 2026-10-08:
     **Setup**: dashboard env `DISCORD_APP_ID` + `DISCORD_CLIENT_SECRET` (the bot's application, OAuth2 tab), and register
     `<NEXT_PUBLIC_SITE_URL>/api/link/twitch/callback` under OAuth2 -> Redirects. Not the same as Discord's built-in Twitch
     *subscriber* integration: a bot can't read those roles' links, only this OAuth read works.
-  - [ ] Kick/TikTok, clips, more than 30 channels.
+  - **Clips** (2026-11-07, `feature_twitch-clips`, migration `20261107280000_twitch_clips`; **not tried live yet**):
+    `TwitchConfig.clipsChannelId` + `TwitchStreamer.postClips`. `twitch/clips.ts`: every 5 minutes (the minute poll timer, throttled)
+    Helix `clips?broadcaster_id&started_at` (user token, no scope) for each enabled channel with the switch on. `planClips` (pure,
+    tested): a channel's **first check only remembers** what exists (`clipsCheckedAt` null), later only unseen clips newer than the
+    last check minus a 10 min overlap and younger than 6 h, oldest first, at most 3 per channel per round (the rest remembered
+    silently). Each clip is remembered (`TwitchClip`, unique `clipId`, pruned after 14 days) BEFORE it is posted. Only Twitch clip
+    pages are linked (`isTwitchClipUrl`), title and names escaped, nothing pings; Discord shows the player from the link.
+    Dashboard `/twitch`: clips channel section and a per-channel "Post new clips" toggle.
+  - [ ] Kick/TikTok, more than 30 channels, a minimum view count for clips.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and

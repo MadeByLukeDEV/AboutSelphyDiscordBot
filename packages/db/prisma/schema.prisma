@@ -209,6 +209,8 @@ model TwitchConfig {
   markEndedOnOffline Boolean  @default(true)
   /// Role worn by a streamer's linked Discord member while they are live; null = off.
   liveRoleId         String?  @db.VarChar(20)
+  /// New clips of channels with postClips are posted here; null = no clips.
+  clipsChannelId     String?  @db.VarChar(20)
   updatedAt          DateTime @updatedAt
 }
 
@@ -233,8 +235,22 @@ model TwitchStreamer {
   /// Show the game field.
   showGame        Boolean  @default(true)
   enabled         Boolean  @default(true)
+  /// Post this channel's new clips in TwitchConfig.clipsChannelId.
+  postClips       Boolean  @default(false)
+  /// When its clips were last checked (null = never: the first check only remembers).
+  clipsCheckedAt  DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+/// A clip that was seen (and posted, or silently remembered), so it is never posted twice.
+model TwitchClip {
+  id           String   @id @default(cuid())
+  clipId       String   @unique @db.VarChar(100)
+  twitchUserId String   @db.VarChar(32)
+  seenAt       DateTime @default(now())
+
+  @@index([seenAt])
 }
 
 /// One row per announced broadcast. Unique on Twitch's stream id, so a replay

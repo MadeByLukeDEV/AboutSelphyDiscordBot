@@ -95,3 +95,20 @@ export async function markNotificationEnded(id: string, endedAt: Date): Promise<
 export function hasAnyNotification(twitchUserId: string): Promise<boolean> {
   return prisma.twitchNotification.count({ where: { twitchUserId } }).then((n) => n > 0);
 }
+
+// -- clips ---------------------------------------------------------------------------------
+
+export async function knownClipIds(ids: string[]): Promise<Set<string>> {
+  if (ids.length === 0) return new Set();
+  return new Set((await prisma.twitchClip.findMany({ where: { clipId: { in: ids } }, select: { clipId: true } })).map((r) => r.clipId));
+}
+
+/** Remembers a clip. False when it was already remembered (unique clip id), so only one caller posts it. */
+export async function rememberClip(clipId: string, twitchUserId: string): Promise<boolean> {
+  const { count } = await prisma.twitchClip.createMany({ data: [{ clipId, twitchUserId }], skipDuplicates: true });
+  return count === 1;
+}
+
+export const setClipsChecked = (id: string, at: Date) => prisma.twitchStreamer.update({ where: { id }, data: { clipsCheckedAt: at } });
+
+export const pruneClips = (before: Date) => prisma.twitchClip.deleteMany({ where: { seenAt: { lt: before } } });

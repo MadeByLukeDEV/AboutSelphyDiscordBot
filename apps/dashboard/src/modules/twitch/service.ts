@@ -118,6 +118,7 @@ const toView = (s: {
   embedColor: number;
   showThumbnail: boolean;
   showGame: boolean;
+  postClips: boolean;
   enabled: boolean;
 }): TwitchStreamerView => ({
   id: s.id,
@@ -130,6 +131,7 @@ const toView = (s: {
   embedColor: s.embedColor,
   showThumbnail: s.showThumbnail,
   showGame: s.showGame,
+  postClips: s.postClips,
   enabled: s.enabled,
 });
 
@@ -147,7 +149,7 @@ export async function getTwitchOverview(): Promise<TwitchOverview> {
           connectedAt: connection.connectedAt.toISOString(),
         }
       : null,
-    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId ?? "" },
+    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId ?? "", clipsChannelId: config.clipsChannelId ?? "" },
     streamers: streamers.map(toView),
   };
 }
@@ -164,8 +166,13 @@ export async function saveTwitchSettings(input: TwitchSettings): Promise<SaveTwi
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === input.liveRoleId && r.assignable)) return { ok: false, error: "roleNotFound" };
     }
-    const saved = await updateConfig({ enabled: input.enabled, markEndedOnOffline: input.markEndedOnOffline, liveRoleId: input.liveRoleId || null });
-    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline, liveRoleId: saved.liveRoleId ?? "" }, botNotified: await reloadBotModule("twitch") };
+    if (input.clipsChannelId && input.clipsChannelId !== current.clipsChannelId) {
+      const channels = await listChannels(["text"]);
+      if (!channels) return { ok: false, error: "botUnavailable" };
+      if (!channels.some((c) => c.id === input.clipsChannelId)) return { ok: false, error: "channelNotFound" };
+    }
+    const saved = await updateConfig({ enabled: input.enabled, markEndedOnOffline: input.markEndedOnOffline, liveRoleId: input.liveRoleId || null, clipsChannelId: input.clipsChannelId || null });
+    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline, liveRoleId: saved.liveRoleId ?? "", clipsChannelId: saved.clipsChannelId ?? "" }, botNotified: await reloadBotModule("twitch") };
   } catch (error) {
     console.error("[twitch] saving the settings failed", errorInfo(error));
     return { ok: false, error: "failed" };
@@ -216,6 +223,7 @@ export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerRe
       embedColor: input.embedColor,
       showThumbnail: input.showThumbnail,
       showGame: input.showGame,
+      postClips: input.postClips,
       enabled: input.enabled,
     };
 
@@ -267,7 +275,7 @@ export async function disconnectTwitch(): Promise<SimpleResult> {
     const connection = await readConnection();
     if (!connection) return { ok: false, error: "notConnected" };
     const config = await readConfig();
-    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId });
+    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId, clipsChannelId: config.clipsChannelId });
     if (creds && !connection.needsReconnect) {
       try {
         const refresh = decryptToken(connection.refreshTokenEnc, TWITCH_REFRESH_TOKEN_PURPOSE, creds.key);

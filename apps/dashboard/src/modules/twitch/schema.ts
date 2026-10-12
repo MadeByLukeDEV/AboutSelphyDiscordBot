@@ -11,6 +11,8 @@ export const twitchSettingsSchema = z.object({
   markEndedOnOffline: z.boolean(),
   /** "" = no live role. */
   liveRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  /** "" = no clips are posted. */
+  clipsChannelId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
 });
 export type TwitchSettings = z.infer<typeof twitchSettingsSchema>;
 
@@ -25,6 +27,7 @@ export type TwitchStreamerView = {
   embedColor: number;
   showThumbnail: boolean;
   showGame: boolean;
+  postClips: boolean;
   enabled: boolean;
 };
 
@@ -49,6 +52,7 @@ export const streamerSchema = z.object({
   embedColor: z.number().int().min(0).max(0xffffff),
   showThumbnail: z.boolean(),
   showGame: z.boolean(),
+  postClips: z.boolean(),
   enabled: z.boolean(),
 });
 export type StreamerInput = z.infer<typeof streamerSchema>;
@@ -63,6 +67,7 @@ export const streamerFormSchema = z.object({
   embedColor: z.number().int().min(0).max(0xffffff),
   showThumbnail: z.boolean(),
   showGame: z.boolean(),
+  postClips: z.boolean(),
   enabled: z.boolean(),
 });
 
@@ -75,6 +80,7 @@ export type StreamerFormValues = {
   embedColor: number;
   showThumbnail: boolean;
   showGame: boolean;
+  postClips: boolean;
   enabled: boolean;
 };
 
@@ -87,6 +93,7 @@ export const DEFAULT_STREAMER_FORM: StreamerFormValues = {
   embedColor: DEFAULT_EMBED_COLOR,
   showThumbnail: true,
   showGame: true,
+  postClips: false,
   enabled: true,
 };
 

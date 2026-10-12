@@ -150,6 +150,8 @@ export function TwitchManager({
 
       <LiveRoleForm key={settings.liveRoleId} settings={settings} roles={roles} pending={pending} onSave={saveSettings} />
 
+      <ClipsForm key={settings.clipsChannelId} settings={settings} channels={channels} pending={pending} onSave={saveSettings} />
+
       {/* The channels */}
       <section aria-labelledby="twitch-streamers" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -275,6 +277,37 @@ function LiveRoleForm({ settings, roles, pending, onSave }: { settings: TwitchSe
           <FieldLabel htmlFor="tw-live-role">{t("role")}</FieldLabel>
           <FormSelect control={form.control} name="liveRoleId" id="tw-live-role" options={options} placeholder={t("none")} disabled={roles === null} />
           <FieldDescription>{roles === null ? t("botOffline") : t("help")}</FieldDescription>
+        </Field>
+        <div>
+          <Button type="submit" size="sm" disabled={pending || !form.formState.isDirty}>
+            {t("save")}
+          </Button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+/** Where new clips are posted (for channels that have "Post new clips" switched on). */
+function ClipsForm({ settings, channels, pending, onSave }: { settings: TwitchSettings; channels: GuildChannel[] | null; pending: boolean; onSave: (next: Partial<TwitchSettings>) => void }) {
+  const t = useTranslations("Twitch.clips");
+  const form = useForm<{ clipsChannelId: string }>({ defaultValues: { clipsChannelId: settings.clipsChannelId } });
+  const options: SelectOption[] = [
+    { value: "", label: t("none") },
+    ...(channels ?? []).filter((c) => c.kind === "text").map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined })),
+  ];
+  if (settings.clipsChannelId && !options.some((o) => o.value === settings.clipsChannelId)) options.push({ value: settings.clipsChannelId, label: settings.clipsChannelId });
+  return (
+    <section aria-labelledby="twitch-clips" className="surface flex flex-col gap-3 p-5">
+      <h2 id="twitch-clips" className="text-fluid-lg font-bold">
+        {t("title")}
+      </h2>
+      <p className="max-w-prose text-sm text-muted-foreground">{t("intro")}</p>
+      <form onSubmit={form.handleSubmit((values) => onSave({ clipsChannelId: values.clipsChannelId }))} className="flex flex-col gap-3" noValidate>
+        <Field>
+          <FieldLabel htmlFor="tw-clips-channel">{t("channel")}</FieldLabel>
+          <FormSelect control={form.control} name="clipsChannelId" id="tw-clips-channel" options={options} placeholder={t("none")} disabled={channels === null} />
+          <FieldDescription>{channels === null ? t("botOffline") : t("help")}</FieldDescription>
         </Field>
         <div>
           <Button type="submit" size="sm" disabled={pending || !form.formState.isDirty}>

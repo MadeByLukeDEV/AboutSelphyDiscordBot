@@ -497,6 +497,8 @@
       "memberInvalid": "Eine Discord-Mitglieds-ID besteht aus 17 bis 20 Ziffern."
     },
     "form": {
+      "postClips": "Neue Clips posten",
+      "postClipsHelp": "Neue Clips dieses Kanals werden im Clip-Kanal gepostet (unten einstellen). Die erste Prüfung merkt sich nur vorhandene Clips.",
       "addTitle": "Kanal hinzufügen",
       "editTitle": "Kanal bearbeiten",
       "login": "Twitch-Kanalname",
@@ -537,6 +539,15 @@
       "author": "{name} ist live auf Twitch",
       "playing": "Spielt",
       "thumbnail": "Stream-Vorschau"
+    },
+    "clips": {
+      "title": "Clips",
+      "intro": "Neue Clips der Kanäle, bei denen „Neue Clips posten“ an ist, werden hier als Link mit Discords Player gepostet. Die erste Prüfung eines Kanals merkt sich nur seine vorhandenen Clips, es wird also nichts Altes angekündigt. Eine Runde läuft alle 5 Minuten, höchstens 3 Clips pro Kanal auf einmal.",
+      "channel": "Clip-Kanal",
+      "none": "Kein Clip-Kanal (aus)",
+      "help": "Wähle den Discord-Kanal für Clips. Der Bot muss dort Nachrichten senden und Links einbetten dürfen.",
+      "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+      "save": "Speichern"
     },
     "liveRole": {
       "title": "Live-Rolle",

@@ -497,6 +497,8 @@
       "memberInvalid": "A Discord member ID is 17 to 20 digits."
     },
     "form": {
+      "postClips": "Post new clips",
+      "postClipsHelp": "New clips of this channel are posted in the clips channel (set below). The first check only remembers existing clips.",
       "addTitle": "Add a channel",
       "editTitle": "Edit channel",
       "login": "Twitch channel name",
@@ -537,6 +539,15 @@
       "author": "{name} is live on Twitch",
       "playing": "Playing",
       "thumbnail": "Stream preview"
+    },
+    "clips": {
+      "title": "Clips",
+      "intro": "New clips of the channels that have \"Post new clips\" switched on are posted here as a link with Discord's player. The first check of a channel only remembers its existing clips, so nothing old is announced. A round runs every 5 minutes, at most 3 clips per channel at a time.",
+      "channel": "Clips channel",
+      "none": "No clips channel (off)",
+      "help": "Pick the Discord channel for clips. The bot needs to send messages and embed links there.",
+      "botOffline": "The bot is offline, so the channel list isn't available.",
+      "save": "Save"
     },
     "liveRole": {
       "title": "Live role",

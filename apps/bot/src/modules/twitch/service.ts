@@ -5,6 +5,7 @@ import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
+import { clipsRound } from "./clips";
 import { EventSubClient, type SocketLike } from "./eventsub-client";
 import { emitEvent } from "../webhooks";
 import { syncLiveRole } from "./live-role";
@@ -85,7 +86,10 @@ export function startTwitch(client: Client): void {
   });
   client.once(Events.ClientReady, () => {
     socket?.start();
-    pollTimer = setInterval(() => void pollExtra(), POLL_EVERY_MS);
+    pollTimer = setInterval(() => {
+      void pollExtra();
+      void clipsRound(client);
+    }, POLL_EVERY_MS);
     pollTimer.unref();
   });
 }
