@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { giveawayInput } from "@aboutselphy/shared/giveaways";
-import { buildGiveawayMessage, enterControlId, parseEnterControl, pickWeightedWinners, pickWinners, ticketsFor, winnerAnnouncement, type GiveawayView } from "./rules";
+import { buildGiveawayMessage, enterControlId, entryProblem, nextRoundEnd, problemText, requirementLines, parseEnterControl, pickWeightedWinners, pickWinners, ticketsFor, winnerAnnouncement, type GiveawayView } from "./rules";
 
 describe("pickWinners", () => {
   const people = Array.from({ length: 10 }, (_, i) => `u${i}`);
@@ -146,5 +146,44 @@ describe("weighted draw", () => {
     const text = JSON.stringify(buildGiveawayMessage({ ...base, bonusRoleId: "123456789012345678", bonusEntries: 2 }).embeds[0]!.toJSON());
     expect(text).toContain("2 extra chances");
     expect(JSON.stringify(buildGiveawayMessage(base).embeds[0]!.toJSON())).not.toContain("Bonus");
+  });
+});
+
+describe("entry requirements", () => {
+  const now = new Date("2026-11-06T12:00:00Z");
+  const days = (n: number) => new Date(now.getTime() - n * 86_400_000);
+  const none = { minAccountDays: 0, minMemberDays: 0, minLevel: 0 };
+
+  it("no requirements means everyone qualifies", () => {
+    expect(entryProblem(none, { accountCreatedAt: days(0), joinedAt: null, level: 0 }, now)).toBeNull();
+  });
+  it("checks the account age, the time in the server and the level, in that order", () => {
+    const req = { minAccountDays: 30, minMemberDays: 7, minLevel: 5 };
+    expect(entryProblem(req, { accountCreatedAt: days(10), joinedAt: days(10), level: 9 }, now)).toEqual({ kind: "account", need: 30 });
+    expect(entryProblem(req, { accountCreatedAt: days(100), joinedAt: days(2), level: 9 }, now)).toEqual({ kind: "member", need: 7 });
+    expect(entryProblem(req, { accountCreatedAt: days(100), joinedAt: days(20), level: 4 }, now)).toEqual({ kind: "level", need: 5 });
+    expect(entryProblem(req, { accountCreatedAt: days(100), joinedAt: days(20), level: 5 }, now)).toBeNull();
+  });
+  it("a member without a known join time can't show they have been here long enough", () => {
+    expect(entryProblem({ ...none, minMemberDays: 1 }, { accountCreatedAt: days(100), joinedAt: null, level: 0 }, now)).toEqual({ kind: "member", need: 1 });
+  });
+  it("says what is missing, and lists the requirements in the post", () => {
+    expect(problemText({ kind: "account", need: 1 })).toContain("1 day old");
+    expect(problemText({ kind: "level", need: 5 })).toContain("level 5");
+    expect(requirementLines({ minAccountDays: 30, minMemberDays: 0, minLevel: 3 })).toEqual(["Discord account at least 30 days old", "Level 3 or higher"]);
+    expect(requirementLines(none)).toEqual([]);
+  });
+  it("the running post shows the requirements", () => {
+    const base = { id: "abcdefghij12", prize: "P", description: "", winnerCount: 1, endsAt: new Date("2026-12-01T00:00:00Z"), hostName: "H", requiredRoleId: null, ended: false, winners: [] };
+    expect(JSON.stringify(buildGiveawayMessage({ ...base, requirements: { minAccountDays: 0, minMemberDays: 7, minLevel: 0 } }).embeds[0]!.toJSON())).toContain("In this server for at least 7 days");
+  });
+});
+
+describe("repeating", () => {
+  it("the next round lasts as long as the last one, at least five minutes", () => {
+    const now = new Date("2026-11-06T12:00:00Z");
+    expect(nextRoundEnd(new Date("2026-11-05T12:00:00Z"), new Date("2026-11-06T12:00:00Z"), now)).toEqual(new Date("2026-11-07T12:00:00Z"));
+    expect(nextRoundEnd(null, now, now)).toEqual(new Date("2026-11-06T12:05:00Z"));
+    expect(nextRoundEnd(new Date("2026-11-06T11:59:00Z"), now, now)).toEqual(new Date("2026-11-06T12:05:00Z"));
   });
 });

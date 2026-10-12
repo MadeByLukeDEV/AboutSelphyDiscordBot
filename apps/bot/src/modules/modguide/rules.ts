@@ -17,7 +17,7 @@ export const CATEGORIES = [
   { key: "members", title: "Acting on members", commands: ["warn", "timeout", "untimeout", "kick", "ban", "unban", "note"] },
   { key: "cases", title: "Cases and history", commands: ["case", "infractions"] },
   { key: "channels", title: "Channel tools", commands: ["purge", "slowmode", "lock", "unlock"] },
-  { key: "community", title: "Community", commands: ["poll", "suggestion", "ticket"] },
+  { key: "community", title: "Community", commands: ["giveaway", "poll", "suggestion", "ticket"] },
 ] as const;
 const OTHER_TITLE = "Other";
 

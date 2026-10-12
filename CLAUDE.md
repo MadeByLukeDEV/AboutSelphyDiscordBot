@@ -1014,7 +1014,17 @@ Decided 2026-10-08:
         says so). The draw is weighted (`pickWeightedWinners`, tested statistically: weights 4:1 win ~80 %, equal weights act like
         the plain draw): a member's tickets are 1 + the bonus if they hold the role **at draw time**, nobody wins twice, a
         re-roll still prefers people who haven't won. Role clean-up knows the new column.
-  - [ ] Still open: other entry requirements, recurring giveaways, a `/giveaway` slash command.
+  - [x] **Entry requirements, `/giveaway`, repeating** (2026-11-06, `feature_giveaway-requirements-command`, migration
+        `20261106180000_giveaway_requirements`; **not tried live yet**): per giveaway `minAccountDays` (Discord account age),
+        `minMemberDays` (time in this server, from the join time; unknown join time = doesn't qualify) and `minLevel` (leveling level,
+        0 when no XP), checked by `entryProblem` (pure, tested) when someone presses Enter (withdrawing is always allowed) **and again
+        at the draw**; the post lists them. `/giveaway start|end|reroll|cancel` (moderators; start takes prize, duration, winners,
+        channel, role, repeat; the others pick from an autocomplete list of active/ended giveaways) goes through the same
+        `startGiveaway`/`endGiveaway`/`cancelGiveaway` as the dashboard (module switch `giveaways` now also covers the command; the mod
+        guide lists it under Community). **Repeating**: `repeatsLeft` (0-52, DB CHECK): when a round ends (not a re-roll) the bot
+        creates the next one with the same settings, `repeatsLeft - 1` and the same length (`startedAt` is set on posting;
+        `nextRoundEnd`, at least five minutes) and starts it at once; cancelling a running round stops the chain.
+  - [ ] Still open: other requirements (e.g. a linked Twitch account).
 - [~] Suggestions (2026-10-19, `feature_suggestions`, migration
       `20261019100000_suggestions` applied; **not tried live yet**; Tier B)
   - Bot (`modules/suggestions/`): `/suggest` (cooldown, 5-1500 chars), post with up/down

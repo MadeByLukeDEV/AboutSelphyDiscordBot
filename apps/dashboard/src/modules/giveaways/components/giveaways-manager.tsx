@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
 import { MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
-import { giveawayInput, MAX_BONUS_ENTRIES, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
+import { giveawayInput, MAX_BONUS_ENTRIES, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_REPEATS, MAX_REQUIRED_DAYS, MAX_REQUIRED_LEVEL, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
 import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,10 @@ type FormValues = {
   pingRoleId: string;
   bonusRoleId: string;
   bonusEntries: number;
+  minAccountDays: number;
+  minMemberDays: number;
+  minLevel: number;
+  repeatsLeft: number;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -202,7 +206,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
   const form = useForm<FormValues>({
     defaultValues: giveaway
       ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, imageUrl: giveaway.imageUrl, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId }
-      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "", bonusRoleId: "", bonusEntries: 0 },
+      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "", bonusRoleId: "", bonusEntries: 0, minAccountDays: 0, minMemberDays: 0, minLevel: 0, repeatsLeft: 0 },
   });
   const { errors } = form.formState;
   const [description] = useWatch({ control: form.control, name: ["description"] });
@@ -226,6 +230,10 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         pingRoleId: values.pingRoleId,
         bonusRoleId: values.bonusRoleId,
         bonusEntries: values.bonusRoleId ? Number(values.bonusEntries) : 0,
+        minAccountDays: Number(values.minAccountDays) || 0,
+        minMemberDays: Number(values.minMemberDays) || 0,
+        minLevel: Number(values.minLevel) || 0,
+        repeatsLeft: Number(values.repeatsLeft) || 0,
         start,
       });
       if (!checked.success) {
@@ -294,6 +302,26 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
           <FieldLabel htmlFor="gw-ping">{t("ping")}</FieldLabel>
           <FormSelect control={form.control} name="pingRoleId" id="gw-ping" options={roleOptions(t("nobody"))} placeholder={t("nobody")} disabled={roles === null} />
           <FieldDescription>{t("pingHelp")}</FieldDescription>
+        </Field>
+        <div className="flex flex-wrap gap-4">
+          <Field>
+            <FieldLabel htmlFor="gw-min-account">{t("minAccount")}</FieldLabel>
+            <Input id="gw-min-account" type="number" inputMode="numeric" min={0} max={MAX_REQUIRED_DAYS} className="max-w-[8rem]" {...form.register("minAccountDays", { valueAsNumber: true })} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="gw-min-member">{t("minMember")}</FieldLabel>
+            <Input id="gw-min-member" type="number" inputMode="numeric" min={0} max={MAX_REQUIRED_DAYS} className="max-w-[8rem]" {...form.register("minMemberDays", { valueAsNumber: true })} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="gw-min-level">{t("minLevel")}</FieldLabel>
+            <Input id="gw-min-level" type="number" inputMode="numeric" min={0} max={MAX_REQUIRED_LEVEL} className="max-w-[8rem]" {...form.register("minLevel", { valueAsNumber: true })} />
+          </Field>
+        </div>
+        <FieldDescription>{t("requirementsHelp")}</FieldDescription>
+        <Field>
+          <FieldLabel htmlFor="gw-repeat">{t("repeat")}</FieldLabel>
+          <Input id="gw-repeat" type="number" inputMode="numeric" min={0} max={MAX_REPEATS} className="max-w-[8rem]" {...form.register("repeatsLeft", { valueAsNumber: true })} />
+          <FieldDescription>{t("repeatHelp", { max: MAX_REPEATS })}</FieldDescription>
         </Field>
         <div className="flex flex-wrap gap-4">
           <Field className="min-w-[12rem] flex-1">

@@ -15,6 +15,10 @@ export type GiveawayView = {
   pingRoleId: string;
   bonusRoleId: string;
   bonusEntries: number;
+  minAccountDays: number;
+  minMemberDays: number;
+  minLevel: number;
+  repeatsLeft: number;
   hostName: string;
   winners: string[];
   entryCount: number;

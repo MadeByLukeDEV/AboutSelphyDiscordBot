@@ -4,8 +4,9 @@ import type { GiveawayActionStatus } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
-import { buildGiveawayMessage, pickWeightedWinners, ticketsFor, winnerAnnouncement, type Candidate } from "./rules";
-import { activate, cancel, claimEnd, countEntries, entryUserIds, find, listDue, setWinners } from "./repository";
+import { levelFromXp } from "@aboutselphy/shared/levels";
+import { buildGiveawayMessage, entryProblem, nextRoundEnd, pickWeightedWinners, ticketsFor, winnerAnnouncement, type Candidate } from "./rules";
+import { activate, cancel, claimEnd, countEntries, createNextRound, entryUserIds, find, listDue, setWinners, xpOf } from "./repository";
 
 // Giveaways. The dashboard creates one (a draft) and asks the bot to start it: the bot posts the
 // message with an Enter button. The bot ends giveaways when their time is up (a round every 30 s,
@@ -26,6 +27,7 @@ const view = (g: Giveaway, extra: { ended: boolean; winners: string[]; entryCoun
   requiredRoleId: g.requiredRoleId,
   bonusRoleId: g.bonusRoleId,
   bonusEntries: g.bonusEntries,
+  requirements: { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel },
   ...extra,
 });
 
@@ -70,6 +72,9 @@ async function eligible(guild: Guild, g: Giveaway): Promise<Candidate[]> {
     for (const m of members.values()) {
       if (m.user.bot) continue;
       if (g.requiredRoleId && !m.roles.cache.has(g.requiredRoleId)) continue;
+      // The other requirements are checked again at the draw: someone who left the server and came back, or lost a level, no longer qualifies.
+      const level = g.minLevel > 0 ? levelFromXp(await xpOf(m.id)) : 0;
+      if (entryProblem({ minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel }, { accountCreatedAt: m.user.createdAt, joinedAt: m.joinedAt, level }, new Date())) continue;
       ok.push({ id: m.id, weight: ticketsFor(Boolean(g.bonusRoleId && m.roles.cache.has(g.bonusRoleId)), g.bonusEntries) });
     }
   }
@@ -98,6 +103,12 @@ export async function endGiveaway(guild: Guild, id: string, reroll = false): Pro
       const announcement = winnerAnnouncement(fresh.prize, winners, reroll);
       if (message) await message.reply(announcement).catch(() => channel.send(announcement).catch(() => undefined));
       else await channel.send(announcement).catch(() => undefined);
+    }
+    // A repeating giveaway starts its next round right away (not on a re-roll, and not when it was cancelled).
+    if (!reroll && fresh.repeatsLeft > 0) {
+      const next = await createNextRound(fresh, nextRoundEnd(fresh.startedAt, fresh.endsAt, new Date()));
+      const status = await startGiveaway(guild, next.id);
+      log.info({ giveaway: next.id, previous: id, status, repeatsLeft: next.repeatsLeft }, "giveaway: next round");
     }
     log.info({ giveaway: id, winners: winners.length, reroll }, "giveaway drawn");
     return { status: "done", winners };

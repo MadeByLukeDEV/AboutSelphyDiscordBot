@@ -62,6 +62,48 @@ export function parseEnterControl(customId: string): string | null {
 
 // -- the message -------------------------------------------------------------------------------------------
 
+// -- entry requirements ---------------------------------------------------------------------------------
+
+const DAY_MS = 86_400_000;
+
+export type Requirements = { minAccountDays: number; minMemberDays: number; minLevel: number };
+export type Candidate_ = { accountCreatedAt: Date; joinedAt: Date | null; level: number };
+
+/** The first requirement a member misses, or null when they meet them all. */
+export function entryProblem(req: Requirements, who: Candidate_, now: Date): { kind: "account" | "member" | "level"; need: number } | null {
+  if (req.minAccountDays > 0 && now.getTime() - who.accountCreatedAt.getTime() < req.minAccountDays * DAY_MS) return { kind: "account", need: req.minAccountDays };
+  // Without a known join time the member can't show how long they have been here: they don't meet a time-in-server rule.
+  if (req.minMemberDays > 0 && (!who.joinedAt || now.getTime() - who.joinedAt.getTime() < req.minMemberDays * DAY_MS)) return { kind: "member", need: req.minMemberDays };
+  if (req.minLevel > 0 && who.level < req.minLevel) return { kind: "level", need: req.minLevel };
+  return null;
+}
+
+/** What a member who misses a requirement is told. */
+export function problemText(p: { kind: "account" | "member" | "level"; need: number }): string {
+  if (p.kind === "account") return `Your Discord account must be at least ${p.need} ${p.need === 1 ? "day" : "days"} old to enter this giveaway.`;
+  if (p.kind === "member") return `You must have been in this server for at least ${p.need} ${p.need === 1 ? "day" : "days"} to enter this giveaway.`;
+  return `You need to be at least level ${p.need} to enter this giveaway.`;
+}
+
+/** The "Requirements" lines for the post. */
+export function requirementLines(req: Requirements): string[] {
+  const lines: string[] = [];
+  if (req.minAccountDays > 0) lines.push(`Discord account at least ${req.minAccountDays} ${req.minAccountDays === 1 ? "day" : "days"} old`);
+  if (req.minMemberDays > 0) lines.push(`In this server for at least ${req.minMemberDays} ${req.minMemberDays === 1 ? "day" : "days"}`);
+  if (req.minLevel > 0) lines.push(`Level ${req.minLevel} or higher`);
+  return lines;
+}
+
+// -- repeating --------------------------------------------------------------------------------------------
+
+const MIN_ROUND_MS = 5 * 60_000;
+
+/** When the next round of a repeating giveaway ends: as long after `now` as the finished round lasted (at least five minutes). */
+export function nextRoundEnd(startedAt: Date | null, endsAt: Date, now: Date): Date {
+  const length = startedAt ? endsAt.getTime() - startedAt.getTime() : 0;
+  return new Date(now.getTime() + Math.max(MIN_ROUND_MS, length));
+}
+
 export type GiveawayView = {
   id: string;
   prize: string;
@@ -73,6 +115,8 @@ export type GiveawayView = {
   /** A role whose members get extra chances (shown in the post). */
   bonusRoleId?: string | null;
   bonusEntries?: number;
+  /** Requirements beyond the role, listed in the post. */
+  requirements?: Requirements;
   ended: boolean;
   /** Only for an ended giveaway. */
   winners: string[];
@@ -96,6 +140,8 @@ export function buildGiveawayMessage(g: GiveawayView) {
     lines.push(`Press the button to enter.\nEnds <t:${Math.floor(g.endsAt.getTime() / 1000)}:R> (<t:${Math.floor(g.endsAt.getTime() / 1000)}:f>)`);
     lines.push(`**Winners:** ${g.winnerCount}`);
     if (g.requiredRoleId) lines.push(`**You need:** <@&${g.requiredRoleId}>`);
+    const reqs = g.requirements ? requirementLines(g.requirements) : [];
+    if (reqs.length > 0) lines.push(`**Requirements:** ${reqs.join(" · ")}`);
     if (g.bonusRoleId && g.bonusEntries) lines.push(`**Bonus:** <@&${g.bonusRoleId}> members get ${g.bonusEntries} extra ${g.bonusEntries === 1 ? "chance" : "chances"}.`);
   }
   if (g.entryCount !== undefined) lines.push(`**Entries:** ${g.entryCount}`);

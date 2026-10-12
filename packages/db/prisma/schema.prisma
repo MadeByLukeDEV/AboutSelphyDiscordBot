@@ -612,6 +612,14 @@ model Giveaway {
   /// Members with this role get `bonusEntries` extra chances in the draw (e.g. boosters). Null = no bonus.
   bonusRoleId    String?         @db.VarChar(20)
   bonusEntries   Int             @default(0)
+  /// Entry requirements beyond a role (0 = none): Discord account age, time in this server, leveling level.
+  minAccountDays Int             @default(0)
+  minMemberDays  Int             @default(0)
+  minLevel       Int             @default(0)
+  /// When it was posted (the length of one round, for repeating).
+  startedAt      DateTime?
+  /// How many more rounds follow once this one ends: each new round copies the settings and lasts as long as this one did (0 = none).
+  repeatsLeft    Int             @default(0)
   hostName       String          @db.VarChar(100)
   hostUserId     String          @db.VarChar(64)
   /// Discord IDs of the winners of the last draw (a re-roll replaces them).

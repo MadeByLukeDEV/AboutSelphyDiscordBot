@@ -21,6 +21,10 @@ export type GiveawayData = {
   pingRoleId: string | null;
   bonusRoleId: string | null;
   bonusEntries: number;
+  minAccountDays: number;
+  minMemberDays: number;
+  minLevel: number;
+  repeatsLeft: number;
 };
 
 export function createGiveaway(data: GiveawayData, by: { userId: string; name: string }) {

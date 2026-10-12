@@ -10,6 +10,11 @@ export const MAX_GIVEAWAY_DESCRIPTION = 1000;
 export const MAX_WINNERS = 20;
 /** Extra chances a bonus role can give (a member with it has 1 + this many tickets in the draw). */
 export const MAX_BONUS_ENTRIES = 10;
+/** Entry requirements beyond a role. */
+export const MAX_REQUIRED_DAYS = 3650;
+export const MAX_REQUIRED_LEVEL = 500;
+/** How many more rounds a giveaway may repeat. */
+export const MAX_REPEATS = 52;
 export const GIVEAWAY_COLOR = 0x00ffa8;
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -31,6 +36,14 @@ export const giveawayInput = z
     bonusRoleId: z.union([z.literal(""), snowflake]).default(""),
     /** Extra chances for the bonus role (0 = none). */
     bonusEntries: z.number().int().min(0).max(MAX_BONUS_ENTRIES).default(0),
+    /** Discord account at least this many days old (0 = no limit). */
+    minAccountDays: z.number().int().min(0).max(MAX_REQUIRED_DAYS).default(0),
+    /** Member of this server for at least this many days (0 = no limit). */
+    minMemberDays: z.number().int().min(0).max(MAX_REQUIRED_DAYS).default(0),
+    /** At least this level in the leveling system (0 = no limit). */
+    minLevel: z.number().int().min(0).max(MAX_REQUIRED_LEVEL).default(0),
+    /** More rounds after this one ends (each lasts as long as this one; 0 = once). */
+    repeatsLeft: z.number().int().min(0).max(MAX_REPEATS).default(0),
     /** Optional picture, https only. "" = none. */
     imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image").default(""),
     /** Post it right after saving (otherwise it stays a draft). */

@@ -2,8 +2,9 @@ import { MessageFlags } from "discord.js";
 import { onComponent, type ComponentInteraction } from "../../events/components";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
-import { GIVEAWAY_PREFIX, parseEnterControl } from "./rules";
-import { countEntries, find, toggleEntry } from "./repository";
+import { levelFromXp } from "@aboutselphy/shared/levels";
+import { entryProblem, GIVEAWAY_PREFIX, parseEnterControl, problemText } from "./rules";
+import { countEntries, find, hasEntry, toggleEntry, xpOf } from "./repository";
 
 /**
  * The Enter button. Nothing is trusted from the interaction: the id is parsed strictly, the giveaway is
@@ -21,6 +22,14 @@ async function handle(i: ComponentInteraction): Promise<void> {
   if (g.endsAt.getTime() <= Date.now()) return void (await say("This giveaway has just ended. The winners are announced in a moment."));
   if (i.user.bot) return;
   if (g.requiredRoleId && !i.member.roles.cache.has(g.requiredRoleId)) return void (await say(`You need the <@&${g.requiredRoleId}> role to enter this giveaway.`));
+
+  // Withdrawing is always allowed; entering needs the requirements beyond the role.
+  const req = { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel };
+  if (req.minAccountDays + req.minMemberDays + req.minLevel > 0) {
+    const level = req.minLevel > 0 ? levelFromXp(await xpOf(i.user.id)) : 0;
+    const problem = entryProblem(req, { accountCreatedAt: i.user.createdAt, joinedAt: i.member.joinedAt, level }, new Date());
+    if (problem && !(await hasEntry(g.id, i.user.id))) return void (await say(problemText(problem)));
+  }
 
   const entered = await toggleEntry(g.id, i.user.id);
   log.info({ giveaway: g.id, user: i.user.id, entered }, "giveaway entry");

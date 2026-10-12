@@ -1316,7 +1316,13 @@
       "bonus": "Bonus role",
       "noBonus": "No bonus",
       "bonusHelp": "Members with this role get extra chances in the draw, for example boosters. Everyone else keeps one.",
-      "bonusEntries": "Extra chances"
+      "bonusEntries": "Extra chances",
+      "minAccount": "Account age (days)",
+      "minMember": "Time in the server (days)",
+      "minLevel": "Level",
+      "requirementsHelp": "Entry requirements beyond the role. 0 means no limit. They are checked when someone presses Enter and again at the draw. The level needs the leveling feature to be on.",
+      "repeat": "Repeat (more rounds)",
+      "repeatHelp": "After the draw, the next round starts right away with the same settings and the same length. 0 = once, up to {max}. Cancel a running round to stop it."
     },
     "confirm": {
       "cancel": {

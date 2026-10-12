@@ -19,6 +19,10 @@ const toView = (g: GiveawayWithCount): GiveawayView => ({
   pingRoleId: g.pingRoleId ?? "",
   bonusRoleId: g.bonusRoleId ?? "",
   bonusEntries: g.bonusEntries,
+  minAccountDays: g.minAccountDays,
+  minMemberDays: g.minMemberDays,
+  minLevel: g.minLevel,
+  repeatsLeft: g.repeatsLeft,
   hostName: g.hostName,
   winners: g.winners,
   entryCount: g._count.entries,
@@ -61,6 +65,10 @@ export async function saveGiveaway(input: GiveawayInput, by: StaffSession["user"
       pingRoleId: input.pingRoleId || null,
       bonusRoleId: input.bonusRoleId || null,
       bonusEntries: input.bonusRoleId ? input.bonusEntries : 0,
+      minAccountDays: input.minAccountDays,
+      minMemberDays: input.minMemberDays,
+      minLevel: input.minLevel,
+      repeatsLeft: input.repeatsLeft,
     };
     let id: string;
     if (existing) {
