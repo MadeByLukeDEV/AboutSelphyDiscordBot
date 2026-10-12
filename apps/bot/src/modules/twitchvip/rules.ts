@@ -3,6 +3,25 @@
 
 export type ApprovedLink = { discordUserId: string; twitchUserId: string };
 
+export type ExistingLink = { id: string; discordUserId: string; approved: boolean };
+
+export type VerifiedLinkPlan = { action: "link"; remove: string[] } | { action: "taken" };
+
+/**
+ * A verified link (Discord checked the Twitch connection) comes in. `holder` is whoever already has this Twitch account,
+ * `own` is this member's existing link. A confirmed link of someone else keeps the account (staff must sort that out);
+ * a mere pending claim of someone else loses to proof; the member's own older link is replaced.
+ */
+export function planVerifiedLink(discordUserId: string, holder: ExistingLink | null, own: ExistingLink | null): VerifiedLinkPlan {
+  const remove: string[] = [];
+  if (holder && holder.discordUserId !== discordUserId) {
+    if (holder.approved) return { action: "taken" };
+    remove.push(holder.id);
+  }
+  if (own && !remove.includes(own.id)) remove.push(own.id);
+  return { action: "link", remove };
+}
+
 export type VipPlan = { give: string[]; take: string[] };
 
 /**

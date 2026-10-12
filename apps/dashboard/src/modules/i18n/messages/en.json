@@ -2386,7 +2386,7 @@
   },
   "TwitchVip": {
     "title": "Twitch VIP role",
-    "intro": "Members who are VIP on your Twitch channel get a Discord role automatically, and lose it when they stop being VIP. Because Discord can't tell which Twitch account belongs to whom, members claim theirs with /vip link and you confirm it here before the role is ever given.",
+    "intro": "Members who are VIP on your Twitch channel get a Discord role automatically, and lose it when they stop being VIP. Members link their Twitch account with /vip link: the button uses the Twitch connection on their Discord profile, which Discord verified, so the link is confirmed at once. Typing a name instead needs your confirmation here.",
     "noRole": "No role yet",
     "state": {
       "title": "State",
@@ -2425,7 +2425,8 @@
       "badgePending": "Waiting",
       "badgeApproved": "Confirmed",
       "since": "since {time}",
-      "by": "confirmed by {name}"
+      "by": "confirmed by {name}",
+      "viaDiscord": "verified through Discord"
     },
     "errors": {
       "forbidden": "You don't have access to this.",
@@ -2437,6 +2438,24 @@
       "notFound": "That link doesn't exist any more.",
       "alreadyApproved": "That link is already confirmed.",
       "failed": "Something went wrong. Try again."
+    }
+  },
+  "VipLink": {
+    "title": "Link Twitch",
+    "doneTitle": "All linked",
+    "problemTitle": "That didn't work",
+    "back": "You can close this page and go back to Discord.",
+    "status": {
+      "linked": "Your Twitch account is linked. You get the VIP role while you are a VIP on the channel.",
+      "notConfigured": "This isn't set up yet. Ask a moderator.",
+      "denied": "You cancelled the sign-in, so nothing was linked.",
+      "badState": "That sign-in link expired or was opened in another browser. Start again with /vip link.",
+      "noTwitch": "Discord shows no verified Twitch connection on your profile. In Discord open User Settings, Connections, add Twitch, then try again. Or use /vip link with your Twitch name.",
+      "notInServer": "You need to be a member of the server first.",
+      "notEnabled": "The VIP role isn't switched on right now.",
+      "taken": "That Twitch account is already linked to another member. Ask a moderator if it is yours.",
+      "failed": "Something went wrong. Try again in a moment.",
+      "tooMany": "Too many tries. Wait a few minutes and try again."
     }
   }
 }

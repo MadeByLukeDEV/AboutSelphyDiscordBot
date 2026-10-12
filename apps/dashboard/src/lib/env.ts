@@ -34,6 +34,10 @@ const schema = z.object({
   LEGAL_HOSTING: z.string().max(300).optional(),
   // Twitch (went live): the dashboard only runs the one-time "Connect Twitch"
   // login and stores the refresh token encrypted; the bot does the rest.
+  // "Link with Discord" for the Twitch VIP role: the Discord application's ID and OAuth secret (the same application
+  // as the bot). Optional: without them the button says it isn't set up. Register <site>/api/link/twitch/callback as a redirect.
+  DISCORD_APP_ID: z.string().regex(/^\d{17,20}$/).optional(),
+  DISCORD_CLIENT_SECRET: z.string().min(1).optional(),
   TWITCH_CLIENT_ID: z.string().min(1).optional(),
   TWITCH_CLIENT_SECRET: z.string().min(1).optional(),
   // 32 bytes as 64 hex characters (same value as the bot's).

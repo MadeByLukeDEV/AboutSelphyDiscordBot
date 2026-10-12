@@ -162,7 +162,7 @@ function LinkItem({ link, children, format, t }: { link: VipLinkRow; pending: bo
         </div>
         <p className="text-sm break-words text-muted-foreground">
           twitch.tv/{link.twitchLogin} · {t("links.since", { time: format.dateTime(new Date(link.createdAt), { dateStyle: "medium" }) })}
-          {link.approvedByName ? ` · ${t("links.by", { name: link.approvedByName })}` : ""}
+          {link.approvedByName ? ` · ${link.approvedByName === "Discord connection" ? t("links.viaDiscord") : t("links.by", { name: link.approvedByName })}` : ""}
         </p>
       </div>
       <div className="flex gap-2">{children}</div>

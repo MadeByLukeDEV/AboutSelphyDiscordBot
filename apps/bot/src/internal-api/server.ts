@@ -12,6 +12,7 @@ import {
   webhookTestBody,
   stickyClearBody,
   twitchVipUnlinkBody,
+  twitchVipLinkedBody,
   roleMergeBody,
   roleUpdateBody,
   suggestionDecideBody,
@@ -35,7 +36,7 @@ import { renderMemberCardPreview } from "../modules/membercards";
 import { checkFeedNow } from "../modules/feeds";
 import { clearSticky } from "../modules/sticky";
 import { guidePreview, postGuide } from "../modules/modguide";
-import { unlinkVip } from "../modules/twitchvip";
+import { linkVerified, unlinkVip } from "../modules/twitchvip";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
 import { decideSuggestion } from "../modules/suggestions";
@@ -246,6 +247,14 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const body = webhookTestBody.safeParse(await readJsonBody(req));
     if (!body.success) return json(res, 400, { error: "invalid body" });
     return json(res, 200, { status: await sendTest(body.data.id) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/twitchvip/linked") {
+    const body = twitchVipLinkedBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await linkVerified(guild, body.data) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/twitchvip/unlink") {

@@ -13,6 +13,8 @@ import {
   webhookTestStatus,
   stickyClearStatus,
   twitchVipUnlinkStatus,
+  twitchVipLinkedStatus,
+  type TwitchVipLinkedStatus,
   modGuidePostResponse,
   modGuidePreviewResponse,
   type ModGuidePostResponse,
@@ -185,6 +187,14 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   if (!res?.ok) return null;
   const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
+/** Reports a Twitch account Discord verified for a member; the bot decides. Null if the bot can't be reached. */
+export async function linkTwitchVerifiedViaBot(input: { discordUserId: string; discordName: string; twitchUserId: string; twitchLogin: string }): Promise<TwitchVipLinkedStatus | null> {
+  const res = await botFetch("/internal/twitchvip/linked", { method: "POST", body: input, timeoutMs: 15_000 });
+  if (!res?.ok) return null;
+  const parsed = twitchVipLinkedStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
 }
 
 /** Takes the Twitch VIP role off a member and forgets their link. Null if the bot can't be reached. */

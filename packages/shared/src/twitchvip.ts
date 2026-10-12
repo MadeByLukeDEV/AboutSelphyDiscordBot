@@ -21,6 +21,19 @@ export const vipSettingsSchema = z
   .refine((v) => !v.enabled || v.roleId !== "", { path: ["roleId"], message: "role" });
 export type VipSettings = z.infer<typeof vipSettingsSchema>;
 
+/**
+ * POST /internal/twitchvip/linked: the dashboard says "this Discord member has this Twitch account connected, and Discord
+ * verified it". The bot decides (is the member in the server, is it switched on, is the account free) and answers.
+ */
+export const twitchVipLinkedBody = z.object({
+  discordUserId: z.string().regex(/^\d{17,20}$/),
+  discordName: z.string().min(1).max(100),
+  twitchUserId: z.string().regex(/^\d{1,20}$/),
+  twitchLogin: z.string().min(1).max(64),
+});
+export const twitchVipLinkedStatus = z.enum(["linked", "notInServer", "notEnabled", "taken", "failed"]);
+export type TwitchVipLinkedStatus = z.infer<typeof twitchVipLinkedStatus>;
+
 /** POST /internal/twitchvip/unlink: take the role off and forget the link (before the dashboard removes it). */
 export const twitchVipUnlinkBody = z.object({ id: z.string().min(1).max(64) });
 export const twitchVipUnlinkStatus = z.enum(["done", "failed"]);

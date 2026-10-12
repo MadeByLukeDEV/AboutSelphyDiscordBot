@@ -1,5 +1,5 @@
 import { Events, type Client, type Guild, type GuildMember } from "discord.js";
-import type { TwitchVipUnlinkStatus } from "@aboutselphy/shared";
+import type { TwitchVipLinkedStatus, TwitchVipUnlinkStatus } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
@@ -7,8 +7,8 @@ import { log } from "../../lib/log";
 import { checkRole } from "../roles";
 import { fetchChannelVips } from "../twitch";
 import { dropVipConfig, getVipConfig } from "./config";
-import { deleteByDiscord, deleteLink, findById, listApproved, recordSync } from "./repository";
-import { planVipRoles } from "./rules";
+import { createVerifiedLink, deleteByDiscord, deleteLink, findByDiscord, findById, findByTwitch, listApproved, recordSync } from "./repository";
+import { planVerifiedLink, planVipRoles } from "./rules";
 
 // The Twitch VIP role. Every 10 minutes (and when the dashboard changes something) the bot reads the VIP list
 // of the connected channel and gives the configured role to the members whose approved link points at a VIP,
@@ -62,6 +62,30 @@ export function syncVipRole(guild: Guild): Promise<void> {
       log.error({ err }, "twitchvip: sync failed");
     }
   });
+}
+
+/**
+ * The dashboard reports a Twitch account Discord verified for a member (the "Link with Discord" flow). No staff step is
+ * needed: the proof is Discord's own verified connection. The member must be in the server and the feature on.
+ */
+export async function linkVerified(guild: Guild, input: { discordUserId: string; discordName: string; twitchUserId: string; twitchLogin: string }): Promise<TwitchVipLinkedStatus> {
+  try {
+    const config = await getVipConfig();
+    if (!config.enabled || !config.roleId) return "notEnabled";
+    const member = await guild.members.fetch(input.discordUserId).catch(() => null);
+    if (!member) return "notInServer";
+    const plan = planVerifiedLink(input.discordUserId, await findByTwitch(input.twitchUserId), await findByDiscord(input.discordUserId));
+    if (plan.action === "taken") return "taken";
+    // Replacing a link: take the role off first so the next sync starts from the truth.
+    for (const id of plan.remove) await unlinkVip(guild, id);
+    await createVerifiedLink({ ...input, discordName: member.displayName.slice(0, 100) });
+    log.info({ user: input.discordUserId, twitch: input.twitchLogin }, "twitchvip: linked through the Discord connection");
+    void syncVipRole(guild);
+    return "linked";
+  } catch (err) {
+    log.warn({ err }, "twitchvip: could not link a verified account");
+    return "failed";
+  }
 }
 
 /** Takes the role off one link's member (if the role is configured) and forgets the link. For the dashboard and /vip unlink. */

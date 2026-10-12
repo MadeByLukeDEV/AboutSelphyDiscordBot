@@ -2386,7 +2386,7 @@
   },
   "TwitchVip": {
     "title": "Twitch-VIP-Rolle",
-    "intro": "Mitglieder, die auf deinem Twitch-Kanal VIP sind, bekommen automatisch eine Discord-Rolle und verlieren sie, wenn sie kein VIP mehr sind. Weil Discord nicht weiß, welcher Twitch-Account zu wem gehört, melden Mitglieder ihren mit /vip link an und du bestätigst ihn hier, bevor die Rolle je vergeben wird.",
+    "intro": "Mitglieder, die auf deinem Twitch-Kanal VIP sind, bekommen automatisch eine Discord-Rolle und verlieren sie, wenn sie kein VIP mehr sind. Mitglieder verknüpfen ihren Twitch-Account mit /vip link: Der Button nutzt die Twitch-Verbindung ihres Discord-Profils, die Discord geprüft hat, die Verknüpfung ist also sofort bestätigt. Wer stattdessen einen Namen tippt, braucht deine Bestätigung hier.",
     "noRole": "Noch keine Rolle",
     "state": {
       "title": "Zustand",
@@ -2425,7 +2425,8 @@
       "badgePending": "Wartet",
       "badgeApproved": "Bestätigt",
       "since": "seit {time}",
-      "by": "bestätigt von {name}"
+      "by": "bestätigt von {name}",
+      "viaDiscord": "über Discord geprüft"
     },
     "errors": {
       "forbidden": "Du hast hierauf keinen Zugriff.",
@@ -2437,6 +2438,24 @@
       "notFound": "Diese Verknüpfung gibt es nicht mehr.",
       "alreadyApproved": "Diese Verknüpfung ist schon bestätigt.",
       "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+    }
+  },
+  "VipLink": {
+    "title": "Twitch verknüpfen",
+    "doneTitle": "Alles verknüpft",
+    "problemTitle": "Das hat nicht geklappt",
+    "back": "Du kannst diese Seite schließen und zu Discord zurückgehen.",
+    "status": {
+      "linked": "Dein Twitch-Account ist verknüpft. Du bekommst die VIP-Rolle, solange du VIP im Kanal bist.",
+      "notConfigured": "Das ist noch nicht eingerichtet. Frag einen Moderator.",
+      "denied": "Du hast die Anmeldung abgebrochen, daher wurde nichts verknüpft.",
+      "badState": "Der Anmeldelink ist abgelaufen oder wurde in einem anderen Browser geöffnet. Starte mit /vip link neu.",
+      "noTwitch": "Discord zeigt keine geprüfte Twitch-Verbindung in deinem Profil. Öffne in Discord die Benutzereinstellungen, Verbindungen, füge Twitch hinzu und versuche es erneut. Oder nutze /vip link mit deinem Twitch-Namen.",
+      "notInServer": "Du musst zuerst Mitglied des Servers sein.",
+      "notEnabled": "Die VIP-Rolle ist gerade nicht eingeschaltet.",
+      "taken": "Dieser Twitch-Account ist bereits mit einem anderen Mitglied verknüpft. Frag einen Moderator, falls es deiner ist.",
+      "failed": "Etwas ist schiefgelaufen. Versuche es gleich noch einmal.",
+      "tooMany": "Zu viele Versuche. Warte ein paar Minuten und versuche es erneut."
     }
   }
 }

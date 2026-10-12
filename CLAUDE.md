@@ -727,6 +727,19 @@ Decided 2026-10-08:
     again once** (Twitch answers 401 without it, shown as "missingScope"). Removing a link goes through the bot
     (`POST /internal/twitchvip/unlink`) so the role comes off too; a member who leaves loses their link. Only runs in production
     or with `BOT_INTEGRATIONS_IN_DEV`. Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-10-30).
+  - **VIP link through Discord's own Twitch connection** (2026-10-30, `feature_vip-discord-connection`; **needs setup, not tried
+    live**): `/vip link` with no name shows a "Link with Discord" button (needs the bot's `DASHBOARD_URL`, compose fills it from
+    `NEXT_PUBLIC_SITE_URL`) to the **public** route `/api/link/twitch/start`: Discord OAuth with scopes `identify connections`
+    (state cookie, 10 min, per-address limit), the callback reads `/users/@me` and `/users/@me/connections` **once**, takes the
+    first connection of type `twitch` that Discord marked `verified`, keeps only its id and name, **revokes the token** and
+    tells the bot (`POST /internal/twitchvip/linked`). The bot (`linkVerified`, `planVerifiedLink` pure and tested) checks the
+    member is in the server and the feature is on, and creates the link **already approved** (`approvedByName` "Discord
+    connection"): the proof is Discord's verified connection, so no staff step. Someone else's *confirmed* link on that Twitch
+    account wins (`taken`, staff sort it out); someone else's unconfirmed claim loses to proof. The result page `/vip-link`
+    (public, fixed messages per outcome code). A typed `/vip link twitch:<name>` still works and still needs staff approval.
+    **Setup**: dashboard env `DISCORD_APP_ID` + `DISCORD_CLIENT_SECRET` (the bot's application, OAuth2 tab), and register
+    `<NEXT_PUBLIC_SITE_URL>/api/link/twitch/callback` under OAuth2 -> Redirects. Not the same as Discord's built-in Twitch
+    *subscriber* integration: a bot can't read those roles' links, only this OAuth read works.
   - [ ] Kick/TikTok, clips, more than 30 channels.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by

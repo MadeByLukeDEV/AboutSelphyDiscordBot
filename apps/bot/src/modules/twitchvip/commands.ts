@@ -1,7 +1,8 @@
-import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { MAX_VIP_LINKS, TWITCH_LOGIN_PATTERN } from "@aboutselphy/shared/twitchvip";
 import type { Command } from "../../commands/types";
 import { escapeText } from "../../lib/escape";
+import { env } from "../../lib/env";
 import { log } from "../../lib/log";
 import { NoTwitchToken, resolveChannel, TwitchError } from "../twitch";
 import { getVipConfig } from "./config";
@@ -21,8 +22,8 @@ const vip: Command = {
     .addSubcommand((s) =>
       s
         .setName("link")
-        .setDescription("Say which Twitch account is yours (staff confirm it)")
-        .addStringOption((o) => o.setName("twitch").setDescription("Your Twitch name").setRequired(true).setMaxLength(25)),
+        .setDescription("Link your Twitch account (with Discord, or by typing its name for staff to confirm)")
+        .addStringOption((o) => o.setName("twitch").setDescription("Only if you can't use the button: your Twitch name (staff confirm it)").setMaxLength(25)),
     )
     .addSubcommand((s) => s.setName("unlink").setDescription("Remove your link (and the VIP role)"))
     .addSubcommand((s) => s.setName("status").setDescription("See the state of your link"))
@@ -47,8 +48,20 @@ const vip: Command = {
       return void (await i.editReply({ content: status === "done" ? "Your link is removed." : "I couldn't remove it right now. Try again in a moment." }));
     }
 
-    // link
-    const login = i.options.getString("twitch", true).trim().replace(/^@/, "");
+    // link: the button (Discord's verified Twitch connection) is the normal way; a typed name is the fallback staff confirm.
+    const typed = i.options.getString("twitch");
+    const dashboard = env().DASHBOARD_URL?.replace(/\/+$/, "");
+    if (!typed) {
+      if (!dashboard) return void (await reply("Type your Twitch name with `/vip link twitch:<name>` and a moderator will confirm it."));
+      const button = new ButtonBuilder().setLabel("Link with Discord").setStyle(ButtonStyle.Link).setURL(`${dashboard}/api/link/twitch/start`);
+      return void (await i.reply({
+        content: "Connect Twitch to your Discord profile first (User Settings → Connections), then press the button. I only read which Twitch account is connected; nothing is posted and no password is shared.",
+        components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)],
+        flags: MessageFlags.Ephemeral,
+        allowedMentions: NO_MENTIONS,
+      }));
+    }
+    const login = typed.trim().replace(/^@/, "");
     if (!TWITCH_LOGIN_PATTERN.test(login)) return void (await reply("That doesn't look like a Twitch name (3 to 25 letters, digits or underscores)."));
     if (mine?.approved) return void (await reply(`You are already linked to **${escapeText(mine.twitchLogin)}**. Use \`/vip unlink\` first to change it.`));
     if (!mine && (await countLinks()) >= MAX_VIP_LINKS) return void (await reply("There are too many pending links right now. Ask a moderator."));

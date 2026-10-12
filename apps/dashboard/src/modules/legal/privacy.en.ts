@@ -28,7 +28,7 @@ export function privacyEn(o: Operator): LegalDoc {
               "Tickets: who opened the ticket, who handled it, and the messages written in the private ticket channel. When a ticket is closed a transcript (up to 2,000 messages) is saved so staff can look at it later. Purpose: support and dispute handling.",
               "Birthdays (optional): the day and month you choose, never the year, plus your name. Only if you use /birthday set.",
               "Reminders (optional): the text and time you enter with /remind. Only if you use /remind.",
-              "Twitch VIP link (optional): your Discord ID and name, and the Twitch account name you claim with /vip link. Staff confirm it before a role is given. Only if you use /vip link.",
+              "Twitch VIP link (optional): your Discord ID and name, and the Twitch account name you claim with /vip link. If you use the \"Link with Discord\" button, Discord shows us the Twitch account connected to your profile once (we ask only for your identity and connections, keep just the Twitch account ID and name, and discard the access token straight away); if you type a name instead, staff confirm it before a role is given. Only if you use /vip link.",
               "Suggestions, polls and giveaways: your suggestion text and name, your votes and entries. They are stored with your user ID so nobody can vote or enter twice. Votes in polls are shown to others only as counts.",
               "Starboard: when a message gets enough reactions it is reposted in a showcase channel with its text, name, picture and a link to the original.",
               "Welcome: the roles given to you when you join. If enabled, the roles you had when you left are remembered so they can be restored if you come back.",

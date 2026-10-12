@@ -37,6 +37,8 @@ const schema = z.object({
   // Optional. Default: loopback locally, all interfaces when BOT_ENV=production.
   BOT_API_HOST: z.string().optional(),
   // Twitch (went live). All optional: without them the module stays off.
+  // The dashboard's public address, so /vip link can hand members the "Link with Discord" button. Optional.
+  DASHBOARD_URL: optional(z.url()),
   TWITCH_CLIENT_ID: optional(z.string().min(1)),
   TWITCH_CLIENT_SECRET: optional(z.string().min(1)),
   // 32 bytes as 64 hex characters; decrypts the stored Twitch refresh token.

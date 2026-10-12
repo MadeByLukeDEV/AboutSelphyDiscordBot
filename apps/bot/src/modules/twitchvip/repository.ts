@@ -14,5 +14,9 @@ export const countLinks = () => prisma.twitchVipLink.count();
 /** A new claim, always pending. */
 export const createLink = (data: { discordUserId: string; discordName: string; twitchUserId: string; twitchLogin: string }) => prisma.twitchVipLink.create({ data: { ...data, approved: false } });
 
+/** A link Discord verified: approved from the start, "approved by" says so. */
+export const createVerifiedLink = (data: { discordUserId: string; discordName: string; twitchUserId: string; twitchLogin: string }) =>
+  prisma.twitchVipLink.create({ data: { ...data, approved: true, approvedByName: "Discord connection", approvedAt: new Date() } });
+
 export const deleteLink = async (id: string) => (await prisma.twitchVipLink.deleteMany({ where: { id } })).count > 0;
 export const deleteByDiscord = async (discordUserId: string) => (await prisma.twitchVipLink.deleteMany({ where: { discordUserId } })).count;
