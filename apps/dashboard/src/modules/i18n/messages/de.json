@@ -42,7 +42,8 @@
         "webhooks": "Webhooks",
         "feeds": "Feed-Ankündigungen",
         "modGuide": "Moderatoren-Leitfaden",
-        "antiBot": "Anti-Bot-Kanal"
+        "antiBot": "Anti-Bot-Kanal",
+        "twitchVip": "VIP-Rolle"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2382,5 +2383,60 @@
     "hue": "Farbton",
     "hex": "Hex-Farbe",
     "presets": "Fertige Farben"
+  },
+  "TwitchVip": {
+    "title": "Twitch-VIP-Rolle",
+    "intro": "Mitglieder, die auf deinem Twitch-Kanal VIP sind, bekommen automatisch eine Discord-Rolle und verlieren sie, wenn sie kein VIP mehr sind. Weil Discord nicht weiß, welcher Twitch-Account zu wem gehört, melden Mitglieder ihren mit /vip link an und du bestätigst ihn hier, bevor die Rolle je vergeben wird.",
+    "noRole": "Noch keine Rolle",
+    "state": {
+      "title": "Zustand",
+      "unknown": "Noch nicht abgeglichen. Der Bot prüft alle 10 Minuten und jedes Mal, wenn du hier speicherst.",
+      "ok": "Funktioniert: Die VIP-Liste wurde gelesen und die Rollen stimmen damit überein.",
+      "missingScope": "Der verbundene Twitch-Account hat das Lesen der VIP-Liste noch nicht erlaubt. Verbinde Twitch einmal neu, um das zu erlauben.",
+      "notConnected": "Es ist kein Twitch-Account verbunden.",
+      "needsReconnect": "Die Twitch-Verbindung ist abgelaufen. Verbinde Twitch neu.",
+      "unavailable": "Die letzte Prüfung ist fehlgeschlagen (Twitch hat nicht geantwortet oder die Rolle kann nicht vergeben werden). Es wurde nichts geändert; es wird bald erneut versucht.",
+      "reconnect": "Zur Twitch-Seite, um neu zu verbinden",
+      "vips": "{count, plural, one {# VIP im Kanal} other {# VIPs im Kanal}}",
+      "last": "letzte Prüfung {time}"
+    },
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können das ändern. Der Kanal ist der Twitch-Account, der auf der Twitch-Seite verbunden ist.",
+      "role": "VIP-Rolle",
+      "roleHelp": "Die Rolle, die Mitglieder bekommen. Es werden nur Rollen angezeigt, die der Bot vergeben darf (unter der Rolle des Bots, keine mächtigen Rechte).",
+      "botOffline": "Der Bot ist offline, daher ist die Rollenliste nicht verfügbar.",
+      "enabled": "Die VIP-Rolle ist an",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar, er übernimmt es innerhalb einer Minute."
+    },
+    "links": {
+      "waiting": "Warten auf Bestätigung",
+      "noneWaiting": "Niemand wartet. Mitglieder starten mit /vip link in Discord.",
+      "confirmed": "Bestätigte Verknüpfungen",
+      "noneConfirmed": "Noch keine bestätigten Verknüpfungen.",
+      "approve": "Bestätigen",
+      "reject": "Ablehnen",
+      "remove": "Entfernen",
+      "approved": "Verknüpfung bestätigt",
+      "removed": "Verknüpfung entfernt",
+      "badgePending": "Wartet",
+      "badgeApproved": "Bestätigt",
+      "since": "seit {time}",
+      "by": "bestätigt von {name}"
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsRole": "Wähle eine Rolle, um es einzuschalten.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "roleNotFound": "Diese Rolle gibt es nicht.",
+      "roleNotUsable": "Der Bot kann diese Rolle nicht vergeben (sie steht über der Rolle des Bots oder hat mächtige Rechte).",
+      "notFound": "Diese Verknüpfung gibt es nicht mehr.",
+      "alreadyApproved": "Diese Verknüpfung ist schon bestätigt.",
+      "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+    }
   }
 }

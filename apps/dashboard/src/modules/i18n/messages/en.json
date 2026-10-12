@@ -42,7 +42,8 @@
         "webhooks": "Webhooks",
         "feeds": "Feed announcer",
         "modGuide": "Moderator guide",
-        "antiBot": "Anti-bot channel"
+        "antiBot": "Anti-bot channel",
+        "twitchVip": "VIP role"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2382,5 +2383,60 @@
     "hue": "Hue",
     "hex": "Hex colour",
     "presets": "Ready-made colours"
+  },
+  "TwitchVip": {
+    "title": "Twitch VIP role",
+    "intro": "Members who are VIP on your Twitch channel get a Discord role automatically, and lose it when they stop being VIP. Because Discord can't tell which Twitch account belongs to whom, members claim theirs with /vip link and you confirm it here before the role is ever given.",
+    "noRole": "No role yet",
+    "state": {
+      "title": "State",
+      "unknown": "Not synced yet. The bot checks every 10 minutes and whenever you save here.",
+      "ok": "Working: the VIP list was read and the roles match it.",
+      "missingScope": "The connected Twitch account hasn't allowed reading the VIP list yet. Connect Twitch again once to grant that permission.",
+      "notConnected": "No Twitch account is connected.",
+      "needsReconnect": "The Twitch connection expired. Connect Twitch again.",
+      "unavailable": "The last check failed (Twitch didn't answer, or the role can't be handed out). Nothing was changed; it tries again soon.",
+      "reconnect": "Go to the Twitch page to connect again",
+      "vips": "{count, plural, one {# VIP on the channel} other {# VIPs on the channel}}",
+      "last": "last check {time}"
+    },
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these. The channel is the Twitch account connected on the Twitch page.",
+      "role": "VIP role",
+      "roleHelp": "The role members get. Only roles the bot may hand out are listed (below the bot's role, no powerful permissions).",
+      "botOffline": "The bot is offline, so the role list isn't available.",
+      "enabled": "The VIP role is on",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "links": {
+      "waiting": "Waiting for confirmation",
+      "noneWaiting": "Nobody is waiting. Members start with /vip link in Discord.",
+      "confirmed": "Confirmed links",
+      "noneConfirmed": "No confirmed links yet.",
+      "approve": "Confirm",
+      "reject": "Reject",
+      "remove": "Remove",
+      "approved": "Link confirmed",
+      "removed": "Link removed",
+      "badgePending": "Waiting",
+      "badgeApproved": "Confirmed",
+      "since": "since {time}",
+      "by": "confirmed by {name}"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsRole": "Pick a role to switch it on.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "roleNotFound": "That role doesn't exist.",
+      "roleNotUsable": "The bot can't hand out that role (it is above the bot's role or has powerful permissions).",
+      "notFound": "That link doesn't exist any more.",
+      "alreadyApproved": "That link is already confirmed.",
+      "failed": "Something went wrong. Try again."
+    }
   }
 }

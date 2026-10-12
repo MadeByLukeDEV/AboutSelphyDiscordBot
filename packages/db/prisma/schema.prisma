@@ -1013,3 +1013,30 @@ model AntiBotConfig {
   lastHitAt      DateTime?
   updatedAt      DateTime  @updatedAt
 }
+
+/// The Twitch VIP role: settings, and the result of the last sync (singleton, id 1).
+model TwitchVipConfig {
+  id         Int       @id @default(1)
+  enabled    Boolean   @default(false)
+  roleId     String?   @db.VarChar(20)
+  /// unknown | ok | missingScope | notConnected | needsReconnect | unavailable (CHECK in the migration).
+  status     String    @default("unknown") @db.VarChar(16)
+  vipCount   Int       @default(0)
+  lastSyncAt DateTime?
+  updatedAt  DateTime  @updatedAt
+}
+
+/// A member's claim "this Twitch account is mine", until staff approve it. Only approved links earn the role.
+model TwitchVipLink {
+  id             String    @id @default(cuid())
+  discordUserId  String    @unique @db.VarChar(20)
+  discordName    String    @db.VarChar(100)
+  twitchUserId   String    @unique @db.VarChar(32)
+  twitchLogin    String    @db.VarChar(64)
+  approved       Boolean   @default(false)
+  approvedByName String?   @db.VarChar(100)
+  approvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([approved])
+}

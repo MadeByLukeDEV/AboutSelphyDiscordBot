@@ -27,6 +27,7 @@ export function privacyDe(o: Operator): LegalDoc {
               "Level: deine Nutzer-ID, dein Anzeigename, Erfahrungspunkte und Zähler (Anzahl der Nachrichten und Sprachminuten). Der Inhalt deiner Nachrichten wird dafür nicht gelesen. Zweck: Rang, Bestenliste und Rollenbelohnungen.",
               "Tickets: wer das Ticket eröffnet hat, wer es bearbeitet hat und die Nachrichten im privaten Ticket-Kanal. Beim Schließen wird ein Protokoll (bis zu 2.000 Nachrichten) gespeichert, damit das Team es später ansehen kann. Zweck: Support und Klärung von Streitfällen.",
               "Geburtstage (freiwillig): Tag und Monat, die du wählst, nie das Jahr, sowie dein Name. Nur wenn du /birthday set benutzt.",
+              "Twitch-VIP-Verknüpfung (freiwillig): deine Discord-ID und dein Name sowie der Twitch-Kontoname, den du mit /vip link angibst. Das Team bestätigt ihn, bevor eine Rolle vergeben wird. Nur wenn du /vip link benutzt.",
               "Erinnerungen (freiwillig): der Text und die Zeit, die du mit /remind eingibst. Nur wenn du /remind benutzt.",
               "Vorschläge, Umfragen und Gewinnspiele: dein Vorschlagstext und Name, deine Stimmen und Teilnahmen. Sie werden mit deiner Nutzer-ID gespeichert, damit niemand doppelt abstimmen oder teilnehmen kann. Stimmen in Umfragen werden anderen nur als Zahlen gezeigt.",
               "Starboard: Erhält eine Nachricht genug Reaktionen, wird sie mit Text, Name, Bild und einem Link zum Original in einem Schaukasten-Kanal erneut gepostet.",
@@ -80,7 +81,7 @@ export function privacyDe(o: Operator): LegalDoc {
         blocks: [
           {
             list: [
-              "Geburtstage und Erinnerungen: gelöscht, wenn du sie entfernst (/birthday remove, /remind cancel) oder den Server verlässt. Zugestellte Erinnerungen werden nach einem Tag gelöscht.",
+              "Geburtstage, Erinnerungen und deine Twitch-VIP-Verknüpfung: gelöscht, wenn du sie entfernst (/birthday remove, /remind cancel, /vip unlink) oder den Server verlässt. Zugestellte Erinnerungen werden nach einem Tag gelöscht.",
               "Gemerkte Rollen nach dem Verlassen: 90 Tage.",
               "Moderationsfälle und Notizen: gespeichert, solange sie gebraucht werden, um die Community zu schützen und Einsprüche zu beantworten; sie werden von Zeit zu Zeit überprüft. Du kannst die Löschung verlangen (Abschnitt 8).",
               "Ticket-Protokolle, Vorschläge, Umfragen, Gewinnspiel-Teilnahmen, Level und Starboard-Beiträge: gespeichert, solange die Funktion genutzt wird und bis du die Löschung verlangst oder der Betreiber sie entfernt.",

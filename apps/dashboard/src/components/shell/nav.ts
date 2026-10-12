@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot" | "twitchVip";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "members" | "engagement" | "voice" | "content" | "streams" | "system";
 
@@ -71,6 +71,7 @@ const NAV: NavGroupSpec[] = [
     label: "streams",
     items: [
       { href: "/twitch", label: "twitch", requires: "admin" },
+      { href: "/twitch-vip", label: "twitchVip", requires: "admin" },
       { href: "/youtube", label: "youtube", requires: "admin" },
       { href: "/feeds", label: "feeds", requires: "admin" },
     ],

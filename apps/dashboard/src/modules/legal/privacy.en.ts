@@ -28,6 +28,7 @@ export function privacyEn(o: Operator): LegalDoc {
               "Tickets: who opened the ticket, who handled it, and the messages written in the private ticket channel. When a ticket is closed a transcript (up to 2,000 messages) is saved so staff can look at it later. Purpose: support and dispute handling.",
               "Birthdays (optional): the day and month you choose, never the year, plus your name. Only if you use /birthday set.",
               "Reminders (optional): the text and time you enter with /remind. Only if you use /remind.",
+              "Twitch VIP link (optional): your Discord ID and name, and the Twitch account name you claim with /vip link. Staff confirm it before a role is given. Only if you use /vip link.",
               "Suggestions, polls and giveaways: your suggestion text and name, your votes and entries. They are stored with your user ID so nobody can vote or enter twice. Votes in polls are shown to others only as counts.",
               "Starboard: when a message gets enough reactions it is reposted in a showcase channel with its text, name, picture and a link to the original.",
               "Welcome: the roles given to you when you join. If enabled, the roles you had when you left are remembered so they can be restored if you come back.",
@@ -80,7 +81,7 @@ export function privacyEn(o: Operator): LegalDoc {
         blocks: [
           {
             list: [
-              "Birthdays and reminders: deleted when you remove them (/birthday remove, /remind cancel) or when you leave the server. Delivered reminders are deleted after one day.",
+              "Birthdays, reminders and your Twitch VIP link: deleted when you remove them (/birthday remove, /remind cancel, /vip unlink) or when you leave the server. Delivered reminders are deleted after one day.",
               "Remembered roles after leaving: 90 days.",
               "Moderation cases and notes: kept while they are needed to keep the community safe and to answer appeals; they are reviewed from time to time. You can ask for deletion (section 8).",
               "Ticket transcripts, suggestions, polls, giveaway entries, levels and starboard posts: kept while the feature is in use and until you ask for deletion or the operator removes them.",

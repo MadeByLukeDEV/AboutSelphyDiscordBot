@@ -8,7 +8,7 @@ import { log } from "../../lib/log";
 import { EventSubClient, type SocketLike } from "./eventsub-client";
 import { emitEvent } from "../webhooks";
 import { syncLiveRole } from "./live-role";
-import { getLiveStreams, getUsersByLogin, subscribe, TwitchError, type LiveStream } from "./helix";
+import { getLiveStreams, getUsersByLogin, getVips, subscribe, TwitchError, type ChannelVip, type LiveStream } from "./helix";
 import { endedMessage, liveMessage, type StreamView } from "./notification";
 import type { StreamOfflineEvent, StreamOnlineEvent } from "./protocol";
 import { addedBeforeStart, planReconcile } from "./reconcile";
@@ -21,6 +21,7 @@ import {
   markNotificationEnded,
   openNotificationsFor,
   readConfig,
+  readConnection,
   updateStreamerNames,
 } from "./repository";
 import { forgetAccessToken, getAccessToken, NoTwitchToken, twitchCredentials } from "./tokens";
@@ -378,6 +379,28 @@ function toBroadcast(stream: LiveStream): Broadcast {
     startedAt: stream.startedAt,
     thumbnailUrl: stream.thumbnailUrl,
   };
+}
+
+// -- used by the VIP role ---------------------------------------------------------------------------
+
+export type VipFetch = { status: "ok"; vips: ChannelVip[] } | { status: "missingScope" | "notConnected" | "needsReconnect" | "unavailable" };
+
+/** The VIPs of the connected account's channel, or why they can't be read. Never throws. */
+export async function fetchChannelVips(): Promise<VipFetch> {
+  const credentials = twitchCredentials();
+  if (!credentials) return { status: "notConnected" };
+  try {
+    const connection = await readConnection();
+    if (!connection) return { status: "notConnected" };
+    const vips = await getVips(credentials, await getAccessToken(), connection.twitchUserId);
+    return { status: "ok", vips };
+  } catch (err) {
+    if (err instanceof NoTwitchToken) return { status: err.reason === "needsReconnect" ? "needsReconnect" : "notConnected" };
+    // Twitch answers 401 to a token that lacks channel:read:vips (the connection predates that permission).
+    if (err instanceof TwitchError && err.code === "unauthorized") return { status: "missingScope" };
+    log.warn({ err: err instanceof TwitchError ? { code: err.code, status: err.status } : err }, "twitch: could not read the VIP list");
+    return { status: "unavailable" };
+  }
 }
 
 // -- used by the /twitch command -------------------------------------------------------------------

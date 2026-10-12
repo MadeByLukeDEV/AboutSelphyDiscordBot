@@ -24,6 +24,8 @@ export type {
   StickyMessage,
   ModGuide,
   AntiBotConfig,
+  TwitchVipConfig,
+  TwitchVipLink,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

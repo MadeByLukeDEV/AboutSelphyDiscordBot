@@ -30,7 +30,8 @@ export function buildAuthorizationUrl(credentials: TwitchCredentials, input: { r
     client_id: credentials.clientId,
     redirect_uri: input.redirectUri,
     response_type: "code",
-    scope: "",
+    // channel:read:vips lets the bot read the channel's VIP list for the VIP role. Nothing that can change the channel.
+    scope: "channel:read:vips",
     state: input.state,
     // Always show the consent screen, so the right account can be picked.
     force_verify: "true",

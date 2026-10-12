@@ -6,3 +6,4 @@ export * from "./profanity";
 export * from "./tempvoice";
 export * from "./twitch";
 export * from "./modguide";
+export * from "./twitchvip";

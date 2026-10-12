@@ -135,6 +135,27 @@ export async function getLiveStreams(credentials: Credentials, accessToken: stri
     }));
 }
 
+const vips = z.object({
+  data: z.array(z.object({ user_id: z.string(), user_login: z.string() })),
+  pagination: z.object({ cursor: z.string().optional() }).optional(),
+});
+export type ChannelVip = { id: string; login: string };
+
+/** The VIPs of the broadcaster's channel. Needs that broadcaster's token with the channel:read:vips scope (Twitch answers 401 without it). */
+export async function getVips(credentials: Credentials, accessToken: string, broadcasterId: string): Promise<ChannelVip[]> {
+  const result: ChannelVip[] = [];
+  let after = "";
+  for (let page = 0; page < 10; page++) {
+    const query = `channels/vips?broadcaster_id=${encodeURIComponent(broadcasterId)}&first=100${after ? `&after=${encodeURIComponent(after)}` : ""}`;
+    const parsed = vips.safeParse(await (await helix(credentials, accessToken, query)).json().catch(() => undefined));
+    if (!parsed.success) throw new TwitchError("failed");
+    result.push(...parsed.data.data.map((v) => ({ id: v.user_id, login: v.user_login })));
+    after = parsed.data.pagination?.cursor ?? "";
+    if (!after) break;
+  }
+  return result;
+}
+
 /** Subscribes this WebSocket session to one event for one channel. "Already exists" counts as success. */
 export async function subscribe(
   credentials: Credentials,

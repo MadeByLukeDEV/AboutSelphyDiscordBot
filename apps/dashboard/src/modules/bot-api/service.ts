@@ -12,6 +12,7 @@ import {
   webhookRelayStatus,
   webhookTestStatus,
   stickyClearStatus,
+  twitchVipUnlinkStatus,
   modGuidePostResponse,
   modGuidePreviewResponse,
   type ModGuidePostResponse,
@@ -184,6 +185,14 @@ export async function getWelcomePreviewCard(): Promise<Uint8Array | null> {
   if (!res?.ok) return null;
   const parsed = welcomePreviewResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
+}
+
+/** Takes the Twitch VIP role off a member and forgets their link. Null if the bot can't be reached. */
+export async function unlinkTwitchVipViaBot(id: string): Promise<"done" | "failed" | null> {
+  const res = await botFetch("/internal/twitchvip/unlink", { method: "POST", body: { id } });
+  if (!res?.ok) return null;
+  const parsed = twitchVipUnlinkStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
 }
 
 /** The categories the bot would list in the moderators' guide. Null if the bot can't be reached. */

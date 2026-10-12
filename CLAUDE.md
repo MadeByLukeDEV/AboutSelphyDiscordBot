@@ -715,6 +715,18 @@ Decided 2026-10-08:
     baselined silently (no history yet), which for polled channels (no events) meant no announcement and only the
     live role. `reconcile` now treats a stream as new when the channel was added **before it started**
     (`addedBeforeStart`); a channel added while already live is still baselined. Not tried live yet.
+  - **VIP role** (2026-10-30, `feature_twitch-vip-role`, migration `20261030100000_twitch_vip`; **not tried live yet**; asked for
+    by the user): members who are VIP on the **connected Twitch account's channel** get a Discord role. Discord can't say which
+    Twitch account is whose, so a member claims theirs with `/vip link twitch:<name>` (open to everyone; the name is resolved
+    through Helix; one Twitch account per member; also `/vip unlink`, `/vip status`) and an **admin confirms the claim** on
+    `/twitch-vip` before the role is ever given (`TwitchVipLink`, `approved`, one conditional UPDATE). The bot
+    (`modules/twitchvip/`) reads `GET helix/channels/vips` every 10 min and on dashboard changes and gives/takes the role for
+    **approved links only** (`planVipRoles`, pure, tested; everybody else's roles are untouched; every change through
+    `checkRole`). **A failed read changes nothing** (status `missingScope|notConnected|needsReconnect|unavailable` is shown on
+    the page). Needs the new OAuth scope `channel:read:vips` (asked in `oauth.ts`): **the Twitch account must be connected
+    again once** (Twitch answers 401 without it, shown as "missingScope"). Removing a link goes through the bot
+    (`POST /internal/twitchvip/unlink`) so the role comes off too; a member who leaves loses their link. Only runs in production
+    or with `BOT_INTEGRATIONS_IN_DEV`. Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-10-30).
   - [ ] Kick/TikTok, clips, more than 30 channels.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by

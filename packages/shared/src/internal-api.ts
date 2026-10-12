@@ -4,6 +4,7 @@ import { z } from "zod";
 export const RELOADABLE_MODULES = [
   "moderation",
   "antibot",
+  "twitchvip",
   "twitch",
   "tempvoice",
   "announcements",
