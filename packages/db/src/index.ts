@@ -31,6 +31,7 @@ export type {
   TempVoicePreference,
   VerificationConfig,
   RaidConfig,
+  AuditEntry,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

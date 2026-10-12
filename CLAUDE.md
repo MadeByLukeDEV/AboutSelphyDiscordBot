@@ -882,6 +882,16 @@ Decided 2026-10-08:
     in production or with `BOT_INTEGRATIONS_IN_DEV` (it deletes rows). The privacy policy now describes both
     (`LEGAL_LAST_UPDATED` 2026-10-31).
   - [ ] Still open: retention for polls/giveaway entries/starboard posts, a dashboard tool to erase a member on request.
+- [x] **Audit trail** (2026-11-04, `feature_audit-trail`, migration `20261104100000_audit_trail`; **not tried live yet**): admin page `/audit`
+      (System group): who changed what in the dashboard and when, newest 200, filter by area. **Every mutating Server Action is
+      wrapped** (72 of them, done by script: each `export async function xAction` became a private `xActionRun` plus an exported
+      wrapper calling `audited("<module>.<x>", xActionRun, args)` from `modules/audit/audited.ts`); an action that returns
+      `{ ok: true }` leaves a line (actor from the session, area, action, and the first argument only if it is a short id).
+      **Arguments are never stored** (they can hold webhook addresses, tokens, members' text). Recording is best effort and never
+      changes the action's result. Skipped on purpose: the language switch, "check feed", "send a test". **When you add a Server
+      Action, wrap it the same way** (copy any `actions.ts`). Entries older than one year are removed by the bot's daily job even when
+      every retention limit is 0. The privacy policy mentions it (`LEGAL_LAST_UPDATED` 2026-11-04). A production `next build` passed
+      with the wrapped actions.
 - [x] Colour picker (2026-10-29, `feature_everyone-ping-colorpicker`): `components/form/color-picker.tsx` replaces every native
       `<input type="color">` (announcements, mod guide, role create/edit, role panels, tickets, Twitch, welcome, YouTube): a
       popover with a saturation/brightness square (pointer and arrow keys), hue slider, hex field and 12 ready-made colours;

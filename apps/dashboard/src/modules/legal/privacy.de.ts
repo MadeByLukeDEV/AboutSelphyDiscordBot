@@ -86,6 +86,7 @@ export function privacyDe(o: Operator): LegalDoc {
               "Gemerkte Rollen nach dem Verlassen: 90 Tage.",
               "Moderationsfälle und Notizen: gespeichert, solange sie gebraucht werden, um die Community zu schützen und Einsprüche zu beantworten; sie werden nach dem vom Betreiber festgelegten Zeitraum automatisch entfernt (dauerhafte Banns ausgenommen). Du kannst die Löschung verlangen (Abschnitt 8).",
               "Ticket-Protokolle, entschiedene Vorschläge und inaktive Level-Einträge: werden nach dem vom Betreiber festgelegten Zeitraum automatisch entfernt. Umfragen, Gewinnspiel-Teilnahmen und Starboard-Beiträge: gespeichert, solange die Funktion genutzt wird und bis du sie mit /mydata delete löschst oder der Betreiber sie entfernt.",
+              "Das Änderungsprotokoll des Dashboards (welches Teammitglied wann welche Einstellung geändert hat): ein Jahr.",
               "Server-Logs in Team-Kanälen: solange das Team die Nachrichten in diesen Discord-Kanälen behält.",
               "Technische Logs des Bots (Nutzer- und Kanal-IDs, Fehler) liegen auf dem Server und werden vom Hosting-Setup rotiert. Sie enthalten keinen Nachrichtentext.",
             ],

@@ -47,7 +47,8 @@
         "retention": "Datenaufbewahrung",
         "memberLookup": "Mitglieder",
         "verification": "Verifizierung",
-        "raid": "Raid-Schutz"
+        "raid": "Raid-Schutz",
+        "audit": "Änderungsprotokoll"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2701,5 +2702,36 @@
     "none": "Dieser Server hat noch keine eigenen Emotes.",
     "search": "Emotes suchen",
     "hint": "Fügt das Emote an der Cursorposition ein. Du kannst auch :name: von Hand tippen. Nur Emotes dieses Servers funktionieren."
+  },
+  "Audit": {
+    "title": "Änderungsprotokoll",
+    "intro": "Wer was im Dashboard geändert hat, und wann. Es werden nur Aktionen aufgeführt, die funktioniert haben. Was eingegeben wurde, wird nicht gespeichert, nur die Art der Änderung und worum es ging.",
+    "filter": "Nach Bereich filtern",
+    "all": "Alle",
+    "empty": "Noch nichts aufgezeichnet.",
+    "note": "Die neuesten 200 Einträge werden angezeigt. Einträge werden nach einem Jahr entfernt.",
+    "verbs": {
+      "save": "gespeichert",
+      "set": "geändert",
+      "create": "erstellt",
+      "update": "bearbeitet",
+      "delete": "gelöscht",
+      "remove": "entfernt",
+      "add": "hinzugefügt",
+      "approve": "bestätigt",
+      "pardon": "begnadigt",
+      "post": "gepostet",
+      "upload": "hochgeladen",
+      "rotate": "Geheimnis erneuert von",
+      "reset": "zurückgesetzt",
+      "disconnect": "getrennt",
+      "cleanup": "aufgeräumt",
+      "merge": "zusammengeführt",
+      "decide": "entschieden",
+      "act": "Aktion bei Mitglied:",
+      "edit": "bearbeitet",
+      "giveaway": "ausgeführt",
+      "poll": "ausgeführt"
+    }
   }
 }

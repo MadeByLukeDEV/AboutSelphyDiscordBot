@@ -3,13 +3,14 @@
 import { AuthorizationError, requireAdmin, requireStaff } from "@/modules/auth";
 import { caseNumberSchema, memberActionSchema, reasonSchema, settingsSchema, type ActResult, type EditReasonResult, type PardonResult, type SaveSettingsResult } from "./schema";
 import { actOnMember, editCaseReason, pardon, saveSettings } from "./service";
+import { audited } from "@/modules/audit";
 
 // Server Actions are public POST endpoints: each one checks the session and the
 // role itself and validates its input, whatever the UI shows. They return codes,
 // never error text, and the client maps codes to translated messages.
 
 /** Admins only: where cases are posted and whether members get DMs. */
-export async function saveSettingsAction(input: unknown): Promise<SaveSettingsResult> {
+async function saveSettingsActionRun(input: unknown): Promise<SaveSettingsResult> {
   try {
     await requireAdmin();
   } catch (error) {
@@ -22,7 +23,7 @@ export async function saveSettingsAction(input: unknown): Promise<SaveSettingsRe
 }
 
 /** Any staff member: pardon an active warning (kept in the history, marked pardoned). */
-export async function pardonWarningAction(caseNumber: unknown): Promise<PardonResult> {
+async function pardonWarningActionRun(caseNumber: unknown): Promise<PardonResult> {
   let session;
   try {
     session = await requireStaff();
@@ -36,7 +37,7 @@ export async function pardonWarningAction(caseNumber: unknown): Promise<PardonRe
 }
 
 /** Any staff member: warn, time out, kick, ban, unban or note a member from the dashboard (the bot does it and the case names the staff member). */
-export async function actOnMemberAction(input: unknown): Promise<ActResult> {
+async function actOnMemberActionRun(input: unknown): Promise<ActResult> {
   let session;
   try {
     session = await requireStaff();
@@ -50,7 +51,7 @@ export async function actOnMemberAction(input: unknown): Promise<ActResult> {
 }
 
 /** Any staff member: correct the reason of a case. */
-export async function editCaseReasonAction(caseNumber: unknown, reason: unknown): Promise<EditReasonResult> {
+async function editCaseReasonActionRun(caseNumber: unknown, reason: unknown): Promise<EditReasonResult> {
   let session;
   try {
     session = await requireStaff();
@@ -62,4 +63,20 @@ export async function editCaseReasonAction(caseNumber: unknown, reason: unknown)
   const text = reasonSchema.safeParse(reason);
   if (!number.success || !text.success) return { ok: false, error: "invalid" };
   return editCaseReason(number.data, text.data, session.user);
+}
+
+export async function saveSettingsAction(...args: Parameters<typeof saveSettingsActionRun>): ReturnType<typeof saveSettingsActionRun> {
+  return audited("moderation.saveSettings", saveSettingsActionRun, args);
+}
+
+export async function pardonWarningAction(...args: Parameters<typeof pardonWarningActionRun>): ReturnType<typeof pardonWarningActionRun> {
+  return audited("moderation.pardonWarning", pardonWarningActionRun, args);
+}
+
+export async function actOnMemberAction(...args: Parameters<typeof actOnMemberActionRun>): ReturnType<typeof actOnMemberActionRun> {
+  return audited("moderation.actOnMember", actOnMemberActionRun, args);
+}
+
+export async function editCaseReasonAction(...args: Parameters<typeof editCaseReasonActionRun>): ReturnType<typeof editCaseReasonActionRun> {
+  return audited("moderation.editCaseReason", editCaseReasonActionRun, args);
 }

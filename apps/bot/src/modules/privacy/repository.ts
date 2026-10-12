@@ -13,6 +13,8 @@ export type Cutoffs = { transcript: Date | null; cases: Date | null; suggestions
 /** Removes what is older than each cutoff (a null cutoff keeps everything of that kind). */
 export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
   const result: PruneResult = { transcripts: 0, cases: 0, suggestions: 0, xp: 0 };
+  // The dashboard's audit trail keeps names of staff: it is always cleared after a year, even when every other limit is off.
+  await prisma.auditEntry.deleteMany({ where: { at: { lt: new Date(now.getTime() - 365 * 86_400_000) } } });
   if (cut.transcript) {
     result.transcripts = await prisma.$executeRaw`UPDATE "Ticket" SET "transcript" = NULL WHERE "status" = 'closed' AND "closedAt" < ${cut.transcript} AND "transcript" IS NOT NULL`;
   }

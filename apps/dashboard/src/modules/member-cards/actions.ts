@@ -5,6 +5,7 @@ import { isMemberCardKind } from "@aboutselphy/shared/member-card";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import type { CardImageResult } from "./schema";
 import { clearCardImage, setCardImage } from "./service";
+import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself
 // (admins only), validates its input, and returns codes (never error text).
@@ -18,7 +19,7 @@ async function admin() {
   }
 }
 
-export async function uploadMemberCardImageAction(kind: unknown, formData: FormData): Promise<CardImageResult> {
+async function uploadMemberCardImageActionRun(kind: unknown, formData: FormData): Promise<CardImageResult> {
   const session = await admin();
   if (!session) return { ok: false, error: "forbidden" };
   if (!isMemberCardKind(kind)) return { ok: false, error: "invalid" };
@@ -28,8 +29,16 @@ export async function uploadMemberCardImageAction(kind: unknown, formData: FormD
   return setCardImage(kind, new Uint8Array(await file.arrayBuffer()), session.user.name);
 }
 
-export async function removeMemberCardImageAction(kind: unknown): Promise<CardImageResult> {
+async function removeMemberCardImageActionRun(kind: unknown): Promise<CardImageResult> {
   if (!(await admin())) return { ok: false, error: "forbidden" };
   if (!isMemberCardKind(kind)) return { ok: false, error: "invalid" };
   return clearCardImage(kind);
+}
+
+export async function uploadMemberCardImageAction(...args: Parameters<typeof uploadMemberCardImageActionRun>): ReturnType<typeof uploadMemberCardImageActionRun> {
+  return audited("member-cards.uploadMemberCardImage", uploadMemberCardImageActionRun, args);
+}
+
+export async function removeMemberCardImageAction(...args: Parameters<typeof removeMemberCardImageActionRun>): ReturnType<typeof removeMemberCardImageActionRun> {
+  return audited("member-cards.removeMemberCardImage", removeMemberCardImageActionRun, args);
 }

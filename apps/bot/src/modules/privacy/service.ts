@@ -20,11 +20,9 @@ export function pruneNow(): Promise<void> {
       const config = await readRetention();
       const now = new Date();
       const cuts = { transcript: cutoff(config.ticketTranscriptDays, now), cases: cutoff(config.caseDays, now), suggestions: cutoff(config.suggestionDays, now), xp: cutoff(config.inactiveXpDays, now) };
-      if (!cuts.transcript && !cuts.cases && !cuts.suggestions && !cuts.xp) {
-        log.info({}, "retention: every limit is off, nothing to remove");
-        return;
-      }
+      // prune() always clears the audit trail after a year, so it runs even when every limit is off.
       const result = await prune(cuts, now);
+      if (!cuts.transcript && !cuts.cases && !cuts.suggestions && !cuts.xp) return void log.info({}, "retention: every limit is off, only the audit trail was cleaned");
       await recordRun(describeRun(result));
       log.info({ ...result }, "retention: removed old data");
     } catch (err) {

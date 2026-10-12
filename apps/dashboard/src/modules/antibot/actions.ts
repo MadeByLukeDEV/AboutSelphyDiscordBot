@@ -4,11 +4,12 @@ import { antiBotSettingsSchema } from "@aboutselphy/shared/antibot";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import type { SaveAntiBotResult } from "./schema";
 import { saveAntiBot } from "./service";
+import { audited } from "@/modules/audit";
 
 // A public POST endpoint like every Server Action: it checks the session and the role itself
 // (admins only), validates its input, and returns codes (never error text).
 
-export async function saveAntiBotAction(input: unknown): Promise<SaveAntiBotResult> {
+async function saveAntiBotActionRun(input: unknown): Promise<SaveAntiBotResult> {
   try {
     await requireAdmin();
   } catch (error) {
@@ -18,4 +19,8 @@ export async function saveAntiBotAction(input: unknown): Promise<SaveAntiBotResu
   const parsed = antiBotSettingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.path[0] === "channelId") ? "needsChannel" : "invalid" };
   return saveAntiBot(parsed.data);
+}
+
+export async function saveAntiBotAction(...args: Parameters<typeof saveAntiBotActionRun>): ReturnType<typeof saveAntiBotActionRun> {
+  return audited("antibot.saveAntiBot", saveAntiBotActionRun, args);
 }

@@ -1128,3 +1128,21 @@ model RaidConfig {
   lastRaidAt     DateTime?
   updatedAt      DateTime  @updatedAt
 }
+
+/// The dashboard's audit trail: who changed what and when. Arguments are never stored (they can hold secrets or members' text).
+model AuditEntry {
+  id        String   @id @default(cuid())
+  at        DateTime @default(now())
+  actorId   String   @db.VarChar(64)
+  actorName String   @db.VarChar(100)
+  actorRole String   @db.VarChar(16)
+  /// The part of the dashboard (the module), e.g. "twitch".
+  area      String   @db.VarChar(40)
+  /// What was done, e.g. "saveStreamer".
+  action    String   @db.VarChar(60)
+  /// A short id the action was about, when it had one.
+  target    String   @default("") @db.VarChar(64)
+
+  @@index([at])
+  @@index([area, at])
+}

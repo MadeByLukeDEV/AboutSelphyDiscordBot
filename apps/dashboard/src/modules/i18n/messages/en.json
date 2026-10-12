@@ -47,7 +47,8 @@
         "retention": "Data retention",
         "memberLookup": "Members",
         "verification": "Verification",
-        "raid": "Raid protection"
+        "raid": "Raid protection",
+        "audit": "Audit trail"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2701,5 +2702,36 @@
     "none": "This server has no custom emotes yet.",
     "search": "Search emotes",
     "hint": "Inserts the emote at the cursor. You can also type :name: by hand. Only this server's emotes work."
+  },
+  "Audit": {
+    "title": "Audit trail",
+    "intro": "Who changed what in the dashboard, and when. Only actions that worked are listed. What was entered is not stored, only the kind of change and the thing it was about.",
+    "filter": "Filter by area",
+    "all": "All",
+    "empty": "Nothing recorded yet.",
+    "note": "The newest 200 entries are shown. Entries are removed after one year.",
+    "verbs": {
+      "save": "saved",
+      "set": "changed",
+      "create": "created",
+      "update": "edited",
+      "delete": "deleted",
+      "remove": "removed",
+      "add": "added",
+      "approve": "confirmed",
+      "pardon": "pardoned",
+      "post": "posted",
+      "upload": "uploaded",
+      "rotate": "renewed the secret of",
+      "reset": "reset",
+      "disconnect": "disconnected",
+      "cleanup": "cleaned up",
+      "merge": "merged",
+      "decide": "decided",
+      "act": "acted on a member:",
+      "edit": "edited",
+      "giveaway": "ran",
+      "poll": "ran"
+    }
   }
 }

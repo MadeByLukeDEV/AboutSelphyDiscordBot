@@ -5,6 +5,7 @@ import { MAX_MERGE_SOURCES, MAX_ROLE_DELETES } from "@aboutselphy/shared";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import type { CleanupResult, DeleteRolesResult, MergeRolesResult, UpdateRoleResult } from "./schema";
 import { cleanupDangling, deleteRoles, mergeRoles, updateRole } from "./service";
+import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself
 // (admins only), validates its input, and returns codes (never error text). Deleting and merging
@@ -26,7 +27,7 @@ async function admin() {
   }
 }
 
-export async function deleteRolesAction(ids: unknown): Promise<DeleteRolesResult> {
+async function deleteRolesActionRun(ids: unknown): Promise<DeleteRolesResult> {
   const session = await admin();
   if (!session) return { ok: false, error: "forbidden" };
   const parsed = deleteInput.safeParse(ids);
@@ -34,7 +35,7 @@ export async function deleteRolesAction(ids: unknown): Promise<DeleteRolesResult
   return deleteRoles(parsed.data, session.user.name);
 }
 
-export async function updateRoleAction(input: unknown): Promise<UpdateRoleResult> {
+async function updateRoleActionRun(input: unknown): Promise<UpdateRoleResult> {
   const session = await admin();
   if (!session) return { ok: false, error: "forbidden" };
   const parsed = updateInput.safeParse(input);
@@ -42,7 +43,7 @@ export async function updateRoleAction(input: unknown): Promise<UpdateRoleResult
   return updateRole(parsed.data, session.user.name);
 }
 
-export async function mergeRolesAction(input: unknown): Promise<MergeRolesResult> {
+async function mergeRolesActionRun(input: unknown): Promise<MergeRolesResult> {
   const session = await admin();
   if (!session) return { ok: false, error: "forbidden" };
   const parsed = mergeInput.safeParse(input);
@@ -50,8 +51,24 @@ export async function mergeRolesAction(input: unknown): Promise<MergeRolesResult
   return mergeRoles(parsed.data, session.user.name);
 }
 
-export async function cleanupDanglingAction(): Promise<CleanupResult> {
+async function cleanupDanglingActionRun(): Promise<CleanupResult> {
   const session = await admin();
   if (!session) return { ok: false, error: "forbidden" };
   return cleanupDangling(session.user.name);
+}
+
+export async function deleteRolesAction(...args: Parameters<typeof deleteRolesActionRun>): ReturnType<typeof deleteRolesActionRun> {
+  return audited("role-manager.deleteRoles", deleteRolesActionRun, args);
+}
+
+export async function updateRoleAction(...args: Parameters<typeof updateRoleActionRun>): ReturnType<typeof updateRoleActionRun> {
+  return audited("role-manager.updateRole", updateRoleActionRun, args);
+}
+
+export async function mergeRolesAction(...args: Parameters<typeof mergeRolesActionRun>): ReturnType<typeof mergeRolesActionRun> {
+  return audited("role-manager.mergeRoles", mergeRolesActionRun, args);
+}
+
+export async function cleanupDanglingAction(...args: Parameters<typeof cleanupDanglingActionRun>): ReturnType<typeof cleanupDanglingActionRun> {
+  return audited("role-manager.cleanupDangling", cleanupDanglingActionRun, args);
 }
