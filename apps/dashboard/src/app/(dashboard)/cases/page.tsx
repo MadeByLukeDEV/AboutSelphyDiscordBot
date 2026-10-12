@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { requireStaffPage } from "@/modules/auth";
 import { caseQueryString, caseQuerySchema, getCasesPage } from "@/modules/moderation";
+import { Download } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { CasesFilter } from "@/modules/moderation/components/cases-filter";
 import { CasesList } from "@/modules/moderation/components/cases-list";
 import { Pagination } from "@/modules/moderation/components/pagination";
@@ -34,7 +37,14 @@ export default async function CasesPage({ searchParams }: { searchParams: Promis
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
 
-      <CasesFilter type={query.type} q={query.q} />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <CasesFilter type={query.type} q={query.q} />
+        {/* A plain link: the browser downloads the file the route builds from the same filter. */}
+        <a href={`/api/cases/export${caseQueryString({ type: query.type, q: query.q })}`} download className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+          <Download aria-hidden />
+          {t("export")}
+        </a>
+      </div>
 
       {rows.length > 0 ? (
         <>

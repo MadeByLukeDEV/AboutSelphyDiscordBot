@@ -82,7 +82,13 @@
     "noActivity": "In den letzten 7 Tagen ist nichts passiert.",
     "latest": "Neueste Fälle",
     "viewAll": "Alle Fälle ansehen",
-    "noCases": "Noch keine Fälle. Sie erscheinen hier, sobald jemand verwarnt, getimeoutet, gekickt oder gebannt wird."
+    "noCases": "Noch keine Fälle. Sie erscheinen hier, sobald jemand verwarnt, getimeoutet, gekickt oder gebannt wird.",
+    "moderators": {
+      "title": "Aktivität der Moderatoren (letzte 30 Tage)",
+      "none": "Keine Fälle in den letzten 30 Tagen.",
+      "automatic": "Automatisch (Bot)",
+      "cases": "{count, plural, one {# Fall} other {# Fälle}}"
+    }
   },
   "BotStatus": {
     "title": "Bot-Status",
@@ -252,7 +258,8 @@
         "notFound": "Diesen Fall gibt es nicht.",
         "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
       }
-    }
+    },
+    "export": "CSV exportieren"
   },
   "TempVoice": {
     "title": "Sprachräume",

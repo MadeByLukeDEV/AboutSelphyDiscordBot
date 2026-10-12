@@ -652,7 +652,13 @@ Decided 2026-10-08:
         the bot are refused as targets** (`protectedTarget`, tested). Kick and ban ask for confirmation. A case's reason can be
         corrected by any staff on the case page (`ModCase.reasonEditedAt/ByName`, shown under the reason, log message refreshed
         through the bot; reasons that are required for that kind can't be emptied).
-  - [ ] Still open: case export and mod stats, a member search by name.
+  - [x] **Case export and moderator stats** (2026-10-31, `feature_case-export-stats`, no migration; **not tried live yet**): the cases
+        page has "Export CSV" (`GET /api/cases/export`, any staff, checks the session itself because /api is outside the
+        proxy; same filter as the page, at most 10 000 cases, UTF-8 with BOM). `csv.ts` (tested) quotes properly and **defuses
+        formula cells** (a value starting with = + - @ tab or CR gets a leading apostrophe), because reasons and names are typed by
+        people. The overview shows cases per moderator for the last 30 days (Discord moderators, dashboard staff by name, the
+        bot's automatic cases). 
+  - [ ] Still open: a member search by name.
 - [~] Phase 2 — anti-bot: **only the trap channel exists** (2026-10-29, `feature_calendar-honeypot`, migration
       `20261029100000_antibot`; **not tried live yet**; asked for by the user). The pattern engine (regex via `re2`,
       rules, hit counters) is still **not built**; the user brings it back when ready.

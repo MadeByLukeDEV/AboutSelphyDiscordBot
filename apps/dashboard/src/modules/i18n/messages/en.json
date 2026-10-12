@@ -82,7 +82,13 @@
     "noActivity": "Nothing in the last 7 days.",
     "latest": "Latest cases",
     "viewAll": "View all cases",
-    "noCases": "No cases yet. They appear here when someone is warned, timed out, kicked or banned."
+    "noCases": "No cases yet. They appear here when someone is warned, timed out, kicked or banned.",
+    "moderators": {
+      "title": "Moderator activity (last 30 days)",
+      "none": "No cases in the last 30 days.",
+      "automatic": "Automatic (bot)",
+      "cases": "{count, plural, one {# case} other {# cases}}"
+    }
   },
   "BotStatus": {
     "title": "Bot status",
@@ -252,7 +258,8 @@
         "notFound": "That case doesn't exist.",
         "failed": "Something went wrong. Try again."
       }
-    }
+    },
+    "export": "Export CSV"
   },
   "TempVoice": {
     "title": "Voice rooms",

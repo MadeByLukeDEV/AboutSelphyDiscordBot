@@ -6,7 +6,9 @@ import type { StaffSession } from "@/modules/auth";
 import {
   caseStats,
   editReason,
+  exportCases,
   findCase,
+  moderatorStats,
   listCases,
   listCasesForTarget,
   pardonWarning,
@@ -16,6 +18,8 @@ import {
 } from "./repository";
 import { formatDuration, MAX_TIMEOUT_SECONDS, MIN_TIMEOUT_SECONDS, parseDuration } from "@aboutselphy/shared/duration";
 import { MAX_TEMP_BAN_SECONDS, REASON_REQUIRED, moderationActBody } from "@aboutselphy/shared/moderation-act";
+import { caseWhere } from "./case-filter";
+import { casesToCsv } from "./csv";
 import { DEFAULT_ESCALATION, PAGE_SIZE, type ActResult, type CaseQuery, type EditReasonResult, type MemberActionInput, type PardonResult, type SaveSettingsResult, type SettingsInput } from "./schema";
 
 export async function getCasesPage(query: CaseQuery) {
@@ -33,8 +37,8 @@ const DAY_MS = 86_400_000;
 
 /** What the overview shows: the last 7 days by type, active warnings, the latest cases. */
 export async function getOverview() {
-  const [stats, recent] = await Promise.all([caseStats(new Date(Date.now() - 7 * DAY_MS)), recentCases(5)]);
-  return { ...stats, recent };
+  const [stats, recent, moderators] = await Promise.all([caseStats(new Date(Date.now() - 7 * DAY_MS)), recentCases(5), moderatorStats(new Date(Date.now() - 30 * DAY_MS))]);
+  return { ...stats, recent, moderators: moderators.slice(0, 8) };
 }
 
 const toSettings = (c: ModConfig): SettingsInput => ({
@@ -159,4 +163,9 @@ export async function editCaseReason(caseNumber: number, reason: string, by: Sta
     console.error("[moderation] editing a reason failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
+}
+
+/** The cases matching the cases page's filter as a CSV file (at most 10 000, newest first). */
+export async function getCasesCsv(query: Pick<CaseQuery, "type" | "q">): Promise<string> {
+  return casesToCsv(await exportCases(caseWhere(query), 10_000));
 }

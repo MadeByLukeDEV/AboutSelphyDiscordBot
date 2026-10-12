@@ -23,7 +23,8 @@ function Chip({ type }: { type: (typeof TILES)[number] }) {
 export async function OverviewStats() {
   const t = await getTranslations("Overview");
   const tm = await getTranslations("Moderation");
-  const { byType, activeWarnings, recent } = await getOverview();
+  const { byType, activeWarnings, recent, moderators } = await getOverview();
+  const busiest = Math.max(1, ...moderators.map((m) => m.count));
   const count = (type: string) => byType.find((r) => r.type === type)?.count ?? 0;
   const total = byType.reduce((n, r) => n + r.count, 0);
 
@@ -64,6 +65,29 @@ export async function OverviewStats() {
           </li>
         </ul>
         {total === 0 && <p className="text-sm text-muted-foreground">{t("noActivity")}</p>}
+      </section>
+
+      <section aria-labelledby="mods-heading" className="flex flex-col gap-3">
+        <h2 id="mods-heading" className="text-fluid-lg font-bold">
+          {t("moderators.title")}
+        </h2>
+        {moderators.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t("moderators.none")}</p>
+        ) : (
+          <ul className="surface flex flex-col gap-3 p-4">
+            {moderators.map((m) => (
+              <li key={m.key} className="flex flex-col gap-1">
+                <div className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate font-medium">{m.automatic ? t("moderators.automatic") : (m.name ?? m.key)}</span>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">{t("moderators.cases", { count: m.count })}</span>
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(3, (m.count / busiest) * 100)}%` }} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section aria-labelledby="latest-heading" className="flex flex-col gap-3">
