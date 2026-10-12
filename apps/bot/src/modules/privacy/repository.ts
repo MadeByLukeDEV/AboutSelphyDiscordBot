@@ -67,7 +67,7 @@ export async function exportMember(userId: string) {
     generatedAt: new Date().toISOString(),
     discordUserId: userId,
     note: "Everything the bot stores about you. Moderator names are left out. Message content is not stored, except in tickets you opened.",
-    birthday: birthday ? { month: birthday.month, day: birthday.day } : null,
+    birthday: birthday ? { month: birthday.month, day: birthday.day, year: birthday.year } : null,
     pendingReminders: reminders.map((r) => ({ remindAt: r.remindAt.toISOString(), message: clip(r.message) })),
     levels: xp ? { xp: xp.xp, messages: xp.messages, voiceMinutes: xp.voiceMinutes, hiddenFromPublicPage: xp.hidden } : null,
     rememberedRoles: snapshot ? { roleIds: snapshot.roleIds, savedAt: snapshot.savedAt.toISOString() } : null,

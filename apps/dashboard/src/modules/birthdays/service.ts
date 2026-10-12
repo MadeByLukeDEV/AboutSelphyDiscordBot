@@ -1,13 +1,13 @@
 import "server-only";
 import type { BirthdayConfig } from "@aboutselphy/db";
-import type { BirthdaySettings } from "@aboutselphy/shared/birthdays";
+import type { BirthdaySettings, StaffBirthdayInput } from "@aboutselphy/shared/birthdays";
 import { errorInfo } from "@/lib/log";
-import { listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
+import { getGuildMemberName, listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
 import { getCardImageView } from "@/modules/member-cards";
-import { allBirthdays, readConfig, updateConfig } from "./repository";
-import type { BirthdayRow, SaveBirthdayResult } from "./schema";
+import { allBirthdays, deleteBirthdayRow, readConfig, saveBirthdayRow, updateConfig } from "./repository";
+import type { BirthdayRow, SaveBirthdayResult, SimpleBirthdayResult } from "./schema";
 
-const toSettings = (c: BirthdayConfig): BirthdaySettings => ({ enabled: c.enabled, channelId: c.channelId ?? "", roleId: c.roleId ?? "", message: c.message, timeZone: c.timeZone, cardEnabled: c.cardEnabled, cardMode: c.cardMode === "sticker" ? "sticker" : "background", cardTitle: c.cardTitle, cardSubtitle: c.cardSubtitle });
+const toSettings = (c: BirthdayConfig): BirthdaySettings => ({ enabled: c.enabled, channelId: c.channelId ?? "", roleId: c.roleId ?? "", message: c.message, timeZone: c.timeZone, cardEnabled: c.cardEnabled, cardMode: c.cardMode === "sticker" ? "sticker" : "background", cardTitle: c.cardTitle, cardSubtitle: c.cardSubtitle, milestoneMessage: c.milestoneMessage, monthlySummary: c.monthlySummary });
 
 /** Today's date in a time zone, as year/month/day. */
 function todayIn(timeZone: string): { year: number; month: number; day: number } {
@@ -50,10 +50,33 @@ export async function saveBirthdays(input: BirthdaySettings): Promise<SaveBirthd
       if (input.channelId && input.channelId !== current.channelId && !channels.some((c) => c.id === input.channelId)) return { ok: false, error: "channelNotFound" };
       if (input.roleId && input.roleId !== current.roleId && !roles.some((r) => r.id === input.roleId && r.assignable)) return { ok: false, error: "roleNotFound" };
     }
-    const saved = await updateConfig({ enabled: input.enabled, channelId: input.channelId || null, roleId: input.roleId || null, message: input.message, timeZone: input.timeZone, cardEnabled: input.cardEnabled, cardMode: input.cardMode, cardTitle: input.cardTitle, cardSubtitle: input.cardSubtitle });
+    const saved = await updateConfig({ enabled: input.enabled, channelId: input.channelId || null, roleId: input.roleId || null, message: input.message, timeZone: input.timeZone, cardEnabled: input.cardEnabled, cardMode: input.cardMode, cardTitle: input.cardTitle, cardSubtitle: input.cardSubtitle, milestoneMessage: input.milestoneMessage, monthlySummary: input.monthlySummary, ...(input.monthlySummary && !current.monthlySummary ? { lastSummaryMonth: null } : {}) });
     return { ok: true, settings: toSettings(saved), botNotified: await reloadBotModule("birthdays") };
   } catch (error) {
     console.error("[birthdays] saving failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** A staff member sets (or changes) a birthday for someone who asked. The member must be in the server (checked through the bot). */
+export async function setBirthday(input: StaffBirthdayInput): Promise<SimpleBirthdayResult> {
+  try {
+    const member = await getGuildMemberName(input.userId);
+    if (member === undefined) return { ok: false, error: "botUnavailable" };
+    if (member === null) return { ok: false, error: "memberNotFound" };
+    await saveBirthdayRow(input.userId, member.name, input.month, input.day, input.year);
+    return { ok: true };
+  } catch (error) {
+    console.error("[birthdays] setting a birthday failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+export async function removeBirthday(userId: string): Promise<SimpleBirthdayResult> {
+  try {
+    return (await deleteBirthdayRow(userId)) > 0 ? { ok: true } : { ok: false, error: "notFound" };
+  } catch (error) {
+    console.error("[birthdays] removing a birthday failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
 }

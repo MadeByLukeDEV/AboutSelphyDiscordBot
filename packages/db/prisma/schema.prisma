@@ -860,6 +860,12 @@ model BirthdayConfig {
   cardTitle    String  @default("Happy birthday") @db.VarChar(40)
   /// {date} is replaced.
   cardSubtitle String  @default("{date}") @db.VarChar(80)
+  /// Greeting for milestone ages (18, 21, 25, 30, then every ten years); empty = the normal message. {age} is replaced.
+  milestoneMessage String @default("") @db.VarChar(300)
+  /// On the first round of each month, post who has a birthday that month.
+  monthlySummary Boolean @default(false)
+  /// "YYYY-MM" of the last summary (or of the moment it was switched on, which posts nothing).
+  lastSummaryMonth String? @db.VarChar(7)
 }
 
 model Birthday {
@@ -868,6 +874,8 @@ model Birthday {
   displayName      String   @db.VarChar(100)
   month            Int
   day              Int
+  /// Optional, only if the member (or staff, on request) gave it: used for {age} and milestones, never shown as a date.
+  year             Int?
   /// "YYYY-MM-DD" of the last day this member was celebrated, so a restart never greets twice.
   lastCelebratedOn String?  @db.VarChar(10)
   createdAt        DateTime @default(now())

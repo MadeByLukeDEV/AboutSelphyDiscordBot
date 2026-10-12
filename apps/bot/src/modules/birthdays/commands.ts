@@ -1,5 +1,5 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
-import { isValidDay } from "@aboutselphy/shared/birthdays";
+import { isValidBirthYear, isValidDay } from "@aboutselphy/shared/birthdays";
 import type { Command } from "../../commands/types";
 import { getBirthdayConfig } from "./config";
 import { allBirthdays, findBirthday, removeBirthday, saveBirthday } from "./repository";
@@ -15,9 +15,10 @@ const birthday: Command = {
     .addSubcommand((s) =>
       s
         .setName("set")
-        .setDescription("Save your birthday (day and month only)")
+        .setDescription("Save your birthday (the year is optional)")
         .addIntegerOption((o) => o.setName("month").setDescription("Month, 1-12").setRequired(true).setMinValue(1).setMaxValue(12))
-        .addIntegerOption((o) => o.setName("day").setDescription("Day, 1-31").setRequired(true).setMinValue(1).setMaxValue(31)),
+        .addIntegerOption((o) => o.setName("day").setDescription("Day, 1-31").setRequired(true).setMinValue(1).setMaxValue(31))
+        .addIntegerOption((o) => o.setName("year").setDescription("Your birth year, only if you want your age in the greeting").setMinValue(1900).setMaxValue(2100)),
     )
     .addSubcommand((s) => s.setName("remove").setDescription("Forget your birthday"))
     .addSubcommand((s) => s.setName("show").setDescription("Show a member's birthday").addUserOption((o) => o.setName("member").setDescription("Whose birthday (default: yours)")))
@@ -32,8 +33,10 @@ const birthday: Command = {
       const month = i.options.getInteger("month", true);
       const day = i.options.getInteger("day", true);
       if (!isValidDay(month, day)) return void (await reply("That date doesn't exist."));
-      await saveBirthday(i.user.id, i.member.displayName, month, day);
-      return void (await reply(`Saved: your birthday is on ${formatDay(month, day)}. Only the day and month are stored. \`/birthday remove\` deletes it.`));
+      const year = i.options.getInteger("year");
+      if (year !== null && !isValidBirthYear(year, new Date().getUTCFullYear())) return void (await reply("That birth year doesn't look right."));
+      await saveBirthday(i.user.id, i.member.displayName, month, day, year);
+      return void (await reply(`Saved: your birthday is on ${formatDay(month, day)}. ${year !== null ? "The year is stored too, only to show your age in the greeting." : "Only the day and month are stored."} \`/birthday remove\` deletes it.`));
     }
     if (sub === "remove") {
       const { count } = await removeBirthday(i.user.id);

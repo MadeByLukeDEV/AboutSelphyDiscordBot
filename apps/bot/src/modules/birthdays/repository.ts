@@ -3,8 +3,8 @@ import { prisma, type Birthday, type BirthdayConfig } from "@aboutselphy/db";
 
 export const readConfig = (): Promise<BirthdayConfig> => prisma.birthdayConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
-export function saveBirthday(userId: string, displayName: string, month: number, day: number) {
-  const data = { displayName: displayName.slice(0, 100), month, day };
+export function saveBirthday(userId: string, displayName: string, month: number, day: number, year: number | null = null) {
+  const data = { displayName: displayName.slice(0, 100), month, day, year };
   // A changed date can be celebrated again this year, so the "already greeted" mark is cleared.
   return prisma.birthday.upsert({ where: { userId }, update: { ...data, lastCelebratedOn: null }, create: { userId, ...data } });
 }
@@ -19,4 +19,11 @@ export const allBirthdays = (): Promise<Birthday[]> => prisma.birthday.findMany(
 export async function claimDay(userId: string, dateKey: string): Promise<boolean> {
   const result = await prisma.birthday.updateMany({ where: { userId, OR: [{ lastCelebratedOn: null }, { lastCelebratedOn: { not: dateKey } }] }, data: { lastCelebratedOn: dateKey } });
   return result.count > 0;
+}
+
+export const birthdaysInMonth = (month: number): Promise<Birthday[]> => prisma.birthday.findMany({ where: { month } });
+
+/** One conditional UPDATE: only the call that still sees `previous` records the month, so the summary is posted once. */
+export async function claimSummary(monthKey: string, previous: string | null): Promise<boolean> {
+  return (await prisma.birthdayConfig.updateMany({ where: { id: 1, lastSummaryMonth: previous }, data: { lastSummaryMonth: monthKey } })).count > 0;
 }

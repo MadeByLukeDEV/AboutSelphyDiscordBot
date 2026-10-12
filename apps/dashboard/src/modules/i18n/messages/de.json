@@ -1700,6 +1700,10 @@
     "intro": "Mitglieder speichern ihren Geburtstag selbst mit /birthday set (nur Tag und Monat, nie das Jahr). Am Tag postet der Bot einen Glückwunsch und kann eine Rolle für den Tag vergeben. Wer den Server verlässt, wird vergessen.",
     "none": "Nicht gewählt",
     "form": {
+      "milestone": "Meilenstein-Gruß (optional)",
+      "milestoneHelp": "Wird bei 18., 21., 25., 30. Geburtstagen und danach alle zehn Jahre statt der Nachricht genutzt. Nur für Mitglieder, die ihr Geburtsjahr angegeben haben. '{age}' wird zum Alter. Leer = die normale Nachricht.",
+      "summary": "Monatsübersicht",
+      "summaryHelp": "In der ersten Runde jedes Monats posten, wer in diesem Monat Geburtstag hat. Beim Einschalten wird nichts sofort gepostet: Die erste Übersicht kommt mit dem nächsten Monat.",
       "title": "Einstellungen",
       "intro": "Nur Admins können diese ändern.",
       "enabled": "Geburtstage sind an",
@@ -1718,6 +1722,18 @@
       "saved": "Gespeichert",
       "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
     },
+    "staff": {
+      "title": "Geburtstag für jemanden eintragen",
+      "intro": "Für Mitglieder, die dich darum bitten. Das Mitglied muss auf dem Server sein. Lass das Jahr leer, außer es möchte sein Alter im Gruß.",
+      "member": "Mitglieds-ID",
+      "month": "Monat",
+      "day": "Tag",
+      "year": "Jahr (optional)",
+      "save": "Geburtstag speichern",
+      "saved": "Geburtstag gespeichert",
+      "remove": "Entfernen",
+      "help": "Das Jahr wird nur für das Alter im Gruß genutzt und nie als Datum angezeigt. Entfernen löscht den Geburtstag endgültig."
+    },
     "list": {
       "title": "Nächste Geburtstage",
       "total": "({count} gespeichert)",
@@ -1729,6 +1745,8 @@
       }
     },
     "errors": {
+      "memberNotFound": "Dieses Mitglied ist nicht auf dem Server.",
+      "notFound": "Diesen Geburtstag gibt es nicht mehr.",
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind ungültig.",
       "needsTarget": "Wähle einen Kanal oder eine Rolle, bevor du Geburtstage einschaltest.",

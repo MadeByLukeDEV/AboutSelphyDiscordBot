@@ -7,8 +7,10 @@ import { moduleOn } from "../../lib/modules";
 import { renderMemberCard } from "../membercards";
 import { checkRole } from "../roles";
 import { getBirthdayConfig } from "./config";
-import { allBirthdays, claimDay, removeBirthday } from "./repository";
-import { dayKey, formatDay, isBirthdayToday, renderGreeting, todayIn } from "./rules";
+import { EmbedBuilder } from "discord.js";
+import { isMilestoneAge } from "@aboutselphy/shared/birthdays";
+import { allBirthdays, birthdaysInMonth, claimDay, claimSummary, removeBirthday } from "./repository";
+import { ageThisYear, dayKey, formatDay, isBirthdayToday, monthKey, monthName, renderGreeting, summaryDue, summaryLines, todayIn } from "./rules";
 
 // The birthday round. Every 10 minutes (and when the settings change) it greets the members whose
 // birthday is today in the configured time zone, once per day (claimed with one conditional
@@ -44,6 +46,7 @@ export async function celebrateRound(guild: Guild): Promise<void> {
       }
       if (roleOk && config.roleId && !member.roles.cache.has(config.roleId)) await member.roles.add(config.roleId, "Birthday").catch((err) => log.warn({ err, user: b.userId }, "birthdays: could not give the role"));
       if (!(await claimDay(b.userId, key))) continue; // greeted already today
+      const age = ageThisYear(b.year, today.year);
       if (channel && channel.isTextBased() && "send" in channel) {
         const card = config.cardEnabled
           ? await renderMemberCard({
@@ -57,7 +60,7 @@ export async function celebrateRound(guild: Guild): Promise<void> {
           : null;
         await channel
           .send({
-            content: renderGreeting(config.message, { id: member.id, name: member.displayName }),
+            content: renderGreeting(isMilestoneAge(age) && config.milestoneMessage ? config.milestoneMessage : config.message, { id: member.id, name: member.displayName }, age),
             files: card ? [new AttachmentBuilder(Buffer.from(card), { name: "birthday.png" })] : [],
             allowedMentions: { parse: [], users: [member.id] },
           })
@@ -65,6 +68,8 @@ export async function celebrateRound(guild: Guild): Promise<void> {
           .catch((err) => log.warn({ err, user: b.userId }, "birthdays: could not post the greeting"));
       }
     }
+
+    if (config.monthlySummary) await monthlySummary(guild, config.channelId, config.lastSummaryMonth, today).catch((err) => log.warn({ err }, "birthdays: the monthly summary failed"));
 
     // Everyone else gives the role back.
     if (roleOk && config.roleId) {
@@ -78,6 +83,26 @@ export async function celebrateRound(guild: Guild): Promise<void> {
   } finally {
     running = false;
   }
+}
+
+/**
+ * The first round of a new month posts who has a birthday in it (only members who are in the server). The first time it only remembers
+ * the month, so switching it on never posts mid-month; one conditional UPDATE decides who posts, so a restart can't post it twice.
+ */
+async function monthlySummary(guild: Guild, channelId: string | null, last: string | null, today: ReturnType<typeof todayIn>): Promise<void> {
+  const key = monthKey(today);
+  const due = summaryDue(key, last);
+  if (due === "none") return;
+  if (!(await claimSummary(key, last))) return;
+  if (due === "seed") return void log.info({ month: key }, "birthdays: monthly summary armed (nothing posted)");
+  const channel = channelId ? await guild.channels.fetch(channelId).catch(() => null) : null;
+  if (!channel || !channel.isTextBased() || !("send" in channel)) return;
+  const present: Array<{ userId: string; month: number; day: number }> = [];
+  for (const b of await birthdaysInMonth(today.month)) if (await guild.members.fetch(b.userId).then((m) => !m.user.bot).catch(() => false)) present.push(b);
+  if (present.length === 0) return;
+  const embed = new EmbedBuilder().setColor(0x00ffa8).setTitle(`🎂 Birthdays in ${monthName(today.month)}`).setDescription(summaryLines(present, today.year).join("\n").slice(0, 4000));
+  await channel.send({ embeds: [embed], allowedMentions: { parse: [] } });
+  log.info({ month: key, count: present.length }, "birthdays: monthly summary posted");
 }
 
 /** Starts the round with the bot. Off in a local run unless BOT_INTEGRATIONS_IN_DEV=true (it posts on the real server). */

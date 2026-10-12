@@ -59,8 +59,8 @@ describe("the legal documents", () => {
   it("the privacy policy covers each thing the bot really stores", () => {
     const t = text(privacyEn(op)).toLowerCase();
     for (const word of ["moderation", "levels", "tickets", "birthdays", "reminders", "suggestions", "starboard", "counting", "message content", "retention".slice(0, 0) + "90 days", "cloudflare", "discord inc", "legitimate interests", "complain"]) expect(t, word).toContain(word);
-    // The birthday year is never stored: the policy must not suggest otherwise.
-    expect(t).toContain("never the year");
+    // The birth year is stored only when given, and never shown as a date: the policy must say so.
+    expect(t).toContain("birth year only if you give it");
   });
 
   it("make no promise the product doesn't keep (no selling, ads or tracking claims beyond what is true)", () => {

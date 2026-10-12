@@ -1182,7 +1182,14 @@ Decided 2026-10-08:
     Settings on the same form; the image lives in `MemberCardImage` (one row per kind, same header
     checks as the welcome image: PNG/JPEG/WebP, <= 3 MB, 64-4096 px). Drawing failures send the
     greeting without the card.
-  - [ ] Announce milestones with the year, staff-set birthdays, a monthly summary post.
+  - **Year, milestones, staff-set, monthly summary** (2026-11-08, `feature_p4-polls-birthdays`, migration `20261107360000_birthday_extras`;
+    **not tried live yet**): `Birthday.year` is now stored **only if the member gives it** (`/birthday set year:`, 13-110 years ago, or an admin
+    enters it on request); used for `{age}` and milestone ages 18/21/25/30 and every ten years (`BirthdayConfig.milestoneMessage` replaces the
+    message then), never shown as a date; `/mydata export` includes it, privacy policy updated (2026-11-08, the old "never the year" is gone).
+    Admins can set or remove a birthday from `/birthdays` (member must be in the server, checked through the bot). **Monthly summary**:
+    `summaryDue` seeds on first run (switching it on never posts mid-month; changing the switch on clears `lastSummaryMonth`), then one
+    conditional UPDATE (`claimSummary`) lets one round post the month's list. Fixed: `renderGreeting` lost the spaces around placeholders.
+
 - [~] Reminders (2026-10-21, `feature_reminders`, migration `20261021100000_reminders`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/reminders/`): `/remind me in:<30m|2h|3d> about:<text>` (1 min to 1 year,

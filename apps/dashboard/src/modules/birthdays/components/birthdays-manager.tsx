@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { MemberCardSettings } from "@/modules/member-cards/components/member-card-settings";
 import type { CardImageView } from "@/modules/member-cards/schema";
-import { saveBirthdaySettingsAction } from "../actions";
+import { removeBirthdayAction, saveBirthdaySettingsAction, setBirthdayAction } from "../actions";
 import type { BirthdayRow } from "../schema";
 import { EmoteInsert } from "@/components/form/emote-insert";
 
@@ -53,6 +53,34 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
     }),
   );
 
+  const [staff, setStaff] = useState({ userId: "", month: "", day: "", year: "" });
+
+  function addStaffBirthday() {
+    startTransition(async () => {
+      const result = await setBirthdayAction({
+        userId: staff.userId.replace(/[<@!>\s]/g, ""),
+        month: Number(staff.month),
+        day: Number(staff.day),
+        year: staff.year.trim() === "" ? null : Number(staff.year),
+      });
+      if (result.ok) {
+        toast.success(t("staff.saved"));
+        setStaff({ userId: "", month: "", day: "", year: "" });
+        router.refresh();
+      } else {
+        toast.error(te(result.error));
+      }
+    });
+  }
+
+  function remove(userId: string) {
+    startTransition(async () => {
+      const result = await removeBirthdayAction({ userId });
+      if (result.ok) router.refresh();
+      else toast.error(te(result.error));
+    });
+  }
+
   return (
     <div className="flex flex-col gap-fluid">
       <form onSubmit={onSubmit} className="surface flex flex-col gap-5 p-5" noValidate>
@@ -83,6 +111,18 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
             <FieldDescription>{t("form.messageHelp")}</FieldDescription>
             {errors.message && <FieldError>{te("needsMessage")}</FieldError>}
           </Field>
+          <Field>
+            <FieldLabel htmlFor="bd-milestone">{t("form.milestone")}</FieldLabel>
+            <Textarea id="bd-milestone" rows={2} maxLength={MAX_BIRTHDAY_MESSAGE} {...form.register("milestoneMessage")} />
+            <FieldDescription>{t("form.milestoneHelp")}</FieldDescription>
+          </Field>
+          <Field orientation="horizontal">
+            <Controller control={form.control} name="monthlySummary" render={({ field }) => <Switch id="bd-summary" checked={field.value} onCheckedChange={field.onChange} aria-describedby="bd-summary-help" />} />
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="bd-summary">{t("form.summary")}</FieldLabel>
+              <FieldDescription id="bd-summary-help">{t("form.summaryHelp")}</FieldDescription>
+            </div>
+          </Field>
           <Field data-invalid={Boolean(errors.timeZone) || undefined}>
             <FieldLabel htmlFor="bd-zone">{t("form.timeZone")}</FieldLabel>
             <Input id="bd-zone" className="max-w-xs" maxLength={64} aria-invalid={Boolean(errors.timeZone) || undefined} {...form.register("timeZone")} />
@@ -97,6 +137,35 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
           </Button>
         </div>
       </form>
+
+      <section aria-labelledby="bd-staff" className="surface flex flex-col gap-3 p-5">
+        <h2 id="bd-staff" className="text-fluid-lg font-bold">
+          {t("staff.title")}
+        </h2>
+        <p className="max-w-prose text-sm text-muted-foreground">{t("staff.intro")}</p>
+        <div className="flex flex-wrap items-end gap-2">
+          <Field className="w-56">
+            <FieldLabel htmlFor="bd-staff-id">{t("staff.member")}</FieldLabel>
+            <Input id="bd-staff-id" inputMode="numeric" autoComplete="off" placeholder="123456789012345678" value={staff.userId} onChange={(e) => setStaff({ ...staff, userId: e.target.value })} />
+          </Field>
+          <Field className="w-20">
+            <FieldLabel htmlFor="bd-staff-month">{t("staff.month")}</FieldLabel>
+            <Input id="bd-staff-month" type="number" inputMode="numeric" min={1} max={12} value={staff.month} onChange={(e) => setStaff({ ...staff, month: e.target.value })} />
+          </Field>
+          <Field className="w-20">
+            <FieldLabel htmlFor="bd-staff-day">{t("staff.day")}</FieldLabel>
+            <Input id="bd-staff-day" type="number" inputMode="numeric" min={1} max={31} value={staff.day} onChange={(e) => setStaff({ ...staff, day: e.target.value })} />
+          </Field>
+          <Field className="w-24">
+            <FieldLabel htmlFor="bd-staff-year">{t("staff.year")}</FieldLabel>
+            <Input id="bd-staff-year" type="number" inputMode="numeric" value={staff.year} onChange={(e) => setStaff({ ...staff, year: e.target.value })} />
+          </Field>
+          <Button type="button" disabled={pending || staff.userId.trim() === "" || staff.month === "" || staff.day === ""} onClick={addStaffBirthday}>
+            {t("staff.save")}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">{t("staff.help")}</p>
+      </section>
 
       <section aria-labelledby="bd-list" className="flex flex-col gap-3">
         <h2 id="bd-list" className="text-fluid-lg font-bold">
@@ -116,6 +185,9 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
                   {b.day} {MONTHS[b.month - 1]}
                 </span>
                 <Badge variant={b.inDays === 0 ? "default" : "secondary"}>{b.inDays === 0 ? t("list.today") : t("list.inDays", { count: b.inDays })}</Badge>
+                <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => remove(b.userId)}>
+                  {t("staff.remove")}
+                </Button>
               </li>
             ))}
           </ul>

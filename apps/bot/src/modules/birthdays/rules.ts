@@ -38,14 +38,44 @@ export function daysUntil(b: { month: number; day: number }, today: Day): number
   return 366;
 }
 
-/** Fills {user} (a mention) and {name} (escaped); anything else stays as typed, but is escaped too. */
-export function renderGreeting(template: string, member: { id: string; name: string }): string {
-  const parts = template.split(/(\{user\}|\{name\})/);
+/** escapeText collapses and trims whitespace; around a placeholder the single spaces at the edges must stay. */
+const escapeKeepingEdges = (part: string): string => `${/^\s/.test(part) ? " " : ""}${escapeText(part)}${/\s$/.test(part) && part.trim() !== "" ? " " : ""}`;
+
+/** Fills {user} (a mention), {name} (escaped) and {age} (empty without a birth year); anything else stays as typed, but is escaped too. */
+export function renderGreeting(template: string, member: { id: string; name: string }, age: number | null = null): string {
+  const parts = template.split(/(\{user\}|\{name\}|\{age\})/);
   const text = parts
-    .map((part) => (part === "{user}" ? `<@${member.id}>` : part === "{name}" ? escapeText(truncate(member.name, 60)) : escapeText(part)))
+    .map((part) => (part === "{user}" ? `<@${member.id}>` : part === "{name}" ? escapeText(truncate(member.name, 60)) : part === "{age}" ? (age === null ? "" : String(age)) : escapeKeepingEdges(part)))
     .join("");
   return truncate(text, 1900);
 }
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 export const formatDay = (month: number, day: number): string => `${day} ${MONTHS[month - 1] ?? "?"}`;
+
+/** The age someone turns this year, or null without a birth year. */
+export const ageThisYear = (birthYear: number | null, todayYear: number): number | null => (birthYear === null ? null : todayYear - birthYear);
+
+/**
+ * Is the monthly summary due? "seed" = first time (or just switched on): only remember the month, post nothing, so switching it
+ * on mid-month never posts out of the blue; "post" = a new month has begun since.
+ */
+export function summaryDue(monthKey: string, last: string | null): "none" | "seed" | "post" {
+  if (last === null) return "seed";
+  return last === monthKey ? "none" : "post";
+}
+
+export const monthKey = (d: Day): string => `${String(d.year).padStart(4, "0")}-${String(d.month).padStart(2, "0")}`;
+
+const FULL_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export const monthName = (month: number): string => FULL_MONTHS[month - 1] ?? "?";
+
+/** The summary lines ("5 November · @member"), in date order; 29 February shows on the 28th in common years. At most `max`, with a note about the rest. */
+export function summaryLines(entries: ReadonlyArray<{ userId: string; month: number; day: number }>, year: number, max = 40): string[] {
+  const sorted = entries
+    .map((e) => ({ ...e, ...celebrationDay(e.month, e.day, year) }))
+    .sort((a, b) => a.day - b.day || a.userId.localeCompare(b.userId));
+  const lines = sorted.slice(0, max).map((e) => `**${e.day} ${monthName(e.month)}** · <@${e.userId}>`);
+  if (sorted.length > max) lines.push(`... and ${sorted.length - max} more`);
+  return lines;
+}

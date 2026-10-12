@@ -15,6 +15,17 @@ export function isValidDay(month: number, day: number): boolean {
   return Number.isInteger(month) && Number.isInteger(day) && month >= 1 && month <= 12 && day >= 1 && day <= DAYS_IN_MONTH[month - 1]!;
 }
 
+/** The youngest age Discord allows. */
+export const MIN_BIRTH_AGE = 13;
+
+/** A birth year that makes sense now: at least 13 years ago and not more than 110. */
+export function isValidBirthYear(year: number, currentYear: number): boolean {
+  return Number.isInteger(year) && year >= currentYear - 110 && year <= currentYear - MIN_BIRTH_AGE;
+}
+
+export const MILESTONE_AGES = [18, 21, 25, 30, 40, 50, 60, 70, 80, 90, 100] as const;
+export const isMilestoneAge = (age: number | null): boolean => age !== null && (MILESTONE_AGES as readonly number[]).includes(age);
+
 export function isValidTimeZone(zone: string): boolean {
   if (!zone || zone.length > 64) return false;
   try {
@@ -35,6 +46,10 @@ export const birthdaySettingsSchema = z
     channelId: optionalSnowflake,
     roleId: optionalSnowflake,
     message: z.string().trim().min(1).max(MAX_BIRTHDAY_MESSAGE),
+    /** Used instead of the message on milestone birthdays; empty = the normal message. {age} is replaced. */
+    milestoneMessage: z.string().trim().max(MAX_BIRTHDAY_MESSAGE),
+    /** Post the month's birthdays at the start of each month. */
+    monthlySummary: z.boolean(),
     timeZone: z.string().max(64).refine(isValidTimeZone, "timeZone"),
     ...memberCardFields,
     /** {date} is replaced. */
@@ -44,3 +59,17 @@ export const birthdaySettingsSchema = z
     if (v.enabled && !v.channelId && !v.roleId) ctx.addIssue({ code: "custom", path: ["channelId"], message: "needsTarget" });
   });
 export type BirthdaySettings = z.infer<typeof birthdaySettingsSchema>;
+
+/** A birthday a staff member sets for someone who asked (the year is optional). */
+export const staffBirthdayInput = z
+  .object({
+    userId: snowflake,
+    month: z.number().int().min(1).max(12),
+    day: z.number().int().min(1).max(31),
+    year: z.number().int().nullable(),
+  })
+  .superRefine((v, ctx) => {
+    if (!isValidDay(v.month, v.day)) ctx.addIssue({ code: "custom", path: ["day"], message: "date" });
+    if (v.year !== null && !isValidBirthYear(v.year, new Date().getUTCFullYear())) ctx.addIssue({ code: "custom", path: ["year"], message: "year" });
+  });
+export type StaffBirthdayInput = z.infer<typeof staffBirthdayInput>;

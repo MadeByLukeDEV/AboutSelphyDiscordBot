@@ -1700,6 +1700,10 @@
     "intro": "Members save their own birthday with /birthday set (day and month only, never the year). On the day the bot posts a greeting and can give a role for the day. A member who leaves is forgotten.",
     "none": "Not chosen",
     "form": {
+      "milestone": "Milestone greeting (optional)",
+      "milestoneHelp": "Used instead of the message on 18th, 21st, 25th, 30th birthdays and every ten years after. Only for members who gave their birth year. '{age}' becomes the age. Empty = the normal message.",
+      "summary": "Monthly summary",
+      "summaryHelp": "On the first round of each month, post who has a birthday that month. Switching it on never posts at once: the first summary comes with the next month.",
       "title": "Settings",
       "intro": "Only admins can change these.",
       "enabled": "Birthdays are on",
@@ -1718,6 +1722,18 @@
       "saved": "Saved",
       "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
     },
+    "staff": {
+      "title": "Set a birthday for someone",
+      "intro": "For members who ask you to. The member must be in the server. Leave the year empty unless they want their age in the greeting.",
+      "member": "Member ID",
+      "month": "Month",
+      "day": "Day",
+      "year": "Year (optional)",
+      "save": "Save birthday",
+      "saved": "Birthday saved",
+      "remove": "Remove",
+      "help": "The year is only used for the age in the greeting and is never shown as a date. Removing a birthday deletes it for good."
+    },
     "list": {
       "title": "Next birthdays",
       "total": "({count} saved)",
@@ -1729,6 +1745,8 @@
       }
     },
     "errors": {
+      "memberNotFound": "That member isn't in the server.",
+      "notFound": "That birthday doesn't exist any more.",
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
       "needsTarget": "Pick a channel or a role before turning birthdays on.",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { birthdaySettingsSchema, isValidDay, isValidTimeZone } from "@aboutselphy/shared/birthdays";
-import { celebrationDay, dayKey, daysUntil, formatDay, isBirthdayToday, renderGreeting, todayIn } from "./rules";
+import { birthdaySettingsSchema, isMilestoneAge, isValidBirthYear, isValidDay, isValidTimeZone, staffBirthdayInput } from "@aboutselphy/shared/birthdays";
+import { ageThisYear, celebrationDay, dayKey, daysUntil, formatDay, isBirthdayToday, renderGreeting, summaryDue, summaryLines, todayIn } from "./rules";
 
 describe("isValidDay", () => {
   it("accepts real dates, including 29 February, and refuses the rest", () => {
@@ -18,7 +18,7 @@ describe("isValidTimeZone", () => {
 });
 
 describe("settings", () => {
-  const base = { enabled: true, channelId: "123456789012345678", roleId: "", message: "Hi {user}", timeZone: "Europe/Berlin", cardEnabled: false, cardMode: "background", cardTitle: "Happy birthday", cardSubtitle: "{date}" };
+  const base = { enabled: true, channelId: "123456789012345678", roleId: "", message: "Hi {user}", timeZone: "Europe/Berlin", cardEnabled: false, cardMode: "background", cardTitle: "Happy birthday", cardSubtitle: "{date}", milestoneMessage: "", monthlySummary: false };
   it("needs a channel or a role when on, a message and a real time zone", () => {
     expect(birthdaySettingsSchema.safeParse(base).success).toBe(true);
     expect(birthdaySettingsSchema.safeParse({ ...base, channelId: "", roleId: "123456789012345678" }).success).toBe(true);
@@ -81,5 +81,48 @@ describe("fillDate", () => {
     const { fillDate } = await import("@aboutselphy/shared/member-card");
     expect(fillDate("Born on {date}!", "29 February")).toBe("Born on 29 February!");
     expect(fillDate("{date}", "1 May")).toBe("1 May");
+  });
+});
+
+describe("age, milestones and the monthly summary", () => {
+  it("fills {age} only with a birth year", () => {
+    expect(renderGreeting("Happy {age}th, {name}!", { id: "1", name: "Ann" }, 30)).toBe("Happy 30th, Ann!");
+    expect(renderGreeting("Happy {age}th, {name}!", { id: "1", name: "Ann" })).toBe("Happy th, Ann!");
+  });
+  it("computes the age turned this year", () => {
+    expect(ageThisYear(1996, 2026)).toBe(30);
+    expect(ageThisYear(null, 2026)).toBeNull();
+  });
+  it("knows milestone ages", () => {
+    for (const a of [18, 21, 25, 30, 40, 100]) expect(isMilestoneAge(a), String(a)).toBe(true);
+    for (const a of [17, 19, 26, 35, 101]) expect(isMilestoneAge(a), String(a)).toBe(false);
+    expect(isMilestoneAge(null)).toBe(false);
+  });
+  it("accepts only believable birth years", () => {
+    expect(isValidBirthYear(2000, 2026)).toBe(true);
+    expect(isValidBirthYear(2014, 2026)).toBe(false); // too young for Discord
+    expect(isValidBirthYear(1900, 2026)).toBe(false);
+    expect(isValidBirthYear(1999.5, 2026)).toBe(false);
+  });
+  it("arms the summary first, then posts once a month", () => {
+    expect(summaryDue("2026-11", null)).toBe("seed");
+    expect(summaryDue("2026-11", "2026-11")).toBe("none");
+    expect(summaryDue("2026-12", "2026-11")).toBe("post");
+  });
+  it("lists the month in date order and cuts long lists", () => {
+    const lines = summaryLines([{ userId: "b", month: 11, day: 20 }, { userId: "a", month: 11, day: 3 }], 2026);
+    expect(lines).toEqual(["**3 November** · <@a>", "**20 November** · <@b>"]);
+    expect(summaryLines([{ userId: "x", month: 2, day: 29 }], 2027)).toEqual(["**28 February** · <@x>"]);
+    const many = Array.from({ length: 45 }, (_, i) => ({ userId: String(i), month: 5, day: 1 + (i % 28) }));
+    const cut = summaryLines(many, 2026, 40);
+    expect(cut).toHaveLength(41);
+    expect(cut.at(-1)).toBe("... and 5 more");
+  });
+  it("validates a staff-set birthday", () => {
+    const ok = { userId: "123456789012345678", month: 2, day: 29, year: 2000 };
+    expect(staffBirthdayInput.safeParse(ok).success).toBe(true);
+    expect(staffBirthdayInput.safeParse({ ...ok, year: null }).success).toBe(true);
+    expect(staffBirthdayInput.safeParse({ ...ok, month: 2, day: 30 }).success).toBe(false);
+    expect(staffBirthdayInput.safeParse({ ...ok, year: 2020 }).success).toBe(false);
   });
 });
