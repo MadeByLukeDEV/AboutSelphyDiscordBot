@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { decideSuggestionAction, saveSuggestionSettingsAction } from "../actions";
 import type { SuggestionRow } from "../schema";
 import { EmoteInsert } from "@/components/form/emote-insert";
+import { SuggestionExtras } from "./suggestion-extras";
 
 const BAR: Record<SuggestionStatusName, string> = { open: "bg-sky-500", approved: "bg-emerald-500", denied: "bg-rose-500", implemented: "bg-primary" };
 
@@ -170,6 +171,7 @@ export function SuggestionsManager({
                       ))}
                     </div>
                   )}
+                  <SuggestionExtras row={s} />
                 </div>
               </li>
             ))}

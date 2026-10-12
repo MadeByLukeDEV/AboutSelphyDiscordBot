@@ -1451,6 +1451,21 @@
       "cancel": "Abbrechen",
       "confirm": "Bestätigen"
     },
+    "extras": {
+      "notes": "Notizen ({count})",
+      "private": "Private Notizen für das Team. Mitglieder sehen sie nie.",
+      "noNotes": "Noch keine Notizen.",
+      "noteLabel": "Neue Notiz",
+      "notePlaceholder": "Schreibe eine Notiz für das Team",
+      "addNote": "Notiz hinzufügen",
+      "removeNote": "Notiz entfernen",
+      "mergeLabel": "Nummer des Vorschlags, den dieser doppelt",
+      "mergePlaceholder": "Duplikat von #",
+      "merge": "Zusammenführen",
+      "badNumber": "Gib die Nummer des anderen Vorschlags ein.",
+      "merged": "Als Duplikat von #{number} geschlossen. Die Stimmen wurden dorthin übertragen.",
+      "mergedInto": "Als Duplikat von #{number} geschlossen."
+    },
     "errors": {
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind nicht gültig.",
@@ -1459,6 +1474,9 @@
       "channelNotFound": "Dieser Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
       "notFound": "Dieser Vorschlag existiert nicht mehr. Lade die Seite neu.",
       "wrongState": "Dieser Vorschlag kann nicht mehr dahin geändert werden. Lade die Seite neu.",
+      "targetNotFound": "Einen Vorschlag mit dieser Nummer gibt es nicht.",
+      "same": "Ein Vorschlag kann nicht mit sich selbst zusammengeführt werden.",
+      "tooManyNotes": "Dieser Vorschlag hat die maximale Anzahl an Notizen.",
       "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   },

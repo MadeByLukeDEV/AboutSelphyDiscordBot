@@ -1043,7 +1043,14 @@ Decided 2026-10-08:
     the post is edited and the author gets a DM. Author text is escaped, nothing pings.
     Numbers from `SuggestionConfig.nextNumber` (atomic).
   - Dashboard `/suggestions` (all staff: list, filter, decide; admins: settings).
-  - [ ] Staff-only comments on a suggestion, merging duplicates, a leaderboard of ideas.
+  - **Staff notes and duplicates** (2026-11-07, `feature_suggestion-staff`, migration `20261107220000_suggestion_staff`;
+    **not tried live yet**): `SuggestionComment` = private team notes (<= 500 chars, <= 50 per suggestion, any staff adds
+    or removes, plain text, never shown to members, DB CHECK against empty). **Merge**: `POST /internal/suggestions/merge`
+    (`mergeSuggestion`): only an *open* suggestion can be closed as a duplicate, into one that isn't denied; it goes through
+    the normal denial (reason `Duplicate of #N`, post edited, author told), then its votes are copied to the target for
+    members who hadn't voted there (`createMany skipDuplicates`), `Suggestion.mergedIntoNumber` is set and the target post
+    refreshed. Both are on the `/suggestions` list per row (`suggestion-extras.tsx`), audited actions.
+  - [ ] A leaderboard of ideas.
 - [~] Polls (2026-10-19, `feature_polls`, migration `20261019180000_polls` applied; **not tried
       live yet**; Tier B)
   - Bot (`modules/polls/`): `/poll question options duration multiple` (team; options split

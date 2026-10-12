@@ -1,11 +1,11 @@
 import type { Guild, GuildTextBasedChannel } from "discord.js";
 import type { Suggestion } from "@aboutselphy/db";
-import type { SuggestionDecideStatus } from "@aboutselphy/shared";
+import type { SuggestionDecideStatus, SuggestionMergeStatus } from "@aboutselphy/shared";
 import { canTransition, MAX_SUGGESTION, type Decision } from "@aboutselphy/shared/suggestions";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
 import { getSuggestionConfig } from "./config";
-import { counts, create, decide, find, lastCreatedAt, reserveNumber } from "./repository";
+import { copyVotes, counts, create, decide, find, findByNumber, lastCreatedAt, reserveNumber, setMergedInto } from "./repository";
 import { buildSuggestionMessage, cooldownRemaining, type SuggestionView } from "./rules";
 
 const toView = async (s: Suggestion): Promise<SuggestionView> => ({
@@ -105,6 +105,32 @@ export async function decideSuggestion(guild: Guild, id: string, status: Decisio
     return "done";
   } catch (err) {
     log.error({ err, suggestion: id }, "deciding a suggestion failed");
+    return "failed";
+  }
+}
+
+/**
+ * Closes `id` as a duplicate of suggestion #`targetNumber`: it is denied with a "Duplicate of #N" reason (through the normal
+ * decision, so the post is edited and the author told), and its votes are copied to the target for members who hadn't
+ * voted there. Only an open suggestion can be merged, into one that is not denied.
+ */
+export async function mergeSuggestion(guild: Guild, id: string, targetNumber: number, by: { id: string | null; name: string }): Promise<SuggestionMergeStatus> {
+  try {
+    const dup = await find(id);
+    if (!dup) return "not-found";
+    const target = await findByNumber(targetNumber);
+    if (!target) return "target-not-found";
+    if (target.id === dup.id) return "same";
+    if (dup.status !== "open" || target.status === "denied") return "wrong-state";
+    const decided = await decideSuggestion(guild, dup.id, "denied", `Duplicate of #${target.number}`, by);
+    if (decided !== "done") return decided === "not-found" ? "not-found" : decided === "wrong-state" ? "wrong-state" : "failed";
+    const moved = await copyVotes(dup.id, target.id);
+    await setMergedInto(dup.id, target.number);
+    await refreshNow(guild, target.id).catch((err) => log.warn({ err, suggestion: target.id }, "could not refresh the merge target"));
+    log.info({ suggestion: dup.number, into: target.number, movedVotes: moved, by: by.id ?? by.name }, "suggestion merged");
+    return "done";
+  } catch (err) {
+    log.error({ err, suggestion: id }, "merging a suggestion failed");
     return "failed";
   }
 }

@@ -37,3 +37,8 @@ export const decisionInput = z.object({
   reason: z.string().trim().max(MAX_DECISION_REASON),
 });
 export type DecisionInput = z.infer<typeof decisionInput>;
+
+export const MAX_NOTE = 500;
+export const MAX_NOTES_PER_SUGGESTION = 50;
+export const noteInput = z.object({ suggestionId: z.string().min(1).max(64), body: z.string().trim().min(1).max(MAX_NOTE) });
+export const mergeInput = z.object({ id: z.string().min(1).max(64), targetNumber: z.number().int().min(1).max(1_000_000) });

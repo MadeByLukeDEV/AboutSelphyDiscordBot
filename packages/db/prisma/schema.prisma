@@ -689,10 +689,25 @@ model Suggestion {
   decisionReason String           @default("") @db.VarChar(300)
   decidedAt      DateTime?
   createdAt      DateTime         @default(now())
+  /// Closed as a duplicate of this suggestion number (votes were moved there).
+  mergedIntoNumber Int?
   votes          SuggestionVote[]
+  comments       SuggestionComment[]
 
   @@index([status, createdAt])
   @@index([authorId, createdAt])
+}
+
+/// A private note a team member left on a suggestion (never shown to members).
+model SuggestionComment {
+  id           String     @id @default(cuid())
+  suggestionId String
+  suggestion   Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  authorName   String     @db.VarChar(100)
+  body         String     @db.VarChar(500)
+  createdAt    DateTime   @default(now())
+
+  @@index([suggestionId, createdAt])
 }
 
 model SuggestionVote {

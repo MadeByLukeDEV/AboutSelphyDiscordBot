@@ -59,6 +59,8 @@ import {
   type TempVoiceOverview,
   type TwitchResolveResponse,
   memberSearchResponse,
+  suggestionMergeStatus,
+  type SuggestionMergeStatus,
   type MemberSearchHit,
 } from "@aboutselphy/shared";
 import type { GiveawayAction } from "@aboutselphy/shared/giveaways";
@@ -290,6 +292,14 @@ export async function postVerificationPanelViaBot(): Promise<VerificationPanelSt
   const res = await botFetch("/internal/verification/panel", { method: "POST" });
   if (!res?.ok) return null;
   const parsed = verificationPanelStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to close a suggestion as a duplicate of another. Null if the bot can't be reached. */
+export async function mergeSuggestionViaBot(input: { id: string; targetNumber: number; by: string }): Promise<SuggestionMergeStatus | null> {
+  const res = await botFetch("/internal/suggestions/merge", { method: "POST", body: input });
+  if (!res?.ok) return null;
+  const parsed = suggestionMergeStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

@@ -48,3 +48,13 @@ export async function decide(id: string, from: Array<Suggestion["status"]>, stat
   });
   return count > 0;
 }
+
+/** Copies the votes of `fromId` to `toId` for members who haven't voted there yet; returns how many moved. */
+export async function copyVotes(fromId: string, toId: string): Promise<number> {
+  const votes = await prisma.suggestionVote.findMany({ where: { suggestionId: fromId } });
+  if (votes.length === 0) return 0;
+  const { count } = await prisma.suggestionVote.createMany({ data: votes.map((v) => ({ suggestionId: toId, userId: v.userId, value: v.value })), skipDuplicates: true });
+  return count;
+}
+
+export const setMergedInto = (id: string, number: number) => prisma.suggestion.update({ where: { id }, data: { mergedIntoNumber: number } });

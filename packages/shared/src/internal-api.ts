@@ -314,3 +314,12 @@ export const MEMBER_SEARCH_MAX = 32;
 export const memberSearchHit = z.object({ id: z.string().regex(/^\d{17,20}$/), username: z.string().max(100), name: z.string().max(100), inServer: z.boolean() });
 export const memberSearchResponse = z.object({ members: z.array(memberSearchHit).max(25) });
 export type MemberSearchHit = z.infer<typeof memberSearchHit>;
+
+/** POST /internal/suggestions/merge: close a suggestion as a duplicate of another and move its votes there. */
+export const suggestionMergeBody = z.object({
+  id: z.string().min(1).max(64),
+  targetNumber: z.number().int().min(1).max(1_000_000),
+  by: z.string().min(1).max(100),
+});
+export const suggestionMergeStatus = z.enum(["done", "not-found", "target-not-found", "wrong-state", "same", "failed"]);
+export type SuggestionMergeStatus = z.infer<typeof suggestionMergeStatus>;

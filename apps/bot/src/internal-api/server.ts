@@ -17,6 +17,7 @@ import {
   roleMergeBody,
   roleUpdateBody,
   suggestionDecideBody,
+  suggestionMergeBody,
   channelKind,
   refreshCaseBody,
   roleCreateBody,
@@ -45,7 +46,7 @@ import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
-import { decideSuggestion } from "../modules/suggestions";
+import { decideSuggestion, mergeSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
 import { getTempVoiceOverview } from "../modules/tempvoice";
@@ -217,6 +218,14 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await decideSuggestion(guild, body.data.id, body.data.status, body.data.reason, { id: null, name: body.data.by }) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/suggestions/merge") {
+    const body = suggestionMergeBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await mergeSuggestion(guild, body.data.id, body.data.targetNumber, { id: null, name: body.data.by }) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/giveaways/action") {

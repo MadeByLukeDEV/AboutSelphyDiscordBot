@@ -1451,6 +1451,21 @@
       "cancel": "Cancel",
       "confirm": "Confirm"
     },
+    "extras": {
+      "notes": "Notes ({count})",
+      "private": "Private notes for the team. Members never see them.",
+      "noNotes": "No notes yet.",
+      "noteLabel": "New note",
+      "notePlaceholder": "Write a note for the team",
+      "addNote": "Add note",
+      "removeNote": "Remove note",
+      "mergeLabel": "Number of the suggestion this duplicates",
+      "mergePlaceholder": "Duplicate of #",
+      "merge": "Merge",
+      "badNumber": "Enter the number of the other suggestion.",
+      "merged": "Closed as a duplicate of #{number}. Its votes were moved there.",
+      "mergedInto": "Closed as a duplicate of #{number}."
+    },
     "errors": {
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
@@ -1459,6 +1474,9 @@
       "channelNotFound": "That channel doesn't exist, or the bot can't see it.",
       "notFound": "That suggestion doesn't exist any more. Reload the page.",
       "wrongState": "That suggestion can't be changed to that any more. Reload the page.",
+      "targetNotFound": "There is no suggestion with that number.",
+      "same": "A suggestion can't be merged into itself.",
+      "tooManyNotes": "That suggestion has the maximum number of notes.",
       "failed": "That didn't work. Try again."
     }
   },
