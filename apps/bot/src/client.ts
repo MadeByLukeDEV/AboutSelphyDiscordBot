@@ -20,6 +20,7 @@ export const INTENTS = [
   GatewayIntentBits.GuildVoiceStates,
   GatewayIntentBits.GuildMessageReactions, // role panels in reaction mode
   GatewayIntentBits.GuildMessages, // leveling counts messages (their text is not read)
+  GatewayIntentBits.GuildInvites, // not privileged: invite tracking (who invited whom)
   GatewayIntentBits.GuildMembers, // privileged: joins and leaves (welcome, auto-roles, restoring roles)
 ];
 

@@ -1,3 +1,5 @@
+import { escapeText } from "../../lib/escape";
+import { describeSource, trackJoin } from "../invites";
 import { ChannelType, Events, type Client, type EmbedBuilder, type Guild, type GuildBasedChannel, type Role } from "discord.js";
 import type { LogCategory } from "@aboutselphy/shared/logs";
 import { env, integrationsActive } from "../../lib/env";
@@ -60,7 +62,10 @@ export function registerLogs(client: Client): void {
     guarded("join", async () => {
       recentJoins.set(m.id, Date.now());
       setTimeout(() => recentJoins.delete(m.id), RECENT_JOIN_MS * 2).unref();
-      await post(m.guild, "members", memberJoinEmbed({ id: m.id, name: m.user.username, createdAt: m.user.createdAt, memberCount: m.guild.memberCount, bot: m.user.bot }));
+      // Invite tracking (when on) says which invite they used; the log line shows it. The names are escaped here.
+      const joined = await trackJoin(m);
+      const invitedBy = joined ? describeSource(joined.detected, joined.inviterName ? escapeText(joined.inviterName) : null) : undefined;
+      await post(m.guild, "members", memberJoinEmbed({ id: m.id, name: m.user.username, createdAt: m.user.createdAt, memberCount: m.guild.memberCount, bot: m.user.bot, invitedBy }));
     }),
   );
 

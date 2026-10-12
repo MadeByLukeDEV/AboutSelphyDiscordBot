@@ -14,9 +14,9 @@ export const isNewAccount = (createdAt: Date, now: Date) => now.getTime() - crea
 const who = (id: string, name: string) => `<@${id}> (${escapeText(name)})\n\`${id}\``;
 const list = (names: string[], max = 15) => (names.length === 0 ? "none" : truncate(names.slice(0, max).map(escapeText).join(", ") + (names.length > max ? ` and ${names.length - max} more` : ""), 1000));
 
-export function memberJoinEmbed(m: { id: string; name: string; createdAt: Date; memberCount: number; bot: boolean; now?: Date }) {
+export function memberJoinEmbed(m: { id: string; name: string; createdAt: Date; memberCount: number; bot: boolean; now?: Date; /** Who brought them, already worded (invite tracking), or nothing. */ invitedBy?: string }) {
   const fresh = isNewAccount(m.createdAt, m.now ?? new Date());
-  return new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setColor(fresh ? COLORS.warn : COLORS.good)
     .setTitle(m.bot ? "Bot added" : "Member joined")
     .setDescription(who(m.id, m.name))
@@ -25,6 +25,8 @@ export function memberJoinEmbed(m: { id: string; name: string; createdAt: Date; 
       { name: "Members now", value: String(m.memberCount), inline: true },
     )
     .setTimestamp();
+  if (m.invitedBy) embed.addFields({ name: "Invited by", value: truncate(m.invitedBy, 200) });
+  return embed;
 }
 
 export function memberLeaveEmbed(m: { id: string; name: string; joinedAt: Date | null; roleNames: string[]; memberCount: number }) {

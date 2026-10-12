@@ -19,6 +19,7 @@ const permissions = new PermissionsBitField([
   P.ManageMessages,
   P.ManageChannels,
   P.ManageRoles,
+  P.ManageGuild, // reading the server's invites (invite tracking)
   P.KickMembers,
   P.BanMembers,
   P.ModerateMembers,

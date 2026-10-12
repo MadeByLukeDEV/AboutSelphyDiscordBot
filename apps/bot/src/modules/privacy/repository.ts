@@ -15,6 +15,8 @@ export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
   const result: PruneResult = { transcripts: 0, cases: 0, suggestions: 0, xp: 0 };
   // The dashboard's audit trail keeps names of staff: it is always cleared after a year, even when every other limit is off.
   await prisma.auditEntry.deleteMany({ where: { at: { lt: new Date(now.getTime() - 365 * 86_400_000) } } });
+  // Who joined through which invite is kept for a year, then removed, whatever the other limits say.
+  await prisma.memberInvite.deleteMany({ where: { joinedAt: { lt: new Date(now.getTime() - 365 * 86_400_000) } } });
   if (cut.transcript) {
     result.transcripts = await prisma.$executeRaw`UPDATE "Ticket" SET "transcript" = NULL WHERE "status" = 'closed' AND "closedAt" < ${cut.transcript} AND "transcript" IS NOT NULL`;
   }
@@ -39,7 +41,7 @@ export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
 
 /** Everything the bot holds about one member, shaped for a JSON file they can read. Moderators' names are left out. */
 export async function exportMember(userId: string) {
-  const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases, room] = await Promise.all([
+  const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases, room, joins, invited] = await Promise.all([
     prisma.birthday.findUnique({ where: { userId } }),
     prisma.reminder.findMany({ where: { userId, deliveredAt: null }, take: 100 }),
     prisma.memberXp.findUnique({ where: { userId } }),
@@ -53,6 +55,8 @@ export async function exportMember(userId: string) {
     prisma.twitchVipLink.findUnique({ where: { discordUserId: userId } }),
     prisma.modCase.findMany({ where: { targetId: userId }, orderBy: { caseNumber: "asc" }, take: 500 }),
     prisma.tempVoicePreference.findUnique({ where: { userId } }),
+    prisma.memberInvite.findMany({ where: { userId }, orderBy: { joinedAt: "desc" }, take: 20 }),
+    prisma.memberInvite.count({ where: { inviterId: userId } }),
   ]);
   return {
     generatedAt: new Date().toISOString(),
@@ -65,13 +69,15 @@ export async function exportMember(userId: string) {
     suggestions: suggestions.map((s) => ({ number: s.number, text: clip(s.content, 1500), status: s.status, createdAt: s.createdAt.toISOString() })),
     counts: { suggestionVotes, pollVotes, giveawayEntries, starboardPosts: starboard },
     tickets: tickets.map((t) => ({ number: t.number, status: t.status, openedAt: t.createdAt.toISOString(), closedAt: t.closedAt?.toISOString() ?? null, messagesSaved: t.messageCount })),
+    howYouJoined: joins.map((j) => ({ joinedAt: j.joinedAt.toISOString(), left: j.leftAt?.toISOString() ?? null, via: j.source, inviteCode: j.code, invitedBy: j.inviterName })),
+    peopleYouInvited: invited,
     rememberedVoiceRoom: room ? { name: room.name, userLimit: room.userLimit, locked: room.locked } : null,
     twitchVipLink: vip ? { twitchAccount: vip.twitchLogin, confirmed: vip.approved } : null,
     moderationCases: cases.map((c) => ({ caseNumber: c.caseNumber, type: c.type, reason: clip(c.reason, 1000), createdAt: c.createdAt.toISOString(), active: c.active })),
   };
 }
 
-export type DeleteCounts = { voiceRoom: number; birthday: number; reminders: number; levels: number; rememberedRoles: number; votes: number; entries: number; suggestionsAnonymised: number; starboardAnonymised: number };
+export type DeleteCounts = { invites: number; voiceRoom: number; birthday: number; reminders: number; levels: number; rememberedRoles: number; votes: number; entries: number; suggestionsAnonymised: number; starboardAnonymised: number };
 
 /**
  * Removes what the member can remove themselves, in one transaction. Moderation cases and tickets stay (the policy says
@@ -79,7 +85,9 @@ export type DeleteCounts = { voiceRoom: number; birthday: number; reminders: num
  * other people's votes and comments hang off them. The Twitch link is handled by the caller (the role must come off first).
  */
 export async function deleteMember(userId: string): Promise<DeleteCounts> {
-  const [voice, birthday, reminders, levels, snapshot, sv, pv, entries, suggestions, starboard] = await prisma.$transaction([
+  const [inv, voice, birthday, reminders, levels, snapshot, sv, pv, entries, suggestions, starboard] = await prisma.$transaction([
+    // Their own join record goes; where they are the inviter, the person who joined stays on record without a name for the inviter.
+    prisma.memberInvite.deleteMany({ where: { userId } }),
     prisma.tempVoicePreference.deleteMany({ where: { userId } }),
     prisma.birthday.deleteMany({ where: { userId } }),
     prisma.reminder.deleteMany({ where: { userId } }),
@@ -91,6 +99,7 @@ export async function deleteMember(userId: string): Promise<DeleteCounts> {
     prisma.suggestion.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
     prisma.starboardPost.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
   ]);
-  return { voiceRoom: voice.count, birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };
+  await prisma.memberInvite.updateMany({ where: { inviterId: userId }, data: { inviterId: null, inviterName: null } });
+  return { invites: inv.count, voiceRoom: voice.count, birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };
 }
 

@@ -18,6 +18,7 @@ import { loginWithRetry } from "./lib/login";
 import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
 import { startRetention, stopRetention } from "./modules/privacy";
+import { startInvites } from "./modules/invites";
 import { registerVerificationControls, startVerification, stopVerification } from "./modules/verification";
 import { startRaidProtection, stopRaidProtection } from "./modules/raid";
 import { registerStarboard } from "./modules/starboard";
@@ -73,6 +74,7 @@ async function main() {
   startAntiBot(client);
   startTwitchVip(client);
   startRetention(client);
+  startInvites(client);
   registerVerificationControls();
   startVerification(client);
   startRaidProtection(client);

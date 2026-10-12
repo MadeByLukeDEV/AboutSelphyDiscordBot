@@ -26,6 +26,7 @@ export const MODULE_KEYS = [
   "reminders",
   "utility",
   "tempvoice",
+  "invites",
 ] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 export const isModuleKey = (v: unknown): v is ModuleKey => MODULE_KEYS.includes(v as ModuleKey);
@@ -62,6 +63,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   reminders: { group: "tools", commands: ["remind"], prefixes: [] },
   utility: { group: "tools", commands: ["userinfo", "serverinfo", "roleinfo", "avatar"], prefixes: [] },
   tempvoice: { group: "voice", commands: ["tempvoice", "voice"], prefixes: ["tv"] },
+  invites: { group: "tools", commands: ["invites"], prefixes: [] },
 };
 
 /** The module a slash command belongs to, if it has a central switch. */

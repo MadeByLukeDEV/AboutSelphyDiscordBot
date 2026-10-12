@@ -10,4 +10,4 @@ export type LegalKind = "terms" | "privacy";
 export type Operator = { name: string; address: string; email: string; country: string; hosting: string };
 
 /** Bump this date whenever the wording of either document changes. */
-export const LEGAL_LAST_UPDATED = "2026-11-04";
+export const LEGAL_LAST_UPDATED = "2026-11-05";

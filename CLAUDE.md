@@ -175,7 +175,7 @@ module's `actions.ts`/`service.ts`/`index.ts`, never another module's
   (instant), only when a hash of the command definitions changed.
 - **Intents** (enable in the Developer Portal): `Guilds`, `GuildMembers`*,
   `GuildModeration`, `GuildMessages`, `MessageContent`* (anti-bot patterns),
-  `GuildVoiceStates`. *privileged.
+  `GuildVoiceStates`, `GuildInvites` (not privileged, nothing to enable). *privileged.
 - **Lazy clients**: Prisma, pg, Redis, Discord client are built on first use
   (Proxy pattern from `../SocialMedia Tree/src/lib/prisma.ts`). `docker build`
   has no env.
@@ -1282,7 +1282,19 @@ Decided 2026-10-08:
         restart keeps it; ends by itself or with `/raid end`, `/raid status` for moderators), a note goes to the mod log, and while
         it is on each new account gets the chosen reaction: alert only, timeout (`actionMinutes`) or kick, as numbered cases from the
         bot (source `automod`, staff skipped). Test the numbers with "alert only" first.
-  - [ ] Still open: join/leave logs with invite tracking (needs the GuildInvites intent), screening of members by hand.
+  - [x] **Invite tracking** (2026-11-05, `feature_invite-tracking`, migration `20261104180000_invite_tracking`; **not tried live yet**):
+        Discord never says which invite was used, so `modules/invites/` keeps every invite's use count in memory and compares on each
+        join (`detectInvite`, pure, tested: exactly one invite went up; or one with a use limit and one use left vanished; or the
+        custom URL's count went up; **never a guess between two candidates**, that is "unknown"). Joins are handled one at a time.
+        Needs the **GuildInvites** intent (not privileged, now in `INTENTS`) and the bot's **Manage Server** permission to read
+        invites (added to `invite-url`; open the new link once; without it the bot warns once and stays quiet). Each join becomes a
+        `MemberInvite` row (who, inviter, code, source invite|vanity|unknown, joined, left); the member-join log shows "Invited by";
+        `/invites` (a member sees their own, staff can look at anyone: how many joined through them, how many are still here);
+        dashboard `/invites` (staff) with totals, top inviters and the latest 50 joins; central switch `invites` on `/modules`.
+        Privacy: kept one year (the bot's daily job removes older rows whatever the retention limits say), `/mydata export` and
+        `delete` cover it (their own join record goes; where they were the inviter the name is blanked), policy updated
+        (`LEGAL_LAST_UPDATED` 2026-11-05).
+  - [ ] Still open: screening of members by hand, an invite leaderboard role/rewards.
 - [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
       `20261013180000_youtube` applied; the first poll against the real API ran and
       only remembered the current 10 videos; **no real announcement seen yet**)

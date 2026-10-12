@@ -48,7 +48,8 @@
         "memberLookup": "Mitglieder",
         "verification": "Verifizierung",
         "raid": "Raid-Schutz",
-        "audit": "Änderungsprotokoll"
+        "audit": "Änderungsprotokoll",
+        "invites": "Einladungen"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2120,6 +2121,10 @@
       "feeds": {
         "name": "Feed-Ankündigungen",
         "description": "Kündigt neue Einträge von RSS- und Atom-Feeds an, z. B. TikTok über RSSHub."
+      },
+      "invites": {
+        "name": "Einladungs-Tracking",
+        "description": "Wer wen eingeladen hat, im Beitritts-Log, mit /invites und im Dashboard."
       }
     },
     "errors": {
@@ -2733,5 +2738,30 @@
       "giveaway": "ausgeführt",
       "poll": "ausgeführt"
     }
+  },
+  "Invites": {
+    "title": "Einladungen",
+    "intro": "Welche Einladung jedes neue Mitglied benutzt hat, und damit wer es mitgebracht hat. Der Bot vergleicht beim Beitritt die Nutzungszähler aller Einladungen. Ein Beitritt wird als unbekannt angezeigt, wenn das nicht festzustellen ist (mehrere Einladungen im selben Moment genutzt, oder der Bot kann Einladungen nicht lesen).",
+    "empty": "Noch keine Beitritte aufgezeichnet. Es beginnt mit dem nächsten Mitglied, das beitritt, und braucht das Recht „Server verwalten“ für den Bot.",
+    "totals": {
+      "tracked": "Aufgezeichnete Beitritte",
+      "viaInvite": "Über eine Einladung",
+      "viaVanity": "Über die eigene URL",
+      "unknown": "Unbekannt"
+    },
+    "top": {
+      "title": "Beste Einlader",
+      "none": "Noch hat niemand jemanden mitgebracht.",
+      "line": "{total} eingeladen · {here} noch da · {left} gegangen"
+    },
+    "recent": {
+      "title": "Letzte Beitritte",
+      "via": "über {who} (Einladung {code})",
+      "someone": "jemanden",
+      "vanity": "über die eigene URL des Servers",
+      "unknown": "unbekannt",
+      "left": "ist gegangen"
+    },
+    "note": "Die Einträge werden ein Jahr aufbewahrt. Mitglieder können ihre mit /mydata ansehen und löschen. Das Team kann ein Mitglied mit /invites nachschlagen."
   }
 }

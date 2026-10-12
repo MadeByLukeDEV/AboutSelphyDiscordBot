@@ -32,6 +32,7 @@ export type {
   VerificationConfig,
   RaidConfig,
   AuditEntry,
+  MemberInvite,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

@@ -48,7 +48,8 @@
         "memberLookup": "Members",
         "verification": "Verification",
         "raid": "Raid protection",
-        "audit": "Audit trail"
+        "audit": "Audit trail",
+        "invites": "Invites"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2120,6 +2121,10 @@
       "feeds": {
         "name": "Feed announcer",
         "description": "Announces new items of RSS and Atom feeds, e.g. TikTok through RSSHub."
+      },
+      "invites": {
+        "name": "Invite tracking",
+        "description": "Who invited whom, in the join log, /invites and the dashboard."
       }
     },
     "errors": {
@@ -2733,5 +2738,30 @@
       "giveaway": "ran",
       "poll": "ran"
     }
+  },
+  "Invites": {
+    "title": "Invites",
+    "intro": "Which invite each new member used, and so who brought them. The bot compares the use counts of every invite when someone joins. A join is shown as unknown when that can't be told (several invites used at the same moment, or the bot can't read invites).",
+    "empty": "No joins recorded yet. It starts with the next member who joins, and needs the bot's Manage Server permission.",
+    "totals": {
+      "tracked": "Joins recorded",
+      "viaInvite": "Through an invite",
+      "viaVanity": "Through the custom URL",
+      "unknown": "Unknown"
+    },
+    "top": {
+      "title": "Top inviters",
+      "none": "Nobody has brought anyone yet.",
+      "line": "{total} invited · {here} still here · {left} left"
+    },
+    "recent": {
+      "title": "Latest joins",
+      "via": "via {who} (invite {code})",
+      "someone": "someone",
+      "vanity": "via the server's custom URL",
+      "unknown": "unknown",
+      "left": "has left"
+    },
+    "note": "Records are kept for one year. Members can see and delete theirs with /mydata. Staff can look up a member with /invites."
   }
 }

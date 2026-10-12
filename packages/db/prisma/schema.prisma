@@ -1146,3 +1146,21 @@ model AuditEntry {
   @@index([at])
   @@index([area, at])
 }
+
+/// How a member joined: which invite (and so who invited them), when, and whether they have left. One row per join.
+model MemberInvite {
+  id          String    @id @default(cuid())
+  userId      String    @db.VarChar(20)
+  userName    String    @db.VarChar(100)
+  inviterId   String?   @db.VarChar(20)
+  inviterName String?   @db.VarChar(100)
+  code        String?   @db.VarChar(32)
+  /// invite | vanity | unknown (CHECK in the migration)
+  source      String    @db.VarChar(8)
+  joinedAt    DateTime  @default(now())
+  leftAt      DateTime?
+
+  @@index([inviterId])
+  @@index([userId])
+  @@index([joinedAt])
+}
