@@ -11,6 +11,9 @@ const toSettings = (c: YoutubeConfig): YoutubeSettings => ({
   pingRoleId: c.pingRoleId ?? "",
   messageTemplate: c.messageTemplate,
   announceShorts: c.announceShorts,
+  showWatchButton: c.showWatchButton,
+  announcePremieres: c.announcePremieres,
+  premiereTemplate: c.premiereTemplate,
   embedColor: c.embedColor,
 });
 
@@ -59,6 +62,9 @@ export async function saveYoutube(input: YoutubeSettings): Promise<SaveYoutubeRe
       pingRoleId: roleId,
       messageTemplate: input.messageTemplate,
       announceShorts: input.announceShorts,
+      showWatchButton: input.showWatchButton,
+      announcePremieres: input.announcePremieres,
+      premiereTemplate: input.premiereTemplate,
       embedColor: input.embedColor,
     });
     return { ok: true, settings: toSettings(saved), botNotified: await reloadBotModule("youtube") };

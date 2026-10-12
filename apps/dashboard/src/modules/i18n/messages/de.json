@@ -721,6 +721,12 @@
       }
     },
     "form": {
+      "watch": "Einen „Ansehen“-Button zeigen",
+      "watchHelp": "Ein Button unter der Ankündigung, der das Video auf YouTube öffnet.",
+      "premieres": "Premieren vorab ankündigen",
+      "premieresHelp": "Wird auf dem Kanal eine geplante Premiere (oder Übertragung) veröffentlicht, wird sie einmal mit ihrer Startzeit angekündigt. Das Video wird beim Start nicht ein zweites Mal angekündigt. Die Premiere muss öffentlich sein.",
+      "premiereMessage": "Premieren-Nachricht",
+      "premiereMessageHelp": "Platzhalter: '{title}' '{channel}' '{url}' '{time}'. '{time}' wird zum Start als relative Zeit („in 3 Stunden“), die Discord aktuell hält.",
       "title": "Ankündigungen",
       "enabled": "Neue Videos ankündigen",
       "enabledHelp": "Videos, die erscheinen, während das aus ist, werden gemerkt und nicht nachträglich angekündigt.",

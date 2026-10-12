@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { renderTemplate, safeThumbnail, videoMessage, type VideoView } from "./message";
+import { premiereMessage, renderTemplate, safeThumbnail, videoMessage, type VideoView } from "./message";
 
 const video: VideoView = {
   videoId: "dQw4w9WgXcQ",
@@ -40,5 +40,25 @@ describe("videoMessage", () => {
     const m = videoMessage({ ...video, title: "x".repeat(500) }, "y".repeat(3000), null, 0);
     expect(m.content.length).toBeLessThanOrEqual(2000);
     expect(m.embeds[0]!.toJSON().title!.length).toBeLessThanOrEqual(256);
+  });
+});
+
+describe("watch button and premieres", () => {
+  const upcoming: VideoView = { ...video, scheduledStart: new Date("2026-10-20T18:00:00Z") };
+
+  it("adds a link button only when asked", () => {
+    expect(videoMessage(video, "{title}", null, 1).components).toHaveLength(0);
+    const withButton = videoMessage(video, "{title}", null, 1, true);
+    expect(withButton.components).toHaveLength(1);
+    expect(JSON.stringify(withButton.components[0]!.toJSON())).toContain("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+  });
+  it("fills {time} with a relative Discord time, and leaves it empty without a start", () => {
+    expect(renderTemplate("Starts {time}", upcoming)).toBe(`Starts <t:${Math.floor(upcoming.scheduledStart!.getTime() / 1000)}:R>`);
+    expect(renderTemplate("Starts {time}.", video)).toBe("Starts .");
+  });
+  it("puts the start on the premiere embed and still cannot ping anyone but the role", () => {
+    const message = premiereMessage(upcoming, "Premiere {time}: {title}", "123456789012345678", 1, true);
+    expect(message.embeds[0]!.toJSON().description).toContain("<t:");
+    expect(message.allowedMentions).toEqual({ parse: [], roles: ["123456789012345678"] });
   });
 });

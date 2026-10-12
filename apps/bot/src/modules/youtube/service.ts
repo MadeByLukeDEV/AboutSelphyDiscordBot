@@ -4,7 +4,7 @@ import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
 import { latestUploadIds, videoDetails, YoutubeError } from "./api";
 import { decideUploads, uploadsPlaylistId } from "./logic";
-import { videoMessage } from "./message";
+import { premiereMessage, videoMessage } from "./message";
 import { hasAnyVideo, knownVideoIds, readConfig, recordPoll, rememberVideo } from "./repository";
 
 // New video uploads. Every 5 minutes (and when the dashboard saves settings) the bot
@@ -51,6 +51,7 @@ export async function pollUploads(): Promise<void> {
       knownIds: known,
       firstRun,
       announceShorts: config.announceShorts,
+      announcePremieres: config.announcePremieres,
       now: new Date(),
     });
     log.info(
@@ -64,7 +65,7 @@ export async function pollUploads(): Promise<void> {
 
       let messageId: string | null = null;
       let announcedAt: Date | null = null;
-      if (decision.action === "announce") {
+      if (decision.action === "announce" || decision.action === "premiere") {
         if (!config.enabled || !config.channelId) {
           log.info({ videoId: video.videoId }, "youtube: new video, announcing is off, remembered silently");
         } else {
@@ -74,7 +75,11 @@ export async function pollUploads(): Promise<void> {
             continue; // not remembered: the next round tries again
           }
           try {
-            const message = await channel.send(videoMessage(video, config.messageTemplate, config.pingRoleId, config.embedColor));
+            const message = await channel.send(
+              decision.action === "premiere"
+                ? premiereMessage(video, config.premiereTemplate, config.pingRoleId, config.embedColor, config.showWatchButton)
+                : videoMessage(video, config.messageTemplate, config.pingRoleId, config.embedColor, config.showWatchButton),
+            );
             messageId = message.id;
             announcedAt = new Date();
             log.info({ videoId: video.videoId, channelId: config.channelId, messageId }, "youtube: announced");
@@ -88,7 +93,7 @@ export async function pollUploads(): Promise<void> {
         videoId: video.videoId,
         title: video.title,
         publishedAt: video.publishedAt,
-        isShort: decision.isShort,
+        isShort: decision.action === "premiere" ? false : decision.isShort,
         messageId,
         announcedAt,
       });

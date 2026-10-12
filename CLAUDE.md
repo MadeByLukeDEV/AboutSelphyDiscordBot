@@ -1402,7 +1402,14 @@ Decided 2026-10-08:
     `GOOGLE_CLIENT_*` OAuth pair) and `YOUTUBE_CHANNEL_ID` (UC..., not the handle).
   - Dashboard `/youtube` (admins): poller status, settings with preview, latest
     videos and whether they were announced.
-  - [ ] Several channels, members-only/premieres, a "watch" button
+  - **Premieres and a Watch button** (2026-11-07, `feature_youtube-premieres`, migration `20261107300000_youtube_premieres`;
+    **not tried live yet**): `showWatchButton` (default on) adds a link button ("Watch", `ButtonStyle.Link`, no handler) under every
+    announcement. `announcePremieres` (default off, `premiereTemplate` with `{title} {channel} {url} {time}`, `{time}` = a relative Discord
+    time): `videos.list` now also asks for `liveStreamingDetails` (same 1 quota unit); a **public, upcoming** video with a start time
+    within 14 days (or up to an hour past) gets a `premiere` decision in `decideUploads` (never on the first run) and is announced
+    once with the start on the embed. It is remembered like any video, so it is **not announced again** when it goes live or becomes
+    a normal video. Upcoming live broadcasts count too (the API does not tell them apart). Live and private videos still wait.
+  - [ ] Several channels, members-only videos.
 - [~] Feed announcer (2026-10-27, `feature_feeds`, migration `20261027100000_feeds`; **not tried with a real
       feed yet**; asked for by the user: TikTok upload notifications through RSSHub)
   - Bot (`modules/feeds/`): `FeedSource` rows (name, address, channel, optional ping role, message template

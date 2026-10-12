@@ -67,6 +67,7 @@ const videos = z.object({
         }),
         contentDetails: z.object({ duration: z.string() }),
         status: z.object({ privacyStatus: z.string() }),
+        liveStreamingDetails: z.object({ scheduledStartTime: z.string().optional() }).optional(),
       }),
     )
     .default([]),
@@ -84,7 +85,7 @@ export async function latestUploadIds(apiKey: string, playlistId: string, max = 
 /** Details for up to 50 videos. A video that isn't returned (private, deleted) is simply absent. */
 export async function videoDetails(apiKey: string, ids: string[]): Promise<VideoDetails[]> {
   if (ids.length === 0) return [];
-  const parsed = videos.safeParse(await get("videos", { part: "snippet,contentDetails,status", id: ids.slice(0, 50).join(",") }, apiKey));
+  const parsed = videos.safeParse(await get("videos", { part: "snippet,contentDetails,status,liveStreamingDetails", id: ids.slice(0, 50).join(",") }, apiKey));
   if (!parsed.success) throw new YoutubeError("failed");
   return parsed.data.items.map((v) => {
     const thumbs = v.snippet.thumbnails;
@@ -95,6 +96,7 @@ export async function videoDetails(apiKey: string, ids: string[]): Promise<Video
       durationSeconds: parseIsoDuration(v.contentDetails.duration),
       privacy: v.status.privacyStatus,
       liveState: v.snippet.liveBroadcastContent,
+      scheduledStart: v.liveStreamingDetails?.scheduledStartTime ? new Date(v.liveStreamingDetails.scheduledStartTime) : null,
       channelTitle: v.snippet.channelTitle,
       thumbnailUrl: (thumbs.maxres ?? thumbs.standard ?? thumbs.high ?? thumbs.medium ?? thumbs.default)?.url ?? null,
     };

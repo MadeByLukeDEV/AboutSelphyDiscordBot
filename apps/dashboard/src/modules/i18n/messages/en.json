@@ -721,6 +721,12 @@
       }
     },
     "form": {
+      "watch": "Show a \"Watch\" button",
+      "watchHelp": "A button under the announcement that opens the video on YouTube.",
+      "premieres": "Announce premieres ahead of time",
+      "premieresHelp": "When a scheduled premiere (or upcoming broadcast) is published on the channel, announce it once with its start time. The video is not announced a second time when it starts. Needs the premiere to be public.",
+      "premiereMessage": "Premiere message",
+      "premiereMessageHelp": "Placeholders: '{title}' '{channel}' '{url}' '{time}'. '{time}' becomes the start as a relative time (\"in 3 hours\") that Discord keeps up to date.",
       "title": "Announcements",
       "enabled": "Announce new videos",
       "enabledHelp": "Videos that appear while this is off are remembered, not announced later.",

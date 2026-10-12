@@ -12,6 +12,9 @@ export function updateConfig(data: {
   pingRoleId: string | null;
   messageTemplate: string;
   announceShorts: boolean;
+  showWatchButton: boolean;
+  announcePremieres: boolean;
+  premiereTemplate: string;
   embedColor: number;
 }): Promise<YoutubeConfig> {
   return prisma.youtubeConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });

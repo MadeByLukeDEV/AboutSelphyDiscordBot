@@ -40,7 +40,7 @@ export function YoutubeManager({
 
   const form = useForm<YoutubeSettings>({ resolver: zodResolver(youtubeSettingsSchema), defaultValues: settings });
   const { errors, isDirty } = form.formState;
-  const [template, color, pingRoleId, announceShorts] = useWatch({ control: form.control, name: ["messageTemplate", "embedColor", "pingRoleId", "announceShorts"] });
+  const [template, color, pingRoleId, announceShorts, announcePremieres] = useWatch({ control: form.control, name: ["messageTemplate", "embedColor", "pingRoleId", "announceShorts", "announcePremieres"] });
 
   const channelOptions: SelectOption[] = [
     { value: "", label: t("form.noChannel") },
@@ -125,6 +125,32 @@ export function YoutubeManager({
               <FieldDescription id="yt-shorts-help">{t("form.shortsHelp")}</FieldDescription>
             </div>
           </Field>
+
+          <Field orientation="horizontal">
+            <Controller control={form.control} name="showWatchButton" render={({ field }) => <Switch id="yt-watch" checked={field.value} onCheckedChange={field.onChange} aria-describedby="yt-watch-help" />} />
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="yt-watch">{t("form.watch")}</FieldLabel>
+              <FieldDescription id="yt-watch-help">{t("form.watchHelp")}</FieldDescription>
+            </div>
+          </Field>
+
+          <Field orientation="horizontal">
+            <Controller control={form.control} name="announcePremieres" render={({ field }) => <Switch id="yt-premieres" checked={field.value} onCheckedChange={field.onChange} aria-describedby="yt-premieres-help" />} />
+            <div className="flex flex-col gap-1">
+              <FieldLabel htmlFor="yt-premieres">{t("form.premieres")}</FieldLabel>
+              <FieldDescription id="yt-premieres-help">{t("form.premieresHelp")}</FieldDescription>
+            </div>
+          </Field>
+
+          {announcePremieres && (
+            <Field data-invalid={Boolean(errors.premiereTemplate) || undefined}>
+              <FieldLabel htmlFor="yt-premiere-template">{t("form.premiereMessage")}</FieldLabel>
+              <Textarea id="yt-premiere-template" rows={2} maxLength={MAX_TEMPLATE_LENGTH} aria-invalid={Boolean(errors.premiereTemplate) || undefined} {...form.register("premiereTemplate")} />
+              <EmoteInsert targetId="yt-premiere-template" />
+              <FieldDescription>{t("form.premiereMessageHelp")}</FieldDescription>
+              {errors.premiereTemplate && <FieldError>{te("invalid")}</FieldError>}
+            </Field>
+          )}
 
           <Field>
             <FieldLabel htmlFor="yt-color">{t("form.color")}</FieldLabel>

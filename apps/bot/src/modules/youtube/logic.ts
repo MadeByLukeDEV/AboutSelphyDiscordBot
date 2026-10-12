@@ -13,6 +13,10 @@ export function parseIsoDuration(value: string): number | null {
   return Number(d ?? 0) * 86_400 + Number(h ?? 0) * 3600 + Number(m ?? 0) * 60 + Number(s ?? 0);
 }
 
+/** A premiere / upcoming broadcast is announced when it starts within this long (or started up to an hour ago). */
+export const PREMIERE_WINDOW_MS = 14 * 86_400_000;
+const PREMIERE_LATE_MS = 3_600_000;
+
 export type UploadCandidate = {
   videoId: string;
   title: string;
@@ -21,11 +25,15 @@ export type UploadCandidate = {
   privacy: string; // "public" | "unlisted" | "private"
   /** "none" | "live" | "upcoming" */
   liveState: string;
+  /** When an upcoming premiere/broadcast is scheduled to start. */
+  scheduledStart?: Date | null;
 };
 
 export type UploadDecision =
   | { videoId: string; action: "announce"; isShort: boolean }
   | { videoId: string; action: "remember"; isShort: boolean }
+  /** An upcoming premiere/broadcast, announced ahead of time. */
+  | { videoId: string; action: "premiere" }
   /** Not final yet (private, live, upcoming): leave it out, it is looked at again next time. */
   | { videoId: string; action: "wait" };
 
@@ -41,12 +49,20 @@ export function decideUploads(input: {
   knownIds: ReadonlySet<string>;
   firstRun: boolean;
   announceShorts: boolean;
+  announcePremieres?: boolean;
   now: Date;
 }): UploadDecision[] {
   const out: UploadDecision[] = [];
   for (const v of input.videos) {
     if (input.knownIds.has(v.videoId)) continue;
     const isShort = v.durationSeconds !== null && v.durationSeconds <= SHORT_MAX_SECONDS;
+    if (input.announcePremieres && !input.firstRun && v.privacy === "public" && v.liveState === "upcoming" && v.scheduledStart) {
+      const until = v.scheduledStart.getTime() - input.now.getTime();
+      if (until > -PREMIERE_LATE_MS && until <= PREMIERE_WINDOW_MS) {
+        out.push({ videoId: v.videoId, action: "premiere" });
+        continue;
+      }
+    }
     if (v.privacy !== "public" || v.liveState !== "none" || v.durationSeconds === null) {
       out.push({ videoId: v.videoId, action: "wait" });
       continue;

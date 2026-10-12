@@ -66,3 +66,29 @@ describe("decideUploads", () => {
     expect(decideUploads({ ...base, videos: [old] })).toEqual([{ videoId: "old", action: "remember", isShort: false }]);
   });
 });
+
+describe("premieres", () => {
+  const upcoming = (id: string, hoursAhead: number, over: Partial<UploadCandidate> = {}) =>
+    video(id, { liveState: "upcoming", durationSeconds: 0, scheduledStart: new Date(now.getTime() + hoursAhead * 3_600_000), ...over });
+  const premiere = { ...base, announcePremieres: true };
+
+  it("announces an upcoming premiere once, ahead of time", () => {
+    expect(decideUploads({ ...premiere, videos: [upcoming("p", 5)] })).toEqual([{ videoId: "p", action: "premiere" }]);
+  });
+  it("waits when the switch is off, and never announces on the first run", () => {
+    expect(decideUploads({ ...base, announcePremieres: false, videos: [upcoming("p", 5)] })).toEqual([{ videoId: "p", action: "wait" }]);
+    expect(decideUploads({ ...premiere, firstRun: true, videos: [upcoming("p", 5)] })).toEqual([{ videoId: "p", action: "wait" }]);
+  });
+  it("waits for a premiere that is too far away, has no start time, or is not public", () => {
+    expect(decideUploads({ ...premiere, videos: [upcoming("far", 24 * 30)] })[0]).toMatchObject({ action: "wait" });
+    expect(decideUploads({ ...premiere, videos: [upcoming("none", 5, { scheduledStart: null })] })[0]).toMatchObject({ action: "wait" });
+    expect(decideUploads({ ...premiere, videos: [upcoming("priv", 5, { privacy: "private" })] })[0]).toMatchObject({ action: "wait" });
+  });
+  it("still announces one that started up to an hour ago, but not a long gone one", () => {
+    expect(decideUploads({ ...premiere, videos: [upcoming("late", -0.5)] })[0]).toMatchObject({ action: "premiere" });
+    expect(decideUploads({ ...premiere, videos: [upcoming("gone", -3)] })[0]).toMatchObject({ action: "wait" });
+  });
+  it("does not announce a premiere it already knows", () => {
+    expect(decideUploads({ ...premiere, knownIds: new Set(["p"]), videos: [upcoming("p", 5)] })).toEqual([]);
+  });
+});
