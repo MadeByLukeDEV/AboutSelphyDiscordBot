@@ -45,7 +45,9 @@
         "antiBot": "Anti-Bot-Kanal",
         "twitchVip": "VIP-Rolle",
         "retention": "Datenaufbewahrung",
-        "memberLookup": "Mitglieder"
+        "memberLookup": "Mitglieder",
+        "verification": "Verifizierung",
+        "raid": "Raid-Schutz"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2594,6 +2596,102 @@
         "refused": "Der Bot hat diese Aktion abgelehnt.",
         "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
       }
+    }
+  },
+  "Verification": {
+    "title": "Verifizierung",
+    "intro": "Neue Mitglieder drücken einen Knopf (und beantworten optional eine Frage), um eine Rolle zu bekommen, die den Server freischaltet. Das hält die meisten Spam-Accounts fern. Gib der verifizierten Rolle Zugriff auf deine Kanäle und lass den Verifizierungskanal den einzigen sein, den neue Mitglieder sehen.",
+    "noChannel": "Noch kein Kanal",
+    "noRole": "Keine Rolle",
+    "form": {
+      "enabled": "Das Verifizierungs-Tor ist an",
+      "channel": "Kanal für das Panel",
+      "channelHelp": "Wo die Nachricht mit dem Knopf gepostet wird. Alle, auch neue Mitglieder, müssen sie sehen können. Der Bot muss dort Nachrichten und Embeds senden dürfen.",
+      "verifiedRole": "Verifizierte Rolle",
+      "verifiedRoleHelp": "Wird vergeben, wenn ein Mitglied sich verifiziert. Es werden nur Rollen angezeigt, die der Bot vergeben darf.",
+      "unverifiedRole": "Unverifizierte Rolle (optional)",
+      "unverifiedRoleHelp": "Wird beim Beitritt vergeben und beim Verifizieren entfernt, für Server, auf denen alle alles sehen. Leer lassen, wenn die verifizierte Rolle die Kanäle freischaltet.",
+      "panelTitle": "Titel des Panels",
+      "panelDescription": "Text des Panels",
+      "buttonLabel": "Text des Knopfs",
+      "question": "Frage (optional)",
+      "questionHelp": "Eine kurze Frage, die das Mitglied in einem kleinen Formular beantworten muss, zum Beispiel zu den Regeln. Leer lassen für nur einen Knopf.",
+      "answer": "Antwort",
+      "answerHelp": "Groß- und Kleinschreibung und doppelte Leerzeichen spielen keine Rolle. Ein Mitglied hat fünf falsche Versuche pro zehn Minuten.",
+      "minAge": "Mindestalter des Accounts (Tage)",
+      "minAgeHelp": "Jüngere Discord-Accounts können sich noch nicht verifizieren. 0 = keine Grenze.",
+      "kickAfter": "Kicken nach (Stunden)",
+      "kickAfterHelp": "Kickt Mitglieder, die nach dem Einschalten des Tors beigetreten sind und sich nicht verifiziert haben. 0 = nie. Team, Bots und Mitglieder mit irgendeiner anderen Rolle werden nie gekickt, und wer schon vorher da war, wird nicht angefasst.",
+      "kickWarning": "Mitglieder, die ab jetzt beitreten und sich nicht innerhalb von {hours} Stunden verifizieren, werden gekickt.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar, er übernimmt es innerhalb einer Minute."
+    },
+    "panel": {
+      "post": "Panel posten",
+      "update": "Panel aktualisieren",
+      "posted": "Panel gepostet",
+      "updated": "Panel aktualisiert",
+      "saveFirst": "Speichere zuerst deine Änderungen, dann poste."
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsChannel": "Wähle einen Kanal, um es einzuschalten.",
+      "needsRole": "Wähle die verifizierte Rolle, um es einzuschalten.",
+      "needsAnswer": "Eine Frage braucht eine Antwort.",
+      "sameRole": "Die unverifizierte Rolle muss eine andere Rolle sein.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Diesen Kanal gibt es nicht oder er ist kein Textkanal.",
+      "roleNotFound": "Diese Rolle gibt es nicht.",
+      "roleNotUsable": "Der Bot kann diese Rolle nicht vergeben (sie steht über der Rolle des Bots oder hat mächtige Rechte).",
+      "failed": "Etwas ist schiefgelaufen. Versuche es erneut.",
+      "panel": {
+        "forbidden": "Du hast hierauf keinen Zugriff.",
+        "needsSetup": "Wähle einen Kanal und die verifizierte Rolle und speichere zuerst.",
+        "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+        "channel": "Der Bot kann in diesem Kanal nicht posten. Prüfe seine Rechte dort.",
+        "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+      }
+    }
+  },
+  "Raid": {
+    "title": "Raid-Schutz",
+    "intro": "Bemerkt, wenn viele Accounts gleichzeitig beitreten, und meldet es im Moderations-Log. Optional setzt er außerdem jeden Account in Timeout oder kickt ihn, der beitritt, solange der Raid läuft. Moderatoren können ihn mit /raid prüfen oder beenden. Alarme gehen in den Log-Kanal, den du unter Einstellungen festlegst.",
+    "state": {
+      "title": "Zustand",
+      "off": "Gerade läuft kein Raid.",
+      "on": "Ein Raid läuft bis {time}.",
+      "last": "Letzter Raid: {time}"
+    },
+    "actions": {
+      "alert": "Nur einen Alarm senden",
+      "timeout": "Neue Accounts in Timeout setzen",
+      "kick": "Neue Accounts kicken"
+    },
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können das ändern. Bots, Team und Accounts, die schon da waren, werden nie angefasst.",
+      "enabled": "Raid-Schutz ist an",
+      "threshold": "Beitritte, die als Raid zählen",
+      "window": "Innerhalb von (Sekunden)",
+      "thresholdHelp": "Zum Beispiel 8 Beitritte innerhalb von 30 Sekunden. Zwei oder drei Freunde, die zusammen beitreten, lösen ihn nicht aus.",
+      "action": "Solange ein Raid läuft",
+      "actionHelp": "Ein Alarm wird immer gesendet. Timeout und Kick werden als Fälle vom Bot festgehalten.",
+      "actionMinutes": "Dauer des Timeouts (Minuten)",
+      "raidMinutes": "Raid-Modus dauert (Minuten)",
+      "raidMinutesHelp": "Danach endet er von selbst. Ein Moderator kann ihn mit /raid end früher beenden.",
+      "warning": "Solange ein Raid läuft, wird jeder neue Account automatisch bestraft. Teste die Zahlen zuerst mit „Nur einen Alarm senden“.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar, er übernimmt es innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
 }

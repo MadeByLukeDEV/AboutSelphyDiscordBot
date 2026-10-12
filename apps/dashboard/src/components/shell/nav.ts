@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot" | "twitchVip" | "retention" | "memberLookup";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot" | "twitchVip" | "retention" | "memberLookup" | "verification" | "raid";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "members" | "engagement" | "voice" | "content" | "streams" | "system";
 
@@ -34,6 +34,8 @@ const NAV: NavGroupSpec[] = [
     label: "members",
     items: [
       { href: "/welcome", label: "welcome", requires: "admin" },
+      { href: "/verification", label: "verification", requires: "admin" },
+      { href: "/raid", label: "raid", requires: "admin" },
       { href: "/roles", label: "roles", requires: "admin" },
       { href: "/role-manager", label: "roleManager", requires: "admin" },
       { href: "/levels", label: "levels", requires: "admin" },

@@ -9,3 +9,4 @@ export * from "./modguide";
 export * from "./twitchvip";
 export * from "./retention";
 export * from "./moderation-act";
+export * from "./entry";

@@ -6,6 +6,8 @@ export const RELOADABLE_MODULES = [
   "antibot",
   "twitchvip",
   "retention",
+  "verification",
+  "raid",
   "twitch",
   "tempvoice",
   "announcements",

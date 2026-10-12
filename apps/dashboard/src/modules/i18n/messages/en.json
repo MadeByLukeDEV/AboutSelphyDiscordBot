@@ -45,7 +45,9 @@
         "antiBot": "Anti-bot channel",
         "twitchVip": "VIP role",
         "retention": "Data retention",
-        "memberLookup": "Members"
+        "memberLookup": "Members",
+        "verification": "Verification",
+        "raid": "Raid protection"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2594,6 +2596,102 @@
         "refused": "The bot refused that action.",
         "failed": "Something went wrong. Try again."
       }
+    }
+  },
+  "Verification": {
+    "title": "Verification",
+    "intro": "New members press a button (and optionally answer a question) to get a role that unlocks the server. It keeps most spam accounts out. Give the verified role access to your channels and keep the verification channel the only one new members can see.",
+    "noChannel": "No channel yet",
+    "noRole": "No role",
+    "form": {
+      "enabled": "The verification gate is on",
+      "channel": "Panel channel",
+      "channelHelp": "Where the message with the button is posted. Everybody, including new members, must be able to see it. The bot needs to send messages and embeds there.",
+      "verifiedRole": "Verified role",
+      "verifiedRoleHelp": "Given when a member verifies. Only roles the bot may hand out are listed.",
+      "unverifiedRole": "Unverified role (optional)",
+      "unverifiedRoleHelp": "Given on join and taken away on verifying, for servers where everyone can see everything. Leave empty if the verified role is what unlocks channels.",
+      "panelTitle": "Panel title",
+      "panelDescription": "Panel text",
+      "buttonLabel": "Button text",
+      "question": "Question (optional)",
+      "questionHelp": "A short question the member must answer in a small form, for example about the rules. Leave empty for just a button.",
+      "answer": "Answer",
+      "answerHelp": "Capital letters and extra spaces don't matter. A member gets five wrong tries per ten minutes.",
+      "minAge": "Minimum account age (days)",
+      "minAgeHelp": "Discord accounts younger than this can't verify yet. 0 = no limit.",
+      "kickAfter": "Kick after (hours)",
+      "kickAfterHelp": "Kick members who joined after you switched the gate on and still haven't verified. 0 = never. Staff, bots, and members who have any other role are never kicked, and nobody who was already here is touched.",
+      "kickWarning": "Members who join from now on and don't verify within {hours} hours will be kicked.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "panel": {
+      "post": "Post the panel",
+      "update": "Update the panel",
+      "posted": "Panel posted",
+      "updated": "Panel updated",
+      "saveFirst": "Save your changes first, then post."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel to switch it on.",
+      "needsRole": "Pick the verified role to switch it on.",
+      "needsAnswer": "A question needs an answer.",
+      "sameRole": "The unverified role must be a different role.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "roleNotFound": "That role doesn't exist.",
+      "roleNotUsable": "The bot can't hand out that role (it is above the bot's role or has powerful permissions).",
+      "failed": "Something went wrong. Try again.",
+      "panel": {
+        "forbidden": "You don't have access to this.",
+        "needsSetup": "Pick a channel and the verified role and save first.",
+        "botUnavailable": "Can't reach the bot. Try again in a moment.",
+        "channel": "The bot can't post in that channel. Check its permissions there.",
+        "failed": "Something went wrong. Try again."
+      }
+    }
+  },
+  "Raid": {
+    "title": "Raid protection",
+    "intro": "Notices when many accounts join at once and tells the moderation log. Optionally it also times out or kicks every account that joins while the raid lasts. Moderators can check or end it with /raid. Alerts go to the log channel you set under Settings.",
+    "state": {
+      "title": "State",
+      "off": "No raid is on right now.",
+      "on": "A raid is on until {time}.",
+      "last": "Last raid: {time}"
+    },
+    "actions": {
+      "alert": "Only send an alert",
+      "timeout": "Time out new accounts",
+      "kick": "Kick new accounts"
+    },
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these. Bots, staff and the accounts that were already here are never touched.",
+      "enabled": "Raid protection is on",
+      "threshold": "Joins that count as a raid",
+      "window": "Within (seconds)",
+      "thresholdHelp": "For example 8 joins within 30 seconds. Two or three friends joining together won't trigger it.",
+      "action": "While a raid is on",
+      "actionHelp": "An alert is always sent. Timeout and kick are recorded as cases from the bot.",
+      "actionMinutes": "Timeout length (minutes)",
+      "raidMinutes": "Raid mode lasts (minutes)",
+      "raidMinutesHelp": "After this it ends by itself. A moderator can end it sooner with /raid end.",
+      "warning": "While a raid is on, every new account will be punished automatically. Test the numbers first with \"Only send an alert\".",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "failed": "Couldn't save the settings. Try again."
     }
   }
 }

@@ -25,6 +25,8 @@ import {
   roleMergeResponse,
   roleUpdateStatus,
   ticketPanelStatus,
+  verificationPanelStatus,
+  type VerificationPanelStatus,
   welcomePreviewResponse,
   emojisResponse,
   roleCreateResponse,
@@ -277,6 +279,14 @@ export async function postTicketPanel(): Promise<TicketPanelStatus | null> {
   const res = await botFetch("/internal/tickets/panel", { method: "POST" });
   if (!res?.ok) return null;
   const parsed = ticketPanelStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post (or update) the verification panel. Null if the bot can't be reached. */
+export async function postVerificationPanelViaBot(): Promise<VerificationPanelStatus | null> {
+  const res = await botFetch("/internal/verification/panel", { method: "POST" });
+  if (!res?.ok) return null;
+  const parsed = verificationPanelStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

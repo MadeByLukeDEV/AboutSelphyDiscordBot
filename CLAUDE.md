@@ -1245,8 +1245,22 @@ Decided 2026-10-08:
     card (the Docker image has no system fonts); the bot image has **not** been built with
     the canvas dependency yet (Docker is off): check `@napi-rs/canvas` on alpine/musl when it
     is next built.
-  - [ ] Join/leave **logs** (separate channel, account age), invite tracking, member
-        screening/verification gate, raid protection.
+  - [x] **Verification gate** (2026-11-03, `feature_verification-raid`, migration `20261103100000_entry_protection`; **not tried live
+        yet**): admin page `/verification`: a panel message with a "Verify" button (custom ids `vf:verify`, modal `vf:answer`)
+        posted by the bot from the dashboard; pressing it gives the verified role (and takes the optional "unverified" role away,
+        which is given on join), after the account-age rule (`minAccountAgeDays`) and, if a question is set, a small form whose
+        answer is compared normalised (`answerMatches`: NFKC, lower case, one space; five wrong tries per ten minutes per member).
+        Every role change goes through `checkRole`; the roles listed are only ones the bot may hand out. **Optional kick**
+        (`kickAfterHours`, 0 = never): `shouldKickUnverified` (pure, tested) only ever touches members who joined **after the gate
+        was last switched on** (`enabledAt`, set by the dashboard on the off-to-on change), never bots, staff, verified members or
+        anyone with another role; it runs every 10 minutes as a normal `kick` case (source `automod`). Only in production or with
+        `BOT_INTEGRATIONS_IN_DEV`.
+  - [x] **Raid protection** (same branch): admin page `/raid`. Humans' joins are counted (`recentJoins`, `isRaid`); at
+        `joinThreshold` joins in `windowSeconds` raid mode switches on for `raidMinutes` (stored in `RaidConfig.activeUntil`, so a
+        restart keeps it; ends by itself or with `/raid end`, `/raid status` for moderators), a note goes to the mod log, and while
+        it is on each new account gets the chosen reaction: alert only, timeout (`actionMinutes`) or kick, as numbered cases from the
+        bot (source `automod`, staff skipped). Test the numbers with "alert only" first.
+  - [ ] Still open: join/leave logs with invite tracking (needs the GuildInvites intent), screening of members by hand.
 - [x] Phase 6 — new video upload (2026-10-13, `feature_youtube`, migration
       `20261013180000_youtube` applied; the first poll against the real API ran and
       only remembered the current 10 videos; **no real announcement seen yet**)

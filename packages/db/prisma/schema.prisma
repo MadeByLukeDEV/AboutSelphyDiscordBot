@@ -1089,3 +1089,42 @@ model LevelBoost {
   percent   Int
   createdAt DateTime @default(now())
 }
+
+/// The verification gate (singleton, id 1): new members press a button (and maybe answer a question) to get a role.
+model VerificationConfig {
+  id                 Int       @id @default(1)
+  enabled            Boolean   @default(false)
+  channelId          String?   @db.VarChar(20)
+  panelMessageId     String?   @db.VarChar(20)
+  verifiedRoleId     String?   @db.VarChar(20)
+  /// Given on join, taken away on verifying. Optional.
+  unverifiedRoleId   String?   @db.VarChar(20)
+  panelTitle         String    @default("Welcome! Please verify") @db.VarChar(256)
+  panelDescription   String    @default("Press the button below to confirm you are a real person and get access to the server.") @db.VarChar(2000)
+  buttonLabel        String    @default("Verify") @db.VarChar(80)
+  /// Optional question (typed into a form) and its answer.
+  question           String    @default("") @db.VarChar(200)
+  answer             String    @default("") @db.VarChar(100)
+  minAccountAgeDays  Int       @default(0)
+  /// Kick members who joined after enabledAt and never verified within this many hours (0 = never).
+  kickAfterHours     Int       @default(0)
+  /// When the gate was last switched on: only members who joined after this can ever be kicked for not verifying.
+  enabledAt          DateTime?
+  updatedAt          DateTime  @updatedAt
+}
+
+/// Raid protection (singleton, id 1): an alarm, and an optional reaction, when many accounts join at once.
+model RaidConfig {
+  id             Int       @id @default(1)
+  enabled        Boolean   @default(false)
+  joinThreshold  Int       @default(8)
+  windowSeconds  Int       @default(30)
+  /// alert | timeout | kick (CHECK in the migration)
+  action         String    @default("alert") @db.VarChar(8)
+  actionMinutes  Int       @default(60)
+  raidMinutes    Int       @default(20)
+  /// While in the future, raid mode is on (kept here so a restart doesn't end it).
+  activeUntil    DateTime?
+  lastRaidAt     DateTime?
+  updatedAt      DateTime  @updatedAt
+}

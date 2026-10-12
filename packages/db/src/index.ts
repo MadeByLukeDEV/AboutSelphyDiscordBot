@@ -29,6 +29,8 @@ export type {
   TwitchVipLink,
   RetentionConfig,
   TempVoicePreference,
+  VerificationConfig,
+  RaidConfig,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,
