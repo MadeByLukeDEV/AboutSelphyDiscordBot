@@ -17,7 +17,7 @@ export async function references(): Promise<RoleReference[]> {
     prisma.welcomeConfig.findMany({ select: { autoRoleIds: true, botAutoRoleIds: true } }),
     prisma.levelConfig.findMany({ select: { noXpRoleIds: true } }),
     prisma.ticketConfig.findMany({ select: { staffRoleIds: true } }),
-    prisma.giveaway.findMany({ where: { status: { in: ["draft", "active"] } }, select: { requiredRoleId: true, pingRoleId: true } }),
+    prisma.giveaway.findMany({ where: { status: { in: ["draft", "active"] } }, select: { requiredRoleId: true, pingRoleId: true, bonusRoleId: true } }),
     prisma.announcement.findMany({ where: { status: { in: ["draft", "scheduled"] } }, select: { pingRoleId: true } }),
     prisma.twitchStreamer.findMany({ select: { pingRoleId: true } }),
     prisma.twitchConfig.findMany({ select: { liveRoleId: true } }),
@@ -29,7 +29,7 @@ export async function references(): Promise<RoleReference[]> {
   add("welcome", welcome.flatMap((w) => [...w.autoRoleIds, ...w.botAutoRoleIds]));
   add("noXp", levels.flatMap((l) => l.noXpRoleIds));
   add("tickets", tickets.flatMap((t) => t.staffRoleIds));
-  add("giveaway", giveaways.flatMap((g) => [g.requiredRoleId, g.pingRoleId]));
+  add("giveaway", giveaways.flatMap((g) => [g.requiredRoleId, g.pingRoleId, g.bonusRoleId]));
   add("announcement", announcements.map((a) => a.pingRoleId));
   add("twitch", [...streamers.map((s) => s.pingRoleId), ...twitch.map((c) => c.liveRoleId)]);
   add("youtube", youtube.map((y) => y.pingRoleId));
@@ -79,7 +79,7 @@ export async function removeReferences(missing: string[]): Promise<Partial<Recor
         count("tickets", t.staffRoleIds.length - next.length);
       }
     }
-    count("giveaway", (await tx.giveaway.updateMany({ where: { requiredRoleId: { in: missing } }, data: { requiredRoleId: null } })).count + (await tx.giveaway.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);
+    count("giveaway", (await tx.giveaway.updateMany({ where: { requiredRoleId: { in: missing } }, data: { requiredRoleId: null } })).count + (await tx.giveaway.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count + (await tx.giveaway.updateMany({ where: { bonusRoleId: { in: missing } }, data: { bonusRoleId: null, bonusEntries: 0 } })).count);
     count("announcement", (await tx.announcement.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);
     count("twitch", (await tx.twitchStreamer.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count + (await tx.twitchConfig.updateMany({ where: { liveRoleId: { in: missing } }, data: { liveRoleId: null } })).count);
     count("youtube", (await tx.youtubeConfig.updateMany({ where: { pingRoleId: { in: missing } }, data: { pingRoleId: null } })).count);

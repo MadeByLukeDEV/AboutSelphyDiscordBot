@@ -1263,7 +1263,11 @@
       "saved": "Saved as a draft",
       "started": "Giveaway started",
       "image": "Picture address",
-      "imageHelp": "Optional. A link starting with https:// to a picture, shown big in the post. Tip: upload it to a Discord channel and copy its link."
+      "imageHelp": "Optional. A link starting with https:// to a picture, shown big in the post. Tip: upload it to a Discord channel and copy its link.",
+      "bonus": "Bonus role",
+      "noBonus": "No bonus",
+      "bonusHelp": "Members with this role get extra chances in the draw, for example boosters. Everyone else keeps one.",
+      "bonusEntries": "Extra chances"
     },
     "confirm": {
       "cancel": {

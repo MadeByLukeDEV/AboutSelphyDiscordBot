@@ -17,6 +17,8 @@ const toView = (g: GiveawayWithCount): GiveawayView => ({
   endsAt: g.endsAt.toISOString(),
   requiredRoleId: g.requiredRoleId ?? "",
   pingRoleId: g.pingRoleId ?? "",
+  bonusRoleId: g.bonusRoleId ?? "",
+  bonusEntries: g.bonusEntries,
   hostName: g.hostName,
   winners: g.winners,
   entryCount: g._count.entries,
@@ -46,7 +48,7 @@ export async function saveGiveaway(input: GiveawayInput, by: StaffSession["user"
     const [channels, roles] = await Promise.all([listChannels(["text"]), listRoles()]);
     if (!channels || !roles) return fail("botUnavailable");
     if (!channels.some((c) => c.id === input.channelId)) return fail("channelNotFound");
-    for (const id of [input.requiredRoleId, input.pingRoleId]) if (id && !roles.some((r) => r.id === id)) return fail("roleNotFound");
+    for (const id of [input.requiredRoleId, input.pingRoleId, input.bonusRoleId]) if (id && !roles.some((r) => r.id === id)) return fail("roleNotFound");
 
     const data = {
       channelId: input.channelId,
@@ -57,6 +59,8 @@ export async function saveGiveaway(input: GiveawayInput, by: StaffSession["user"
       endsAt: new Date(input.endsAt),
       requiredRoleId: input.requiredRoleId || null,
       pingRoleId: input.pingRoleId || null,
+      bonusRoleId: input.bonusRoleId || null,
+      bonusEntries: input.bonusRoleId ? input.bonusEntries : 0,
     };
     let id: string;
     if (existing) {

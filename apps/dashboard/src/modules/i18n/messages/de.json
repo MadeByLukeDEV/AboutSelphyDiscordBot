@@ -1263,7 +1263,11 @@
       "saved": "Als Entwurf gespeichert",
       "started": "Gewinnspiel gestartet",
       "image": "Bildadresse",
-      "imageHelp": "Optional. Ein Link, der mit https:// beginnt, zu einem Bild, das groß im Beitrag angezeigt wird. Tipp: Lade es in einen Discord-Kanal hoch und kopiere den Link."
+      "imageHelp": "Optional. Ein Link, der mit https:// beginnt, zu einem Bild, das groß im Beitrag angezeigt wird. Tipp: Lade es in einen Discord-Kanal hoch und kopiere den Link.",
+      "bonus": "Bonus-Rolle",
+      "noBonus": "Kein Bonus",
+      "bonusHelp": "Mitglieder mit dieser Rolle bekommen zusätzliche Chancen bei der Auslosung, zum Beispiel Booster. Alle anderen behalten eine.",
+      "bonusEntries": "Zusätzliche Chancen"
     },
     "confirm": {
       "back": "Zurück",

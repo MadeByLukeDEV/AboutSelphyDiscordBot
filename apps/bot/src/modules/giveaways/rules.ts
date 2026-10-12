@@ -20,6 +20,36 @@ export function pickWinners(candidates: string[], count: number, random: () => n
   return pool.slice(0, n);
 }
 
+export type Candidate = { id: string; weight: number };
+
+/**
+ * Like pickWinners, but a candidate with weight 3 is three times as likely as one with weight 1 at every step (a weighted draw
+ * without replacement: once someone wins they are out). Nobody wins twice, weights below 1 count as 1, and equal weights behave
+ * exactly like the plain draw. `random` is injected for tests.
+ */
+export function pickWeightedWinners(candidates: Candidate[], count: number, random: () => number = Math.random): string[] {
+  const pool = new Map<string, number>();
+  for (const c of candidates) pool.set(c.id, Math.max(pool.get(c.id) ?? 0, Math.max(1, Math.floor(c.weight))));
+  const winners: string[] = [];
+  const n = Math.min(Math.max(0, Math.floor(count)), pool.size);
+  while (winners.length < n) {
+    const total = [...pool.values()].reduce((a, b) => a + b, 0);
+    let ticket = random() * total;
+    let chosen: string | undefined;
+    for (const [id, weight] of pool) {
+      chosen = id;
+      if ((ticket -= weight) < 0) break;
+    }
+    if (chosen === undefined) break;
+    winners.push(chosen);
+    pool.delete(chosen);
+  }
+  return winners;
+}
+
+/** One person's number of tickets: 1, plus the bonus if they hold the bonus role. */
+export const ticketsFor = (hasBonusRole: boolean, bonusEntries: number): number => 1 + (hasBonusRole ? Math.max(0, Math.floor(bonusEntries)) : 0);
+
 // -- control id: "gw:enter:<id>" -----------------------------------------------------------------------
 
 export const GIVEAWAY_PREFIX = "gw";
@@ -40,6 +70,9 @@ export type GiveawayView = {
   endsAt: Date;
   hostName: string;
   requiredRoleId: string | null;
+  /** A role whose members get extra chances (shown in the post). */
+  bonusRoleId?: string | null;
+  bonusEntries?: number;
   ended: boolean;
   /** Only for an ended giveaway. */
   winners: string[];
@@ -63,6 +96,7 @@ export function buildGiveawayMessage(g: GiveawayView) {
     lines.push(`Press the button to enter.\nEnds <t:${Math.floor(g.endsAt.getTime() / 1000)}:R> (<t:${Math.floor(g.endsAt.getTime() / 1000)}:f>)`);
     lines.push(`**Winners:** ${g.winnerCount}`);
     if (g.requiredRoleId) lines.push(`**You need:** <@&${g.requiredRoleId}>`);
+    if (g.bonusRoleId && g.bonusEntries) lines.push(`**Bonus:** <@&${g.bonusRoleId}> members get ${g.bonusEntries} extra ${g.bonusEntries === 1 ? "chance" : "chances"}.`);
   }
   if (g.entryCount !== undefined) lines.push(`**Entries:** ${g.entryCount}`);
   embed.setDescription(lines.join("\n\n"));

@@ -971,8 +971,12 @@ Decided 2026-10-08:
   - Dashboard `/giveaways` (all staff): list, create/edit drafts, start, end now, re-roll,
     cancel, remove. A giveaway that can't be posted stays a draft with the reason.
   - **Picture**: giveaways have the same optional `imageUrl` (see Polls).
-  - [ ] Weighted entries (e.g. extra for boosters), entry requirements beyond a role, recurring
-        giveaways, a `/giveaway` slash command.
+  - [x] **Bonus entries** (2026-11-02, `feature_giveaway-bonus-entries`, migration `20261102180000_giveaway_bonus`; **not tried live
+        yet**): a giveaway can name a bonus role and 0-10 extra chances (`Giveaway.bonusRoleId/bonusEntries`, DB CHECKs; the post
+        says so). The draw is weighted (`pickWeightedWinners`, tested statistically: weights 4:1 win ~80 %, equal weights act like
+        the plain draw): a member's tickets are 1 + the bonus if they hold the role **at draw time**, nobody wins twice, a
+        re-roll still prefers people who haven't won. Role clean-up knows the new column.
+  - [ ] Still open: other entry requirements, recurring giveaways, a `/giveaway` slash command.
 - [~] Suggestions (2026-10-19, `feature_suggestions`, migration
       `20261019100000_suggestions` applied; **not tried live yet**; Tier B)
   - Bot (`modules/suggestions/`): `/suggest` (cooldown, 5-1500 chars), post with up/down

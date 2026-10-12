@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
 import { MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
-import { giveawayInput, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
+import { giveawayInput, MAX_BONUS_ENTRIES, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
 import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,8 @@ type FormValues = {
   endsLocal: string;
   requiredRoleId: string;
   pingRoleId: string;
+  bonusRoleId: string;
+  bonusEntries: number;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -199,7 +201,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
   const form = useForm<FormValues>({
     defaultValues: giveaway
       ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, imageUrl: giveaway.imageUrl, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId }
-      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "" },
+      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "", bonusRoleId: "", bonusEntries: 0 },
   });
   const { errors } = form.formState;
   const [description] = useWatch({ control: form.control, name: ["description"] });
@@ -221,6 +223,8 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         endsAt: ends && !Number.isNaN(ends.getTime()) ? ends.toISOString() : "",
         requiredRoleId: values.requiredRoleId,
         pingRoleId: values.pingRoleId,
+        bonusRoleId: values.bonusRoleId,
+        bonusEntries: values.bonusRoleId ? Number(values.bonusEntries) : 0,
         start,
       });
       if (!checked.success) {
@@ -288,6 +292,17 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
           <FormSelect control={form.control} name="pingRoleId" id="gw-ping" options={roleOptions(t("nobody"))} placeholder={t("nobody")} disabled={roles === null} />
           <FieldDescription>{t("pingHelp")}</FieldDescription>
         </Field>
+        <div className="flex flex-wrap gap-4">
+          <Field className="min-w-[12rem] flex-1">
+            <FieldLabel htmlFor="gw-bonus">{t("bonus")}</FieldLabel>
+            <FormSelect control={form.control} name="bonusRoleId" id="gw-bonus" options={roleOptions(t("noBonus"))} placeholder={t("noBonus")} disabled={roles === null} />
+            <FieldDescription>{t("bonusHelp")}</FieldDescription>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="gw-bonus-entries">{t("bonusEntries")}</FieldLabel>
+            <Input id="gw-bonus-entries" type="number" inputMode="numeric" min={0} max={MAX_BONUS_ENTRIES} className="max-w-[7rem]" {...form.register("bonusEntries", { valueAsNumber: true })} />
+          </Field>
+        </div>
       </FieldGroup>
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>

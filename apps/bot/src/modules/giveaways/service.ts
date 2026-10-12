@@ -4,7 +4,7 @@ import type { GiveawayActionStatus } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
-import { buildGiveawayMessage, pickWinners, winnerAnnouncement } from "./rules";
+import { buildGiveawayMessage, pickWeightedWinners, ticketsFor, winnerAnnouncement, type Candidate } from "./rules";
 import { activate, cancel, claimEnd, countEntries, entryUserIds, find, listDue, setWinners } from "./repository";
 
 // Giveaways. The dashboard creates one (a draft) and asks the bot to start it: the bot posts the
@@ -24,6 +24,8 @@ const view = (g: Giveaway, extra: { ended: boolean; winners: string[]; entryCoun
   endsAt: g.endsAt,
   hostName: g.hostName,
   requiredRoleId: g.requiredRoleId,
+  bonusRoleId: g.bonusRoleId,
+  bonusEntries: g.bonusEntries,
   ...extra,
 });
 
@@ -58,17 +60,17 @@ export async function startGiveaway(guild: Guild, id: string): Promise<GiveawayA
   }
 }
 
-/** Who may win: entered, still in the server, not a bot, and holding the required role (if any). */
-async function eligible(guild: Guild, g: Giveaway): Promise<string[]> {
+/** Who may win: entered, still in the server, not a bot, and holding the required role (if any); each with their number of tickets. */
+async function eligible(guild: Guild, g: Giveaway): Promise<Candidate[]> {
   const ids = await entryUserIds(g.id);
-  const ok: string[] = [];
+  const ok: Candidate[] = [];
   for (let i = 0; i < ids.length; i += 100) {
     const members = await guild.members.fetch({ user: ids.slice(i, i + 100) }).catch(() => null);
     if (!members) continue;
     for (const m of members.values()) {
       if (m.user.bot) continue;
       if (g.requiredRoleId && !m.roles.cache.has(g.requiredRoleId)) continue;
-      ok.push(m.id);
+      ok.push({ id: m.id, weight: ticketsFor(Boolean(g.bonusRoleId && m.roles.cache.has(g.bonusRoleId)), g.bonusEntries) });
     }
   }
   return ok;
@@ -84,8 +86,8 @@ export async function endGiveaway(guild: Guild, id: string, reroll = false): Pro
     const fresh = (await find(id)) ?? g;
     const candidates = await eligible(guild, fresh);
     // A re-roll prefers new people, so the same winner isn't picked again when others are available.
-    const pool = reroll ? candidates.filter((c) => !fresh.winners.includes(c)) : candidates;
-    const winners = pickWinners(pool.length > 0 ? pool : candidates, fresh.winnerCount);
+    const pool = reroll ? candidates.filter((c) => !fresh.winners.includes(c.id)) : candidates;
+    const winners = pickWeightedWinners(pool.length > 0 ? pool : candidates, fresh.winnerCount);
     await setWinners(id, winners);
 
     const channel = await channelOf(guild, fresh.channelId);

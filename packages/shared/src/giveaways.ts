@@ -8,6 +8,8 @@ import { isAllowedImageUrl, MAX_IMAGE_URL, MAX_SCHEDULE_AHEAD_MS, MIN_SCHEDULE_A
 export const MAX_PRIZE = 200;
 export const MAX_GIVEAWAY_DESCRIPTION = 1000;
 export const MAX_WINNERS = 20;
+/** Extra chances a bonus role can give (a member with it has 1 + this many tickets in the draw). */
+export const MAX_BONUS_ENTRIES = 10;
 export const GIVEAWAY_COLOR = 0x00ffa8;
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -25,12 +27,17 @@ export const giveawayInput = z
     requiredRoleId: z.union([z.literal(""), snowflake]),
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
+    /** Members with this role get extra chances. "" = no bonus. */
+    bonusRoleId: z.union([z.literal(""), snowflake]).default(""),
+    /** Extra chances for the bonus role (0 = none). */
+    bonusEntries: z.number().int().min(0).max(MAX_BONUS_ENTRIES).default(0),
     /** Optional picture, https only. "" = none. */
     imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image").default(""),
     /** Post it right after saving (otherwise it stays a draft). */
     start: z.boolean(),
   })
   .superRefine((v, ctx) => {
+    if (v.bonusEntries > 0 && v.bonusRoleId === "") ctx.addIssue({ code: "custom", path: ["bonusRoleId"], message: "needsRole" });
     const at = Date.parse(v.endsAt);
     if (Number.isNaN(at)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "time" });
     else if (at < Date.now() + MIN_SCHEDULE_AHEAD_MS) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "past" });

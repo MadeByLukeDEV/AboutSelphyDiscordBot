@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { giveawayInput } from "@aboutselphy/shared/giveaways";
-import { buildGiveawayMessage, enterControlId, parseEnterControl, pickWinners, winnerAnnouncement, type GiveawayView } from "./rules";
+import { buildGiveawayMessage, enterControlId, parseEnterControl, pickWeightedWinners, pickWinners, ticketsFor, winnerAnnouncement, type GiveawayView } from "./rules";
 
 describe("pickWinners", () => {
   const people = Array.from({ length: 10 }, (_, i) => `u${i}`);
@@ -110,5 +110,41 @@ describe("giveawayInput", () => {
   it("refuses bad ids", () => {
     expect(parse({ channelId: "abc" }).success).toBe(false);
     expect(parse({ requiredRoleId: "everyone" }).success).toBe(false);
+  });
+});
+
+describe("weighted draw", () => {
+  it("gives one ticket plus the bonus, and the bonus only to the role's members", () => {
+    expect(ticketsFor(false, 3)).toBe(1);
+    expect(ticketsFor(true, 3)).toBe(4);
+    expect(ticketsFor(true, 0)).toBe(1);
+  });
+  it("picks distinct winners, never more than there are people", () => {
+    const people = ["a", "b", "c", "d"].map((id) => ({ id, weight: 1 }));
+    expect(new Set(pickWeightedWinners(people, 3)).size).toBe(3);
+    expect(pickWeightedWinners(people, 10).sort()).toEqual(["a", "b", "c", "d"]);
+    expect(pickWeightedWinners([], 2)).toEqual([]);
+    expect(pickWeightedWinners(people, 0)).toEqual([]);
+  });
+  it("counts a person once even if listed twice", () => {
+    expect(pickWeightedWinners([{ id: "a", weight: 1 }, { id: "a", weight: 5 }], 2)).toEqual(["a"]);
+  });
+  it("favours a heavier candidate in proportion (3 tickets against 1 wins about 75 % of single draws)", () => {
+    let heavy = 0;
+    const draws = 20_000;
+    for (let i = 0; i < draws; i++) if (pickWeightedWinners([{ id: "heavy", weight: 4 }, { id: "light", weight: 1 }], 1)[0] === "heavy") heavy++;
+    expect(heavy / draws).toBeGreaterThan(0.77);
+    expect(heavy / draws).toBeLessThan(0.83);
+  });
+  it("behaves like a plain draw with equal weights", () => {
+    const counts = new Map<string, number>();
+    for (let i = 0; i < 20_000; i++) for (const w of pickWeightedWinners(["a", "b", "c", "d"].map((id) => ({ id, weight: 1 })), 1)) counts.set(w, (counts.get(w) ?? 0) + 1);
+    for (const n of counts.values()) expect(n / 20_000).toBeGreaterThan(0.22);
+  });
+  it("shows the bonus in the post while it runs", () => {
+    const base = { id: "abcdefghij12", prize: "Prize", description: "", winnerCount: 1, endsAt: new Date("2026-12-01T00:00:00Z"), hostName: "Host", requiredRoleId: null, ended: false, winners: [] };
+    const text = JSON.stringify(buildGiveawayMessage({ ...base, bonusRoleId: "123456789012345678", bonusEntries: 2 }).embeds[0]!.toJSON());
+    expect(text).toContain("2 extra chances");
+    expect(JSON.stringify(buildGiveawayMessage(base).embeds[0]!.toJSON())).not.toContain("Bonus");
   });
 });
