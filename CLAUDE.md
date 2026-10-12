@@ -458,9 +458,9 @@ Decided 2026-10-08:
   `DISCORD_APP_ID` is wrong (the client ID is the application ID).
 - `next dev` writes `apps/dashboard/AGENTS.md` and a `CLAUDE.md` importing it;
   they are committed, like in Main.
-- The bot exits if Discord can't be reached at startup (one 10 s connect
-  timeout was enough). Production relies on the container restart policy; a
-  login retry with backoff is a small TODO.
+- The bot retries the Discord login with backoff (`lib/login.ts`: 1 s doubling to 60 s, 8 attempts) instead of exiting on one
+  failed connect; a bad token or an intent that isn't enabled fails at once with the real reason. The container restart policy
+  is still the last safety net.
 - **After a Prisma schema change, restart the bot and the dashboard dev server.**
   A running process keeps the client it loaded at start (`pnpm --filter
   @aboutselphy/db generate` only rewrites files). Symptom: `Cannot read properties

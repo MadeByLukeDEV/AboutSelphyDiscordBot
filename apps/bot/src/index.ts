@@ -13,6 +13,7 @@ import { startFeeds, stopFeeds } from "./modules/feeds";
 import { startAutoResponders } from "./modules/autoresponders";
 import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
+import { loginWithRetry } from "./lib/login";
 import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
 import { startRetention, stopRetention } from "./modules/privacy";
@@ -78,7 +79,7 @@ async function main() {
   startTwitch(client);
   startAnnouncements(client);
   startYoutube(client);
-  await client.login(e.DISCORD_BOT_TOKEN);
+  await loginWithRetry(client, e.DISCORD_BOT_TOKEN);
 
   let stopping = false;
   const shutdown = async (signal: string) => {
