@@ -9,6 +9,7 @@ import {
   PermissionFlagsBits,
   type ButtonInteraction,
   type Guild,
+  type ModalSubmitInteraction,
   type GuildMember,
   type GuildTextBasedChannel,
   type Message,
@@ -22,8 +23,8 @@ import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { staffLevel } from "../../lib/permissions";
 import { getTicketConfig } from "./config";
-import { buildTranscript, OPEN_CONTROL_ID, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
-import { claim, createTicket, findByChannel, listOpen, listRecentlyClosed, markClosed, openCountFor, reserveNumber, setPanelMessage } from "./repository";
+import { buildTranscript, cleanReason, idleCutoff, OPEN_CONTROL_ID, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
+import { claim, createTicket, findByChannel, listIdle, listOpen, listRecentlyClosed, markClosed, openCountFor, reserveNumber, setPanelMessage, touchActivity } from "./repository";
 
 const NO_MENTIONS = { parse: [] as never[] };
 const openLocks = new KeyedMutex();
@@ -74,8 +75,8 @@ export async function postPanel(guild: Guild): Promise<TicketPanelStatus> {
 
 // -- opening ----------------------------------------------------------------------------------------
 
-/** "Open a ticket" was pressed. Serialised per member so a double click can't make two. */
-export function openTicket(i: ButtonInteraction<"cached">): Promise<void> {
+/** "Open a ticket" was pressed, or the form asking what it is about was sent. Serialised per member so a double click can't make two. */
+export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteraction<"cached">, reason = ""): Promise<void> {
   return openLocks.run(i.user.id, async () => {
     await i.deferReply({ flags: MessageFlags.Ephemeral });
     const say = (content: string) => i.editReply({ content, allowedMentions: NO_MENTIONS });
@@ -105,12 +106,16 @@ export function openTicket(i: ButtonInteraction<"cached">): Promise<void> {
         permissionOverwrites: ticketOverwrites({ everyoneId: i.guild.id, openerId: i.user.id, botId: me.id, staffRoleIds: config.staffRoleIds }),
         reason: `Ticket #${number} opened by ${i.user.username}`,
       });
-      const ticket = await createTicket({ number, channelId: channel.id, openerId: i.user.id, openerName: i.member.displayName });
+      const topic = cleanReason(reason);
+      const ticket = await createTicket({ number, channelId: channel.id, openerId: i.user.id, openerName: i.member.displayName, topic });
+      rememberOpenChannel(channel.id);
 
       const welcome = new EmbedBuilder()
         .setColor(config.panelColor)
         .setTitle(`Ticket #${number}`)
         .setDescription(truncate(fillTicketTemplate(config.welcomeTemplate, { user: `<@${i.user.id}>`, number: String(number) }), 4000));
+      // What they said it is about is theirs to write: shown as plain text, nothing in it can ping.
+      if (topic) welcome.addFields({ name: "What it is about", value: truncate(escapeText(topic), 1000) });
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setCustomId(ticketControlId("claim", ticket.id)).setLabel("Claim").setStyle(ButtonStyle.Secondary).setEmoji("🙋"),
         new ButtonBuilder().setCustomId(ticketControlId("close", ticket.id)).setLabel("Close").setStyle(ButtonStyle.Danger).setEmoji("🔒"),
@@ -231,5 +236,42 @@ export async function reconcileTickets(guild: Guild): Promise<void> {
   for (const ticket of await listRecentlyClosed(new Date(Date.now() - 86_400_000))) {
     const channel = guild.channels.cache.get(ticket.channelId);
     if (channel) await channel.delete(`Ticket #${ticket.number} was closed`).catch(() => undefined);
+  }
+}
+
+// -- activity and idle tickets ----------------------------------------------------------------------------
+
+// Which channels are open tickets, refreshed every minute and when one opens, so a message anywhere in the server
+// doesn't cost a database query. A write per ticket per minute at most.
+const CHANNEL_TTL_MS = 60_000;
+const WRITE_EVERY_MS = 60_000;
+let openChannels: { ids: Set<string>; at: number } | undefined;
+const lastWrite = new Map<string, number>();
+
+export const rememberOpenChannel = (channelId: string) => openChannels?.ids.add(channelId);
+
+async function isOpenTicketChannel(channelId: string): Promise<boolean> {
+  if (!openChannels || Date.now() - openChannels.at > CHANNEL_TTL_MS) openChannels = { ids: new Set((await listOpen()).map((t) => t.channelId)), at: Date.now() };
+  return openChannels.ids.has(channelId);
+}
+
+/** A person wrote in a channel: if it is an open ticket, it is not idle. */
+export async function noteTicketActivity(channelId: string): Promise<void> {
+  if (!(await isOpenTicketChannel(channelId))) return;
+  const now = Date.now();
+  if (now - (lastWrite.get(channelId) ?? 0) < WRITE_EVERY_MS) return;
+  lastWrite.set(channelId, now);
+  await touchActivity(channelId);
+}
+
+/** Closes the tickets that have had no message for the configured number of hours (0 = never). */
+export async function closeIdleTickets(guild: Guild): Promise<void> {
+  const config = await getTicketConfig();
+  if (!config.enabled) return;
+  const cut = idleCutoff(config.autoCloseHours, new Date());
+  if (!cut) return;
+  for (const ticket of await listIdle(cut)) {
+    log.info({ ticket: ticket.number, hours: config.autoCloseHours }, "tickets: closing an idle ticket");
+    await closeTicket(guild, ticket, null, `Closed automatically after ${config.autoCloseHours} hours without a message`).catch((err) => log.error({ err, ticket: ticket.number }, "tickets: closing an idle ticket failed"));
   }
 }

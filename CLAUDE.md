@@ -939,8 +939,14 @@ Decided 2026-10-08:
     Discord's CDN) is parsed again before the dashboard shows it, as plain text.
   - Dashboard `/tickets` (all staff: list + transcript page `/tickets/[number]`; admins:
     settings, post/update panel). `components/form/multi-picker.tsx` is shared.
-  - [ ] Ticket categories/topics, a reason prompt when opening, rating, auto-close of
-        idle tickets, claiming limits.
+  - [x] **Reason form and auto-close** (2026-11-01, `feature_ticket-topic-autoclose`, migration `20261101100000_ticket_topic_autoclose`;
+        **not tried live yet**): with `askReason` on, "Open a ticket" first shows a short form (custom ids `tk:open` ->
+        `tk:modal`, the modal must be the first answer to the press); the text (`cleanReason`: trimmed, <= 300 chars, escaped when
+        shown) is saved as `Ticket.topic` and shown at the top of the ticket. `autoCloseHours` (0 = off, <= 720, DB CHECK): people's
+        messages in an open ticket channel set `lastActivityAt` (at most one write a minute per ticket, the open-channel set is
+        cached 60 s so ordinary messages cost no query); every 10 minutes tickets idle longer than that are closed through the
+        normal `closeTicket` (transcript, log summary) with a reason saying so. Both on the `/tickets` settings form.
+  - [ ] Still open: ticket categories/topics buttons, rating, claiming limits.
 - [~] Giveaways (2026-10-18, `feature_giveaways`, migration `20261018100000_giveaways`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/giveaways/`): draft -> active (posts the message with an Enter button),

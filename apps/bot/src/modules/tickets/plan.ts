@@ -37,14 +37,18 @@ export const canClaim = (w: Who) => w.isStaff;
 // -- control ids: "tk:open", "tk:close:<id>", "tk:confirm:<id>", "tk:claim:<id>" ------------------------
 
 export const TICKET_PREFIX = "tk";
-export type TicketControl = { action: "open" } | { action: "close" | "confirm" | "claim"; ticketId: string };
+export type TicketControl = { action: "open" } | { action: "modal" } | { action: "close" | "confirm" | "claim"; ticketId: string };
 
 export const ticketControlId = (action: "close" | "confirm" | "claim", ticketId: string) => `${TICKET_PREFIX}:${action}:${ticketId}`;
 export const OPEN_CONTROL_ID = `${TICKET_PREFIX}:open`;
+/** The form that asks what the ticket is about. */
+export const MODAL_CONTROL_ID = `${TICKET_PREFIX}:modal`;
+export const REASON_FIELD_ID = "reason";
 
 /** Strict parse: only our own shapes with an id-looking part. */
 export function parseTicketControl(customId: string): TicketControl | null {
   if (customId === OPEN_CONTROL_ID) return { action: "open" };
+  if (customId === MODAL_CONTROL_ID) return { action: "modal" };
   const match = /^tk:(close|confirm|claim):([a-z0-9]{10,40})$/.exec(customId);
   return match ? { action: match[1] as "close" | "confirm" | "claim", ticketId: match[2]! } : null;
 }
@@ -93,4 +97,16 @@ export function transcriptToText(transcript: Transcript, header: string): string
   }
   if (transcript.truncated) lines.push("", "(older messages were cut: only the latest are kept)");
   return lines.join("\n");
+}
+
+// -- idle tickets ------------------------------------------------------------------------------------
+
+/** The moment before which a ticket counts as idle, or null when automatic closing is off (0 hours). */
+export function idleCutoff(hours: number, now: Date): Date | null {
+  return Number.isInteger(hours) && hours > 0 ? new Date(now.getTime() - hours * 3_600_000) : null;
+}
+
+/** What an opener typed into the form, made safe to store and show: trimmed, one blank line at most, cut to size. */
+export function cleanReason(text: string | null | undefined, max = 300): string {
+  return (text ?? "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim().slice(0, max);
 }

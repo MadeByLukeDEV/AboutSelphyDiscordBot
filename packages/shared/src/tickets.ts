@@ -7,6 +7,10 @@ import { z } from "zod";
 export const MAX_STAFF_ROLES = 5;
 export const MAX_OPEN_PER_USER = 5;
 export const MAX_TICKET_TEXT = 1000;
+/** What an opener may say the ticket is about. */
+export const MAX_TICKET_REASON = 300;
+/** 30 days. */
+export const MAX_AUTOCLOSE_HOURS = 720;
 export const DEFAULT_TICKET_COLOR = 0x00ffa8;
 export const DEFAULT_PANEL_TITLE = "Need help?";
 export const DEFAULT_PANEL_DESCRIPTION = "Press the button to open a private ticket with the team.";
@@ -37,6 +41,10 @@ export const ticketSettingsSchema = z
       .max(MAX_STAFF_ROLES)
       .refine((ids) => new Set(ids).size === ids.length, "duplicate"),
     maxOpenPerUser: z.number().int().min(1).max(MAX_OPEN_PER_USER),
+    /** Ask what the ticket is about before opening it. */
+    askReason: z.boolean(),
+    /** Hours without a message before a ticket is closed automatically; 0 = never. */
+    autoCloseHours: z.number().int().min(0).max(MAX_AUTOCLOSE_HOURS),
     panelTitle: z.string().trim().min(1).max(256),
     panelDescription: z.string().trim().max(2000),
     panelColor: z.number().int().min(0).max(0xffffff),

@@ -13,6 +13,8 @@ export type ConfigData = {
   logChannelId: string | null;
   staffRoleIds: string[];
   maxOpenPerUser: number;
+  askReason: boolean;
+  autoCloseHours: number;
   panelTitle: string;
   panelDescription: string;
   panelColor: number;
@@ -28,7 +30,7 @@ export function updateConfig(data: ConfigData): Promise<TicketConfig> {
 export async function listTickets(closedTake: number): Promise<Array<Omit<Ticket, "transcript"> & { hasTranscript: boolean }>> {
   const select = {
     id: true, number: true, channelId: true, openerId: true, openerName: true, status: true, claimedById: true, claimedByName: true,
-    createdAt: true, closedAt: true, closedById: true, closedByName: true, closeReason: true, messageCount: true,
+    createdAt: true, closedAt: true, closedById: true, closedByName: true, closeReason: true, messageCount: true, topic: true, lastActivityAt: true,
   } as const;
   const [open, closed] = await Promise.all([
     prisma.ticket.findMany({ where: { status: "open" }, orderBy: { number: "desc" }, select }),

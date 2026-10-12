@@ -1119,7 +1119,11 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Saved",
-      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "askReason": "Ask what the ticket is about",
+      "askReasonHelp": "Pressing the button opens a short form first. The answer is shown at the top of the ticket and saved with it.",
+      "autoClose": "Close idle tickets after (hours)",
+      "autoCloseHelp": "A ticket with no message for this long is closed automatically, with its transcript saved. 0 = never. Up to {max} (30 days)."
     },
     "panel": {
       "post": "Post the panel",

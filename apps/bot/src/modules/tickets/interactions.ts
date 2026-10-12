@@ -1,9 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, type ButtonInteraction } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, type ButtonInteraction } from "discord.js";
+import { MAX_TICKET_REASON } from "@aboutselphy/shared/tickets";
 import { onComponent, type ComponentInteraction } from "../../events/components";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
 import { getTicketConfig } from "./config";
-import { canClaim, canClose, parseTicketControl, ticketControlId, TICKET_PREFIX } from "./plan";
+import { canClaim, canClose, cleanReason, MODAL_CONTROL_ID, parseTicketControl, REASON_FIELD_ID, ticketControlId, TICKET_PREFIX } from "./plan";
 import { findTicket } from "./repository";
 import { claimTicket, closeTicket, isTicketStaff, openTicket } from "./service";
 
@@ -16,12 +17,27 @@ const NO_MENTIONS = { parse: [] as never[] };
  * into another channel, or pressed by a bystander, does nothing.
  */
 async function handle(i: ComponentInteraction): Promise<void> {
-  if (!i.inCachedGuild() || i.guildId !== env().DISCORD_GUILD_ID || !i.isButton()) return;
-  const button: ButtonInteraction<"cached"> = i;
-  const control = parseTicketControl(button.customId);
-  if (!control) return void (await button.reply({ content: "That control isn't valid any more.", flags: MessageFlags.Ephemeral }));
+  if (!i.inCachedGuild() || i.guildId !== env().DISCORD_GUILD_ID) return;
+  const control = parseTicketControl(i.customId);
+  if (!control) return void (await i.reply({ content: "That control isn't valid any more.", flags: MessageFlags.Ephemeral }));
 
-  if (control.action === "open") return openTicket(button);
+  // The form that asks what the ticket is about was sent: open the ticket with that text.
+  if (i.isModalSubmit()) {
+    if (control.action !== "modal") return;
+    return openTicket(i, cleanReason(i.fields.getTextInputValue(REASON_FIELD_ID)));
+  }
+  if (!i.isButton()) return;
+  const button: ButtonInteraction<"cached"> = i;
+
+  if (control.action === "open") {
+    // When the form is on, the first answer to the press must be the form itself.
+    if ((await getTicketConfig()).askReason) {
+      const field = new TextInputBuilder().setCustomId(REASON_FIELD_ID).setLabel("What do you need help with?").setStyle(TextInputStyle.Paragraph).setRequired(true).setMinLength(3).setMaxLength(MAX_TICKET_REASON);
+      return void (await button.showModal(new ModalBuilder().setCustomId(MODAL_CONTROL_ID).setTitle("Open a ticket").addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(field))));
+    }
+    return openTicket(button);
+  }
+  if (control.action === "modal") return;
 
   const ticket = await findTicket(control.ticketId);
   if (!ticket || ticket.status !== "open" || ticket.channelId !== button.channelId) {

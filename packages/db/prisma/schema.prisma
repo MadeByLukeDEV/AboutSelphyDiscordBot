@@ -534,6 +534,10 @@ model TicketConfig {
   welcomeTemplate  String   @default("Hi {user}, thanks for opening ticket #{number}. Tell us what you need and the team will be with you soon.") @db.VarChar(1000)
   /// The number the next ticket gets; incremented atomically with the insert.
   nextNumber       Int      @default(1)
+  /// Ask what the ticket is about (a short form) before the channel is made.
+  askReason        Boolean  @default(false)
+  /// Close a ticket after this many hours without a message (0 = never; CHECK 0..720 in the migration).
+  autoCloseHours   Int      @default(0)
   updatedAt        DateTime @updatedAt
 }
 
@@ -552,6 +556,10 @@ model Ticket {
   closedById    String?      @db.VarChar(20)
   closedByName  String?      @db.VarChar(100)
   closeReason   String       @default("") @db.VarChar(300)
+  /// What the opener said it is about (empty when the form is off).
+  topic         String       @default("") @db.VarChar(300)
+  /// The last message in the ticket channel (or when it was opened); drives the automatic close.
+  lastActivityAt DateTime     @default(now())
   /// The conversation as JSON (see packages/shared/src/tickets.ts), kept when the ticket closes.
   /// Null when the bot could not read message text.
   transcript    Json?
@@ -559,6 +567,7 @@ model Ticket {
 
   @@index([status, createdAt])
   @@index([openerId, status])
+  @@index([status, lastActivityAt])
 }
 
 // ---- giveaways ---------------------------------------------------------------------

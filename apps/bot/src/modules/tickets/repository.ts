@@ -15,9 +15,15 @@ export async function reserveNumber(): Promise<number> {
   return row.nextNumber - 1;
 }
 
-export function createTicket(data: { number: number; channelId: string; openerId: string; openerName: string }) {
-  return prisma.ticket.create({ data: { ...data, openerName: data.openerName.slice(0, 100) } });
+export function createTicket(data: { number: number; channelId: string; openerId: string; openerName: string; topic: string }) {
+  return prisma.ticket.create({ data: { ...data, openerName: data.openerName.slice(0, 100), topic: data.topic.slice(0, 300) } });
 }
+
+/** A message was written in an open ticket's channel. */
+export const touchActivity = (channelId: string) => prisma.ticket.updateMany({ where: { channelId, status: "open" }, data: { lastActivityAt: new Date() } });
+
+/** Open tickets with no message since `cut`. */
+export const listIdle = (cut: Date) => prisma.ticket.findMany({ where: { status: "open", lastActivityAt: { lt: cut } } });
 
 export const findTicket = (id: string) => prisma.ticket.findUnique({ where: { id } });
 export const findByChannel = (channelId: string) => prisma.ticket.findUnique({ where: { channelId } });

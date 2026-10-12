@@ -1119,7 +1119,11 @@
       "save": "Speichern",
       "saving": "Speichert…",
       "saved": "Gespeichert",
-      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+      "askReason": "Fragen, worum es im Ticket geht",
+      "askReasonHelp": "Der Knopf öffnet zuerst ein kurzes Formular. Die Antwort steht oben im Ticket und wird mit ihm gespeichert.",
+      "autoClose": "Inaktive Tickets schließen nach (Stunden)",
+      "autoCloseHelp": "Ein Ticket ohne Nachricht wird nach dieser Zeit automatisch geschlossen, das Transkript bleibt gespeichert. 0 = nie. Bis zu {max} (30 Tage)."
     },
     "panel": {
       "post": "Panel posten",

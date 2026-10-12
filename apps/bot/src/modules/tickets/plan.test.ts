@@ -1,7 +1,7 @@
 import { OverwriteType, PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { fillTicketTemplate, ticketChannelName, ticketSettingsSchema, transcriptSchema } from "@aboutselphy/shared/tickets";
-import { buildTranscript, canClaim, canClose, OPEN_CONTROL_ID, parseTicketControl, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
+import { buildTranscript, canClaim, canClose, cleanReason, idleCutoff, OPEN_CONTROL_ID, parseTicketControl, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
 
 describe("ticketOverwrites", () => {
   const specs = ticketOverwrites({ everyoneId: "E", openerId: "O", botId: "B", staffRoleIds: ["S1", "S2"] });
@@ -98,6 +98,8 @@ describe("helpers and settings", () => {
     logChannelId: "",
     staffRoleIds: [],
     maxOpenPerUser: 1,
+    askReason: false,
+    autoCloseHours: 0,
     panelTitle: "Help",
     panelDescription: "",
     panelColor: 0,
@@ -119,5 +121,27 @@ describe("helpers and settings", () => {
     expect(parse({ staffRoleIds: [ids(1)[0], ids(1)[0]] }).success).toBe(false);
     expect(parse({ maxOpenPerUser: 0 }).success).toBe(false);
     expect(parse({ maxOpenPerUser: 6 }).success).toBe(false);
+    expect(parse({ autoCloseHours: 721 }).success).toBe(false);
+    expect(parse({ autoCloseHours: -1 }).success).toBe(false);
+    expect(parse({ autoCloseHours: 48, askReason: true }).success).toBe(true);
+  });
+});
+
+describe("idle tickets and the reason form", () => {
+  const now = new Date("2026-11-01T12:00:00Z");
+  it("idleCutoff is off at 0 and counts hours back otherwise", () => {
+    expect(idleCutoff(0, now)).toBeNull();
+    expect(idleCutoff(-1, now)).toBeNull();
+    expect(idleCutoff(24, now)).toEqual(new Date("2026-10-31T12:00:00Z"));
+  });
+  it("cleanReason trims, collapses blank lines and cuts", () => {
+    expect(cleanReason("  help\r\n\r\n\r\n\r\nplease  ")).toBe("help\n\nplease");
+    expect(cleanReason("x".repeat(900))).toHaveLength(300);
+    expect(cleanReason(null)).toBe("");
+  });
+  it("parses the form's id and rejects look-alikes", () => {
+    expect(parseTicketControl("tk:modal")).toEqual({ action: "modal" });
+    expect(parseTicketControl("tk:modal:x")).toBeNull();
+    expect(parseTicketControl("tk:open")).toEqual({ action: "open" });
   });
 });
