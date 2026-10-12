@@ -2312,5 +2312,13 @@
       "badColor": "Use a colour like #00FFA8.",
       "failed": "Something went wrong. Try again."
     }
+  },
+  "DateTimePicker": {
+    "pick": "Pick a date and time",
+    "time": "Time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "clear": "Clear",
+    "done": "Done"
   }
 }

@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { MAX_IMAGE_URL, MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
 import { MAX_OPTION, MAX_OPTIONS, MAX_QUESTION, MIN_OPTIONS, parseOptions, pollInput } from "@aboutselphy/shared/polls";
+import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -248,7 +249,7 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
         </Field>
         <Field data-invalid={Boolean(endError) || undefined}>
           <FieldLabel htmlFor="poll-ends">{t("ends")}</FieldLabel>
-          <Input id="poll-ends" type="datetime-local" min={minLocal} aria-invalid={Boolean(endError) || undefined} {...form.register("endsLocal")} />
+          <FormDateTime control={form.control} name="endsLocal" id="poll-ends" min={minLocal} invalid={Boolean(endError)} />
           <FieldDescription>{t("endsHelp")}</FieldDescription>
           {endError && <FieldError>{te(endError === "past" ? "endPast" : endError === "tooFar" ? "endTooFar" : "endTime")}</FieldError>}
         </Field>

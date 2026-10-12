@@ -15,6 +15,7 @@ import {
   MIN_SCHEDULE_AHEAD_MS,
   type AnnouncementMode,
 } from "@aboutselphy/shared/announcement";
+import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
@@ -164,7 +165,8 @@ export function AnnouncementForm({
   const submitLabel = sent ? t("saveSent") : mode === "now" ? t("sendNow") : mode === "schedule" ? t("schedule") : t("saveDraft");
 
   return (
-    <form onSubmit={submit} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]" noValidate>
+    <form onSubmit={submit} className="flex flex-col gap-6" noValidate>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
       <FieldGroup>
         <Field data-invalid={Boolean(errors.channelId) || undefined}>
           <FieldLabel htmlFor="ann-channel">{t("channel")}</FieldLabel>
@@ -260,14 +262,7 @@ export function AnnouncementForm({
             {mode === "schedule" && (
               <Field data-invalid={Boolean(errors.scheduledLocal) || undefined}>
                 <FieldLabel htmlFor="ann-time">{t("time")}</FieldLabel>
-                <Input
-                  id="ann-time"
-                  type="datetime-local"
-                  min={minLocal}
-                  className="max-w-[16rem]"
-                  aria-invalid={Boolean(errors.scheduledLocal) || undefined}
-                  {...form.register("scheduledLocal")}
-                />
+                <FormDateTime control={form.control} name="scheduledLocal" id="ann-time" min={minLocal} invalid={Boolean(errors.scheduledLocal)} />
                 <FieldDescription>{t("timeHelp")}</FieldDescription>
                 {fieldError("scheduledLocal", "scheduledFor")}
               </Field>
@@ -288,8 +283,10 @@ export function AnnouncementForm({
         />
         <p className="text-xs text-muted-foreground">{t("previewNote")}</p>
       </div>
+      </div>
 
-      <DialogFooter className="lg:col-span-2">
+      {/* Outside the grid: the sticky preview column may only move inside its own area, never over the buttons. */}
+      <DialogFooter className="sticky -bottom-4 z-10 bg-muted">
         <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>
         <Button type="submit" disabled={pending}>
           {pending ? t("saving") : submitLabel}

@@ -10,6 +10,7 @@ import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
 import { MAX_IMAGE_URL } from "@aboutselphy/shared/announcement";
 import { giveawayInput, MAX_GIVEAWAY_DESCRIPTION, MAX_PRIZE, MAX_WINNERS } from "@aboutselphy/shared/giveaways";
+import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -273,7 +274,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
           </Field>
           <Field data-invalid={Boolean(endError) || undefined}>
             <FieldLabel htmlFor="gw-ends">{t("ends")}</FieldLabel>
-            <Input id="gw-ends" type="datetime-local" min={minLocal} aria-invalid={Boolean(endError) || undefined} {...form.register("endsLocal")} />
+            <FormDateTime control={form.control} name="endsLocal" id="gw-ends" min={minLocal} invalid={Boolean(endError)} />
             {endError && <FieldError>{te(endError === "past" ? "endPast" : endError === "tooFar" ? "endTooFar" : "endTime")}</FieldError>}
           </Field>
         </div>

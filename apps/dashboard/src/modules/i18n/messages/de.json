@@ -2312,5 +2312,13 @@
       "badColor": "Nutze eine Farbe wie #00FFA8.",
       "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
     }
+  },
+  "DateTimePicker": {
+    "pick": "Datum und Uhrzeit wählen",
+    "time": "Uhrzeit",
+    "hour": "Stunde",
+    "minute": "Minute",
+    "clear": "Leeren",
+    "done": "Fertig"
   }
 }
