@@ -1081,7 +1081,18 @@
       "channelNotFound": "One of these channels doesn't exist, or the bot can't see it.",
       "roleNotFound": "One of these roles doesn't exist any more.",
       "roleNotAllowed": "A reward role can't be handed out: it is above the bot's role, managed by an integration, or has powerful permissions.",
-      "failed": "Couldn't save the settings. Try again."
+      "failed": "Couldn't save the settings. Try again.",
+      "boostsInvalid": "Pick a role for every boost, once each, with a percentage from {min} to {max}."
+    },
+    "boosts": {
+      "title": "XP boosts",
+      "intro": "Members with one of these roles earn more XP, from messages and voice. A boost is a percentage of the normal XP (150 = one and a half times). A member with several boost roles gets the highest one; they don't add up. Up to {max}.",
+      "empty": "No boosts yet.",
+      "role": "Role",
+      "rolePlaceholder": "Pick a role",
+      "percent": "XP in %",
+      "add": "Add a boost",
+      "remove": "Remove"
     }
   },
   "Tickets": {

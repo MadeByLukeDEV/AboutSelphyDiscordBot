@@ -7,6 +7,10 @@ import { z } from "zod";
 export const MAX_LEVEL = 500;
 export const MAX_REWARDS = 25;
 export const MAX_NO_XP = 50;
+export const MAX_BOOSTS = 10;
+/** A boost is a percentage of the normal XP: 101 (a little more) to 500 (five times). */
+export const MIN_BOOST_PERCENT = 101;
+export const MAX_BOOST_PERCENT = 500;
 export const MAX_ANNOUNCE_TEMPLATE = 300;
 export const DEFAULT_ANNOUNCE_TEMPLATE = "GG {user}, you reached level {level}!";
 export const ANNOUNCE_MODES = ["off", "same", "channel"] as const;
@@ -43,6 +47,18 @@ export function progressOf(xp: number): LevelProgress {
   return { level, into, needed, percent: level >= MAX_LEVEL ? 100 : Math.min(100, Math.floor((into / needed) * 100)), total };
 }
 
+export type Boost = { roleId: string; percent: number };
+
+/** The best boost among the roles a member holds (100 = none). Boosts don't stack: the highest wins. */
+export function boostPercent(memberRoleIds: ReadonlySet<string>, boosts: readonly Boost[]): number {
+  return boosts.reduce((best, b) => (memberRoleIds.has(b.roleId) && b.percent > best ? b.percent : best), 100);
+}
+
+/** `amount` XP made `percent` % as big, rounded, and never smaller than before. */
+export function applyBoost(amount: number, percent: number): number {
+  return percent <= 100 ? amount : Math.max(amount, Math.round((amount * percent) / 100));
+}
+
 /** Replaces {user} {username} {level}. Unknown placeholders stay as typed. The caller decides what the values look like (the bot escapes them). */
 export function fillLevelTemplate(template: string, values: { user: string; username: string; level: string }): string {
   return template.replace(/\{(user|username|level)\}/g, (_, key: "user" | "username" | "level") => values[key]);
@@ -71,12 +87,14 @@ export const levelSettingsSchema = z
     rewards: z
       .array(z.object({ level: z.number().int().min(1).max(MAX_LEVEL), roleId: snowflake }))
       .max(MAX_REWARDS),
+    boosts: z.array(z.object({ roleId: snowflake, percent: z.number().int().min(MIN_BOOST_PERCENT).max(MAX_BOOST_PERCENT) })).max(MAX_BOOSTS),
   })
   .superRefine((v, ctx) => {
     const issue = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
     if (v.xpMax < v.xpMin) issue("xpMax", "range");
     if (v.announce === "channel" && !v.announceChannelId) issue("announceChannelId", "needsChannel");
     const levels = new Set<string | number>();
+    if (new Set(v.boosts.map((b) => b.roleId)).size !== v.boosts.length) issue("boosts", "duplicateRole");
     const roles = new Set<string>();
     for (const r of v.rewards) {
       if (levels.has(r.level)) issue("rewards", "duplicateLevel");

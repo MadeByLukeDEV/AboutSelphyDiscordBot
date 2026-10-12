@@ -1078,3 +1078,11 @@ model TempVoicePreference {
   soundboardAllowed Boolean  @default(true)
   updatedAt         DateTime @updatedAt
 }
+
+/// XP boost: members with this role earn `percent` % of the normal XP (150 = one and a half times). The highest applicable boost counts.
+model LevelBoost {
+  id        String   @id @default(cuid())
+  roleId    String   @unique @db.VarChar(20)
+  percent   Int
+  createdAt DateTime @default(now())
+}

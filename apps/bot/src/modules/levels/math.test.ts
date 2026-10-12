@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fillLevelTemplate, levelFromXp, levelSettingsSchema, MAX_LEVEL, progressOf, totalXpForLevel, xpToNext } from "@aboutselphy/shared/levels";
+import { applyBoost, boostPercent, fillLevelTemplate, levelFromXp, levelSettingsSchema, MAX_LEVEL, progressOf, totalXpForLevel, xpToNext } from "@aboutselphy/shared/levels";
 
 describe("the level curve", () => {
   it("matches the MEE6 formula", () => {
@@ -61,6 +61,7 @@ describe("levelSettingsSchema", () => {
     noXpRoleIds: [],
     stackRoles: true,
     rewards: [],
+    boosts: [],
   };
   const parse = (over: Record<string, unknown>) => levelSettingsSchema.safeParse({ ...base, ...over });
   const role = (i: number) => `1000000000000000${String(i).padStart(2, "0")}`;
@@ -88,5 +89,27 @@ describe("levelSettingsSchema", () => {
     expect(parse({ rewards: [{ level: 0, roleId: role(1) }] }).success).toBe(false);
     expect(parse({ rewards: [{ level: 501, roleId: role(1) }] }).success).toBe(false);
     expect(parse({ rewards: Array.from({ length: 26 }, (_, i) => ({ level: i + 1, roleId: role(i) })) }).success).toBe(false);
+  });
+});
+
+describe("XP boosts", () => {
+  const boosts = [
+    { roleId: "booster", percent: 150 },
+    { roleId: "supporter", percent: 200 },
+  ];
+  it("no matching role means no boost", () => {
+    expect(boostPercent(new Set(["other"]), boosts)).toBe(100);
+    expect(boostPercent(new Set(), [])).toBe(100);
+  });
+  it("one boost applies, and the highest wins when a member holds several (they don't stack)", () => {
+    expect(boostPercent(new Set(["booster"]), boosts)).toBe(150);
+    expect(boostPercent(new Set(["booster", "supporter"]), boosts)).toBe(200);
+  });
+  it("applyBoost rounds and never lowers the amount", () => {
+    expect(applyBoost(20, 150)).toBe(30);
+    expect(applyBoost(15, 150)).toBe(23);
+    expect(applyBoost(5, 101)).toBe(5);
+    expect(applyBoost(20, 100)).toBe(20);
+    expect(applyBoost(20, 50)).toBe(20);
   });
 });

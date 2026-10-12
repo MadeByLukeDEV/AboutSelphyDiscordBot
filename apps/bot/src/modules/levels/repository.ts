@@ -1,9 +1,11 @@
 // Private to the levels module: only config.ts, service.ts and commands.ts import this.
-import { prisma, type LevelConfig, type LevelReward, type MemberXp } from "@aboutselphy/db";
+import { prisma, type LevelBoost, type LevelConfig, type LevelReward, type MemberXp } from "@aboutselphy/db";
 
 export function readConfig(): Promise<LevelConfig> {
   return prisma.levelConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 }
+
+export const listBoosts = (): Promise<LevelBoost[]> => prisma.levelBoost.findMany();
 
 export function listRewards(): Promise<LevelReward[]> {
   return prisma.levelReward.findMany({ orderBy: { level: "asc" } });

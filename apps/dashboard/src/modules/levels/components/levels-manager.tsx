@@ -8,7 +8,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { ANNOUNCE_MODES, DEFAULT_ANNOUNCE_TEMPLATE, MAX_ANNOUNCE_TEMPLATE, MAX_LEVEL, MAX_NO_XP, MAX_REWARDS, levelSettingsSchema, type LevelSettings } from "@aboutselphy/shared/levels";
+import { ANNOUNCE_MODES, DEFAULT_ANNOUNCE_TEMPLATE, MAX_ANNOUNCE_TEMPLATE, MAX_BOOST_PERCENT, MAX_BOOSTS, MAX_LEVEL, MAX_NO_XP, MAX_REWARDS, MIN_BOOST_PERCENT, levelSettingsSchema, type LevelSettings } from "@aboutselphy/shared/levels";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ export function LevelsManager({
   const form = useForm<LevelSettings>({ resolver: zodResolver(levelSettingsSchema), defaultValues: initial });
   const { errors, isDirty } = form.formState;
   const rewards = useFieldArray({ control: form.control, name: "rewards" });
+  const boosts = useFieldArray({ control: form.control, name: "boosts" });
   const announce = useWatch({ control: form.control, name: "announce" });
 
   const textChannels: SelectOption[] = [
@@ -54,6 +55,9 @@ export function LevelsManager({
   const roleItems: PickItem[] | null = roles && roles.map((r) => ({ id: r.id, label: r.name }));
   const rewardRoleOptions: SelectOption[] = (roles ?? []).filter((r) => r.assignable).map((r) => ({ value: r.id, label: r.name }));
   for (const r of initial.rewards) if (!rewardRoleOptions.some((o) => o.value === r.roleId)) rewardRoleOptions.push({ value: r.roleId, label: roles?.find((x) => x.id === r.roleId)?.name ?? r.roleId });
+  // A boost can go to any role (it hands out XP, not the role), so every role is offered.
+  const boostRoleOptions: SelectOption[] = (roles ?? []).map((r) => ({ value: r.id, label: r.name }));
+  for (const b of initial.boosts) if (!boostRoleOptions.some((o) => o.value === b.roleId)) boostRoleOptions.push({ value: b.roleId, label: b.roleId });
   const modeOptions: SelectOption[] = ANNOUNCE_MODES.map((m) => ({ value: m, label: t(`announce.modes.${m}`) }));
 
   const pickerLabels = (kind: "channels" | "roles") => ({
@@ -191,6 +195,40 @@ export function LevelsManager({
               <Button type="button" variant="outline" size="sm" onClick={() => rewards.append({ level: (initial.rewards.at(-1)?.level ?? 0) + 5, roleId: "" })} disabled={rewards.fields.length >= MAX_REWARDS}>
                 <Plus aria-hidden />
                 {t("rewards.add")}
+              </Button>
+            </div>
+          </>,
+        )}
+
+        {card(
+          "lv-boosts",
+          t("boosts.title"),
+          t("boosts.intro", { max: MAX_BOOSTS }),
+          <>
+            {boosts.fields.length === 0 && <p className="rounded-xl border border-dashed px-4 py-4 text-sm text-muted-foreground">{t("boosts.empty")}</p>}
+            <ul className="flex flex-col gap-3">
+              {boosts.fields.map((field, index) => (
+                <li key={field.id} className="flex flex-wrap items-end gap-3 rounded-xl border p-3">
+                  <Field className="min-w-[12rem] flex-1">
+                    <FieldLabel htmlFor={`lv-boost-role-${index}`}>{t("boosts.role")}</FieldLabel>
+                    <FormSelect control={form.control} name={`boosts.${index}.roleId`} id={`lv-boost-role-${index}`} options={boostRoleOptions} placeholder={t("boosts.rolePlaceholder")} disabled={roles === null} />
+                  </Field>
+                  <Field className="w-32">
+                    <FieldLabel htmlFor={`lv-boost-percent-${index}`}>{t("boosts.percent")}</FieldLabel>
+                    <Input id={`lv-boost-percent-${index}`} type="number" inputMode="numeric" min={MIN_BOOST_PERCENT} max={MAX_BOOST_PERCENT} {...form.register(`boosts.${index}.percent`, { valueAsNumber: true })} />
+                  </Field>
+                  <Button type="button" variant="ghost" size="sm" onClick={() => boosts.remove(index)}>
+                    <Trash2 aria-hidden />
+                    {t("boosts.remove")}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            {errors.boosts && <FieldError>{te("boostsInvalid", { min: MIN_BOOST_PERCENT, max: MAX_BOOST_PERCENT })}</FieldError>}
+            <div>
+              <Button type="button" variant="outline" size="sm" onClick={() => boosts.append({ roleId: "", percent: 150 })} disabled={boosts.fields.length >= MAX_BOOSTS}>
+                <Plus aria-hidden />
+                {t("boosts.add")}
               </Button>
             </div>
           </>,

@@ -1,5 +1,5 @@
 import { Events, type Client, type Guild, type GuildMember, type Message } from "discord.js";
-import { fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
+import { applyBoost, boostPercent, fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
 import { env, integrationsActive } from "../../lib/env";
 import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
@@ -60,7 +60,7 @@ async function handleLevelUp(member: GuildMember, level: number, here: Message["
 async function onMessage(message: Message): Promise<void> {
   if (!message.inGuild() || message.guildId !== env().DISCORD_GUILD_ID || message.author.bot || message.webhookId || message.system || !message.member) return;
   if (!(await moduleOn("levels"))) return;
-  const { config } = await getLevelConfig();
+  const { config, boosts } = await getLevelConfig();
   if (!config.enabled) return;
 
   const roleIds = new Set(message.member.roles.cache.keys());
@@ -70,7 +70,7 @@ async function onMessage(message: Message): Promise<void> {
   if (!cooldownPassed(lastMessageXp.get(message.author.id), now, config.cooldownSeconds)) return;
   lastMessageXp.set(message.author.id, now);
 
-  const amount = rollXp(config.xpMin, config.xpMax);
+  const amount = applyBoost(rollXp(config.xpMin, config.xpMax), boostPercent(roleIds, boosts));
   const { before, after } = await addXp(message.author.id, amount, message.member.displayName, { messages: 1 });
   if (levelFromXp(after) > levelFromXp(before)) await handleLevelUp(message.member, levelFromXp(after), message.channel);
 }
@@ -78,7 +78,7 @@ async function onMessage(message: Message): Promise<void> {
 /** One minute of voice XP for everyone who is in a voice channel with someone else. */
 async function voiceTick(guild: Guild): Promise<void> {
   if (!(await moduleOn("levels"))) return;
-  const { config } = await getLevelConfig();
+  const { config, boosts } = await getLevelConfig();
   if (!config.enabled || config.voiceXpPerMinute <= 0) return;
 
   const byChannel = new Map<string, GuildMember[]>();
@@ -96,7 +96,7 @@ async function voiceTick(guild: Guild): Promise<void> {
       const roleIds = new Set(member.roles.cache.keys());
       if (!earnsXp({ channelId, parentId: channel?.parentId ?? null, memberRoleIds: roleIds, noXpChannelIds: config.noXpChannelIds, noXpRoleIds: config.noXpRoleIds })) continue;
       try {
-        const { before, after } = await addXp(member.id, config.voiceXpPerMinute, member.displayName, { voiceMinutes: 1 });
+        const { before, after } = await addXp(member.id, applyBoost(config.voiceXpPerMinute, boostPercent(roleIds, boosts)), member.displayName, { voiceMinutes: 1 });
         if (levelFromXp(after) > levelFromXp(before)) await handleLevelUp(member, levelFromXp(after), null);
       } catch (err) {
         log.error({ err, user: member.id }, "voice XP failed");

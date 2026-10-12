@@ -1081,7 +1081,18 @@
       "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "roleNotAllowed": "Eine Belohnungsrolle kann nicht vergeben werden: Sie steht über der Rolle des Bots, wird von einer Integration verwaltet oder hat mächtige Berechtigungen.",
-      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
+      "boostsInvalid": "Wähle für jeden Boost eine Rolle, jede nur einmal, mit einem Prozentsatz von {min} bis {max}."
+    },
+    "boosts": {
+      "title": "XP-Boosts",
+      "intro": "Mitglieder mit einer dieser Rollen bekommen mehr XP, für Nachrichten und Sprache. Ein Boost ist ein Prozentsatz der normalen XP (150 = anderthalbfach). Hat ein Mitglied mehrere Boost-Rollen, gilt die höchste; sie addieren sich nicht. Bis zu {max}.",
+      "empty": "Noch keine Boosts.",
+      "role": "Rolle",
+      "rolePlaceholder": "Rolle wählen",
+      "percent": "XP in %",
+      "add": "Boost hinzufügen",
+      "remove": "Entfernen"
     }
   },
   "Tickets": {

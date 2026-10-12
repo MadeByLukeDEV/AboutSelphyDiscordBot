@@ -924,8 +924,11 @@ Decided 2026-10-08:
     only: message text is never read. Runs only in production or with
     `BOT_INTEGRATIONS_IN_DEV`. Shared drawing helpers: `lib/canvas.ts`, `lib/avatar.ts`.
   - Dashboard `/levels` (admins): all settings, the reward list, no-XP pickers, top 25.
-  - [ ] XP boosts per role, a public leaderboard page, importing MEE6 data, weekly resets,
-        voice XP only counting unmuted time.
+  - [x] **XP boosts per role** (2026-11-02, `feature_xp-boosts`, migration `20261102100000_xp_boosts`; **not tried live yet**):
+        `LevelBoost` (role, percent 101-500, DB CHECK, up to 10, any role, set on `/levels`): a member's message and voice XP is
+        `applyBoost(roll, boostPercent(roles, boosts))` (shared, tested: the **highest** boost wins, they don't add up,
+        rounded, never lower than before). The boosts are cached with the level config (60 s + reload).
+  - [ ] Still open: a public leaderboard page, importing MEE6 data, weekly resets, voice XP only counting unmuted time.
 - [~] Tickets (2026-10-17, `feature_tickets`, migration `20261017100000_tickets` applied;
       **not tried live yet**; Tier B)
   - Bot (`modules/tickets/`): panel message with an "Open a ticket" button; opening

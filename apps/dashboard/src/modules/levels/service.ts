@@ -6,7 +6,7 @@ import { countMembers, readConfig, saveAll, topMembers } from "./repository";
 import type { LeaderboardRow, SaveLevelsResult } from "./schema";
 
 async function readSettings(): Promise<LevelSettings> {
-  const { config: c, rewards } = await readConfig();
+  const { config: c, rewards, boosts } = await readConfig();
   return {
     enabled: c.enabled,
     xpMin: c.xpMin,
@@ -20,6 +20,7 @@ async function readSettings(): Promise<LevelSettings> {
     noXpRoleIds: c.noXpRoleIds,
     stackRoles: c.stackRoles,
     rewards: rewards.map((r) => ({ level: r.level, roleId: r.roleId })),
+    boosts,
   };
 }
 
@@ -40,7 +41,7 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
   try {
     const current = await readSettings();
     const newChannels = [...input.noXpChannelIds, input.announceChannelId].filter((id) => id && id !== current.announceChannelId && !current.noXpChannelIds.includes(id));
-    const newRoles = [...input.noXpRoleIds.filter((id) => !current.noXpRoleIds.includes(id)), ...input.rewards.map((r) => r.roleId).filter((id) => !current.rewards.some((r) => r.roleId === id))];
+    const newRoles = [...input.noXpRoleIds.filter((id) => !current.noXpRoleIds.includes(id)), ...input.rewards.map((r) => r.roleId).filter((id) => !current.rewards.some((r) => r.roleId === id)), ...input.boosts.map((b) => b.roleId).filter((id) => !current.boosts.some((b) => b.roleId === id))];
     const rewardRoleIds = new Set(input.rewards.map((r) => r.roleId));
 
     if (newChannels.length > 0) {
@@ -73,6 +74,7 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
         stackRoles: input.stackRoles,
       },
       input.rewards,
+      input.boosts,
     );
     return { ok: true, settings: await readSettings(), botNotified: await reloadBotModule("levels") };
   } catch (error) {

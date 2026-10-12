@@ -7,6 +7,7 @@ export type {
   GiveawayEntry,
   LevelConfig,
   LevelReward,
+  LevelBoost,
   LogRoute,
   MemberXp,
   ModCase,

@@ -2,12 +2,13 @@ import "server-only";
 // Private to the levels module: only service.ts imports this.
 import { prisma, type LevelConfig, type LevelReward, type MemberXp } from "@aboutselphy/db";
 
-export async function readConfig(): Promise<{ config: LevelConfig; rewards: LevelReward[] }> {
-  const [config, rewards] = await Promise.all([
+export async function readConfig(): Promise<{ config: LevelConfig; rewards: LevelReward[]; boosts: Array<{ roleId: string; percent: number }> }> {
+  const [config, rewards, boosts] = await Promise.all([
     prisma.levelConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } }),
     prisma.levelReward.findMany({ orderBy: { level: "asc" } }),
+    prisma.levelBoost.findMany({ orderBy: { percent: "desc" } }),
   ]);
-  return { config, rewards };
+  return { config, rewards, boosts: boosts.map((b) => ({ roleId: b.roleId, percent: b.percent })) };
 }
 
 export type ConfigData = {
@@ -25,11 +26,13 @@ export type ConfigData = {
 };
 
 /** Saves the settings and replaces the whole reward list in one transaction. */
-export function saveAll(data: ConfigData, rewards: Array<{ level: number; roleId: string }>): Promise<unknown> {
+export function saveAll(data: ConfigData, rewards: Array<{ level: number; roleId: string }>, boosts: Array<{ roleId: string; percent: number }>): Promise<unknown> {
   return prisma.$transaction([
     prisma.levelConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } }),
     prisma.levelReward.deleteMany({}),
     prisma.levelReward.createMany({ data: rewards }),
+    prisma.levelBoost.deleteMany({}),
+    prisma.levelBoost.createMany({ data: boosts }),
   ]);
 }
 
