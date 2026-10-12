@@ -1202,3 +1202,34 @@ model TicketCategory {
   position          Int      @default(0)
   createdAt         DateTime @default(now())
 }
+
+/// The screening queue settings (singleton, id 1).
+model ScreeningConfig {
+  id             Int      @id @default(1)
+  enabled        Boolean  @default(false)
+  /// The staff channel where each new member's card is posted.
+  channelId      String?  @db.VarChar(20)
+  approvedRoleId String?  @db.VarChar(20)
+  /// Given on join, taken away on approval (optional).
+  pendingRoleId  String?  @db.VarChar(20)
+  updatedAt      DateTime @updatedAt
+}
+
+/// One new member waiting for (or past) a staff decision.
+model ScreeningEntry {
+  id               String    @id @default(cuid())
+  userId           String    @db.VarChar(20)
+  userName         String    @db.VarChar(100)
+  accountCreatedAt DateTime
+  joinedAt         DateTime  @default(now())
+  /// pending | approved | rejected | left (CHECK in the migration)
+  status           String    @default("pending") @db.VarChar(10)
+  decidedByName    String?   @db.VarChar(100)
+  decidedAt        DateTime?
+  /// The card in the staff channel, so it can be updated.
+  channelId        String?   @db.VarChar(20)
+  messageId        String?   @db.VarChar(20)
+
+  @@index([status, joinedAt])
+  @@index([userId])
+}

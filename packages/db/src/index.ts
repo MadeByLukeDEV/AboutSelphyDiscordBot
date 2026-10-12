@@ -33,6 +33,8 @@ export type {
   RaidConfig,
   AuditEntry,
   MemberInvite,
+  ScreeningConfig,
+  ScreeningEntry,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

@@ -1,3 +1,4 @@
+import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
   announcementDeleteStatus,
@@ -287,6 +288,14 @@ export async function postVerificationPanelViaBot(): Promise<VerificationPanelSt
   const res = await botFetch("/internal/verification/panel", { method: "POST" });
   if (!res?.ok) return null;
   const parsed = verificationPanelStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to approve or reject a screening entry. Null if the bot can't be reached. */
+export async function decideScreeningViaBot(input: { id: string; decision: "approve" | "reject"; staffName: string }): Promise<ScreeningDecideStatus | null> {
+  const res = await botFetch("/internal/screening/decide", { method: "POST", body: input });
+  if (!res?.ok) return null;
+  const parsed = screeningDecideStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

@@ -4,6 +4,7 @@
     "nav": {
       "label": "Main navigation",
       "groups": {
+        "joining": "Joining",
         "moderation": "Moderation",
         "members": "Members and roles",
         "engagement": "Engagement",
@@ -47,6 +48,7 @@
         "retention": "Data retention",
         "memberLookup": "Members",
         "verification": "Verification",
+        "screening": "Screening queue",
         "raid": "Raid protection",
         "audit": "Audit trail",
         "invites": "Invites"
@@ -2652,6 +2654,63 @@
         "botUnavailable": "Can't reach the bot. Try again in a moment.",
         "refused": "The bot refused that action.",
         "failed": "Something went wrong. Try again."
+      }
+    }
+  },
+  "Screening": {
+    "title": "Screening queue",
+    "intro": "Every new member gets a card in a staff channel. A team member approves them (they get the member role) or rejects them (they are kicked). Optionally they wear a waiting role until a decision is made.",
+    "noChannel": "No channel yet",
+    "noRole": "No role",
+    "status": {
+      "pending": "Waiting",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "left": "Left"
+    },
+    "queue": {
+      "waiting": "Waiting for a decision ({count})",
+      "empty": "Nobody is waiting.",
+      "recent": "Recent decisions",
+      "account": "Account created {date}",
+      "joined": "joined {date}",
+      "approve": "Approve",
+      "reject": "Reject (kick)",
+      "approved": "Approved.",
+      "rejected": "Rejected and kicked."
+    },
+    "form": {
+      "title": "Settings",
+      "enabled": "Screening is on",
+      "channel": "Staff channel",
+      "channelHelp": "Where the cards are posted. Only the team should see it. The bot needs to send messages and embeds there.",
+      "approvedRole": "Role for approved members",
+      "approvedRoleHelp": "Given when someone is approved. Make this the role that unlocks your channels.",
+      "pendingRole": "Waiting role (optional)",
+      "pendingRoleHelp": "Given on join and taken away on approval.",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Saved.",
+      "savedBotLater": "Saved. The bot will pick it up within a minute."
+    },
+    "errors": {
+      "forbidden": "You are not allowed to do this.",
+      "invalid": "Please check the form.",
+      "needsChannel": "Pick a channel.",
+      "needsRole": "Pick the role for approved members.",
+      "sameRole": "The waiting role must be a different role.",
+      "botUnavailable": "The bot can't be reached right now.",
+      "channelNotFound": "That channel doesn't exist.",
+      "roleNotFound": "That role doesn't exist.",
+      "roleNotUsable": "The bot can't hand out that role.",
+      "failed": "Something went wrong.",
+      "decide": {
+        "forbidden": "You are not allowed to do this.",
+        "invalid": "Invalid request.",
+        "notFound": "That entry doesn't exist any more.",
+        "alreadyDecided": "Already decided (or the member left).",
+        "botUnavailable": "The bot can't be reached right now.",
+        "failed": "Something went wrong. Check the bot's permissions and role position."
       }
     }
   },

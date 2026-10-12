@@ -8,6 +8,7 @@ export const RELOADABLE_MODULES = [
   "retention",
   "verification",
   "raid",
+  "screening",
   "twitch",
   "tempvoice",
   "announcements",

@@ -27,7 +27,7 @@ describe("navigation", () => {
 
   it("shows moderators only what they may use, and never an empty group", () => {
     const mine = flat(moderator).map((i) => i.href);
-    expect(mine).toEqual(["/", "/cases", "/members", "/invites", "/tickets", "/giveaways", "/polls", "/suggestions", "/announcements"]);
+    expect(mine).toEqual(["/", "/cases", "/members", "/invites", "/tickets", "/screening", "/giveaways", "/polls", "/suggestions", "/announcements"]);
     for (const g of moderator) expect(g.items.length).toBeGreaterThan(0);
     // Admins see a superset, in the same order.
     const all = flat(admin).map((i) => i.href);

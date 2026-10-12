@@ -38,6 +38,8 @@ import { checkFeedNow } from "../modules/feeds";
 import { clearSticky } from "../modules/sticky";
 import { guidePreview, postGuide } from "../modules/modguide";
 import { linkVerified, unlinkVip } from "../modules/twitchvip";
+import { decideEntry } from "../modules/screening";
+import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
@@ -255,6 +257,14 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await postVerificationPanel(guild) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/screening/decide") {
+    const body = screeningDecideBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await decideEntry(guild, body.data.id, body.data.decision, body.data.staffName, null) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/twitchvip/linked") {

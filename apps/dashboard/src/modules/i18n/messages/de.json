@@ -4,6 +4,7 @@
     "nav": {
       "label": "Hauptnavigation",
       "groups": {
+        "joining": "Beitritt",
         "moderation": "Moderation",
         "members": "Mitglieder und Rollen",
         "engagement": "Interaktion",
@@ -47,6 +48,7 @@
         "retention": "Datenaufbewahrung",
         "memberLookup": "Mitglieder",
         "verification": "Verifizierung",
+        "screening": "Prüfliste",
         "raid": "Raid-Schutz",
         "audit": "Änderungsprotokoll",
         "invites": "Einladungen"
@@ -2652,6 +2654,63 @@
         "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
         "refused": "Der Bot hat diese Aktion abgelehnt.",
         "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+      }
+    }
+  },
+  "Screening": {
+    "title": "Prüfliste",
+    "intro": "Jedes neue Mitglied bekommt eine Karte in einem Team-Kanal. Ein Teammitglied nimmt es auf (es bekommt die Mitgliedsrolle) oder lehnt es ab (es wird gekickt). Optional trägt es bis zur Entscheidung eine Warte-Rolle.",
+    "noChannel": "Noch kein Kanal",
+    "noRole": "Keine Rolle",
+    "status": {
+      "pending": "Wartet",
+      "approved": "Aufgenommen",
+      "rejected": "Abgelehnt",
+      "left": "Gegangen"
+    },
+    "queue": {
+      "waiting": "Warten auf Entscheidung ({count})",
+      "empty": "Niemand wartet.",
+      "recent": "Letzte Entscheidungen",
+      "account": "Konto erstellt {date}",
+      "joined": "beigetreten {date}",
+      "approve": "Aufnehmen",
+      "reject": "Ablehnen (kicken)",
+      "approved": "Aufgenommen.",
+      "rejected": "Abgelehnt und gekickt."
+    },
+    "form": {
+      "title": "Einstellungen",
+      "enabled": "Die Prüfliste ist an",
+      "channel": "Team-Kanal",
+      "channelHelp": "Wo die Karten erscheinen. Nur das Team sollte ihn sehen. Der Bot muss dort Nachrichten und Embeds senden dürfen.",
+      "approvedRole": "Rolle für aufgenommene Mitglieder",
+      "approvedRoleHelp": "Wird bei der Aufnahme vergeben. Am besten die Rolle, die deine Kanäle freischaltet.",
+      "pendingRole": "Warte-Rolle (optional)",
+      "pendingRoleHelp": "Wird beim Beitritt vergeben und bei der Aufnahme entfernt.",
+      "save": "Speichern",
+      "saving": "Speichert ...",
+      "saved": "Gespeichert.",
+      "savedBotLater": "Gespeichert. Der Bot übernimmt es innerhalb einer Minute."
+    },
+    "errors": {
+      "forbidden": "Dazu hast du keine Berechtigung.",
+      "invalid": "Bitte prüfe das Formular.",
+      "needsChannel": "Wähle einen Kanal.",
+      "needsRole": "Wähle die Rolle für aufgenommene Mitglieder.",
+      "sameRole": "Die Warte-Rolle muss eine andere Rolle sein.",
+      "botUnavailable": "Der Bot ist gerade nicht erreichbar.",
+      "channelNotFound": "Diesen Kanal gibt es nicht.",
+      "roleNotFound": "Diese Rolle gibt es nicht.",
+      "roleNotUsable": "Der Bot darf diese Rolle nicht vergeben.",
+      "failed": "Etwas ist schiefgelaufen.",
+      "decide": {
+        "forbidden": "Dazu hast du keine Berechtigung.",
+        "invalid": "Ungültige Anfrage.",
+        "notFound": "Diesen Eintrag gibt es nicht mehr.",
+        "alreadyDecided": "Schon entschieden (oder das Mitglied ist gegangen).",
+        "botUnavailable": "Der Bot ist gerade nicht erreichbar.",
+        "failed": "Etwas ist schiefgelaufen. Prüfe die Rechte und die Rollenposition des Bots."
       }
     }
   },

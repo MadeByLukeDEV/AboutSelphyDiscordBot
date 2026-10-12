@@ -1170,6 +1170,20 @@ Decided 2026-10-08:
         occurrence from the **planned** time (`nextOccurrence`: keeps the time of day, skips what passed while the bot was away),
         `repeatsLeft - 1`, so only one row is ever pending; cancel it with `/remind cancel`. DB CHECKs: repeat 1 h to 1 year, up to 52 more.
   - [ ] Still open: `/remind` for a channel or another member.
+- [~] Screening queue (2026-11-07, `feature_screening-queue`, migration `20261107180000_screening_queue`
+      applied; **not tried live yet**; P2)
+  - Bot (`modules/screening/`): when on, every new human member gets a card in the staff channel (account
+    age, join time) with Approve / Reject buttons (`sc:approve|reject:<id>`, strict parse), optionally wearing a
+    "waiting" role meanwhile. **Staff only, re-checked on every press** (`staffLevel`). A decision is one
+    conditional UPDATE on `status = pending` (`decide`), so two clicks decide once. Approve gives the approved
+    role (`checkRole`) and removes the waiting one; Reject kicks through `performAction` (an `automod` case, the
+    pressing moderator or "system" with the staff name for a dashboard decision). A member who leaves while
+    waiting is marked `left` and the card is disabled. `POST /internal/screening/decide`, reload key `screening`.
+    Runs only in production or with `BOT_INTEGRATIONS_IN_DEV`. Not on the Modules page (own switch).
+  - Dashboard `/screening` (all staff decide; admins also get the settings). The staff name comes from the
+    session. New nav group "Joining" (welcome, verification, screening, raid); "Members and roles" keeps the rest.
+    Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-11-07). No automatic retention for entries yet.
+  - [ ] Questions asked of the new member before the card, auto-reject after N days, a retention job.
 - [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
       asked for by the user)
   - Dashboard `/role-manager` (admins only): every role but @everyone with member count, colour,
