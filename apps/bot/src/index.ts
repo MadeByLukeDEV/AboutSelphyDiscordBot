@@ -19,6 +19,7 @@ import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
 import { startRetention, stopRetention } from "./modules/privacy";
 import { startInvites } from "./modules/invites";
+import { registerReminderControls } from "./modules/reminders";
 import { registerVerificationControls, startVerification, stopVerification } from "./modules/verification";
 import { startRaidProtection, stopRaidProtection } from "./modules/raid";
 import { registerStarboard } from "./modules/starboard";
@@ -75,6 +76,7 @@ async function main() {
   startTwitchVip(client);
   startRetention(client);
   startInvites(client);
+  registerReminderControls();
   registerVerificationControls();
   startVerification(client);
   startRaidProtection(client);

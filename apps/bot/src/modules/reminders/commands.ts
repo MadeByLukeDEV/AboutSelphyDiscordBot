@@ -1,10 +1,10 @@
 import { InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
 import { parseDuration } from "@aboutselphy/shared/duration";
-import { MAX_REMINDER_MESSAGE } from "@aboutselphy/shared/reminders";
+import { MAX_REMINDER_MESSAGE, MAX_REPEAT_TIMES } from "@aboutselphy/shared/reminders";
 import type { Command } from "../../commands/types";
 import { getReminderConfig } from "./config";
 import { cancelReminder, createReminder, listPending, pendingCount } from "./repository";
-import { isAllowedDelay, reminderLine } from "./rules";
+import { isAllowedDelay, isAllowedRepeat, reminderLine } from "./rules";
 
 const NO_MENTIONS = { parse: [] as never[] };
 
@@ -19,6 +19,8 @@ const remind: Command = {
         .setDescription("Remind me of something later")
         .addStringOption((o) => o.setName("in").setDescription("How long from now, e.g. 30m, 2h or 3d").setRequired(true).setMaxLength(12))
         .addStringOption((o) => o.setName("about").setDescription("What to remind you of").setRequired(true).setMaxLength(MAX_REMINDER_MESSAGE))
+        .addStringOption((o) => o.setName("repeat").setDescription("Repeat every, e.g. 1d or 1w (at least 1h)").setMaxLength(12))
+        .addIntegerOption((o) => o.setName("times").setDescription("How many times in total when repeating (default 4)").setMinValue(2).setMaxValue(MAX_REPEAT_TIMES))
         .addStringOption((o) =>
           o.setName("where").setDescription("Where to remind you (default: a DM)").addChoices({ name: "In a DM", value: "dm" }, { name: "In the channel", value: "channel" }),
         ),
@@ -44,8 +46,12 @@ const remind: Command = {
       if ((await pendingCount(i.user.id)) >= config.maxPerUser) return void (await reply(`You already have ${config.maxPerUser} pending reminders. Cancel one with \`/remind cancel\`.`));
       const remindAt = new Date(Date.now() + seconds * 1000);
       const delivery = i.options.getString("where") === "channel" ? "channel" : "dm";
-      await createReminder({ userId: i.user.id, channelId: i.channelId, message: about, remindAt, delivery });
-      return void (await reply(`Okay, I'll remind you <t:${Math.floor(remindAt.getTime() / 1000)}:R> (<t:${Math.floor(remindAt.getTime() / 1000)}:f>). ${delivery === "channel" ? "I'll post it in this channel." : "I'll send it by DM; if your DMs are closed I'll post it in this channel."}`));
+      const repeatText = i.options.getString("repeat");
+      const every = repeatText ? parseDuration(repeatText) : null;
+      if (repeatText && !isAllowedRepeat(every)) return void (await reply("A repeat needs a length between 1 hour and 1 year, e.g. `1d` or `1w`."));
+      const repeatsLeft = every ? (i.options.getInteger("times") ?? 4) - 1 : 0;
+      await createReminder({ userId: i.user.id, channelId: i.channelId, message: about, remindAt, delivery, ...(every ? { repeatEverySeconds: every, repeatsLeft } : {}) });
+      return void (await reply(`Okay, I'll remind you <t:${Math.floor(remindAt.getTime() / 1000)}:R> (<t:${Math.floor(remindAt.getTime() / 1000)}:f>). ${delivery === "channel" ? "I'll post it in this channel." : "I'll send it by DM; if your DMs are closed I'll post it in this channel."}${every ? ` It repeats ${repeatsLeft} more ${repeatsLeft === 1 ? "time" : "times"}, every ${repeatText}.` : ""}`));
     }
 
     const pending = await listPending(i.user.id);

@@ -1,11 +1,11 @@
-import { AttachmentBuilder, Events, type Client, type Guild } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Events, type Client, type Guild } from "discord.js";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
 import { moduleOn } from "../../lib/modules";
 import { renderMemberCard } from "../membercards";
 import { getReminderConfig } from "./config";
-import { claimDelivery, forgetUser, listDue, pruneDelivered } from "./repository";
-import { reminderText } from "./rules";
+import { claimDelivery, createReminder, forgetUser, listDue, pruneDelivered } from "./repository";
+import { nextOccurrence, reminderText, snoozeControlId, snoozeLabel, SNOOZE_MINUTES } from "./rules";
 
 // Delivers reminders. A round every 30 s; each reminder is claimed with one conditional UPDATE
 // (delivered once), then sent as a DM, or in the channel where it was set if the DMs are closed.
@@ -27,6 +27,11 @@ export async function deliverDue(guild: Guild): Promise<void> {
     for (const r of await listDue(now)) {
       if (!(await claimDelivery(r.id))) continue;
       const text = reminderText(r, now);
+      // A repeating reminder schedules its next occurrence now (from the planned time, so it keeps its time of day).
+      if (r.repeatEverySeconds && r.repeatsLeft > 0) {
+        await createReminder({ userId: r.userId, channelId: r.channelId, message: r.message, remindAt: nextOccurrence(r.remindAt, r.repeatEverySeconds, now), delivery: r.delivery === "channel" ? "channel" : "dm", repeatEverySeconds: r.repeatEverySeconds, repeatsLeft: r.repeatsLeft - 1 }).catch((err) => log.warn({ err, reminder: r.id }, "reminders: could not schedule the next occurrence"));
+      }
+      const snooze = new ActionRowBuilder<ButtonBuilder>().addComponents(SNOOZE_MINUTES.map((m) => new ButtonBuilder().setCustomId(snoozeControlId(r.id, m)).setLabel(`Snooze ${snoozeLabel(m)}`).setStyle(ButtonStyle.Secondary)));
       const user = await guild.client.users.fetch(r.userId).catch(() => null);
       let files: AttachmentBuilder[] = [];
       if (config.cardEnabled && user) {
@@ -42,11 +47,11 @@ export async function deliverDue(guild: Guild): Promise<void> {
         if (card) files = [new AttachmentBuilder(Buffer.from(card), { name: "reminder.png" })];
       }
       // The member's choice goes first, the other way is the fallback (closed DMs, deleted channel).
-      const byDm = async () => (user ? user.send({ content: text, files, allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false);
+      const byDm = async () => (user ? user.send({ content: text, files, components: [snooze], allowedMentions: { users: [r.userId] } }).then(() => true, () => false) : false);
       const byChannel = async () => {
         const channel = await guild.channels.fetch(r.channelId).catch(() => null);
         if (!channel?.isTextBased() || !("send" in channel)) return false;
-        return channel.send({ content: text, files, allowedMentions: { parse: [], users: [r.userId] } }).then(
+        return channel.send({ content: text, files, components: [snooze], allowedMentions: { parse: [], users: [r.userId] } }).then(
           () => true,
           (err) => {
             log.warn({ err, reminder: r.id }, "reminder could not be posted in the channel");

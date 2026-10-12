@@ -836,6 +836,11 @@ model Reminder {
   createdAt   DateTime  @default(now())
   /// Set when delivery was claimed; a reminder is delivered once.
   deliveredAt DateTime?
+  /// Repeating: seconds between occurrences (null = once) and how many more follow.
+  repeatEverySeconds Int?
+  repeatsLeft        Int       @default(0)
+  /// Set when a snooze button was used on this delivered reminder (each reminder can be snoozed once).
+  snoozedAt          DateTime?
 
   @@index([deliveredAt, remindAt])
   @@index([userId, deliveredAt])

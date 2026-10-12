@@ -10,6 +10,11 @@ export const MAX_REMINDER_SECONDS = 365 * 86_400;
 export const MIN_PER_USER = 1;
 export const MAX_PER_USER = 50;
 
+/** A repeating reminder: at least an hour apart, up to a year, and up to this many occurrences in total. */
+export const MIN_REPEAT_SECONDS = 3600;
+export const MAX_REPEAT_SECONDS = 365 * 86_400;
+export const MAX_REPEAT_TIMES = 53;
+
 /** Where a member wants a reminder: a DM, or a message in the channel it was set in. */
 export const REMINDER_DELIVERIES = ["dm", "channel"] as const;
 export type ReminderDelivery = (typeof REMINDER_DELIVERIES)[number];

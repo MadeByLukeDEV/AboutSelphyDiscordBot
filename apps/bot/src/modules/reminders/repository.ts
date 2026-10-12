@@ -5,7 +5,14 @@ export const readConfig = (): Promise<ReminderConfig> => prisma.reminderConfig.u
 
 export const pendingCount = (userId: string) => prisma.reminder.count({ where: { userId, deliveredAt: null } });
 
-export const createReminder = (data: { userId: string; channelId: string; message: string; remindAt: Date; delivery: "dm" | "channel" }) => prisma.reminder.create({ data });
+export const createReminder = (data: { userId: string; channelId: string; message: string; remindAt: Date; delivery: "dm" | "channel"; repeatEverySeconds?: number; repeatsLeft?: number }) => prisma.reminder.create({ data });
+
+export const findReminder = (id: string) => prisma.reminder.findUnique({ where: { id } });
+
+/** The member snoozes a delivered reminder of theirs, once: one conditional UPDATE. False when it isn't theirs, isn't delivered or was snoozed already. */
+export async function claimSnooze(id: string, userId: string): Promise<boolean> {
+  return (await prisma.reminder.updateMany({ where: { id, userId, deliveredAt: { not: null }, snoozedAt: null }, data: { snoozedAt: new Date() } })).count > 0;
+}
 
 export const listPending = (userId: string): Promise<Reminder[]> => prisma.reminder.findMany({ where: { userId, deliveredAt: null }, orderBy: { remindAt: "asc" }, take: 50 });
 

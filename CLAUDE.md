@@ -1162,7 +1162,14 @@ Decided 2026-10-08:
     channel; picked on `/reminders`, validated through the bot). `/remind me where:` lets the member choose a DM
     (default) or the channel (`Reminder.delivery`, CHECK dm|channel); the chosen way is tried first and the other
     is the fallback (closed DMs, deleted channel), so nothing is lost.
-  - [ ] Repeating reminders, `/remind` for a channel or another member, snooze button.
+  - [x] **Snooze and repeating** (2026-11-07, `feature_reminder-snooze-repeat`, migration `20261107100000_reminder_snooze_repeat`; **not tried
+        live yet**): a delivered reminder carries three buttons, "Snooze 10 min / 1 h / 1 day" (`rm:snooze:<id>:<minutes>`, prefix `rm` is
+        under the reminders module switch). Pressing makes a new reminder for the same words; **only the reminder's owner, once**
+        (`claimSnooze` = one conditional UPDATE on `snoozedAt`), counted against `maxPerUser`; it works in a DM (no server in the
+        interaction). `/remind me repeat:<1h+ e.g. 1d|1w> times:<2-53>` (default 4 in total): on delivery the bot creates the next
+        occurrence from the **planned** time (`nextOccurrence`: keeps the time of day, skips what passed while the bot was away),
+        `repeatsLeft - 1`, so only one row is ever pending; cancel it with `/remind cancel`. DB CHECKs: repeat 1 h to 1 year, up to 52 more.
+  - [ ] Still open: `/remind` for a channel or another member.
 - [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
       asked for by the user)
   - Dashboard `/role-manager` (admins only): every role but @everyone with member count, colour,
