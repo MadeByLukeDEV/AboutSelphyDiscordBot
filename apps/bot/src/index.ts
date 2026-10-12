@@ -15,6 +15,7 @@ import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
 import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
+import { startRetention, stopRetention } from "./modules/privacy";
 import { registerStarboard } from "./modules/starboard";
 import { startStatChannels, stopStatChannels } from "./modules/statchannels";
 import { registerSuggestionControls } from "./modules/suggestions";
@@ -67,6 +68,7 @@ async function main() {
   startSticky(client);
   startAntiBot(client);
   startTwitchVip(client);
+  startRetention(client);
   startAutoPublish(client);
   startFeeds(client);
   startCounting(client);
@@ -94,6 +96,7 @@ async function main() {
     stopStatChannels();
     stopSticky();
     stopTwitchVip();
+    stopRetention();
     stopFeeds();
     stopYoutube();
     stopModerationJobs();

@@ -43,7 +43,8 @@
         "feeds": "Feed-Ankündigungen",
         "modGuide": "Moderatoren-Leitfaden",
         "antiBot": "Anti-Bot-Kanal",
-        "twitchVip": "VIP-Rolle"
+        "twitchVip": "VIP-Rolle",
+        "retention": "Datenaufbewahrung"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2456,6 +2457,48 @@
       "taken": "Dieser Twitch-Account ist bereits mit einem anderen Mitglied verknüpft. Frag einen Moderator, falls es deiner ist.",
       "failed": "Etwas ist schiefgelaufen. Versuche es gleich noch einmal.",
       "tooMany": "Zu viele Versuche. Warte ein paar Minuten und versuche es erneut."
+    }
+  },
+  "Retention": {
+    "title": "Datenaufbewahrung",
+    "intro": "Wie lange der Bot personenbezogene Daten behält, bevor eine tägliche Bereinigung sie entfernt. 0 bedeutet behalten (nichts wird entfernt). Mitglieder können ihre eigenen Daten außerdem mit /mydata ansehen und löschen.",
+    "last": {
+      "title": "Letzte Bereinigung",
+      "when": "Lief {time}",
+      "never": "Es wurde noch nichts entfernt."
+    },
+    "form": {
+      "title": "Grenzen",
+      "intro": "Nur Admins können das ändern. Die Bereinigung läuft direkt nach dem Speichern und dann einmal am Tag. Entfernte Daten lassen sich nicht wiederherstellen.",
+      "warning": "Diese Grenzen entfernen Daten, die jetzt vorhanden sind, sobald du speicherst. Das lässt sich nicht rückgängig machen.",
+      "understood": "Ich habe verstanden",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert. Die Bereinigung läuft jetzt.",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar, die Bereinigung läuft innerhalb eines Tages."
+    },
+    "fields": {
+      "ticketTranscriptDays": {
+        "label": "Ticket-Transkripte (Tage)",
+        "help": "Geschlossene Tickets verlieren ihre gespeicherten Nachrichten nach so vielen Tagen. Das Ticket selbst bleibt."
+      },
+      "caseDays": {
+        "label": "Moderationsfälle (Tage)",
+        "help": "Ältere Fälle werden gelöscht. Dauerhafte Bans und noch laufende Fälle bleiben immer."
+      },
+      "suggestionDays": {
+        "label": "Entschiedene Vorschläge (Tage)",
+        "help": "Angenommene, abgelehnte und umgesetzte Vorschläge werden mit ihren Stimmen gelöscht. Offene bleiben."
+      },
+      "inactiveXpDays": {
+        "label": "Inaktive Level-Einträge (Tage)",
+        "help": "Mitglieder, die so lange keine XP bekommen haben, verlieren ihren Level-Eintrag."
+      }
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Gib eine ganze Zahl von 0 bis 3650 ein.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   }
 }

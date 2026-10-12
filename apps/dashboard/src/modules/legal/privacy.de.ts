@@ -83,8 +83,8 @@ export function privacyDe(o: Operator): LegalDoc {
             list: [
               "Geburtstage, Erinnerungen und deine Twitch-VIP-Verknüpfung: gelöscht, wenn du sie entfernst (/birthday remove, /remind cancel, /vip unlink) oder den Server verlässt. Zugestellte Erinnerungen werden nach einem Tag gelöscht.",
               "Gemerkte Rollen nach dem Verlassen: 90 Tage.",
-              "Moderationsfälle und Notizen: gespeichert, solange sie gebraucht werden, um die Community zu schützen und Einsprüche zu beantworten; sie werden von Zeit zu Zeit überprüft. Du kannst die Löschung verlangen (Abschnitt 8).",
-              "Ticket-Protokolle, Vorschläge, Umfragen, Gewinnspiel-Teilnahmen, Level und Starboard-Beiträge: gespeichert, solange die Funktion genutzt wird und bis du die Löschung verlangst oder der Betreiber sie entfernt.",
+              "Moderationsfälle und Notizen: gespeichert, solange sie gebraucht werden, um die Community zu schützen und Einsprüche zu beantworten; sie werden nach dem vom Betreiber festgelegten Zeitraum automatisch entfernt (dauerhafte Banns ausgenommen). Du kannst die Löschung verlangen (Abschnitt 8).",
+              "Ticket-Protokolle, entschiedene Vorschläge und inaktive Level-Einträge: werden nach dem vom Betreiber festgelegten Zeitraum automatisch entfernt. Umfragen, Gewinnspiel-Teilnahmen und Starboard-Beiträge: gespeichert, solange die Funktion genutzt wird und bis du sie mit /mydata delete löschst oder der Betreiber sie entfernt.",
               "Server-Logs in Team-Kanälen: solange das Team die Nachrichten in diesen Discord-Kanälen behält.",
               "Technische Logs des Bots (Nutzer- und Kanal-IDs, Fehler) liegen auf dem Server und werden vom Hosting-Setup rotiert. Sie enthalten keinen Nachrichtentext.",
             ],
@@ -96,7 +96,7 @@ export function privacyDe(o: Operator): LegalDoc {
         heading: "8. Deine Rechte",
         blocks: [
           `Du kannst den Betreiber unter ${o.email} (oder eine Person des Teams auf dem Server) um Auskunft über deine Daten, Berichtigung, Löschung, Einschränkung und eine Kopie in einem gängigen Format bitten, du kannst Verarbeitungen auf Grundlage berechtigter Interessen widersprechen und eine Einwilligung jederzeit widerrufen. Du bekommst innerhalb eines Monats eine Antwort.`,
-          "Manche Daten kannst du auch selbst löschen: /birthday remove, /remind cancel und indem du den Server verlässt (das entfernt deinen Geburtstag und deine Erinnerungen). Eine Löschung kann abgelehnt werden, wenn die Daten weiterhin gebraucht werden, um andere zu schützen oder einen Rechtsanspruch zu verteidigen, zum Beispiel ein aktiver Bann-Eintrag.",
+          "Mit /mydata export siehst du alles, was über dich gespeichert ist (eine Datei, die nur du bekommst), und mit /mydata delete löschst du das meiste davon (Geburtstag, Erinnerungen, Level-Eintrag, gemerkte Rollen, Stimmen, Gewinnspiel-Teilnahmen und deine Twitch-Verknüpfung; dein Name wird aus Vorschlägen und Starboard-Beiträgen entfernt). Manche Daten kannst du auch selbst löschen: /birthday remove, /remind cancel und indem du den Server verlässt (das entfernt deinen Geburtstag und deine Erinnerungen). Eine Löschung kann abgelehnt werden, wenn die Daten weiterhin gebraucht werden, um andere zu schützen oder einen Rechtsanspruch zu verteidigen, zum Beispiel ein aktiver Bann-Eintrag.",
           "Du hast das Recht, dich bei einer Datenschutzbehörde zu beschweren, insbesondere in dem Land, in dem du lebst oder arbeitest.",
         ],
       },

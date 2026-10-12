@@ -83,8 +83,8 @@ export function privacyEn(o: Operator): LegalDoc {
             list: [
               "Birthdays, reminders and your Twitch VIP link: deleted when you remove them (/birthday remove, /remind cancel, /vip unlink) or when you leave the server. Delivered reminders are deleted after one day.",
               "Remembered roles after leaving: 90 days.",
-              "Moderation cases and notes: kept while they are needed to keep the community safe and to answer appeals; they are reviewed from time to time. You can ask for deletion (section 8).",
-              "Ticket transcripts, suggestions, polls, giveaway entries, levels and starboard posts: kept while the feature is in use and until you ask for deletion or the operator removes them.",
+              "Moderation cases and notes: kept while they are needed to keep the community safe and to answer appeals, and removed automatically after the period the operator has set (permanent bans excepted). You can ask for deletion (section 8).",
+              "Ticket transcripts, decided suggestions and inactive level records: removed automatically after the period the operator has set. Polls, giveaway entries and starboard posts: kept while the feature is in use and until you delete them with /mydata delete or the operator removes them.",
               "Server logs in staff channels: kept as long as staff keep the messages in those Discord channels.",
               "Technical logs of the bot (user and channel IDs, errors) live on the server and are rotated by the hosting setup. They contain no message text.",
             ],
@@ -96,7 +96,7 @@ export function privacyEn(o: Operator): LegalDoc {
         heading: "8. Your rights",
         blocks: [
           `You can ask the operator at ${o.email} (or a staff member in the server) for access to your data, correction, deletion, restriction, a copy in a common format, and you can object to processing based on legitimate interests or withdraw consent at any time. You will get an answer within one month.`,
-          "You can also delete some data yourself: /birthday remove, /remind cancel, and by leaving the server (this removes your birthday and reminders). Deletion can be refused where the data is still needed to protect others or to defend a legal claim, for example an active ban record.",
+          "You can see everything stored about you with /mydata export (a file only you receive) and delete most of it with /mydata delete (birthday, reminders, level record, remembered roles, votes, giveaway entries and your Twitch link; your name is removed from suggestions and starboard posts). You can also delete some data yourself: /birthday remove, /remind cancel, and by leaving the server (this removes your birthday and reminders). Deletion can be refused where the data is still needed to protect others or to defend a legal claim, for example an active ban record.",
           "You have the right to complain to a data protection authority, in particular in the country where you live or work.",
         ],
       },

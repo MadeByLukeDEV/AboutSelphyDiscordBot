@@ -1040,3 +1040,16 @@ model TwitchVipLink {
 
   @@index([approved])
 }
+
+/// How long personal data is kept before a daily job removes it (singleton, id 1). 0 = keep.
+model RetentionConfig {
+  id                   Int       @id @default(1)
+  ticketTranscriptDays Int       @default(0)
+  caseDays             Int       @default(0)
+  suggestionDays       Int       @default(0)
+  inactiveXpDays       Int       @default(0)
+  lastRunAt            DateTime?
+  /// What the last run removed, in words (never personal data).
+  lastResult           String    @default("") @db.VarChar(300)
+  updatedAt            DateTime  @updatedAt
+}

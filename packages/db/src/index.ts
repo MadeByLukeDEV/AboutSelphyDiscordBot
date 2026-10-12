@@ -26,6 +26,7 @@ export type {
   AntiBotConfig,
   TwitchVipConfig,
   TwitchVipLink,
+  RetentionConfig,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

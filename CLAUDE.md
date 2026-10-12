@@ -843,6 +843,22 @@ Decided 2026-10-08:
     (`nav-groups`). The phone "More" sheet builds from the same groups.
   - **Catalog keys never contain a dot** (next-intl reads it as nesting and throws
     INVALID_KEY on every page): `catalogs.test.ts` enforces this and equal en/de keys.
+- [~] GDPR tools (2026-10-31, `feature_gdpr-tools`, migration `20261030180000_retention`; **not tried live yet**; closes the gaps
+      the privacy policy admitted). Bot `modules/privacy/`:
+  - `/mydata export` (a JSON file only the member sees: birthday, pending reminders, levels, remembered roles, their
+    suggestions, vote/entry counts, tickets they opened, Twitch link, moderation cases about them without moderators' names)
+    and `/mydata delete` (a confirmation only they can press, 60 s; one transaction removes birthday, reminders, level record,
+    role snapshot, suggestion/poll votes, giveaway entries; the Twitch link goes through `unlinkMember` first so the VIP role
+    comes off; their name is removed from suggestions and starboard posts, which stay). **Moderation cases and tickets are
+    kept on purpose** (policy section 8: they protect others and answer appeals). The user is always the one who typed the
+    command, never an option.
+  - **Retention** (`RetentionConfig`, dashboard `/retention`, admins, System group): per kind a number of days, **0 = keep
+    (default)**: ticket transcripts (transcript only, the ticket stays), moderation cases (never permanent bans or cases still
+    running), decided suggestions (votes cascade), inactive level records. A daily job and a run right after saving; the page
+    asks for an "I understand" tick whenever a change removes data that exists now. Result of the last run is shown. Runs only
+    in production or with `BOT_INTEGRATIONS_IN_DEV` (it deletes rows). The privacy policy now describes both
+    (`LEGAL_LAST_UPDATED` 2026-10-31).
+  - [ ] Still open: retention for polls/giveaway entries/starboard posts, a dashboard tool to erase a member on request.
 - [x] Colour picker (2026-10-29, `feature_everyone-ping-colorpicker`): `components/form/color-picker.tsx` replaces every native
       `<input type="color">` (announcements, mod guide, role create/edit, role panels, tickets, Twitch, welcome, YouTube): a
       popover with a saturation/brightness square (pointer and arrow keys), hue slider, hex field and 12 ready-made colours;

@@ -106,6 +106,13 @@ export async function unlinkVip(guild: Guild, id: string): Promise<TwitchVipUnli
   }
 }
 
+/** For /mydata delete: removes the member's own link, and the role with it. True if there was one. */
+export async function unlinkMember(guild: Guild, discordUserId: string): Promise<boolean> {
+  const link = await findByDiscord(discordUserId);
+  if (!link) return false;
+  return (await unlinkVip(guild, link.id)) === "done";
+}
+
 /** Starts the sync with the bot. Off in a local run unless BOT_INTEGRATIONS_IN_DEV=true (it changes roles of real members). */
 export function startTwitchVip(client: Client): void {
   // A member who leaves takes their link with them (personal data).

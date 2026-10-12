@@ -43,7 +43,8 @@
         "feeds": "Feed announcer",
         "modGuide": "Moderator guide",
         "antiBot": "Anti-bot channel",
-        "twitchVip": "VIP role"
+        "twitchVip": "VIP role",
+        "retention": "Data retention"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2456,6 +2457,48 @@
       "taken": "That Twitch account is already linked to another member. Ask a moderator if it is yours.",
       "failed": "Something went wrong. Try again in a moment.",
       "tooMany": "Too many tries. Wait a few minutes and try again."
+    }
+  },
+  "Retention": {
+    "title": "Data retention",
+    "intro": "How long the bot keeps personal data before a daily clean-up removes it. 0 means keep it (nothing is removed). Members can also see and delete their own data with /mydata.",
+    "last": {
+      "title": "Last clean-up",
+      "when": "Ran {time}",
+      "never": "It hasn't removed anything yet."
+    },
+    "form": {
+      "title": "Limits",
+      "intro": "Only admins can change these. The clean-up runs right after you save and then once a day. Removed data cannot be brought back.",
+      "warning": "These limits remove data that exists right now, as soon as you save. This can't be undone.",
+      "understood": "I understand",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved. The clean-up runs now.",
+      "savedBotLater": "Saved. The bot wasn't reachable, so the clean-up runs within a day."
+    },
+    "fields": {
+      "ticketTranscriptDays": {
+        "label": "Ticket transcripts (days)",
+        "help": "Closed tickets lose their saved messages after this many days. The ticket itself stays."
+      },
+      "caseDays": {
+        "label": "Moderation cases (days)",
+        "help": "Older cases are deleted. Permanent bans and cases still running are always kept."
+      },
+      "suggestionDays": {
+        "label": "Decided suggestions (days)",
+        "help": "Approved, denied and implemented suggestions are deleted with their votes. Open ones stay."
+      },
+      "inactiveXpDays": {
+        "label": "Inactive level records (days)",
+        "help": "Members who earned no XP for this long lose their level record."
+      }
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Enter a whole number from 0 to 3650.",
+      "failed": "Couldn't save the settings. Try again."
     }
   }
 }
