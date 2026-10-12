@@ -178,7 +178,7 @@ export function TwitchManager({
           <ul className="flex flex-col gap-2">
             {streamers.map((s) => (
               <li key={s.id} className="surface flex overflow-hidden">
-                <span className={cn("w-1.5 shrink-0", s.enabled ? "bg-[#9146ff]" : "bg-muted-foreground/40")} aria-hidden />
+                <span className={cn("w-1.5 shrink-0", !s.enabled && "bg-muted-foreground/40")} style={s.enabled ? { backgroundColor: `#${s.embedColor.toString(16).padStart(6, "0")}` } : undefined} aria-hidden />
                 <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
                   <div className="min-w-[12rem] flex-1">
                     <div className="flex flex-wrap items-center gap-2">
