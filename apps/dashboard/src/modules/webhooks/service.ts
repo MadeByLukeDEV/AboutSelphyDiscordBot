@@ -40,7 +40,7 @@ function hostOf(urlEnc: string): string {
 
 export async function getWebhooksPage() {
   const [endpoints, outbound, channels] = await Promise.all([listEndpoints(), listOutbound(), listChannels(["text"])]);
-  const endpointRows: EndpointRow[] = endpoints.map((e) => ({ id: e.id, name: e.name, channelId: e.channelId, enabled: e.enabled, uses: e.uses, lastUsedAt: e.lastUsedAt?.toISOString() ?? null, url: endpointUrl(e.id) }));
+  const endpointRows: EndpointRow[] = endpoints.map((e) => ({ id: e.id, name: e.name, provider: e.provider === "github" || e.provider === "kofi" ? e.provider : "generic", channelId: e.channelId, enabled: e.enabled, uses: e.uses, lastUsedAt: e.lastUsedAt?.toISOString() ?? null, url: endpointUrl(e.id) }));
   const outboundRows: OutboundRow[] = outbound.map((o) => ({
     id: o.id,
     name: o.name,
@@ -50,6 +50,7 @@ export async function getWebhooksPage() {
     host: hostOf(o.urlEnc),
     lastStatus: o.lastStatus,
     lastAt: o.lastAt?.toISOString() ?? null,
+    autoDisabled: o.autoDisabledAt !== null,
   }));
   return { endpoints: endpointRows, outbound: outboundRows, channels, ready: Boolean(key()) };
 }
@@ -73,10 +74,12 @@ export async function saveEndpoint(input: EndpointInput, byName: string): Promis
       await updateEndpoint(existing.id, { name: input.name, channelId: input.channelId, enabled: input.enabled });
       return { ok: true, id: existing.id, url: endpointUrl(existing.id), secret: null };
     }
-    const secret = newSecret();
-    const row = await createEndpoint({ name: input.name, channelId: input.channelId, enabled: input.enabled, secretEnc: encryptToken(secret, ENDPOINT_SECRET_PURPOSE, k), createdByName: byName.slice(0, 100) });
-    console.info("[webhooks] endpoint created", { id: row.id, by: byName });
-    return { ok: true, id: row.id, url: endpointUrl(row.id), secret };
+    // Ko-fi decides its own verification token, so the admin pastes it; the other providers get a secret from us (shown once).
+    if (input.provider === "kofi" && !input.secret) return { ok: false, error: "needsToken" };
+    const secret = input.provider === "kofi" ? input.secret! : newSecret();
+    const row = await createEndpoint({ name: input.name, channelId: input.channelId, enabled: input.enabled, provider: input.provider, secretEnc: encryptToken(secret, ENDPOINT_SECRET_PURPOSE, k), createdByName: byName.slice(0, 100) });
+    console.info("[webhooks] endpoint created", { id: row.id, provider: input.provider, by: byName });
+    return { ok: true, id: row.id, url: endpointUrl(row.id), secret: input.provider === "kofi" ? null : secret };
   } catch (error) {
     console.error("[webhooks] saving an endpoint failed", errorInfo(error));
     return { ok: false, error: "failed" };
@@ -88,7 +91,10 @@ export async function rotateEndpointSecret(id: string): Promise<SaveEndpointResu
   try {
     const k = key();
     if (!k) return { ok: false, error: "notReady" };
-    if (!(await findEndpoint(id))) return { ok: false, error: "notFound" };
+    const found = await findEndpoint(id);
+    if (!found) return { ok: false, error: "notFound" };
+    // Ko-fi's token is Ko-fi's: to change it, remove the endpoint and make a new one.
+    if (found.provider === "kofi") return { ok: false, error: "invalid" };
     const secret = newSecret();
     await updateEndpoint(id, { secretEnc: encryptToken(secret, ENDPOINT_SECRET_PURPOSE, k) });
     console.info("[webhooks] endpoint secret rotated", { id });
@@ -118,7 +124,9 @@ export async function saveOutbound(input: OutboundInput, byName: string): Promis
     const existing = input.id ? await findOutbound(input.id) : null;
     if (input.id && !existing) return { ok: false, error: "notFound" };
     if (existing) {
-      await updateOutbound(existing.id, { name: input.name, events: input.events, enabled: input.enabled, ...(input.url ? { urlEnc: encryptToken(input.url, URL_PURPOSE, k) } : {}) });
+      // Switching a webhook back on after the bot turned it off starts the failure count again.
+      const revived = input.enabled && existing.autoDisabledAt !== null;
+      await updateOutbound(existing.id, { name: input.name, events: input.events, enabled: input.enabled, ...(revived ? { failStreak: 0, autoDisabledAt: null } : {}), ...(input.url ? { urlEnc: encryptToken(input.url, URL_PURPOSE, k) } : {}) });
       return { ok: true, secret: null };
     }
     if ((await countOutbound()) >= MAX_OUTBOUND) return { ok: false, error: "tooMany" };

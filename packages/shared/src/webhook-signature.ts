@@ -27,3 +27,16 @@ export function isFresh(timestamp: string, nowMs: number): boolean {
   if (!/^\d{9,11}$/.test(timestamp)) return false;
   return Math.abs(nowMs / 1000 - Number(timestamp)) <= SIGNATURE_TOLERANCE_SECONDS;
 }
+
+/** Constant-time equality for two secrets/tokens of any length (unequal lengths are simply unequal). */
+export function safeEqual(a: string, b: string): boolean {
+  const x = Buffer.from(a);
+  const y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+}
+
+/** GitHub's `X-Hub-Signature-256`: "sha256=" + the HMAC-SHA256 of the raw body, keyed with the endpoint's secret. No timestamp (GitHub sends none). */
+export function verifyGithubSignature(secret: string, rawBody: string, header: string): boolean {
+  const expected = SIGNATURE_PREFIX + createHmac("sha256", secret).update(rawBody).digest("hex");
+  return safeEqual(header, expected);
+}

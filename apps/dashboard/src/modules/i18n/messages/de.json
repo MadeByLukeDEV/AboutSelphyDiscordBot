@@ -2334,6 +2334,7 @@
       "dialogIntro": "Adresse und Geheimnis entstehen beim Speichern. Das Geheimnis wird einmal angezeigt."
     },
     "outgoing": {
+      "autoDisabled": "Nach wiederholten Fehlern abgeschaltet",
       "title": "Ausgehende Webhooks",
       "intro": "Die Adressen werden verschlüsselt gespeichert und hier wird nur der Host angezeigt. Der Bot verbindet sich nie mit lokalen oder privaten Adressen, folgt keinen Weiterleitungen und unternimmt pro Ereignis einen Versuch.",
       "add": "Webhook hinzufügen",
@@ -2345,7 +2346,20 @@
       "editTitle": "Ausgehenden Webhook bearbeiten",
       "dialogIntro": "Wähle, wohin die Ereignisse gehen und welche."
     },
+    "providers": {
+      "generic": "Eigene (signiertes JSON)",
+      "github": "GitHub",
+      "kofi": "Ko-fi"
+    },
     "endpointForm": {
+      "provider": "Absender",
+      "providerHelp": {
+        "generic": "Dein eigener Dienst, signiert mit dem Geheimnis, das wir einmal zeigen (siehe Signaturregeln oben).",
+        "github": "GitHub-Repository-Webhooks (Pushes, Pull Requests, Issues, Releases, Sterne). Lege in GitHub einen Webhook mit dieser Adresse an, Content-Type application/json und dem Geheimnis, das wir einmal zeigen.",
+        "kofi": "Ko-fi-Spenden, Abos und Shop-Bestellungen. Füge unten Ko-fis Verifizierungs-Token ein und trage diese Adresse in Ko-fis Webhook-Einstellungen ein. Private Unterstützer bleiben anonym."
+      },
+      "kofiToken": "Ko-fi-Verifizierungs-Token",
+      "kofiTokenHelp": "Von Ko-fi: Einstellungen, API, Webhooks. Es wird verschlüsselt gespeichert und nie wieder angezeigt. Zum Ändern diesen Endpunkt entfernen und einen neuen anlegen.",
       "name": "Name",
       "nameHelp": "Wird als \"Via\" und dieser Name unter jeder Nachricht angezeigt.",
       "channel": "Posten in",
@@ -2404,6 +2418,7 @@
       "back": "Zurück"
     },
     "errors": {
+      "needsToken": "Füge das Verifizierungs-Token von Ko-fi ein (mindestens 8 Zeichen, keine Leerzeichen).",
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind ungültig.",
       "notReady": "TOKEN_ENCRYPTION_KEY ist nicht gesetzt, daher können Geheimnisse nicht gespeichert werden.",

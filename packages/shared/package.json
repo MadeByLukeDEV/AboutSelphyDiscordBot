@@ -45,6 +45,7 @@
     "./entry": "./src/entry.ts",
     "./screening": "./src/screening.ts",
     "./levels-import": "./src/levels-import.ts",
+    "./webhook-presets": "./src/webhook-presets.ts",
     "./tempvoice": "./src/tempvoice.ts",
     "./custom-commands": "./src/custom-commands.ts",
     "./counting": "./src/counting.ts",

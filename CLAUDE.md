@@ -1457,5 +1457,18 @@ Decided 2026-10-08:
     result (`ok`, `http 500`, `blocked`...) is remembered. "Send a test" calls `POST /internal/webhooks/test`.
     Sending only runs in production or with `BOT_INTEGRATIONS_IN_DEV`. Both directions need
     `TOKEN_ENCRYPTION_KEY`.
-  - [ ] Provider presets (GitHub, Ko-fi, Stripe-style signatures), more events (member joined, level up),
-        retries with backoff, disabling a webhook after repeated failures.
+  - **Presets, retries, auto-disable** (2026-11-07, `feature_webhook-presets`, migration `20261107320000_webhook_presets`; **not tried
+    with a real sender yet**). *Incoming*: `WebhookEndpoint.provider` generic|github|kofi (fixed at creation, DB CHECK). `receive.ts`
+    now looks the endpoint up first (after the size and per-IP checks) and proves the sender per provider, every failure still a plain
+    401: **generic** = our HMAC + fresh timestamp; **github** = `X-Hub-Signature-256` (HMAC-SHA256 of the raw body, constant-time,
+    `verifyGithubSignature`) and a required `X-GitHub-Delivery` id as the replay key; **kofi** = form field `data` (JSON) whose
+    `verification_token` is compared in constant time with the stored secret (the admin pastes Ko-fi's token, stored encrypted, never
+    shown again; rotate is refused, remove and re-create), `message_id` is the replay key. The raw-body cap is 128 KB for GitHub and
+    8 KB for the others (enforced after authentication so a 413 never reveals an endpoint). `@aboutselphy/shared/webhook-presets`
+    (pure, tested) maps GitHub push / pull_request / issues / release / star / ping and Ko-fi donations to the usual
+    {title, content, url, color}: text is cut, links kept only for github.com / ko-fi.com, private Ko-fi supporters stay anonymous;
+    GitHub events we don't post are acknowledged with 200 and ignored. *Outgoing*: a delivery is tried up to three times (2 s and 10 s
+    apart, same body and event id; only network errors, timeouts, 5xx, 408 and 429 are retried; the test button does not retry), and
+    `OutboundWebhook.failStreak` counts failed deliveries in a row: at 10 one conditional UPDATE switches it off
+    (`autoDisabledAt`, a red badge on `/webhooks`); switching it on again resets the count.
+  - [ ] Stripe-style signatures, more events (member joined, level up), more providers.

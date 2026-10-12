@@ -9,10 +9,15 @@ export type OutboundEvent = (typeof OUTBOUND_EVENTS)[number];
 /** "test" is only ever sent by the "Send a test" button. */
 export type AnyWebhookEvent = OutboundEvent | "test";
 
+export const ENDPOINT_PROVIDERS = ["generic", "github", "kofi"] as const;
+export type EndpointProvider = (typeof ENDPOINT_PROVIDERS)[number];
+
 export const MAX_ENDPOINTS = 20;
 export const MAX_OUTBOUND = 10;
 /** Requests to the public endpoint bigger than this are refused before anything is read. */
 export const MAX_INBOUND_BODY = 8 * 1024;
+/** GitHub's push payloads are bigger; only GitHub endpoints may send this much. */
+export const MAX_GITHUB_BODY = 128 * 1024;
 export const SIGNATURE_TOLERANCE_SECONDS = 300;
 export const MAX_URL = 500;
 
@@ -55,12 +60,20 @@ export const inboundPayload = z
   .refine((v) => Boolean(v.title) || Boolean(v.content), "empty");
 export type InboundPayload = z.infer<typeof inboundPayload>;
 
-export const endpointInput = z.object({
-  id: z.string().min(1).max(64).optional(),
-  name: z.string().trim().min(1).max(60),
-  channelId: snowflake,
-  enabled: z.boolean(),
-});
+export const endpointInput = z
+  .object({
+    id: z.string().min(1).max(64).optional(),
+    name: z.string().trim().min(1).max(60),
+    channelId: snowflake,
+    enabled: z.boolean(),
+    /** Fixed when the endpoint is made; ignored when editing. */
+    provider: z.enum(ENDPOINT_PROVIDERS).default("generic"),
+    /** Ko-fi only, when making the endpoint: the verification token Ko-fi shows (Ko-fi decides it, we can't). */
+    secret: z.string().trim().max(200).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.provider === "kofi" && !v.id && (!v.secret || v.secret.length < 8 || /\s/.test(v.secret))) ctx.addIssue({ code: "custom", path: ["secret"], message: "token" });
+  });
 export type EndpointInput = z.infer<typeof endpointInput>;
 
 export const outboundInput = z

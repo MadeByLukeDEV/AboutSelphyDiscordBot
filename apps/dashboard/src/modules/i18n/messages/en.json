@@ -2334,6 +2334,7 @@
       "dialogIntro": "The address and the secret are made when you save. The secret is shown once."
     },
     "outgoing": {
+      "autoDisabled": "Switched off after repeated failures",
       "title": "Outgoing webhooks",
       "intro": "The addresses are stored encrypted and only the host is shown here. The bot never connects to local or private addresses, doesn't follow redirects and makes one attempt per event.",
       "add": "Add a webhook",
@@ -2345,7 +2346,20 @@
       "editTitle": "Edit outgoing webhook",
       "dialogIntro": "Pick where the events go and which ones."
     },
+    "providers": {
+      "generic": "Custom (signed JSON)",
+      "github": "GitHub",
+      "kofi": "Ko-fi"
+    },
     "endpointForm": {
+      "provider": "Sender",
+      "providerHelp": {
+        "generic": "Your own service, signed with the secret we show once (see the signing rules above).",
+        "github": "GitHub repository webhooks (pushes, pull requests, issues, releases, stars). In GitHub add a webhook with this address, content type application/json, and the secret we show once.",
+        "kofi": "Ko-fi donations, subscriptions and shop orders. Paste Ko-fi's verification token below and put this address in Ko-fi's webhook settings. Private supporters stay anonymous."
+      },
+      "kofiToken": "Ko-fi verification token",
+      "kofiTokenHelp": "From Ko-fi: Settings, API, Webhooks. It is stored encrypted and never shown again. To change it, remove this endpoint and make a new one.",
       "name": "Name",
       "nameHelp": "Shown as \"Via\" and this name under each message.",
       "channel": "Post in",
@@ -2404,6 +2418,7 @@
       "back": "Back"
     },
     "errors": {
+      "needsToken": "Paste the verification token from Ko-fi (at least 8 characters, no spaces).",
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
       "notReady": "TOKEN_ENCRYPTION_KEY isn't set, so secrets can't be stored.",

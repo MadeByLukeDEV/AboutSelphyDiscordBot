@@ -1020,6 +1020,8 @@ model WebhookEndpoint {
   channelId     String    @db.VarChar(20)
   /// The shared signing secret, AES-256-GCM encrypted (purpose "webhook-endpoint-secret"). Shown once, when created.
   secretEnc     String
+  /// generic (our own signing scheme) | github | kofi (CHECK in the migration). Fixed when the endpoint is made.
+  provider      String    @default("generic") @db.VarChar(8)
   enabled       Boolean   @default(true)
   lastUsedAt    DateTime?
   uses          Int       @default(0)
@@ -1044,6 +1046,10 @@ model OutboundWebhook {
   /// "ok", "http 500", "blocked", "error" ... of the last attempt.
   lastStatus    String?   @db.VarChar(24)
   lastAt        DateTime?
+  /// Deliveries that failed in a row (after retries). Reset by a success or when it is switched on again.
+  failStreak    Int       @default(0)
+  /// Set when the bot switched it off after too many failures in a row.
+  autoDisabledAt DateTime?
   createdByName String    @db.VarChar(100)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

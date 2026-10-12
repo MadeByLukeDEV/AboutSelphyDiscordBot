@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 import { Copy, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
-import { endpointInput, MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, outboundInput, type OutboundEvent } from "@aboutselphy/shared/webhooks";
+import { ENDPOINT_PROVIDERS, endpointInput, MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, outboundInput, type EndpointProvider, type OutboundEvent } from "@aboutselphy/shared/webhooks";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,7 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{e.name}</span>
                     <Badge variant={e.enabled ? "default" : "secondary"}>{e.enabled ? t("on") : t("off")}</Badge>
+                    <Badge variant="outline">{t(`providers.${e.provider}`)}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {t("incoming.posts", { channel: channelName(e.channelId) })} · {t("incoming.used", { uses: e.uses, time: when(e.lastUsedAt) })}
@@ -113,9 +114,11 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
                   <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditEndpoint({ row: e })}>
                     {t("edit")}
                   </Button>
-                  <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "rotate", id: e.id, name: e.name })}>
-                    {t("incoming.rotate")}
-                  </Button>
+                  {e.provider !== "kofi" && (
+                    <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "rotate", id: e.id, name: e.name })}>
+                      {t("incoming.rotate")}
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "endpoint", id: e.id, name: e.name })}>
                     {t("remove")}
                   </Button>
@@ -151,6 +154,7 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
                     <span className="font-semibold">{o.name}</span>
                     <Badge variant="secondary">{t(`kinds.${o.kind}`)}</Badge>
                     <Badge variant={o.enabled ? "default" : "secondary"}>{o.enabled ? t("on") : t("off")}</Badge>
+                    {o.autoDisabled && !o.enabled && <Badge variant="destructive">{t("outgoing.autoDisabled")}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {o.host} · {o.events.map((ev) => t(`events.${eventKey(ev)}`)).join(", ")}
@@ -273,8 +277,13 @@ function EndpointForm({ row, channels, onDone }: { row: EndpointRow | null; chan
   const t = useTranslations("Webhooks.endpointForm");
   const te = useTranslations("Webhooks.errors");
   const [pending, startTransition] = useTransition();
-  const form = useForm<{ name: string; channelId: string; enabled: boolean }>({ defaultValues: row ? { name: row.name, channelId: row.channelId, enabled: row.enabled } : { name: "", channelId: "", enabled: true } });
+  const form = useForm<{ name: string; channelId: string; enabled: boolean; provider: EndpointProvider; secret: string }>({
+    defaultValues: row ? { name: row.name, channelId: row.channelId, enabled: row.enabled, provider: row.provider, secret: "" } : { name: "", channelId: "", enabled: true, provider: "generic", secret: "" },
+  });
   const { errors } = form.formState;
+  const provider = useWatch({ control: form.control, name: "provider" });
+  const tp = useTranslations("Webhooks.providers");
+  const providerOptions: SelectOption[] = ENDPOINT_PROVIDERS.map((p) => ({ value: p, label: tp(p) }));
   const options: SelectOption[] = (channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined }));
   if (row && !options.some((o) => o.value === row.channelId)) options.push({ value: row.channelId, label: row.channelId });
 
@@ -284,7 +293,7 @@ function EndpointForm({ row, channels, onDone }: { row: EndpointRow | null; chan
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const key = issue.path[0];
-        if (key === "name" || key === "channelId") form.setError(key, { type: "custom", message: issue.message });
+        if (key === "name" || key === "channelId" || key === "secret") form.setError(key, { type: "custom", message: issue.message });
       }
       return;
     }
@@ -305,6 +314,19 @@ function EndpointForm({ row, channels, onDone }: { row: EndpointRow | null; chan
           <FieldDescription>{t("nameHelp")}</FieldDescription>
           {errors.name && <FieldError>{te("needsName")}</FieldError>}
         </Field>
+        <Field>
+          <FieldLabel htmlFor="wh-provider">{t("provider")}</FieldLabel>
+          <FormSelect control={form.control} name="provider" id="wh-provider" options={providerOptions} placeholder={t("provider")} disabled={row !== null} />
+          <FieldDescription>{t(`providerHelp.${provider}`)}</FieldDescription>
+        </Field>
+        {provider === "kofi" && row === null && (
+          <Field data-invalid={Boolean(errors.secret) || undefined}>
+            <FieldLabel htmlFor="wh-secret">{t("kofiToken")}</FieldLabel>
+            <Input id="wh-secret" type="password" autoComplete="off" maxLength={200} aria-invalid={Boolean(errors.secret) || undefined} {...form.register("secret")} />
+            <FieldDescription>{t("kofiTokenHelp")}</FieldDescription>
+            {errors.secret && <FieldError>{te("needsToken")}</FieldError>}
+          </Field>
+        )}
         <Field data-invalid={Boolean(errors.channelId) || undefined}>
           <FieldLabel htmlFor="wh-channel">{t("channel")}</FieldLabel>
           <FormSelect control={form.control} name="channelId" id="wh-channel" options={options} placeholder={t("channelPlaceholder")} disabled={channels === null} invalid={Boolean(errors.channelId)} />

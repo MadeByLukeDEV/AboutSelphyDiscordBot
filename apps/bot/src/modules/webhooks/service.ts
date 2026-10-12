@@ -9,13 +9,13 @@ import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
 import { postJson } from "../../lib/safe-http";
 import { findOutbound, listEnabledFor, recordResult } from "./repository";
-import { buildRelayEmbed, describeEvent } from "./rules";
+import { buildRelayEmbed, describeEvent, isRetryable, RETRY_DELAYS_MS } from "./rules";
 
 // Webhooks. Incoming: the dashboard's public endpoint verifies a signed request and asks the bot to
 // post it (relayMessage). Outgoing: emitEvent sends an event to every enabled webhook that wants it,
 // as a formatted Discord message or as signed JSON. Addresses and secrets are stored encrypted; the
 // bot decrypts them only to send. Sending is best effort and never delays or breaks the feature that
-// raised the event; one attempt, no retries, the result is remembered for the dashboard.
+// raised the event; a failed delivery is retried twice, the result is remembered for the dashboard, and ten failures in a row switch the webhook off.
 
 const URL_PURPOSE = "webhook-outbound-url";
 const SECRET_PURPOSE = "webhook-outbound-secret";
@@ -34,8 +34,10 @@ export async function relayMessage(guild: Guild, m: { channelId: string; source:
   }
 }
 
-/** Sends one event to one webhook; returns the short status that is remembered. */
-async function sendOne(hook: OutboundWebhook, event: AnyWebhookEvent, data: unknown): Promise<string> {
+type Prepared = { url: string; body: string; headers: Record<string, string> };
+
+/** Builds the request once, so every retry sends the same body (and the same event id). A string is a final status (nothing can be sent). */
+function prepare(hook: OutboundWebhook, event: AnyWebhookEvent, data: unknown): Prepared | string {
   const key = env().TOKEN_ENCRYPTION_KEY;
   if (!key) return "no key";
   let url: string;
@@ -59,22 +61,49 @@ async function sendOne(hook: OutboundWebhook, event: AnyWebhookEvent, data: unkn
     headers["x-webhook-timestamp"] = timestamp;
     if (secret) headers["x-webhook-signature"] = sign(secret, timestamp, body);
   }
-  const result = await postJson(url, body, headers);
+  return { url, body, headers };
+}
+
+async function attempt(request: Prepared): Promise<string> {
+  const result = await postJson(request.url, request.body, request.headers);
   if (!result.ok) return result.reason;
   return result.status >= 200 && result.status < 300 ? "ok" : `http ${result.status}`;
 }
 
-/** Sends an event to every enabled webhook that subscribed to it. Never throws and never waits for the receivers. */
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Sends one event to one webhook; returns the short status that is remembered. A try that might work next time (network
+ * trouble, timeout, 5xx, 408, 429) is repeated after 2 s and 10 s with the same body; the signature timestamp stays well inside
+ * the receiver's tolerance. `retry` is off for the dashboard's test button, which should answer at once.
+ */
+async function sendOne(hook: OutboundWebhook, event: AnyWebhookEvent, data: unknown, retry = true): Promise<string> {
+  const request = prepare(hook, event, data);
+  if (typeof request === "string") return request;
+  let status = await attempt(request);
+  if (!retry) return status;
+  for (const delay of RETRY_DELAYS_MS) {
+    if (!isRetryable(status)) break;
+    await sleep(delay);
+    status = await attempt(request);
+  }
+  return status;
+}
+
+/** Sends an event to every enabled webhook that subscribed to it. Never throws and never waits for the receivers (each webhook has its own task, so a slow one doesn't hold up the others). */
 export function emitEvent(event: Exclude<AnyWebhookEvent, "test">, data: unknown): void {
   if (!integrationsActive()) return;
   void (async () => {
     for (const hook of await listEnabledFor(event)) {
-      const status = await sendOne(hook, event, data).catch((err) => {
-        log.warn({ err, hook: hook.id }, "webhook: sending failed");
-        return "error";
-      });
-      await recordResult(hook.id, status).catch(() => undefined);
-      if (status !== "ok") log.warn({ hook: hook.id, event, status }, "webhook: not delivered");
+      void (async () => {
+        const status = await sendOne(hook, event, data).catch((err) => {
+          log.warn({ err, hook: hook.id }, "webhook: sending failed");
+          return "error";
+        });
+        const disabled = await recordResult(hook.id, status, true).catch(() => false);
+        if (status !== "ok") log.warn({ hook: hook.id, event, status }, "webhook: not delivered");
+        if (disabled) log.warn({ hook: hook.id, name: hook.name }, "webhook: switched off after repeated failures");
+      })();
     }
   })().catch((err) => log.warn({ err }, "webhook: emit failed"));
 }
@@ -85,8 +114,8 @@ export async function sendTest(id: string): Promise<WebhookTestStatus> {
     const hook = await findOutbound(id);
     if (!hook) return "not-found";
     if (!env().TOKEN_ENCRYPTION_KEY) return "not-configured";
-    const status = await sendOne(hook, "test", { message: "test" });
-    await recordResult(hook.id, status);
+    const status = await sendOne(hook, "test", { message: "test" }, false);
+    await recordResult(hook.id, status, false);
     return status === "ok" ? "ok" : "failed";
   } catch (err) {
     log.error({ err }, "webhook test failed");

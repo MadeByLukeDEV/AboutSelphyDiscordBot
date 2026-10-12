@@ -34,3 +34,19 @@ export function describeEvent(event: AnyWebhookEvent, data: unknown): { title: s
   }
   return { title: "Test event", description: "This is a test message from the AboutSelphy bot.", color: 0x00ffa8 };
 }
+
+/** Delays before the 2nd and 3rd try of a delivery. */
+export const RETRY_DELAYS_MS = [2_000, 10_000] as const;
+/** A webhook is switched off after this many failed deliveries in a row (each already retried). */
+export const AUTO_DISABLE_AFTER = 10;
+
+/** Worth another try? Network trouble, timeouts, 5xx, 408 and 429. Not a blocked address, a missing key, or a 4xx that says "no". */
+export function isRetryable(status: string): boolean {
+  if (status === "timeout" || status === "error") return true;
+  const m = /^http (\d{3})$/.exec(status);
+  if (!m) return false;
+  const code = Number(m[1]);
+  return code >= 500 || code === 408 || code === 429;
+}
+
+export const shouldAutoDisable = (failStreak: number): boolean => failStreak >= AUTO_DISABLE_AFTER;
