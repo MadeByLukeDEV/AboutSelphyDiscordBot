@@ -1,10 +1,10 @@
 import "server-only";
 import type { TicketConfig } from "@aboutselphy/db";
-import { transcriptSchema, type TicketSettings, type Transcript } from "@aboutselphy/shared/tickets";
+import { transcriptSchema, type TicketCategoryInput, type TicketSettings, type Transcript } from "@aboutselphy/shared/tickets";
 import { errorInfo } from "@/lib/log";
 import { listChannels, listRoles, postTicketPanel, reloadBotModule } from "@/modules/bot-api";
-import { findByNumber, listTickets, readConfig, updateConfig } from "./repository";
-import type { PanelResult, SaveTicketsResult, TicketRow } from "./schema";
+import { findByNumber, listCategories, listTickets, ratingStats, readConfig, replaceCategories, updateConfig } from "./repository";
+import type { PanelResult, SaveCategoriesResult, SaveTicketsResult, TicketRow } from "./schema";
 
 const toSettings = (c: TicketConfig): TicketSettings => ({
   enabled: c.enabled,
@@ -14,6 +14,7 @@ const toSettings = (c: TicketConfig): TicketSettings => ({
   staffRoleIds: c.staffRoleIds,
   maxOpenPerUser: c.maxOpenPerUser,
   askReason: c.askReason,
+  askRating: c.askRating,
   autoCloseHours: c.autoCloseHours,
   panelTitle: c.panelTitle,
   panelDescription: c.panelDescription,
@@ -37,8 +38,12 @@ export async function getTicketsPage() {
     closedByName: t.closedByName,
     messageCount: t.messageCount,
     hasTranscript: t.hasTranscript,
+    categoryLabel: t.categoryLabel,
+    rating: t.rating,
   }));
-  return { settings: toSettings(config), panelPosted: config.panelMessageId !== null, tickets: rows, channels, roles };
+  const [cats, ratings] = await Promise.all([listCategories(), ratingStats()]);
+  const categories: TicketCategoryInput[] = cats.map((c) => ({ id: c.id, label: c.label, emoji: c.emoji, discordCategoryId: c.discordCategoryId ?? "", staffRoleIds: c.staffRoleIds }));
+  return { settings: toSettings(config), panelPosted: config.panelMessageId !== null, tickets: rows, channels, roles, categories, ratings };
 }
 
 export type TicketDetail = {
@@ -51,6 +56,9 @@ export type TicketDetail = {
   closedAt: string | null;
   closedByName: string | null;
   closeReason: string;
+  categoryLabel: string;
+  topic: string;
+  rating: number | null;
   /** null = no transcript was saved (the bot couldn't read message text, or the ticket is still open). */
   transcript: Transcript | null;
 };
@@ -70,6 +78,9 @@ export async function getTicketDetail(number: number): Promise<TicketDetail | nu
     closedAt: t.closedAt?.toISOString() ?? null,
     closedByName: t.closedByName,
     closeReason: t.closeReason,
+    categoryLabel: t.categoryLabel,
+    topic: t.topic,
+    rating: t.rating,
     transcript: parsed?.success ? parsed.data : null,
   };
 }
@@ -106,6 +117,7 @@ export async function saveTickets(input: TicketSettings): Promise<SaveTicketsRes
       staffRoleIds: input.staffRoleIds,
       maxOpenPerUser: input.maxOpenPerUser,
       askReason: input.askReason,
+      askRating: input.askRating,
       autoCloseHours: input.autoCloseHours,
       panelTitle: input.panelTitle,
       panelDescription: input.panelDescription,
@@ -126,4 +138,33 @@ export async function publishPanel(): Promise<PanelResult> {
   if (status === null) return { ok: false, error: "botUnavailable" };
   if (status === "posted" || status === "updated") return { ok: true, status };
   return { ok: false, error: status };
+}
+
+/**
+ * Saves the ticket types. A Discord category and the staff roles of a type are checked against the server through the bot
+ * (refused if it can't answer); an id that isn't one of ours is refused, so a crafted request can't touch another row.
+ */
+export async function saveCategories(input: TicketCategoryInput[]): Promise<SaveCategoriesResult> {
+  try {
+    const existing = await listCategories();
+    if (input.some((c) => c.id && !existing.some((e) => e.id === c.id))) return { ok: false, error: "notFound" };
+    const newParents = input.flatMap((c) => (c.discordCategoryId && !existing.some((e) => e.id === c.id && e.discordCategoryId === c.discordCategoryId) ? [c.discordCategoryId] : []));
+    const newRoles = input.flatMap((c) => c.staffRoleIds.filter((id) => !existing.some((e) => e.id === c.id && e.staffRoleIds.includes(id))));
+    if (newParents.length > 0) {
+      const channels = await listChannels(["category"]);
+      if (!channels) return { ok: false, error: "botUnavailable" };
+      if (newParents.some((id) => !channels.some((c) => c.id === id && c.kind === "category"))) return { ok: false, error: "categoryNotFound" };
+    }
+    if (newRoles.length > 0) {
+      const roles = await listRoles();
+      if (!roles) return { ok: false, error: "botUnavailable" };
+      if (newRoles.some((id) => !roles.some((r) => r.id === id))) return { ok: false, error: "roleNotFound" };
+    }
+    await replaceCategories(input.map((c) => ({ id: c.id, label: c.label, emoji: c.emoji, discordCategoryId: c.discordCategoryId || null, staffRoleIds: c.staffRoleIds })));
+    const saved = await listCategories();
+    return { ok: true, categories: saved.map((c) => ({ id: c.id, label: c.label, emoji: c.emoji, discordCategoryId: c.discordCategoryId ?? "", staffRoleIds: c.staffRoleIds })), botNotified: await reloadBotModule("tickets") };
+  } catch (error) {
+    console.error("[tickets] saving the categories failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
 }

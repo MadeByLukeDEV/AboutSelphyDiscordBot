@@ -1,7 +1,7 @@
 import { OverwriteType, PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { fillTicketTemplate, ticketChannelName, ticketSettingsSchema, transcriptSchema } from "@aboutselphy/shared/tickets";
-import { buildTranscript, canClaim, canClose, cleanReason, idleCutoff, OPEN_CONTROL_ID, parseTicketControl, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
+import { buildTranscript, canClaim, canClose, cleanReason, idleCutoff, modalControlId, OPEN_CONTROL_ID, openCategoryControlId, parentFor, rateControlId, staffRolesFor, starsText, parseTicketControl, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
 
 describe("ticketOverwrites", () => {
   const specs = ticketOverwrites({ everyoneId: "E", openerId: "O", botId: "B", staffRoleIds: ["S1", "S2"] });
@@ -99,6 +99,7 @@ describe("helpers and settings", () => {
     staffRoleIds: [],
     maxOpenPerUser: 1,
     askReason: false,
+    askRating: false,
     autoCloseHours: 0,
     panelTitle: "Help",
     panelDescription: "",
@@ -143,5 +144,34 @@ describe("idle tickets and the reason form", () => {
     expect(parseTicketControl("tk:modal")).toEqual({ action: "modal" });
     expect(parseTicketControl("tk:modal:x")).toBeNull();
     expect(parseTicketControl("tk:open")).toEqual({ action: "open" });
+  });
+});
+
+describe("categories and ratings", () => {
+  it("a category's own roles replace the general ones, an empty list falls back", () => {
+    expect(staffRolesFor(["a", "b"], { staffRoleIds: ["c"] })).toEqual(["c"]);
+    expect(staffRolesFor(["a", "b"], { staffRoleIds: [] })).toEqual(["a", "b"]);
+    expect(staffRolesFor(["a"], null)).toEqual(["a"]);
+  });
+  it("a category's own Discord category wins, else the general one", () => {
+    expect(parentFor("g", { discordCategoryId: "x" })).toBe("x");
+    expect(parentFor("g", { discordCategoryId: null })).toBe("g");
+    expect(parentFor(null, null)).toBeNull();
+  });
+  it("parses the category buttons, the category form and the rating buttons strictly", () => {
+    expect(parseTicketControl("tk:open:abcdefghij12")).toEqual({ action: "open", categoryId: "abcdefghij12" });
+    expect(parseTicketControl("tk:modal:abcdefghij12")).toEqual({ action: "modal", categoryId: "abcdefghij12" });
+    expect(parseTicketControl("tk:rate:abcdefghij12:5")).toEqual({ action: "rate", ticketId: "abcdefghij12", stars: 5 });
+    for (const bad of ["tk:rate:abcdefghij12:0", "tk:rate:abcdefghij12:6", "tk:rate:short:3", "tk:open:Bad Id", "tk:rate:abcdefghij12:3:x"]) expect(parseTicketControl(bad), bad).toBeNull();
+  });
+  it("round-trips the ids it builds", () => {
+    expect(parseTicketControl(openCategoryControlId("abcdefghij12"))).toEqual({ action: "open", categoryId: "abcdefghij12" });
+    expect(parseTicketControl(rateControlId("abcdefghij12", 4))).toEqual({ action: "rate", ticketId: "abcdefghij12", stars: 4 });
+    expect(parseTicketControl(modalControlId(null))).toEqual({ action: "modal" });
+  });
+  it("shows stars as text", () => {
+    expect(starsText(3)).toBe("★★★☆☆");
+    expect(starsText(9)).toBe("★★★★★");
+    expect(starsText(-1)).toBe("☆☆☆☆☆");
   });
 });

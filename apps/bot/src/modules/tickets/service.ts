@@ -23,9 +23,10 @@ import { env } from "../../lib/env";
 import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { staffLevel } from "../../lib/permissions";
+import { toComponentEmoji } from "../roles";
 import { getTicketConfig } from "./config";
-import { buildTranscript, cleanReason, idleCutoff, OPEN_CONTROL_ID, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
-import { claim, createTicket, findByChannel, listIdle, listOpen, listRecentlyClosed, markClosed, openCountFor, reserveNumber, setPanelMessage, touchActivity } from "./repository";
+import { buildTranscript, cleanReason, idleCutoff, OPEN_CONTROL_ID, openCategoryControlId, parentFor, rateControlId, staffRolesFor, starsText, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
+import { claim, createTicket, findByChannel, findCategory, listCategories, listIdle, listOpen, listRecentlyClosed, markClosed, openCountFor, reserveNumber, setPanelMessage, touchActivity } from "./repository";
 
 const NO_MENTIONS = { parse: [] as never[] };
 const openLocks = new KeyedMutex();
@@ -33,8 +34,8 @@ const DELETE_DELAY_MS = 10_000;
 const FETCH_CAP = 2000;
 
 /** Staff = one of the ticket staff roles, or a staff member of the bot (the same roles as the dashboard). */
-export function isTicketStaff(member: GuildMember, config: TicketConfig): boolean {
-  return config.staffRoleIds.some((id) => member.roles.cache.has(id)) || staffLevel(member) !== null;
+export function isTicketStaff(member: GuildMember, config: TicketConfig, category: { staffRoleIds: readonly string[] } | null = null): boolean {
+  return staffRolesFor(config.staffRoleIds, category).some((id) => member.roles.cache.has(id)) || staffLevel(member) !== null;
 }
 
 const asText = async (guild: Guild, id: string | null): Promise<GuildTextBasedChannel | null> => {
@@ -54,7 +55,17 @@ export async function postPanel(guild: Guild): Promise<TicketPanelStatus> {
 
     const embed = new EmbedBuilder().setColor(config.panelColor).setTitle(truncate(withEmotes(config.panelTitle), 256));
     if (config.panelDescription) embed.setDescription(truncate(withEmotes(config.panelDescription), 4000));
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId(OPEN_CONTROL_ID).setLabel(truncate(config.buttonLabel, 80)).setStyle(ButtonStyle.Primary).setEmoji("🎫"));
+    // One button per category when there are any (a row holds five), otherwise the single button.
+    const categories = (await listCategories()).slice(0, 5);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      categories.length > 0
+        ? categories.map((c) => {
+            const button = new ButtonBuilder().setCustomId(openCategoryControlId(c.id)).setLabel(truncate(c.label, 80)).setStyle(ButtonStyle.Primary);
+            const emoji = toComponentEmoji(c.emoji);
+            return emoji ? button.setEmoji(emoji) : button;
+          })
+        : [new ButtonBuilder().setCustomId(OPEN_CONTROL_ID).setLabel(truncate(config.buttonLabel, 80)).setStyle(ButtonStyle.Primary).setEmoji("🎫")],
+    );
     const payload = { embeds: [embed], components: [row], allowedMentions: NO_MENTIONS };
 
     if (config.panelMessageId) {
@@ -77,7 +88,7 @@ export async function postPanel(guild: Guild): Promise<TicketPanelStatus> {
 // -- opening ----------------------------------------------------------------------------------------
 
 /** "Open a ticket" was pressed, or the form asking what it is about was sent. Serialised per member so a double click can't make two. */
-export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteraction<"cached">, reason = ""): Promise<void> {
+export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteraction<"cached">, reason = "", categoryId: string | null = null): Promise<void> {
   return openLocks.run(i.user.id, async () => {
     await i.deferReply({ flags: MessageFlags.Ephemeral });
     const say = (content: string) => i.editReply({ content, allowedMentions: NO_MENTIONS });
@@ -87,7 +98,11 @@ export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteracti
     const open = await openCountFor(i.user.id);
     if (open >= config.maxOpenPerUser) return void (await say(open === 1 ? "You already have an open ticket. Please use that one." : `You already have ${open} open tickets, which is the most allowed.`));
 
-    const category = await i.guild.channels.fetch(config.categoryId).catch(() => null);
+    // A category button: the category must still exist; its own roles and Discord category apply when it has them.
+    const ticketCategory = categoryId ? await findCategory(categoryId) : null;
+    if (categoryId && !ticketCategory) return void (await say("That ticket type isn't available any more. Please use the current panel."));
+    const staffRoleIds = staffRolesFor(config.staffRoleIds, ticketCategory);
+    const category = await i.guild.channels.fetch(parentFor(config.categoryId, ticketCategory) ?? config.categoryId).catch(() => null);
     if (!category || category.type !== ChannelType.GuildCategory) return void (await say("The ticket category is missing. Please tell a moderator."));
     const me = i.guild.members.me ?? (await i.guild.members.fetchMe());
     const perms = category.permissionsFor(me);
@@ -104,11 +119,11 @@ export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteracti
         type: ChannelType.GuildText,
         parent: category.id,
         topic: `Ticket #${number} · opened by ${i.user.id}`,
-        permissionOverwrites: ticketOverwrites({ everyoneId: i.guild.id, openerId: i.user.id, botId: me.id, staffRoleIds: config.staffRoleIds }),
+        permissionOverwrites: ticketOverwrites({ everyoneId: i.guild.id, openerId: i.user.id, botId: me.id, staffRoleIds }),
         reason: `Ticket #${number} opened by ${i.user.username}`,
       });
       const topic = cleanReason(reason);
-      const ticket = await createTicket({ number, channelId: channel.id, openerId: i.user.id, openerName: i.member.displayName, topic });
+      const ticket = await createTicket({ number, channelId: channel.id, openerId: i.user.id, openerName: i.member.displayName, topic, categoryId: ticketCategory?.id ?? null, categoryLabel: ticketCategory?.label ?? "" });
       rememberOpenChannel(channel.id);
 
       const welcome = new EmbedBuilder()
@@ -116,6 +131,7 @@ export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteracti
         .setTitle(`Ticket #${number}`)
         .setDescription(truncate(withEmotes(fillTicketTemplate(config.welcomeTemplate, { user: `<@${i.user.id}>`, number: String(number) })), 4000));
       // What they said it is about is theirs to write: shown as plain text, nothing in it can ping.
+      if (ticketCategory) welcome.addFields({ name: "Type", value: truncate(escapeText(ticketCategory.label), 100), inline: true });
       if (topic) welcome.addFields({ name: "What it is about", value: truncate(escapeText(topic), 1000) });
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder().setCustomId(ticketControlId("claim", ticket.id)).setLabel("Claim").setStyle(ButtonStyle.Secondary).setEmoji("🙋"),
@@ -210,6 +226,15 @@ export async function closeTicket(guild: Guild, ticket: Ticket, by: { id: string
       await logChannel.send({ embeds: [embed], files, allowedMentions: NO_MENTIONS });
     } catch (err) {
       log.error({ err, ticket: ticket.number }, "posting the ticket summary failed");
+    }
+  }
+
+  // Ask the opener how it went (best effort: closed DMs just mean no rating).
+  if (config.askRating) {
+    const opener = await guild.client.users.fetch(ticket.openerId).catch(() => null);
+    if (opener) {
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents([1, 2, 3, 4, 5].map((n) => new ButtonBuilder().setCustomId(rateControlId(ticket.id, n)).setLabel(String(n)).setEmoji("⭐").setStyle(ButtonStyle.Secondary)));
+      await opener.send({ content: `Your ticket #${ticket.number} in **${escapeText(guild.name)}** was closed. How was the help you got?`, components: [row], allowedMentions: NO_MENTIONS }).catch(() => undefined);
     }
   }
 

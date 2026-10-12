@@ -542,6 +542,8 @@ model TicketConfig {
   nextNumber       Int      @default(1)
   /// Ask what the ticket is about (a short form) before the channel is made.
   askReason        Boolean  @default(false)
+  /// DM the opener a 1-5 star rating after the ticket is closed.
+  askRating        Boolean  @default(false)
   /// Close a ticket after this many hours without a message (0 = never; CHECK 0..720 in the migration).
   autoCloseHours   Int      @default(0)
   updatedAt        DateTime @updatedAt
@@ -564,6 +566,11 @@ model Ticket {
   closeReason   String       @default("") @db.VarChar(300)
   /// What the opener said it is about (empty when the form is off).
   topic         String       @default("") @db.VarChar(300)
+  /// The category the opener picked (no foreign key: a removed category leaves its tickets alone) and its name at the time.
+  categoryId    String?      @db.VarChar(40)
+  categoryLabel String       @default("") @db.VarChar(80)
+  /// The opener's rating after closing (1-5), once.
+  rating        Int?
   /// The last message in the ticket channel (or when it was opened); drives the automatic close.
   lastActivityAt DateTime     @default(now())
   /// The conversation as JSON (see packages/shared/src/tickets.ts), kept when the ticket closes.
@@ -1167,4 +1174,18 @@ model MemberInvite {
   @@index([inviterId])
   @@index([userId])
   @@index([joinedAt])
+}
+
+/// A ticket category: its own button on the panel, optionally its own Discord category and its own staff roles.
+model TicketCategory {
+  id                String   @id @default(cuid())
+  label             String   @db.VarChar(80)
+  /// Unicode emoji or <:name:id>, "" for none.
+  emoji             String   @default("") @db.VarChar(64)
+  /// Where its ticket channels are made; null = the general ticket category.
+  discordCategoryId String?  @db.VarChar(20)
+  /// Who sees and handles its tickets; empty = the general staff roles.
+  staffRoleIds      String[] @default([])
+  position          Int      @default(0)
+  createdAt         DateTime @default(now())
 }

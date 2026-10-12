@@ -1144,7 +1144,9 @@
       "askReason": "Fragen, worum es im Ticket geht",
       "askReasonHelp": "Der Knopf öffnet zuerst ein kurzes Formular. Die Antwort steht oben im Ticket und wird mit ihm gespeichert.",
       "autoClose": "Inaktive Tickets schließen nach (Stunden)",
-      "autoCloseHelp": "Ein Ticket ohne Nachricht wird nach dieser Zeit automatisch geschlossen, das Transkript bleibt gespeichert. 0 = nie. Bis zu {max} (30 Tage)."
+      "autoCloseHelp": "Ein Ticket ohne Nachricht wird nach dieser Zeit automatisch geschlossen, das Transkript bleibt gespeichert. 0 = nie. Bis zu {max} (30 Tage).",
+      "askRating": "Nach dem Schließen um eine Bewertung bitten",
+      "askRatingHelp": "Der Ersteller bekommt beim Schließen eine DM mit fünf Sterne-Knöpfen. Die Bewertung wird mit dem Ticket gespeichert."
     },
     "panel": {
       "post": "Panel posten",
@@ -1173,7 +1175,8 @@
       "empty": {
         "title": "Noch keine Tickets",
         "body": "Sie erscheinen hier, sobald Mitglieder welche öffnen."
-      }
+      },
+      "rating": "Durchschnittliche Bewertung {average} von 5 ({count, plural, one {# Bewertung} other {# Bewertungen}})"
     },
     "detail": {
       "back": "← Alle Tickets",
@@ -1191,7 +1194,10 @@
       "transcript": "Protokoll ({count} Nachrichten)",
       "truncated": "Dieses Ticket war sehr lang: Nur die neuesten Nachrichten werden behalten.",
       "bot": "Bot",
-      "embeds": "{count, plural, one {# Embed} other {# Embeds}} (nicht gespeichert)"
+      "embeds": "{count, plural, one {# Embed} other {# Embeds}} (nicht gespeichert)",
+      "type": "Art",
+      "topic": "Worum es ging",
+      "rating": "Bewertung"
     },
     "errors": {
       "forbidden": "Nur Admins können diese Einstellungen ändern.",
@@ -1204,6 +1210,41 @@
       "categoryNotFound": "Diese Kategorie existiert nicht oder der Bot kann sie nicht sehen.",
       "roleNotFound": "Eine dieser Rollen existiert nicht mehr.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    },
+    "categories": {
+      "title": "Ticket-Arten",
+      "intro": "Gib dem Panel einen Knopf pro Art (bis zu {max}), zum Beispiel Support, Abrechnung oder Mitglied melden. Jede Art kann ihre Tickets in einer eigenen Discord-Kategorie erstellen und von eigenen Team-Rollen bearbeitet werden; leer lassen für die allgemeinen. Ohne Arten hat das Panel einen einzigen Knopf.",
+      "empty": "Noch keine Arten: Das Panel zeigt einen Knopf.",
+      "label": "Name (der Knopftext)",
+      "emoji": "Emoji",
+      "general": "Die allgemeine Ticket-Kategorie",
+      "discordCategory": "Discord-Kategorie für ihre Tickets",
+      "discordCategoryHelp": "Wo die Ticket-Kanäle dieser Art erstellt werden. Der Bot braucht dort Kanäle verwalten.",
+      "staff": "Team-Rollen für diese Art (bis zu {max})",
+      "staffHelp": "Nur diese Rollen sehen und bearbeiten ihre Tickets. Leer lassen, um die allgemeinen Team-Rollen zu nutzen.",
+      "staffSelected": "Rollen für diese Art",
+      "staffNone": "Allgemeine Team-Rollen",
+      "staffSearch": "Rollen suchen",
+      "staffFull": "Höchstens {max} Rollen.",
+      "noMatch": "Keine Treffer",
+      "offline": "Der Bot ist offline, daher ist die Rollenliste nicht verfügbar.",
+      "removeRole": "{name} entfernen",
+      "add": "Art hinzufügen",
+      "remove": "Diese Art entfernen",
+      "save": "Arten speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "repost": "Drücke nach Änderungen der Arten oben „Panel aktualisieren“, damit die Knöpfe stimmen.",
+      "errors": {
+        "forbidden": "Du hast hierauf keinen Zugriff.",
+        "invalid": "Einige Werte sind ungültig (jede Art braucht einen Namen; das Emoji muss ein echtes Emoji sein).",
+        "duplicate": "Zwei Arten haben denselben Namen.",
+        "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+        "categoryNotFound": "Eine der Discord-Kategorien gibt es nicht.",
+        "roleNotFound": "Eine der Rollen gibt es nicht.",
+        "notFound": "Eine der Arten gibt es nicht mehr. Lade die Seite neu.",
+        "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
+      }
     }
   },
   "Giveaways": {

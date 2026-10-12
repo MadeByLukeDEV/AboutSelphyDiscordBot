@@ -1,9 +1,9 @@
 "use server";
 
-import { ticketSettingsSchema } from "@aboutselphy/shared/tickets";
+import { ticketCategoriesSchema, ticketSettingsSchema } from "@aboutselphy/shared/tickets";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import type { PanelResult, SaveTicketsResult } from "./schema";
-import { publishPanel, saveTickets } from "./service";
+import type { PanelResult, SaveCategoriesResult, SaveTicketsResult } from "./schema";
+import { publishPanel, saveCategories, saveTickets } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself
@@ -30,6 +30,13 @@ async function saveTicketSettingsActionRun(input: unknown): Promise<SaveTicketsR
   return saveTickets(parsed.data);
 }
 
+async function saveTicketCategoriesActionRun(input: unknown): Promise<SaveCategoriesResult> {
+  if (!(await isAdminSession())) return { ok: false, error: "forbidden" };
+  const parsed = ticketCategoriesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.message === "duplicate") ? "duplicate" : "invalid" };
+  return saveCategories(parsed.data);
+}
+
 async function postPanelActionRun(): Promise<PanelResult> {
   if (!(await isAdminSession())) return { ok: false, error: "forbidden" };
   return publishPanel();
@@ -41,4 +48,8 @@ export async function saveTicketSettingsAction(...args: Parameters<typeof saveTi
 
 export async function postPanelAction(...args: Parameters<typeof postPanelActionRun>): ReturnType<typeof postPanelActionRun> {
   return audited("tickets.postPanel", postPanelActionRun, args);
+}
+
+export async function saveTicketCategoriesAction(...args: Parameters<typeof saveTicketCategoriesActionRun>): ReturnType<typeof saveTicketCategoriesActionRun> {
+  return audited("tickets.saveTicketCategories", saveTicketCategoriesActionRun, args);
 }

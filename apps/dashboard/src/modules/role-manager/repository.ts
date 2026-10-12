@@ -11,7 +11,7 @@ export async function references(): Promise<RoleReference[]> {
   const add = (key: UsageKey, ids: Array<string | null | undefined>) => {
     for (const roleId of ids) if (roleId) refs.push({ key, roleId });
   };
-  const [panels, rewards, welcome, levels, tickets, giveaways, announcements, streamers, twitch, youtube, birthday] = await Promise.all([
+  const [panels, rewards, welcome, levels, tickets, giveaways, announcements, streamers, twitch, youtube, birthday, ticketTypes] = await Promise.all([
     prisma.rolePanelRole.findMany({ select: { roleId: true } }),
     prisma.levelReward.findMany({ select: { roleId: true } }),
     prisma.welcomeConfig.findMany({ select: { autoRoleIds: true, botAutoRoleIds: true } }),
@@ -23,12 +23,13 @@ export async function references(): Promise<RoleReference[]> {
     prisma.twitchConfig.findMany({ select: { liveRoleId: true } }),
     prisma.youtubeConfig.findMany({ select: { pingRoleId: true } }),
     prisma.birthdayConfig.findMany({ select: { roleId: true } }),
+    prisma.ticketCategory.findMany({ select: { staffRoleIds: true } }),
   ]);
   add("panel", panels.map((p) => p.roleId));
   add("levelReward", rewards.map((r) => r.roleId));
   add("welcome", welcome.flatMap((w) => [...w.autoRoleIds, ...w.botAutoRoleIds]));
   add("noXp", levels.flatMap((l) => l.noXpRoleIds));
-  add("tickets", tickets.flatMap((t) => t.staffRoleIds));
+  add("tickets", [...tickets.flatMap((t) => t.staffRoleIds), ...ticketTypes.flatMap((t) => t.staffRoleIds)]);
   add("giveaway", giveaways.flatMap((g) => [g.requiredRoleId, g.pingRoleId, g.bonusRoleId]));
   add("announcement", announcements.map((a) => a.pingRoleId));
   add("twitch", [...streamers.map((s) => s.pingRoleId), ...twitch.map((c) => c.liveRoleId)]);
@@ -69,6 +70,14 @@ export async function removeReferences(missing: string[]): Promise<Partial<Recor
       if (next.length !== l.noXpRoleIds.length) {
         await tx.levelConfig.update({ where: { id: l.id }, data: { noXpRoleIds: next } });
         count("noXp", l.noXpRoleIds.length - next.length);
+      }
+    }
+    // A ticket type that loses all its own roles falls back to the general staff roles.
+    for (const c of await tx.ticketCategory.findMany()) {
+      const next = keep(c.staffRoleIds);
+      if (next.length !== c.staffRoleIds.length) {
+        await tx.ticketCategory.update({ where: { id: c.id }, data: { staffRoleIds: next } });
+        count("tickets", c.staffRoleIds.length - next.length);
       }
     }
     for (const t of tickets) {

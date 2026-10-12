@@ -4,8 +4,8 @@ import { onComponent, type ComponentInteraction } from "../../events/components"
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
 import { getTicketConfig } from "./config";
-import { canClaim, canClose, cleanReason, MODAL_CONTROL_ID, parseTicketControl, REASON_FIELD_ID, ticketControlId, TICKET_PREFIX } from "./plan";
-import { findTicket } from "./repository";
+import { canClaim, canClose, cleanReason, modalControlId, parseTicketControl, REASON_FIELD_ID, starsText, ticketControlId, TICKET_PREFIX } from "./plan";
+import { findCategory, findTicket, rate } from "./repository";
 import { claimTicket, closeTicket, isTicketStaff, openTicket } from "./service";
 
 const NO_MENTIONS = { parse: [] as never[] };
@@ -17,14 +17,19 @@ const NO_MENTIONS = { parse: [] as never[] };
  * into another channel, or pressed by a bystander, does nothing.
  */
 async function handle(i: ComponentInteraction): Promise<void> {
-  if (!i.inCachedGuild() || i.guildId !== env().DISCORD_GUILD_ID) return;
   const control = parseTicketControl(i.customId);
+  // A rating is pressed in a DM (no server in the interaction), so it is handled before the server check.
+  if (control?.action === "rate" && i.isButton()) {
+    const saved = await rate(control.ticketId, i.user.id, control.stars);
+    return void (await i.update({ content: saved ? `Thanks for your rating: ${starsText(control.stars)}` : "This ticket was already rated, or isn't yours.", components: [] }));
+  }
+  if (!i.inCachedGuild() || i.guildId !== env().DISCORD_GUILD_ID) return;
   if (!control) return void (await i.reply({ content: "That control isn't valid any more.", flags: MessageFlags.Ephemeral }));
 
   // The form that asks what the ticket is about was sent: open the ticket with that text.
   if (i.isModalSubmit()) {
     if (control.action !== "modal") return;
-    return openTicket(i, cleanReason(i.fields.getTextInputValue(REASON_FIELD_ID)));
+    return openTicket(i, cleanReason(i.fields.getTextInputValue(REASON_FIELD_ID)), control.categoryId ?? null);
   }
   if (!i.isButton()) return;
   const button: ButtonInteraction<"cached"> = i;
@@ -33,18 +38,19 @@ async function handle(i: ComponentInteraction): Promise<void> {
     // When the form is on, the first answer to the press must be the form itself.
     if ((await getTicketConfig()).askReason) {
       const field = new TextInputBuilder().setCustomId(REASON_FIELD_ID).setLabel("What do you need help with?").setStyle(TextInputStyle.Paragraph).setRequired(true).setMinLength(3).setMaxLength(MAX_TICKET_REASON);
-      return void (await button.showModal(new ModalBuilder().setCustomId(MODAL_CONTROL_ID).setTitle("Open a ticket").addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(field))));
+      return void (await button.showModal(new ModalBuilder().setCustomId(modalControlId(control.categoryId ?? null)).setTitle("Open a ticket").addComponents(new ActionRowBuilder<TextInputBuilder>().addComponents(field))));
     }
-    return openTicket(button);
+    return openTicket(button, "", control.categoryId ?? null);
   }
-  if (control.action === "modal") return;
+  if (control.action === "modal" || control.action === "rate") return;
 
   const ticket = await findTicket(control.ticketId);
   if (!ticket || ticket.status !== "open" || ticket.channelId !== button.channelId) {
     return void (await button.reply({ content: "This ticket isn't active any more.", flags: MessageFlags.Ephemeral }));
   }
   const config = await getTicketConfig();
-  const who = { isStaff: isTicketStaff(button.member, config), isOpener: button.user.id === ticket.openerId };
+  const ticketCategory = ticket.categoryId ? await findCategory(ticket.categoryId) : null;
+  const who = { isStaff: isTicketStaff(button.member, config, ticketCategory), isOpener: button.user.id === ticket.openerId };
 
   if (control.action === "claim") {
     if (!canClaim(who)) return void (await button.reply({ content: "Only the team can claim a ticket.", flags: MessageFlags.Ephemeral }));

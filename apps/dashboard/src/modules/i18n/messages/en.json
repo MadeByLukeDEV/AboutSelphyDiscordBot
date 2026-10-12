@@ -1144,7 +1144,9 @@
       "askReason": "Ask what the ticket is about",
       "askReasonHelp": "Pressing the button opens a short form first. The answer is shown at the top of the ticket and saved with it.",
       "autoClose": "Close idle tickets after (hours)",
-      "autoCloseHelp": "A ticket with no message for this long is closed automatically, with its transcript saved. 0 = never. Up to {max} (30 days)."
+      "autoCloseHelp": "A ticket with no message for this long is closed automatically, with its transcript saved. 0 = never. Up to {max} (30 days).",
+      "askRating": "Ask for a rating after closing",
+      "askRatingHelp": "The opener gets a DM with five star buttons when the ticket is closed. The rating is saved with the ticket."
     },
     "panel": {
       "post": "Post the panel",
@@ -1173,7 +1175,8 @@
       "empty": {
         "title": "No tickets yet",
         "body": "They appear here once members start opening them."
-      }
+      },
+      "rating": "Average rating {average} out of 5 ({count, plural, one {# rating} other {# ratings}})"
     },
     "detail": {
       "back": "← All tickets",
@@ -1191,7 +1194,10 @@
       "transcript": "Transcript ({count} messages)",
       "truncated": "This ticket was very long: only the latest messages are kept.",
       "bot": "Bot",
-      "embeds": "{count, plural, one {# embed} other {# embeds}} (not kept)"
+      "embeds": "{count, plural, one {# embed} other {# embeds}} (not kept)",
+      "type": "Type",
+      "topic": "What it was about",
+      "rating": "Rating"
     },
     "errors": {
       "forbidden": "Only admins can change these settings.",
@@ -1204,6 +1210,41 @@
       "categoryNotFound": "That category doesn't exist, or the bot can't see it.",
       "roleNotFound": "One of those roles doesn't exist any more.",
       "failed": "Couldn't save the settings. Try again."
+    },
+    "categories": {
+      "title": "Ticket types",
+      "intro": "Give the panel one button per type (up to {max}), for example Support, Billing or Report a member. Each type can create its tickets in its own Discord category and be handled by its own staff roles; leave those empty to use the general ones. With no types, the panel has a single button.",
+      "empty": "No types yet: the panel shows one button.",
+      "label": "Name (the button text)",
+      "emoji": "Emoji",
+      "general": "The general ticket category",
+      "discordCategory": "Discord category for its tickets",
+      "discordCategoryHelp": "Where this type's ticket channels are created. The bot needs Manage Channels there.",
+      "staff": "Staff roles for this type (up to {max})",
+      "staffHelp": "Only these roles see and handle its tickets. Leave empty to use the general staff roles.",
+      "staffSelected": "Roles for this type",
+      "staffNone": "General staff roles",
+      "staffSearch": "Search roles",
+      "staffFull": "At most {max} roles.",
+      "noMatch": "No match",
+      "offline": "The bot is offline, so the role list isn't available.",
+      "removeRole": "Remove {name}",
+      "add": "Add a type",
+      "remove": "Remove this type",
+      "save": "Save types",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "repost": "After changing the types, press \"Update the panel\" above so the buttons match.",
+      "errors": {
+        "forbidden": "You don't have access to this.",
+        "invalid": "Some of these values aren't valid (every type needs a name; the emoji must be a real emoji).",
+        "duplicate": "Two types have the same name.",
+        "botUnavailable": "Can't reach the bot. Try again in a moment.",
+        "categoryNotFound": "One of the Discord categories doesn't exist.",
+        "roleNotFound": "One of the roles doesn't exist.",
+        "notFound": "One of the types doesn't exist any more. Reload the page.",
+        "failed": "Something went wrong. Try again."
+      }
     }
   },
   "Giveaways": {

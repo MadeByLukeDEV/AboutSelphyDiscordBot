@@ -1,10 +1,13 @@
 import { z } from "zod";
+import { isPanelEmoji } from "./role-panel";
 
 // Tickets: the settings and the shape of a saved transcript. One definition for the dashboard
 // (form, Server Action, page) and the bot. Pure and free of Node APIs. Import it from
 // "@aboutselphy/shared/tickets" in client components.
 
 export const MAX_STAFF_ROLES = 5;
+/** One row of five buttons on the panel. */
+export const MAX_TICKET_CATEGORIES = 5;
 export const MAX_OPEN_PER_USER = 5;
 export const MAX_TICKET_TEXT = 1000;
 /** What an opener may say the ticket is about. */
@@ -43,6 +46,8 @@ export const ticketSettingsSchema = z
     maxOpenPerUser: z.number().int().min(1).max(MAX_OPEN_PER_USER),
     /** Ask what the ticket is about before opening it. */
     askReason: z.boolean(),
+    /** DM the opener a star rating after closing. */
+    askRating: z.boolean(),
     /** Hours without a message before a ticket is closed automatically; 0 = never. */
     autoCloseHours: z.number().int().min(0).max(MAX_AUTOCLOSE_HOURS),
     panelTitle: z.string().trim().min(1).max(256),
@@ -95,3 +100,22 @@ export function isDiscordAttachmentUrl(value: string): boolean {
     return false;
   }
 }
+
+// -- categories ----------------------------------------------------------------------------------
+
+export const ticketCategoryInput = z.object({
+  /** Present for an existing category (its panel button and open tickets keep pointing at it). */
+  id: z.string().min(1).max(40).optional(),
+  label: z.string().trim().min(1).max(80),
+  emoji: z.string().max(64).refine(isPanelEmoji, "emoji"),
+  /** "" = the general ticket category. */
+  discordCategoryId: z.union([z.literal(""), snowflake]),
+  /** Empty = the general staff roles. */
+  staffRoleIds: z.array(snowflake).max(MAX_STAFF_ROLES),
+});
+export type TicketCategoryInput = z.infer<typeof ticketCategoryInput>;
+
+export const ticketCategoriesSchema = z
+  .array(ticketCategoryInput)
+  .max(MAX_TICKET_CATEGORIES)
+  .refine((list) => new Set(list.map((c) => c.label.toLowerCase())).size === list.length, "duplicate");

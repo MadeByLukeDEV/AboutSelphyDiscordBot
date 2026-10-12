@@ -984,7 +984,17 @@ Decided 2026-10-08:
         messages in an open ticket channel set `lastActivityAt` (at most one write a minute per ticket, the open-channel set is
         cached 60 s so ordinary messages cost no query); every 10 minutes tickets idle longer than that are closed through the
         normal `closeTicket` (transcript, log summary) with a reason saying so. Both on the `/tickets` settings form.
-  - [ ] Still open: ticket categories/topics buttons, rating, claiming limits.
+  - [x] **Ticket types and ratings** (2026-11-06, `feature_ticket-categories`, migration `20261106100000_ticket_categories`; **not tried live
+        yet**): `TicketCategory` (up to 5: name, emoji, optional own Discord category, optional own staff roles) edited on
+        `/tickets` (admins; replace-all that **keeps the ids** of types that stay, an id that isn't ours is refused). With types the
+        panel has one button each (`tk:open:<id>`; with the reason form on the form is `tk:modal:<id>`), without types the single
+        button. A ticket of a type is created in the type's Discord category with the type's roles (`staffRolesFor`/`parentFor`, pure,
+        tested; an empty list falls back to the general ones), claim/close checks use the same roles (bot staff always count), and
+        the ticket stores `categoryId` + `categoryLabel` (shown in the list, detail and the welcome embed). **Update the panel** after
+        changing types. `askRating`: closing DMs the opener five star buttons (`tk:rate:<ticketId>:<1-5>`, handled before the
+        server check because it is pressed in a DM; one conditional UPDATE, only the opener, only a closed ticket, once; `Ticket.rating`
+        with a DB CHECK 1-5); the list shows the average. Role manager knows the new roles columns.
+  - [ ] Still open: claiming limits.
 - [~] Giveaways (2026-10-18, `feature_giveaways`, migration `20261018100000_giveaways`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/giveaways/`): draft -> active (posts the message with an Enter button),

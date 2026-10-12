@@ -11,7 +11,7 @@ export default async function TicketsPage() {
   // Moderators can read the tickets; only admins see the settings (the action enforces it too).
   const session = await requireStaffPage("/tickets");
   const t = await getTranslations("Tickets");
-  const { settings, panelPosted, tickets, channels, roles } = await getTicketsPage();
+  const { settings, panelPosted, tickets, channels, roles, categories, ratings } = await getTicketsPage();
 
   return (
     <>
@@ -19,7 +19,7 @@ export default async function TicketsPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <TicketsManager initial={settings} panelPosted={panelPosted} tickets={tickets} channels={channels} roles={roles} canEdit={isAdmin(session.user.role)} />
+      <TicketsManager initial={settings} panelPosted={panelPosted} tickets={tickets} channels={channels} roles={roles} categories={categories} ratings={ratings} canEdit={isAdmin(session.user.role)} />
     </>
   );
 }

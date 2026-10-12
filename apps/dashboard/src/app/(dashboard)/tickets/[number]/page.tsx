@@ -38,6 +38,9 @@ export default async function TicketPage({ params }: { params: Promise<{ number:
           {ticket.closedAt && <div><dt className="text-muted-foreground">{t("closedAt")}</dt><dd className="font-medium">{when(ticket.closedAt)}{ticket.closedByName ? ` · ${ticket.closedByName}` : ""}</dd></div>}
           {ticket.claimedByName && <div><dt className="text-muted-foreground">{t("claimedBy")}</dt><dd className="font-medium">{ticket.claimedByName}</dd></div>}
           {ticket.closeReason && <div><dt className="text-muted-foreground">{t("reason")}</dt><dd className="font-medium">{ticket.closeReason}</dd></div>}
+            {ticket.categoryLabel && <div><dt className="text-muted-foreground">{t("type")}</dt><dd className="font-medium">{ticket.categoryLabel}</dd></div>}
+            {ticket.topic && <div><dt className="text-muted-foreground">{t("topic")}</dt><dd className="font-medium break-words">{ticket.topic}</dd></div>}
+            {ticket.rating && <div><dt className="text-muted-foreground">{t("rating")}</dt><dd className="font-medium">{"★".repeat(ticket.rating)}{"☆".repeat(5 - ticket.rating)}</dd></div>}
         </dl>
       </header>
 

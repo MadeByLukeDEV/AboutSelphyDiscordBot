@@ -37,10 +37,18 @@ export const canClaim = (w: Who) => w.isStaff;
 // -- control ids: "tk:open", "tk:close:<id>", "tk:confirm:<id>", "tk:claim:<id>" ------------------------
 
 export const TICKET_PREFIX = "tk";
-export type TicketControl = { action: "open" } | { action: "modal" } | { action: "close" | "confirm" | "claim"; ticketId: string };
+export type TicketControl =
+  | { action: "open"; categoryId?: string }
+  | { action: "modal"; categoryId?: string }
+  | { action: "close" | "confirm" | "claim"; ticketId: string }
+  | { action: "rate"; ticketId: string; stars: number };
 
 export const ticketControlId = (action: "close" | "confirm" | "claim", ticketId: string) => `${TICKET_PREFIX}:${action}:${ticketId}`;
 export const OPEN_CONTROL_ID = `${TICKET_PREFIX}:open`;
+/** The panel button of one category, and the reason form it opens. */
+export const openCategoryControlId = (categoryId: string) => `${TICKET_PREFIX}:open:${categoryId}`;
+export const modalControlId = (categoryId: string | null) => (categoryId ? `${TICKET_PREFIX}:modal:${categoryId}` : MODAL_CONTROL_ID);
+export const rateControlId = (ticketId: string, stars: number) => `${TICKET_PREFIX}:rate:${ticketId}:${stars}`;
 /** The form that asks what the ticket is about. */
 export const MODAL_CONTROL_ID = `${TICKET_PREFIX}:modal`;
 export const REASON_FIELD_ID = "reason";
@@ -49,6 +57,10 @@ export const REASON_FIELD_ID = "reason";
 export function parseTicketControl(customId: string): TicketControl | null {
   if (customId === OPEN_CONTROL_ID) return { action: "open" };
   if (customId === MODAL_CONTROL_ID) return { action: "modal" };
+  const category = /^tk:(open|modal):([a-z0-9]{10,40})$/.exec(customId);
+  if (category) return { action: category[1] as "open" | "modal", categoryId: category[2]! };
+  const rate = /^tk:rate:([a-z0-9]{10,40}):([1-5])$/.exec(customId);
+  if (rate) return { action: "rate", ticketId: rate[1]!, stars: Number(rate[2]) };
   const match = /^tk:(close|confirm|claim):([a-z0-9]{10,40})$/.exec(customId);
   return match ? { action: match[1] as "close" | "confirm" | "claim", ticketId: match[2]! } : null;
 }
@@ -110,3 +122,18 @@ export function idleCutoff(hours: number, now: Date): Date | null {
 export function cleanReason(text: string | null | undefined, max = 300): string {
   return (text ?? "").replace(/\r/g, "").replace(/\n{3,}/g, "\n\n").trim().slice(0, max);
 }
+
+// -- categories ---------------------------------------------------------------------------------------
+
+/** Who handles a ticket of a category: the category's own roles when it has some, otherwise the general staff roles. */
+export function staffRolesFor(general: readonly string[], category: { staffRoleIds: readonly string[] } | null): string[] {
+  return category && category.staffRoleIds.length > 0 ? [...category.staffRoleIds] : [...general];
+}
+
+/** Where a ticket channel is made: the category's own Discord category, else the general one. */
+export function parentFor(generalCategoryId: string | null, category: { discordCategoryId: string | null } | null): string | null {
+  return category?.discordCategoryId ?? generalCategoryId;
+}
+
+/** Stars shown as text, e.g. "★★★☆☆". */
+export const starsText = (n: number): string => "★".repeat(Math.min(5, Math.max(0, n))) + "☆".repeat(5 - Math.min(5, Math.max(0, n)));

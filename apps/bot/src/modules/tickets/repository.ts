@@ -15,8 +15,17 @@ export async function reserveNumber(): Promise<number> {
   return row.nextNumber - 1;
 }
 
-export function createTicket(data: { number: number; channelId: string; openerId: string; openerName: string; topic: string }) {
-  return prisma.ticket.create({ data: { ...data, openerName: data.openerName.slice(0, 100), topic: data.topic.slice(0, 300) } });
+export function createTicket(data: { number: number; channelId: string; openerId: string; openerName: string; topic: string; categoryId: string | null; categoryLabel: string }) {
+  return prisma.ticket.create({ data: { ...data, openerName: data.openerName.slice(0, 100), topic: data.topic.slice(0, 300), categoryLabel: data.categoryLabel.slice(0, 80) } });
+}
+
+export const listCategories = () => prisma.ticketCategory.findMany({ orderBy: [{ position: "asc" }, { createdAt: "asc" }] });
+export const findCategory = (id: string) => prisma.ticketCategory.findUnique({ where: { id } });
+
+/** The opener rates a closed ticket, once: one conditional UPDATE, and only the opener's own ticket. Returns false if it was rated already or isn't theirs. */
+export async function rate(ticketId: string, openerId: string, stars: number): Promise<boolean> {
+  const { count } = await prisma.ticket.updateMany({ where: { id: ticketId, openerId, status: "closed", rating: null }, data: { rating: stars } });
+  return count > 0;
 }
 
 /** A message was written in an open ticket's channel. */

@@ -9,7 +9,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { colorToHex, hexToColor } from "@aboutselphy/shared/twitch-template";
-import { DEFAULT_TICKET_COLOR, MAX_AUTOCLOSE_HOURS, MAX_OPEN_PER_USER, MAX_STAFF_ROLES, MAX_TICKET_TEXT, ticketSettingsSchema, type TicketSettings } from "@aboutselphy/shared/tickets";
+import { DEFAULT_TICKET_COLOR, MAX_AUTOCLOSE_HOURS, MAX_OPEN_PER_USER, MAX_STAFF_ROLES, MAX_TICKET_TEXT, ticketSettingsSchema, type TicketCategoryInput, type TicketSettings } from "@aboutselphy/shared/tickets";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { MultiPicker } from "@/components/form/multi-picker";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { postPanelAction, saveTicketSettingsAction } from "../actions";
 import type { TicketRow } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
+import { TicketCategories } from "./ticket-categories";
 import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** The ticket list for staff, and (for admins) the settings and the button that posts the panel. */
@@ -31,6 +32,8 @@ export function TicketsManager({
   tickets,
   channels,
   roles,
+  categories,
+  ratings,
   canEdit,
 }: {
   initial: TicketSettings;
@@ -38,6 +41,8 @@ export function TicketsManager({
   tickets: TicketRow[];
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  categories: TicketCategoryInput[];
+  ratings: { average: number | null; count: number };
   canEdit: boolean;
 }) {
   const t = useTranslations("Tickets");
@@ -145,6 +150,13 @@ export function TicketsManager({
                 <FieldDescription>{t("form.askReasonHelp")}</FieldDescription>
               </div>
             </Field>
+            <Field orientation="horizontal">
+              <Controller control={form.control} name="askRating" render={({ field }) => <Switch id="tk-rating" checked={field.value} onCheckedChange={field.onChange} />} />
+              <div className="flex flex-col gap-0.5">
+                <FieldLabel htmlFor="tk-rating">{t("form.askRating")}</FieldLabel>
+                <FieldDescription>{t("form.askRatingHelp")}</FieldDescription>
+              </div>
+            </Field>
             <Field>
               <FieldLabel htmlFor="tk-autoclose">{t("form.autoClose")}</FieldLabel>
               <Input id="tk-autoclose" type="number" inputMode="numeric" min={0} max={MAX_AUTOCLOSE_HOURS} className="max-w-[8rem]" {...form.register("autoCloseHours", { valueAsNumber: true })} />
@@ -187,10 +199,13 @@ export function TicketsManager({
         </form>
       )}
 
+      {canEdit && <TicketCategories initial={categories} channels={channels} roles={roles} />}
+
       <section aria-labelledby="tk-list" className="flex flex-col gap-3">
         <h2 id="tk-list" className="text-fluid-lg font-bold">
           {t("list.title")}
         </h2>
+        {ratings.count > 0 && ratings.average !== null && <p className="text-sm text-muted-foreground">{t("list.rating", { average: ratings.average.toFixed(1), count: ratings.count })}</p>}
         {tickets.length === 0 ? (
           <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-8 text-center">
             <h3 className="font-semibold">{t("list.empty.title")}</h3>
@@ -210,6 +225,8 @@ export function TicketsManager({
                         {when(k.createdAt)}
                         {k.claimedByName ? ` · ${t("list.claimed", { name: k.claimedByName })}` : ""}
                         {k.closedByName ? ` · ${t("list.closedBy", { name: k.closedByName })}` : ""}
+                        {k.categoryLabel ? ` · ${k.categoryLabel}` : ""}
+                        {k.rating ? ` · ${"★".repeat(k.rating)}${"☆".repeat(5 - k.rating)}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
