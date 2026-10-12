@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { removeAutoResponderAction, saveAutoResponderAction } from "../actions";
 import type { AutoResponderRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = { trigger: string; matchType: MatchType; response: string; cooldownSeconds: number; channelIds: string[]; enabled: boolean };
 
@@ -159,6 +160,7 @@ function ResponderForm({ row, channels, onDone }: { row: AutoResponderRow | null
         <Field data-invalid={Boolean(errors.response) || undefined}>
           <FieldLabel htmlFor="ar-response">{t("response")}</FieldLabel>
           <Textarea id="ar-response" rows={5} maxLength={MAX_RESPONSE} aria-invalid={Boolean(errors.response) || undefined} {...form.register("response")} />
+<EmoteInsert targetId="ar-response" />
           <FieldDescription>{t("responseHelp")}</FieldDescription>
           {errors.response && <FieldError>{te("needsResponse")}</FieldError>}
         </Field>

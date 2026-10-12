@@ -30,6 +30,7 @@ import { CardSettings } from "./card-settings";
 import { RolePicker } from "./role-picker";
 import { TemplateList } from "./template-list";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type TemplateField = "dmTemplate" | "goodbyeTemplate";
 
@@ -113,6 +114,7 @@ export function WelcomeManager({
     <Field data-invalid={Boolean(errors[name]) || undefined}>
       <FieldLabel htmlFor={`w-${name}`}>{label}</FieldLabel>
       <Textarea id={`w-${name}`} rows={3} maxLength={MAX_WELCOME_TEMPLATE} aria-invalid={Boolean(errors[name]) || undefined} {...form.register(name)} />
+<EmoteInsert targetId={`w-${name}`} />
       <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("form.insert")}>
         <span className="text-xs text-muted-foreground">{t("form.insert")}</span>
         {WELCOME_PLACEHOLDERS.filter((p) => name !== "dmTemplate" || p !== "user").map((p) => (

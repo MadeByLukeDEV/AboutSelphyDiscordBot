@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { decideSuggestionAction, saveSuggestionSettingsAction } from "../actions";
 import type { SuggestionRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 const BAR: Record<SuggestionStatusName, string> = { open: "bg-sky-500", approved: "bg-emerald-500", denied: "bg-rose-500", implemented: "bg-primary" };
 
@@ -185,6 +186,7 @@ export function SuggestionsManager({
           <Field>
             <FieldLabel htmlFor="sg-reason">{t("dialog.reason")}</FieldLabel>
             <Textarea id="sg-reason" rows={3} maxLength={MAX_DECISION_REASON} value={reason} onChange={(e) => setReason(e.target.value)} />
+<EmoteInsert targetId="sg-reason" />
             <FieldDescription>{t("dialog.reasonHelp", { count: reason.length, max: MAX_DECISION_REASON })}</FieldDescription>
           </Field>
           <DialogFooter>

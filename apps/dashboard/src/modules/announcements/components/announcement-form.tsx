@@ -228,6 +228,7 @@ export function AnnouncementForm({
             <Field>
               <FieldLabel htmlFor="ann-embed-title">{t("embedTitle")}</FieldLabel>
               <Input id="ann-embed-title" maxLength={MAX_EMBED_TITLE} {...form.register("embedTitle")} />
+<EmoteInsert targetId="ann-embed-title" />
             </Field>
             <Field>
               <FieldLabel htmlFor="ann-embed-description">{t("embedDescription")}</FieldLabel>

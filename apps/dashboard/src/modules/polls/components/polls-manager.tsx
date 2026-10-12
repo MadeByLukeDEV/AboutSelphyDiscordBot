@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { createPollAction, deletePollAction, pollControlAction } from "../actions";
 import type { PollView } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = { channelId: string; question: string; optionsText: string; multiple: boolean; imageUrl: string; endsLocal: string };
 
@@ -240,6 +241,7 @@ function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels:
         <Field data-invalid={Boolean(errors.question) || undefined}>
           <FieldLabel htmlFor="poll-question">{t("question")}</FieldLabel>
           <Input id="poll-question" maxLength={MAX_QUESTION} aria-invalid={Boolean(errors.question) || undefined} {...form.register("question")} />
+<EmoteInsert targetId="poll-question" />
           {errors.question && <FieldError>{te("needsQuestion")}</FieldError>}
         </Field>
         <Field data-invalid={Boolean(errors.optionsText) || undefined}>

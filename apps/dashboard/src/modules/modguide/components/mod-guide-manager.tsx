@@ -81,6 +81,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
           <Field data-invalid={Boolean(errors.title) || undefined}>
             <FieldLabel htmlFor="mg-title">{t("form.heading")}</FieldLabel>
             <Input id="mg-title" maxLength={MAX_GUIDE_TITLE} aria-invalid={Boolean(errors.title) || undefined} {...form.register("title")} />
+<EmoteInsert targetId="mg-title" />
             {errors.title && <FieldError>{te("invalid")}</FieldError>}
           </Field>
           <Field data-invalid={Boolean(errors.description) || undefined}>

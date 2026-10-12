@@ -101,6 +101,7 @@ export function VerificationManager({ initial, panelPosted, channels, roles }: {
         <Field>
           <FieldLabel htmlFor="vf-title">{t("form.panelTitle")}</FieldLabel>
           <Input id="vf-title" maxLength={256} {...form.register("panelTitle")} />
+<EmoteInsert targetId="vf-title" />
         </Field>
         <Field>
           <FieldLabel htmlFor="vf-desc">{t("form.panelDescription")}</FieldLabel>

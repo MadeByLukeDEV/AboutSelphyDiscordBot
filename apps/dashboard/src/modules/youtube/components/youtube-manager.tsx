@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { saveYoutubeSettingsAction } from "../actions";
 import { DEFAULT_COLOR, MAX_TEMPLATE_LENGTH, youtubeSettingsSchema, type YoutubeOverview, type YoutubeSettings } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** Status of the poller, the settings form with a preview, and the latest videos the bot has seen. */
 export function YoutubeManager({
@@ -112,6 +113,7 @@ export function YoutubeManager({
           <Field data-invalid={Boolean(errors.messageTemplate) || undefined}>
             <FieldLabel htmlFor="yt-template">{t("form.message")}</FieldLabel>
             <Textarea id="yt-template" rows={2} maxLength={MAX_TEMPLATE_LENGTH} aria-invalid={Boolean(errors.messageTemplate) || undefined} {...form.register("messageTemplate")} />
+<EmoteInsert targetId="yt-template" />
             <FieldDescription>{t("form.messageHelp")}</FieldDescription>
             {errors.messageTemplate && <FieldError>{te("invalid")}</FieldError>}
           </Field>

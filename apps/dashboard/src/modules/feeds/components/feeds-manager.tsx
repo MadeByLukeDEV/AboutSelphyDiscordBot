@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { checkFeedAction, removeFeedAction, saveFeedAction } from "../actions";
 import type { FeedRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = { name: string; url: string; channelId: string; pingRoleId: string; messageTemplate: string; intervalMinutes: number; enabled: boolean };
 
@@ -189,6 +190,7 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
         <Field data-invalid={Boolean(errors.messageTemplate) || undefined}>
           <FieldLabel htmlFor="fd-template">{t("template")}</FieldLabel>
           <Textarea id="fd-template" rows={3} maxLength={MAX_FEED_TEMPLATE} aria-invalid={Boolean(errors.messageTemplate) || undefined} {...form.register("messageTemplate")} />
+<EmoteInsert targetId="fd-template" />
           <FieldDescription>{t("templateHelp")}</FieldDescription>
           {errors.messageTemplate && <FieldError>{te("needsTemplate")}</FieldError>}
         </Field>

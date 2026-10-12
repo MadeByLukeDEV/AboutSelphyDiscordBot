@@ -1,4 +1,5 @@
 import type { MatchType } from "@aboutselphy/shared/auto-responders";
+import { withEmotes } from "../../lib/emotes";
 import { escapeText, truncate } from "../../lib/escape";
 
 // When an auto-responder fires and what it says. Pure, so the rules are testable. The trigger is
@@ -32,7 +33,7 @@ export const allowedIn = (channelIds: readonly string[], channelId: string): boo
 
 /** Fills {user} (shown as a mention, which can't notify: replies allow no mentions) and {username} (escaped). */
 export function renderResponse(template: string, who: { id: string; username: string }): string {
-  return truncate(template.replace(/\{user\}/g, `<@${who.id}>`).replace(/\{username\}/g, escapeText(truncate(who.username, 60))), 2000);
+  return truncate(withEmotes(template.replace(/\{user\}/g, `<@${who.id}>`).replace(/\{username\}/g, escapeText(truncate(who.username, 60)))), 2000);
 }
 
 /** Remembers when something last happened per key, to enforce cooldowns. */

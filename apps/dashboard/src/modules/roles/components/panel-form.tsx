@@ -34,6 +34,7 @@ import { CreateRoleDialog } from "./create-role-dialog";
 import { EmojiPicker } from "./emoji-picker";
 import { PanelPreview } from "./panel-preview";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 type FormValues = {
   channelId: string;
@@ -138,11 +139,13 @@ export function PanelForm({
         <Field data-invalid={Boolean(errors.title) || undefined}>
           <FieldLabel htmlFor="rp-title">{t("title")}</FieldLabel>
           <Input id="rp-title" maxLength={MAX_PANEL_TITLE} {...form.register("title")} />
+<EmoteInsert targetId="rp-title" />
           {errors.title && <FieldError>{te("needsText")}</FieldError>}
         </Field>
         <Field>
           <FieldLabel htmlFor="rp-description">{t("description")}</FieldLabel>
           <Textarea id="rp-description" rows={3} maxLength={MAX_PANEL_DESCRIPTION} {...form.register("description")} />
+<EmoteInsert targetId="rp-description" />
         </Field>
 
         <Field data-invalid={Boolean(errors.imageUrl) || undefined}>

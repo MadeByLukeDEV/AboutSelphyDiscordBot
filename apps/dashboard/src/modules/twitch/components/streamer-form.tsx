@@ -24,6 +24,7 @@ import {
 } from "../schema";
 import { MessagePreview } from "./message-preview";
 import { ColorPicker } from "@/components/form/color-picker";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 /** The form inside the add/edit dialog. `streamer` is the one being edited, or null for a new one. */
 export function StreamerForm({
@@ -189,6 +190,7 @@ export function StreamerForm({
               templateRef.current = el;
             }}
           />
+<EmoteInsert targetId="tw-template" />
           <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t("insert")}>
             <span className="text-xs text-muted-foreground">{t("insert")}</span>
             {TEMPLATE_PLACEHOLDERS.map((p) => (

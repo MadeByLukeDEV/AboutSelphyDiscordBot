@@ -19,6 +19,7 @@ import { MemberCardSettings } from "@/modules/member-cards/components/member-car
 import type { CardImageView } from "@/modules/member-cards/schema";
 import { saveBirthdaySettingsAction } from "../actions";
 import type { BirthdayRow } from "../schema";
+import { EmoteInsert } from "@/components/form/emote-insert";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -78,6 +79,7 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
           <Field data-invalid={Boolean(errors.message) || undefined}>
             <FieldLabel htmlFor="bd-message">{t("form.message")}</FieldLabel>
             <Textarea id="bd-message" rows={3} maxLength={MAX_BIRTHDAY_MESSAGE} aria-invalid={Boolean(errors.message) || undefined} {...form.register("message")} />
+<EmoteInsert targetId="bd-message" />
             <FieldDescription>{t("form.messageHelp")}</FieldDescription>
             {errors.message && <FieldError>{te("needsMessage")}</FieldError>}
           </Field>

@@ -254,6 +254,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         <Field data-invalid={Boolean(errors.prize) || undefined}>
           <FieldLabel htmlFor="gw-prize">{t("prize")}</FieldLabel>
           <Input id="gw-prize" maxLength={MAX_PRIZE} aria-invalid={Boolean(errors.prize) || undefined} {...form.register("prize")} />
+<EmoteInsert targetId="gw-prize" />
           {errors.prize && <FieldError>{te("needsPrize")}</FieldError>}
         </Field>
         <Field>
