@@ -8,6 +8,8 @@ export const MAX_QUESTION = 300;
 export const MAX_OPTION = 80;
 export const MIN_OPTIONS = 2;
 export const MAX_OPTIONS = 10;
+/** Minutes before the end that a reminder can be posted (0 = none). */
+export const REMIND_CHOICES = [0, 15, 60, 360, 1440] as const;
 
 /** Splits "Pizza | Pasta | Salad" (also on new lines or semicolons) into clean, different options. */
 export function parseOptions(raw: string): string[] {
@@ -35,11 +37,20 @@ export const pollInput = z
     imageUrl: z.string().trim().max(MAX_IMAGE_URL).refine(isAllowedImageUrl, "image").default(""),
     /** ISO time the poll closes; "" = it runs until a team member ends it. */
     endsAt: z.string().max(40),
+    /** Post a reminder this many minutes before the end (0 = none); needs an end time. */
+    remindBeforeMinutes: z
+      .number()
+      .int()
+      .refine((n) => (REMIND_CHOICES as readonly number[]).includes(n), "remind")
+      .default(0),
   })
   .superRefine((v, ctx) => {
     const keys = v.options.map((o) => o.toLowerCase());
     if (new Set(keys).size !== keys.length) ctx.addIssue({ code: "custom", path: ["options"], message: "duplicate" });
-    if (v.endsAt === "") return;
+    if (v.endsAt === "") {
+      if (v.remindBeforeMinutes > 0) ctx.addIssue({ code: "custom", path: ["remindBeforeMinutes"], message: "needsEnd" });
+      return;
+    }
     const at = Date.parse(v.endsAt);
     if (Number.isNaN(at)) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "time" });
     else if (at < Date.now() + MIN_SCHEDULE_AHEAD_MS) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "past" });

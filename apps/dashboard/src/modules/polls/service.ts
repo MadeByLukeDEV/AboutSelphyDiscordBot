@@ -15,6 +15,7 @@ const toView = (p: PollWithVotes): PollView => ({
   multiple: p.multiple,
   imageUrl: p.imageUrl,
   endsAt: p.endsAt?.toISOString() ?? null,
+  remindBeforeMinutes: p.remindBeforeMinutes,
   createdByName: p.createdByName,
   counts: p.counts,
   voters: p.voters,
@@ -36,7 +37,7 @@ export async function savePoll(input: PollInput & { start: boolean }, by: StaffS
     const channels = await listChannels(["text"]);
     if (!channels) return fail("botUnavailable");
     if (!channels.some((c) => c.id === input.channelId)) return fail("channelNotFound");
-    const fields = { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, imageUrl: input.imageUrl, endsAt: input.endsAt ? new Date(input.endsAt) : null };
+    const fields = { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, imageUrl: input.imageUrl, endsAt: input.endsAt ? new Date(input.endsAt) : null, remindBeforeMinutes: input.endsAt ? input.remindBeforeMinutes : 0 };
     let id: string;
     if (editId) {
       // Only a draft can be edited: once it is running, people have voted for these exact options.

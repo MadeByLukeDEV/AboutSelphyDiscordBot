@@ -1585,6 +1585,15 @@
       "editTitle": "Entwurf bearbeiten"
     },
     "form": {
+      "remind": "Erinnerung vor dem Ende",
+      "remindHelp": "Postet eine kurze „Endet bald“-Nachricht unter der Umfrage. Braucht eine Endzeit, und die Umfrage muss mindestens doppelt so lange laufen wie die Vorlaufzeit. Wenn eine Umfrage endet, wird automatisch ein Ergebnis-Diagramm gepostet.",
+      "reminds": {
+        "none": "Keine Erinnerung",
+        "m15": "15 Minuten vorher",
+        "h1": "1 Stunde vorher",
+        "h6": "6 Stunden vorher",
+        "d1": "1 Tag vorher"
+      },
       "question": "Frage",
       "options": "Antworten",
       "optionsPlaceholder": "Pizza\nPasta\nSalat",
@@ -1617,6 +1626,7 @@
       "back": "Zurück"
     },
     "errors": {
+      "remindNeedsEnd": "Eine Erinnerung braucht eine Endzeit.",
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Einige Werte sind ungültig.",
       "notFound": "Diese Umfrage gibt es nicht mehr. Lade die Seite neu.",

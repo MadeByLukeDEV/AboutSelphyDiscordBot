@@ -96,3 +96,27 @@ export function buildPollMessage(p: PollView) {
   }
   return { content: "", embeds: [embed], components: rows, allowedMentions: { parse: [] as never[] } };
 }
+
+/**
+ * Is it time to remind about a poll? Inside the window before the end, not after it, not twice, and only when the poll runs
+ * at least twice as long as the reminder lead (a 1-day reminder on a 2-hour poll would fire the moment it starts).
+ */
+export function reminderDue(input: { now: Date; endsAt: Date | null; remindBeforeMinutes: number; startedAt: Date | null; reminderSentAt: Date | null }): boolean {
+  const { now, endsAt, remindBeforeMinutes, startedAt, reminderSentAt } = input;
+  if (!endsAt || !startedAt || remindBeforeMinutes <= 0 || reminderSentAt) return false;
+  const lead = remindBeforeMinutes * 60_000;
+  if (endsAt.getTime() - startedAt.getTime() < 2 * lead) return false;
+  return now.getTime() >= endsAt.getTime() - lead && now.getTime() < endsAt.getTime();
+}
+
+export type ChartRow = { label: string; count: number; percent: number; winner: boolean };
+
+/** The rows of the results chart: counts, share of all votes cast, and which option(s) lead (a tie marks every leader; nothing wins with no votes). */
+export function chartModel(options: readonly string[], counts: readonly number[]): ChartRow[] {
+  const total = counts.reduce((a, b) => a + b, 0);
+  const top = Math.max(0, ...counts);
+  return options.map((label, i) => {
+    const count = counts[i] ?? 0;
+    return { label: label.length > 60 ? `${label.slice(0, 59)}…` : label, count, percent: total === 0 ? 0 : Math.round((count / total) * 100), winner: top > 0 && count === top };
+  });
+}

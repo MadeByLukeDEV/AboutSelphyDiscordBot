@@ -1585,6 +1585,15 @@
       "editTitle": "Edit draft"
     },
     "form": {
+      "remind": "Reminder before the end",
+      "remindHelp": "Posts a short \"ends soon\" message under the poll. Needs an end time, and the poll must run at least twice as long as the lead time. When a poll ends, a results chart is posted automatically.",
+      "reminds": {
+        "none": "No reminder",
+        "m15": "15 minutes before",
+        "h1": "1 hour before",
+        "h6": "6 hours before",
+        "d1": "1 day before"
+      },
       "question": "Question",
       "options": "Options",
       "optionsPlaceholder": "Pizza\nPasta\nSalad",
@@ -1617,6 +1626,7 @@
       "back": "Back"
     },
     "errors": {
+      "remindNeedsEnd": "A reminder needs an end time.",
       "forbidden": "You don't have access to this.",
       "invalid": "Some of these values aren't valid.",
       "notFound": "That poll doesn't exist any more. Reload the page.",

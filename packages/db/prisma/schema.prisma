@@ -788,6 +788,12 @@ model Poll {
   createdByName String     @db.VarChar(100)
   createdAt     DateTime   @default(now())
   endedAt       DateTime?
+  /// When it was posted (set when it starts).
+  startedAt     DateTime?
+  /// Post a reminder this many minutes before it ends (0 = none). Needs endsAt.
+  remindBeforeMinutes Int      @default(0)
+  /// When the reminder was posted, so it happens once.
+  reminderSentAt DateTime?
   votes         PollVote[]
 
   @@index([status, endsAt])

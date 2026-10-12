@@ -1074,7 +1074,13 @@ Decided 2026-10-08:
   - [x] Editing a draft (2026-11-01, `feature_poll-edit-draft`): the "Edit" button on a draft reuses the create form;
         `updateDraft` is one UPDATE with `status = draft` in the condition, so a poll started a moment ago can't be changed under
         the bot (once it runs people have voted for those exact options).
-  - [ ] Still open: a results chart over time, reminders before it ends.
+  - **Reminder and results chart** (2026-11-07, `feature_p4-polls-birthdays`, migration `20261107340000_poll_reminders`; **not tried
+    live yet**): `Poll.remindBeforeMinutes` (0 | 15 | 60 | 360 | 1440, needs an end time, DB CHECKs) and `startedAt` (set when it starts).
+    The 30 s round posts "ends soon" as a reply to the poll when `reminderDue` (pure, tested) says so: inside the window, never
+    after the end, and only when the poll runs at least twice as long as the lead; one conditional UPDATE on `reminderSentAt` makes
+    it once. When a poll ends and has votes, `polls/chart.ts` (canvas, bundled font) posts a results bar chart (`chartModel`: shares,
+    leaders marked, ties mark all) as a reply with an escaped title; a drawing failure is only logged.
+  - [ ] A votes-over-time chart.
   - **Picture** (2026-10-22, `feature_giveaway-poll-images`, migration `20261022180000_giveaway_poll_images`):
     `imageUrl` on polls and giveaways (https only, shared `isAllowedImageUrl`, a DB CHECK, re-checked by the
     bot), shown big in the post; the dashboard forms and `/poll image:` take the address.

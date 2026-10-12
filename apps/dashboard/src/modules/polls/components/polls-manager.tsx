@@ -8,7 +8,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { MAX_IMAGE_URL, MIN_SCHEDULE_AHEAD_MS } from "@aboutselphy/shared/announcement";
-import { MAX_OPTION, MAX_OPTIONS, MAX_QUESTION, MIN_OPTIONS, parseOptions, pollInput } from "@aboutselphy/shared/polls";
+import { REMIND_CHOICES, MAX_OPTION, MAX_OPTIONS, MAX_QUESTION, MIN_OPTIONS, parseOptions, pollInput } from "@aboutselphy/shared/polls";
 import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -22,10 +22,12 @@ import { createPollAction, deletePollAction, pollControlAction } from "../action
 import type { PollView } from "../schema";
 import { EmoteInsert } from "@/components/form/emote-insert";
 
-type FormValues = { channelId: string; question: string; optionsText: string; multiple: boolean; imageUrl: string; endsLocal: string };
+type FormValues = { channelId: string; question: string; optionsText: string; multiple: boolean; imageUrl: string; endsLocal: string; remind: string };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+const REMIND_KEY = { 0: "none", 15: "m15", 60: "h1", 360: "h6", 1440: "d1" } as const;
 
 const BAR: Record<PollView["status"], string> = { draft: "bg-muted-foreground/40", active: "bg-primary", ended: "bg-emerald-500" };
 
@@ -196,8 +198,8 @@ function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels:
   const [minLocal] = useState(() => toLocalInput(new Date(Date.now() + MIN_SCHEDULE_AHEAD_MS)));
   const form = useForm<FormValues>({
     defaultValues: poll
-      ? { channelId: poll.channelId, question: poll.question, optionsText: poll.options.join("\n"), multiple: poll.multiple, imageUrl: poll.imageUrl, endsLocal: poll.endsAt ? toLocalInput(new Date(poll.endsAt)) : "" }
-      : { channelId: "", question: "", optionsText: "", multiple: false, imageUrl: "", endsLocal: "" },
+      ? { channelId: poll.channelId, question: poll.question, optionsText: poll.options.join("\n"), multiple: poll.multiple, imageUrl: poll.imageUrl, endsLocal: poll.endsAt ? toLocalInput(new Date(poll.endsAt)) : "", remind: String(poll.remindBeforeMinutes) }
+      : { channelId: "", question: "", optionsText: "", multiple: false, imageUrl: "", endsLocal: "", remind: "0" },
   });
   const { errors } = form.formState;
 
@@ -213,12 +215,13 @@ function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels:
         multiple: values.multiple,
         imageUrl: values.imageUrl,
         endsAt: ends && !Number.isNaN(ends.getTime()) ? ends.toISOString() : "",
+        remindBeforeMinutes: Number(values.remind),
       });
       if (!checked.success) {
         form.clearErrors();
         for (const issue of checked.error.issues) {
           const key = issue.path[0];
-          if (key === "endsAt") form.setError("endsLocal", { type: "custom", message: issue.message });
+          if (key === "endsAt" || key === "remindBeforeMinutes") form.setError("endsLocal", { type: "custom", message: issue.message });
           else if (key === "options") form.setError("optionsText", { type: "custom", message: issue.message });
           else if (key === "channelId" || key === "question" || key === "imageUrl") form.setError(key, { type: "custom", message: issue.message });
         }
@@ -234,6 +237,7 @@ function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels:
     });
 
   const endError = errors.endsLocal?.message;
+  const remindOptions: SelectOption[] = REMIND_CHOICES.map((m) => ({ value: String(m), label: t(`reminds.${REMIND_KEY[m]}`) }));
 
   return (
     <form onSubmit={(e) => void submit(false)(e)} className="flex flex-col gap-5" noValidate>
@@ -265,7 +269,12 @@ function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels:
           <FieldLabel htmlFor="poll-ends">{t("ends")}</FieldLabel>
           <FormDateTime control={form.control} name="endsLocal" id="poll-ends" min={minLocal} invalid={Boolean(endError)} />
           <FieldDescription>{t("endsHelp")}</FieldDescription>
-          {endError && <FieldError>{te(endError === "past" ? "endPast" : endError === "tooFar" ? "endTooFar" : "endTime")}</FieldError>}
+          {endError && <FieldError>{te(endError === "past" ? "endPast" : endError === "tooFar" ? "endTooFar" : endError === "needsEnd" ? "remindNeedsEnd" : "endTime")}</FieldError>}
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="poll-remind">{t("remind")}</FieldLabel>
+          <FormSelect control={form.control} name="remind" id="poll-remind" options={remindOptions} placeholder={t("remind")} />
+          <FieldDescription>{t("remindHelp")}</FieldDescription>
         </Field>
         <Field orientation="horizontal">
           <input id="poll-multiple" type="checkbox" className="size-4 accent-[var(--color-primary)]" {...form.register("multiple")} />

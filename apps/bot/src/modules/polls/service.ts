@@ -1,11 +1,13 @@
-import { Events, type Client, type Guild, type GuildTextBasedChannel } from "discord.js";
+import { AttachmentBuilder, Events, type Client, type Guild, type GuildTextBasedChannel } from "discord.js";
 import type { Poll } from "@aboutselphy/db";
 import type { PollActionStatus } from "@aboutselphy/shared";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
-import { activate, allVotes, claimEnd, find, listDue } from "./repository";
-import { buildPollMessage, tally } from "./rules";
+import { escapeText, truncate } from "../../lib/escape";
+import { renderPollChart } from "./chart";
+import { activate, allVotes, claimEnd, claimReminder, find, listDue, listReminderCandidates } from "./repository";
+import { buildPollMessage, chartModel, reminderDue, tally } from "./rules";
 
 // Polls. A poll is created (a draft), then started: the bot posts it with one button per option. Votes
 // are anonymous (only counts are shown). Updating the post for every click would hit Discord's limits,
@@ -71,6 +73,7 @@ export async function endPoll(guild: Guild, id: string): Promise<PollActionStatu
     if (!(await find(id))) return "not-found";
     if (!(await claimEnd(id))) return "wrong-state";
     await refreshNow(guild, id);
+    await postChart(guild, id).catch((err) => log.warn({ err, poll: id }, "poll: could not post the results chart"));
     log.info({ poll: id }, "poll ended");
     return "done";
   } catch (err) {
@@ -94,6 +97,43 @@ export async function deletePollMessage(guild: Guild, id: string): Promise<PollA
   }
 }
 
+/** The results chart, as a reply to the poll's post. Skipped when nobody voted. */
+async function postChart(guild: Guild, id: string): Promise<void> {
+  const p = await find(id);
+  if (!p?.messageId) return;
+  const votes = await allVotes(p.id);
+  const counts = tally(p.options.length, votes);
+  if (counts.every((c) => c === 0)) return;
+  const channel = await channelOf(guild, p.channelId);
+  if (!channel) return;
+  const png = await renderPollChart(p.question, chartModel(p.options, counts), new Set(votes.map((v) => v.userId)).size);
+  await channel.send({
+    content: `📊 Results of **${escapeText(truncate(p.question, 200))}**`,
+    files: [new AttachmentBuilder(png, { name: "results.png" })],
+    reply: { messageReference: p.messageId, failIfNotExists: false },
+    allowedMentions: { parse: [] },
+  });
+}
+
+/** Posts the "ends soon" reminder for polls inside their reminder window. One conditional UPDATE decides who posts it. */
+async function remindDue(guild: Guild): Promise<void> {
+  const now = new Date();
+  for (const p of await listReminderCandidates()) {
+    if (!reminderDue({ now, endsAt: p.endsAt, remindBeforeMinutes: p.remindBeforeMinutes, startedAt: p.startedAt, reminderSentAt: p.reminderSentAt })) continue;
+    if (!(await claimReminder(p.id))) continue;
+    const channel = await channelOf(guild, p.channelId);
+    if (!channel || !p.messageId || !p.endsAt) continue;
+    await channel
+      .send({
+        content: `⏰ The poll **${escapeText(truncate(p.question, 200))}** ends <t:${Math.floor(p.endsAt.getTime() / 1000)}:R>. Vote now!`,
+        reply: { messageReference: p.messageId, failIfNotExists: false },
+        allowedMentions: { parse: [] },
+      })
+      .then(() => log.info({ poll: p.id }, "poll: reminder posted"))
+      .catch((err) => log.warn({ err, poll: p.id }, "poll: could not post the reminder"));
+  }
+}
+
 let running = false;
 let timer: ReturnType<typeof setInterval> | undefined;
 
@@ -103,6 +143,7 @@ export async function endDue(guild: Guild): Promise<void> {
   running = true;
   try {
     for (const p of await listDue(new Date())) await endPoll(guild, p.id);
+    await remindDue(guild);
   } catch (err) {
     log.error({ err }, "poll round failed");
   } finally {

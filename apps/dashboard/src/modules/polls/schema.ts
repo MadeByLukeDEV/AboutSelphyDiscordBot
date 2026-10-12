@@ -11,6 +11,7 @@ export type PollView = {
   multiple: boolean;
   imageUrl: string;
   endsAt: string | null;
+  remindBeforeMinutes: number;
   createdByName: string;
   /** Votes per option, same order as `options`. */
   counts: number[];

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseOptions, pollInput } from "@aboutselphy/shared/polls";
-import { bar, buildPollMessage, nextSelection, parseVoteControl, tally, voteControlId, type PollView } from "./rules";
+import { bar, buildPollMessage, chartModel, nextSelection, parseVoteControl, reminderDue, tally, voteControlId, type PollView } from "./rules";
 
 describe("parseOptions", () => {
   it("splits on bars, semicolons and new lines, trims, and drops blanks and repeats", () => {
@@ -112,5 +112,46 @@ describe("the message", () => {
 
   it("marks no winner when nobody voted", () => {
     expect(text(buildPollMessage(view({ ended: true, counts: [0, 0, 0], voters: 0 })))).not.toContain("🏆");
+  });
+});
+
+describe("poll reminders", () => {
+  const start = new Date("2026-11-07T10:00:00Z");
+  const ends = new Date("2026-11-08T10:00:00Z");
+  const base = { endsAt: ends, remindBeforeMinutes: 60, startedAt: start, reminderSentAt: null as Date | null };
+  const at = (iso: string) => new Date(iso);
+
+  it("is due inside the window before the end, once", () => {
+    expect(reminderDue({ ...base, now: at("2026-11-08T08:59:00Z") })).toBe(false);
+    expect(reminderDue({ ...base, now: at("2026-11-08T09:00:00Z") })).toBe(true);
+    expect(reminderDue({ ...base, now: at("2026-11-08T09:59:59Z") })).toBe(true);
+    expect(reminderDue({ ...base, now: at("2026-11-08T10:00:00Z") })).toBe(false);
+    expect(reminderDue({ ...base, now: at("2026-11-08T09:30:00Z"), reminderSentAt: at("2026-11-08T09:00:30Z") })).toBe(false);
+  });
+  it("needs an end, a start and a lead", () => {
+    const now = at("2026-11-08T09:30:00Z");
+    expect(reminderDue({ ...base, now, endsAt: null })).toBe(false);
+    expect(reminderDue({ ...base, now, startedAt: null })).toBe(false);
+    expect(reminderDue({ ...base, now, remindBeforeMinutes: 0 })).toBe(false);
+  });
+  it("does not fire at once on a poll shorter than twice the lead", () => {
+    expect(reminderDue({ ...base, now: at("2026-11-08T09:30:00Z"), remindBeforeMinutes: 1440 })).toBe(false);
+    expect(reminderDue({ ...base, now: at("2026-11-08T09:30:00Z"), startedAt: at("2026-11-08T09:10:00Z") })).toBe(false);
+  });
+});
+
+describe("chartModel", () => {
+  it("computes shares and marks the leader", () => {
+    const rows = chartModel(["A", "B", "C"], [6, 3, 1]);
+    expect(rows.map((r) => r.percent)).toEqual([60, 30, 10]);
+    expect(rows.map((r) => r.winner)).toEqual([true, false, false]);
+  });
+  it("marks every leader in a tie, and nobody without votes", () => {
+    expect(chartModel(["A", "B"], [2, 2]).map((r) => r.winner)).toEqual([true, true]);
+    expect(chartModel(["A", "B"], [0, 0]).map((r) => r.winner)).toEqual([false, false]);
+    expect(chartModel(["A", "B"], [0, 0]).map((r) => r.percent)).toEqual([0, 0]);
+  });
+  it("shortens long labels", () => {
+    expect(chartModel(["x".repeat(80)], [1])[0]!.label).toHaveLength(60);
   });
 });

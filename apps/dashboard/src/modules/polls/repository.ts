@@ -21,12 +21,12 @@ export async function listPolls(): Promise<PollWithVotes[]> {
 
 export const findPoll = (id: string) => prisma.poll.findUnique({ where: { id } });
 
-export function createPoll(data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null }, by: { userId: string; name: string }) {
+export function createPoll(data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null; remindBeforeMinutes: number }, by: { userId: string; name: string }) {
   return prisma.poll.create({ data: { ...data, createdById: by.userId, createdByName: by.name.slice(0, 100) } });
 }
 
 /** Changes a draft. The status condition is part of the UPDATE, so a poll that was started a moment ago can't be edited under the bot. */
-export async function updateDraft(id: string, data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null }): Promise<boolean> {
+export async function updateDraft(id: string, data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null; remindBeforeMinutes: number }): Promise<boolean> {
   return (await prisma.poll.updateMany({ where: { id, status: "draft" }, data })).count > 0;
 }
 
