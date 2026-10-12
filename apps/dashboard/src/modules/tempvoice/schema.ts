@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { findBlockedWord, findProfanity, snowflake } from "@aboutselphy/shared";
+import type { RoleRule } from "@aboutselphy/shared/tempvoice";
 
 /** No control or zero-width characters: they make names that look empty or look like something else. */
 const visible = (text: string) => !/[\p{Cc}\p{Cf}]/u.test(text);
@@ -33,6 +34,8 @@ const globalBase = {
   useDefaultBlocklist: z.boolean(),
   /** Remember each owner's last room (name, limit, lock, video, soundboard) for their next one. */
   rememberSettings: z.boolean(),
+  /** Move members who stay self-deafened this many minutes to the server's AFK channel (0 = off). */
+  afkMoveMinutes: z.number().int().min(0).max(240),
 };
 
 /** What the server action accepts (the blocked words already split into a list). */
@@ -133,10 +136,13 @@ export type SettingsError =
   | "lobbyNotFound"
   | "categoryNotFound"
   | "alreadyALobby"
+  | "roleNotFound"
+  | "duplicateRole"
   | "tooManyLobbies"
   | "notFound"
   | "failed";
 
 export type SaveGlobalResult = { ok: true; settings: GlobalSettings; botNotified: boolean } | { ok: false; error: SettingsError };
+export type SaveRoleRulesResult = { ok: true; rules: RoleRule[]; botNotified: boolean } | { ok: false; error: SettingsError };
 export type SaveLobbyResult = { ok: true; lobby: LobbyView; botNotified: boolean } | { ok: false; error: SettingsError };
 export type DeleteLobbyResult = { ok: true; botNotified: boolean } | { ok: false; error: SettingsError };

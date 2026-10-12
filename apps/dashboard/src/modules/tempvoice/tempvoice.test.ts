@@ -29,7 +29,7 @@ describe("parseBlockedWords", () => {
 });
 
 describe("globalSettingsSchema (the settings every lobby shares)", () => {
-  const valid: GlobalSettings = { enabled: true, useDefaultBlocklist: true, rememberSettings: false, blockedWords: ["badword"] };
+  const valid: GlobalSettings = { enabled: true, useDefaultBlocklist: true, rememberSettings: false, afkMoveMinutes: 0, blockedWords: ["badword"] };
 
   it("accepts a valid configuration", () => {
     expect(globalSettingsSchema.safeParse(valid).success).toBe(true);

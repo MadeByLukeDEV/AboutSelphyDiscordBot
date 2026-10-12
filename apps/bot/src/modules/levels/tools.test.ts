@@ -60,3 +60,14 @@ describe("periodic reset", () => {
     expect(resetDue("yearly", null, new Date())).toBe("none");
   });
 });
+
+import { formatVoiceTime } from "./rules";
+
+describe("formatVoiceTime", () => {
+  it("shows minutes, then hours and minutes", () => {
+    expect(formatVoiceTime(0)).toBe("0m");
+    expect(formatVoiceTime(45)).toBe("45m");
+    expect(formatVoiceTime(135)).toBe("2h 15m");
+    expect(formatVoiceTime(-5)).toBe("0m");
+  });
+});

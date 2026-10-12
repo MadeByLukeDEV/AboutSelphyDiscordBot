@@ -1,9 +1,11 @@
 import type { TempVoiceConfig, TempVoiceLobby } from "@aboutselphy/db";
+import type { RoleRuleRow } from "./roles";
 import { onReload } from "../../internal-api/reload";
 import {
   createLobby,
   deleteLobby,
   listLobbies,
+  listRoleRules,
   readConfig,
   updateConfig,
   updateLobby,
@@ -17,6 +19,8 @@ import {
 const TTL_MS = 60_000;
 let config: { value: TempVoiceConfig; at: number } | undefined;
 let lobbies: { value: TempVoiceLobby[]; at: number } | undefined;
+
+let ruleCache: { value: RoleRuleRow[]; at: number } | undefined;
 
 const fresh = (entry: { at: number } | undefined) => entry !== undefined && Date.now() - entry.at < TTL_MS;
 
@@ -66,4 +70,13 @@ export async function removeLobby(channelId: string): Promise<boolean> {
 onReload("tempvoice", () => {
   config = undefined;
   lobbies = undefined;
+  ruleCache = undefined;
 });
+
+/** The per-role rules, cached like the rest. */
+export async function getRoleRules(): Promise<RoleRuleRow[]> {
+  if (ruleCache && fresh(ruleCache)) return ruleCache.value;
+  const value = (await listRoleRules()).map((r) => ({ roleId: r.roleId, bitrateKbps: r.bitrateKbps, maxUserLimit: r.maxUserLimit }));
+  ruleCache = { value, at: Date.now() };
+  return value;
+}

@@ -128,7 +128,21 @@ model TempVoiceConfig {
   useDefaultBlocklist Boolean  @default(true)
   /// Remember each owner's last room (name, limit, lock, video, soundboard) and give it to their next one.
   rememberSettings    Boolean  @default(false)
+  /// Move members who stay self-deafened this many minutes into the server's AFK channel (0 = off).
+  afkMoveMinutes      Int      @default(0)
   updatedAt           DateTime @updatedAt
+}
+
+/// Per-role rules for temporary rooms: the best bitrate and the highest member limit among the owner's roles win.
+/// roleId is a role ID, or "everyone" for the base rule (the @everyone role).
+model TempVoiceRoleRule {
+  id           String   @id @default(cuid())
+  roleId       String   @unique @db.VarChar(20)
+  /// Bitrate for new rooms in kbit/s (8-384); capped to what the server's boost level allows. Null = Discord's default.
+  bitrateKbps  Int?
+  /// The most members an owner with this role may allow in their room (1-99). Null = no cap from this rule.
+  maxUserLimit Int?
+  createdAt    DateTime @default(now())
 }
 
 /// A "join to create" lobby. Each one has its own category, name, limit and

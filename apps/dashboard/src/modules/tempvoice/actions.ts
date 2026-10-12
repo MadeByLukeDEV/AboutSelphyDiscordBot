@@ -7,8 +7,10 @@ import {
   type DeleteLobbyResult,
   type SaveGlobalResult,
   type SaveLobbyResult,
+  type SaveRoleRulesResult,
 } from "./schema";
-import { removeLobby, saveGlobal, saveLobby } from "./service";
+import { removeLobby, saveGlobal, saveLobby, saveRoleRules } from "./service";
+import { roleRulesSchema } from "@aboutselphy/shared/tempvoice";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session
@@ -57,4 +59,16 @@ export async function saveLobbyAction(...args: Parameters<typeof saveLobbyAction
 
 export async function removeLobbyAction(...args: Parameters<typeof removeLobbyActionRun>): ReturnType<typeof removeLobbyActionRun> {
   return audited("tempvoice.removeLobby", removeLobbyActionRun, args);
+}
+
+/** Admins only: replace the per-role rules (bitrate and member-limit cap). */
+async function saveRoleRulesActionRun(input: unknown): Promise<SaveRoleRulesResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = roleRulesSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues.some((i) => i.message === "duplicateRole") ? "duplicateRole" : "invalid" };
+  return saveRoleRules(parsed.data);
+}
+
+export async function saveRoleRulesAction(...args: Parameters<typeof saveRoleRulesActionRun>): ReturnType<typeof saveRoleRulesActionRun> {
+  return audited("tempvoice.saveRoleRules", saveRoleRulesActionRun, args);
 }

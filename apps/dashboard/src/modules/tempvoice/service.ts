@@ -2,7 +2,8 @@ import "server-only";
 import type { TempVoiceConfig, TempVoiceLobby } from "@aboutselphy/db";
 import { MAX_TEMP_VOICE_LOBBIES } from "@aboutselphy/shared";
 import { errorInfo } from "@/lib/log";
-import { getTempVoiceOverview, listChannels, reloadBotModule } from "@/modules/bot-api";
+import { getTempVoiceOverview, listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
+import type { RoleRule } from "@aboutselphy/shared/tempvoice";
 import {
   countLobbies,
   createLobby,
@@ -11,6 +12,8 @@ import {
   findLobbyByChannel,
   isRoomChannel,
   listLobbies,
+  listRoleRules,
+  replaceRoleRules,
   readConfig,
   updateConfig,
   updateLobby,
@@ -24,6 +27,7 @@ import {
   type LobbyView,
   type SaveGlobalResult,
   type SaveLobbyResult,
+  type SaveRoleRulesResult,
   type SettingsError,
 } from "./schema";
 
@@ -32,6 +36,7 @@ const toGlobal = (c: TempVoiceConfig): GlobalSettings => ({
   blockedWords: c.blockedWords ?? [],
   useDefaultBlocklist: c.useDefaultBlocklist,
   rememberSettings: c.rememberSettings,
+  afkMoveMinutes: c.afkMoveMinutes,
 });
 
 const toLobbyView = (l: TempVoiceLobby): LobbyView => ({
@@ -49,8 +54,9 @@ export { getTempVoiceOverview };
 
 /** Everything the page needs. `channels` is null when the bot can't be reached. */
 export async function getSettings() {
-  const [config, lobbies, channels] = await Promise.all([readConfig(), listLobbies(), listChannels(["voice", "category"])]);
-  return { global: toGlobal(config), lobbies: lobbies.map(toLobbyView), channels };
+  const [config, lobbies, channels, ruleRows, roles] = await Promise.all([readConfig(), listLobbies(), listChannels(["voice", "category"]), listRoleRules(), listRoles()]);
+  const roleRules: RoleRule[] = ruleRows.map((r) => ({ roleId: r.roleId, bitrateKbps: r.bitrateKbps, maxUserLimit: r.maxUserLimit }));
+  return { global: toGlobal(config), lobbies: lobbies.map(toLobbyView), channels, roleRules, roles };
 }
 
 const fail = (error: SettingsError) => ({ ok: false as const, error });
@@ -128,6 +134,24 @@ export async function removeLobby(id: string): Promise<DeleteLobbyResult> {
     return { ok: true, botNotified: await reloadBotModule("tempvoice") };
   } catch (error) {
     console.error("[tempvoice] removing a lobby failed", errorInfo(error));
+    return fail("failed");
+  }
+}
+
+/** Saves the per-role rules (replacing the list). A new role must exist on the server, checked through the bot. */
+export async function saveRoleRules(rules: RoleRule[]): Promise<SaveRoleRulesResult> {
+  try {
+    const known = new Set((await listRoleRules()).map((r) => r.roleId));
+    const added = rules.map((r) => r.roleId).filter((id) => id !== "everyone" && !known.has(id));
+    if (added.length > 0) {
+      const roles = await listRoles();
+      if (!roles) return fail("botUnavailable");
+      if (added.some((id) => !roles.some((r) => r.id === id))) return fail("roleNotFound");
+    }
+    await replaceRoleRules(rules);
+    return { ok: true, rules, botNotified: await reloadBotModule("tempvoice") };
+  } catch (error) {
+    console.error("[tempvoice] saving the role rules failed", errorInfo(error));
     return fail("failed");
   }
 }

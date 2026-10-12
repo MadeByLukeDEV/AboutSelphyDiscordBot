@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { saveGlobalSettingsAction } from "../actions";
 import { globalFormSchema, globalFromForm, globalToForm, type GlobalFormValues, type GlobalSettings } from "../schema";
@@ -64,6 +65,12 @@ export function GeneralSettingsForm({
         {toggle("enabled", t("enabled"), t("enabledHelp"))}
         {toggle("useDefaultBlocklist", t("defaultBlocklist"), t("defaultBlocklistHelp", { count: builtInCount }))}
         {toggle("rememberSettings", t("remember"), t("rememberHelp"))}
+
+        <Field>
+          <FieldLabel htmlFor="afkMoveMinutes">{t("afk")}</FieldLabel>
+          <Input id="afkMoveMinutes" type="number" inputMode="numeric" min={0} max={240} className="max-w-[8rem]" {...form.register("afkMoveMinutes", { valueAsNumber: true })} />
+          <FieldDescription>{t("afkHelp")}</FieldDescription>
+        </Field>
 
         <Field data-invalid={Boolean(errors.blockedWordsText) || undefined}>
           <FieldLabel htmlFor="blockedWordsText">{t("blocked")}</FieldLabel>

@@ -5,6 +5,7 @@ import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getSettings } from "@/modules/tempvoice";
 import { GeneralSettingsForm } from "@/modules/tempvoice/components/general-settings-form";
 import { LobbiesManager } from "@/modules/tempvoice/components/lobbies-manager";
+import { RoleRulesManager } from "@/modules/tempvoice/components/role-rules-manager";
 import { RoomsMonitor } from "@/modules/tempvoice/components/rooms-monitor";
 
 export async function generateMetadata() {
@@ -17,7 +18,7 @@ export default async function VoiceRoomsPage() {
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("TempVoice");
-  const { global, lobbies, channels } = await getSettings();
+  const { global, lobbies, channels, roleRules, roles } = await getSettings();
 
   return (
     <>
@@ -29,6 +30,8 @@ export default async function VoiceRoomsPage() {
       <RoomsMonitor enabled={global.enabled} />
 
       <LobbiesManager lobbies={lobbies} channels={channels} maxLobbies={MAX_TEMP_VOICE_LOBBIES} />
+
+      <RoleRulesManager initial={roleRules} roles={roles} />
 
       <section aria-labelledby="general-heading" className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">

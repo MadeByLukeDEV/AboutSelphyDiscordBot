@@ -34,6 +34,7 @@ export type {
   AuditEntry,
   MemberInvite,
   ScreeningConfig,
+  TempVoiceRoleRule,
   ScreeningEntry,
   AutoPublishChannel,
   MemberCardImage,

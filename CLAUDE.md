@@ -1107,6 +1107,17 @@ Decided 2026-10-08:
     counter. `Command` gained an optional `autocomplete` handler (dispatched in `interaction-create`).
     Dashboard `/custom-commands` (admins). **Auto-responders** (reacting to words in messages) are not
     built: they need the privileged Message Content intent.
+- [~] Temp voice extras (2026-11-07, `feature_tempvoice-extras`, migration `20261107240000_tempvoice_extras`; **not tried live yet**)
+  - **Per-role rules** (`TempVoiceRoleRule`, dashboard `/voice-rooms`): a role (or `everyone` = base rule) can set a bitrate (8-384 kbit/s)
+    and/or the highest member limit an owner may set. New rooms get the best bitrate among the owner's roles, capped to
+    `guild.maximumBitrate`, and their limit goes through `applyCap`; `setRoomLimit` refuses a limit above the cap of the person
+    changing it (staff are never capped). Pure rules in `tempvoice/roles.ts` (tested). Cached 60 s, reload key `tempvoice`.
+  - **AFK mover**: `TempVoiceConfig.afkMoveMinutes` (0 = off, CHECK 0-240): a minute tick moves members who stayed *self-deafened*
+    that long to the server's AFK channel (`planAfk`, pure, tested; muted-only members are left alone). Needs the AFK channel set in
+    Discord and Move Members; only runs in production or with `BOT_INTEGRATIONS_IN_DEV`; follows the `tempvoice` module switch.
+  - **Voice leaderboard**: `/leaderboard sort:Time in voice` ranks by `MemberXp.voiceMinutes` (counted by the levels voice tick, so it
+    needs leveling on and voice XP > 0; periodic resets wipe it too).
+  - [ ] Voice-text chat cleanup.
 - [~] Utility commands (2026-10-24, `feature_utility-commands`, no migration; **not tried live yet**; Tier C)
   - `modules/utility/`: `/userinfo`, `/serverinfo`, `/roleinfo`, `/avatar` (read-only embeds for every
     member, names escaped, nothing pings) and `commands/help.ts`: `/help` lists only the commands the

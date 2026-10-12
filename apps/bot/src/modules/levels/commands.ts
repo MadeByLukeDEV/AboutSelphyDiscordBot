@@ -6,6 +6,7 @@ import { fetchAvatar } from "../../lib/avatar";
 import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { getLevelConfig } from "./config";
+import { formatVoiceTime } from "./rules";
 import { countMembers, findXp, rankOf, resetXp, setXp, topMembers } from "./repository";
 import { renderRankCard } from "./rank-card";
 import { syncRewardRoles } from "./service";
@@ -58,7 +59,8 @@ const rank: Command = {
 const leaderboard: Command = {
   data: guildOnly(new SlashCommandBuilder())
     .setName("leaderboard")
-    .setDescription("The members with the most XP")
+    .setDescription("The members with the most XP or voice time")
+    .addStringOption((o) => o.setName("sort").setDescription("What to rank by (default: XP)").addChoices({ name: "XP", value: "xp" }, { name: "Time in voice", value: "voice" }))
     .addIntegerOption((o) => o.setName("page").setDescription("Page number").setMinValue(1).setMaxValue(1000))
     .toJSON(),
   async execute(i) {
@@ -66,17 +68,19 @@ const leaderboard: Command = {
     const { config } = await getLevelConfig();
     if (!config.enabled) return void (await i.reply({ content: "Leveling isn't switched on in this server.", flags: MessageFlags.Ephemeral }));
     const page = i.options.getInteger("page") ?? 1;
-    const total = await countMembers();
+    const by = i.options.getString("sort") === "voice" ? "voice" : "xp";
+    const total = await countMembers(by);
     const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     if (page > pages) return void (await i.reply({ content: `There are only ${pages} ${pages === 1 ? "page" : "pages"}.`, flags: MessageFlags.Ephemeral }));
 
-    const rows = await topMembers((page - 1) * PAGE_SIZE, PAGE_SIZE);
+    const rows = await topMembers((page - 1) * PAGE_SIZE, PAGE_SIZE, by);
     const lines = rows.map((r, n) => {
       const place = (page - 1) * PAGE_SIZE + n + 1;
       const medal = place === 1 ? "🥇" : place === 2 ? "🥈" : place === 3 ? "🥉" : `**${place}.**`;
+      if (by === "voice") return `${medal} <@${r.userId}> · **${formatVoiceTime(r.voiceMinutes)}** in voice`;
       return `${medal} <@${r.userId}> · level **${levelFromXp(r.xp)}** · ${r.xp.toLocaleString("en")} XP`;
     });
-    const embed = new EmbedBuilder().setColor(BRAND).setTitle(`${escapeText(i.guild.name)} leaderboard`).setDescription(lines.join("\n") || "Nobody has earned XP yet.").setFooter({ text: `Page ${page} of ${pages}` });
+    const embed = new EmbedBuilder().setColor(BRAND).setTitle(`${escapeText(i.guild.name)} ${by === "voice" ? "voice time" : "leaderboard"}`).setDescription(lines.join("\n") || (by === "voice" ? "Nobody has spent time in voice yet." : "Nobody has earned XP yet.")).setFooter({ text: `Page ${page} of ${pages}` });
     // When the public web page is on, the full list is one click away.
     if (config.publicLeaderboard && env().DASHBOARD_URL) embed.setDescription(`${lines.join("\n") || "Nobody has earned XP yet."}\n\n[Full leaderboard](${env().DASHBOARD_URL!.replace(/\/+$/, "")}/leaderboard)`);
     await i.reply({ embeds: [embed], allowedMentions: NO_MENTIONS });

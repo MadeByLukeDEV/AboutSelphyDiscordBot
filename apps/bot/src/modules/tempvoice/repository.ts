@@ -75,3 +75,7 @@ export const findPreference = (userId: string) => prisma.tempVoicePreference.fin
 
 export const savePreference = (userId: string, data: { name: string; userLimit: number; locked: boolean; videoAllowed: boolean; soundboardAllowed: boolean }) =>
   prisma.tempVoicePreference.upsert({ where: { userId }, update: data, create: { userId, ...data } });
+
+export function listRoleRules() {
+  return prisma.tempVoiceRoleRule.findMany();
+}

@@ -4,12 +4,13 @@ import { Cooldown } from "../../lib/cooldown";
 import { env } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
-import { getLobbies, getTempVoiceConfig } from "./config";
+import { getLobbies, getRoleRules, getTempVoiceConfig } from "./config";
 import { loadRoom, postPanel } from "./controller";
 import { fetchVoiceChannel, humansIn } from "./discord-channels";
 import { policyOf, renderRoomName } from "./name";
 import { initialOverwrites } from "./permissions";
 import { startOfRoom } from "./preference";
+import { applyCap, limitCap, roomBitrate } from "./roles";
 import { deriveRoomState, type OverwriteBits } from "./state";
 import * as repo from "./repository";
 import { planTransition } from "./transition";
@@ -110,12 +111,18 @@ async function createRoomFor(member: GuildMember, lobby: TempVoiceLobby, config:
     { words: config.blockedWords ?? [], useDefaultList: config.useDefaultBlocklist },
   );
   const name = start.name;
+  // Per-role rules: the owner's best bitrate, and a member limit within the highest cap their roles allow.
+  const rules = await getRoleRules();
+  const held = new Set([...member.roles.cache.keys()]);
+  const bitrate = roomBitrate(rules, held, guild.maximumBitrate);
+  const userLimit = applyCap(start.userLimit, limitCap(rules, held));
 
   const channel = await guild.channels.create({
     name,
     type: ChannelType.GuildVoice,
     parent: lobby.categoryId ?? lobbyChannel?.parentId ?? null,
-    userLimit: start.userLimit,
+    userLimit,
+    ...(bitrate !== undefined ? { bitrate } : {}),
     permissionOverwrites: initialOverwrites({
       everyoneId: guild.id,
       ownerId: member.id,

@@ -6,7 +6,7 @@ export function readConfig(): Promise<TempVoiceConfig> {
   return prisma.tempVoiceConfig.findUniqueOrThrow({ where: { id: 1 } });
 }
 
-export function updateConfig(data: { enabled: boolean; blockedWords: string[]; useDefaultBlocklist: boolean; rememberSettings: boolean }): Promise<TempVoiceConfig> {
+export function updateConfig(data: { enabled: boolean; blockedWords: string[]; useDefaultBlocklist: boolean; rememberSettings: boolean; afkMoveMinutes: number }): Promise<TempVoiceConfig> {
   return prisma.tempVoiceConfig.update({ where: { id: 1 }, data });
 }
 
@@ -52,4 +52,13 @@ export function updateLobby(id: string, data: LobbyData): Promise<TempVoiceLobby
 export async function deleteLobby(id: string): Promise<number> {
   const { count } = await prisma.tempVoiceLobby.deleteMany({ where: { id } });
   return count;
+}
+
+export function listRoleRules() {
+  return prisma.tempVoiceRoleRule.findMany({ orderBy: { createdAt: "asc" } });
+}
+
+/** Replaces the whole rule list in one transaction. */
+export function replaceRoleRules(rules: Array<{ roleId: string; bitrateKbps: number | null; maxUserLimit: number | null }>) {
+  return prisma.$transaction([prisma.tempVoiceRoleRule.deleteMany({}), prisma.tempVoiceRoleRule.createMany({ data: rules })]);
 }

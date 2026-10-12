@@ -12,10 +12,11 @@ import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { staffLevel } from "../../lib/permissions";
 import { SlidingWindowLimiter } from "../../lib/sliding-window";
-import { getTempVoiceConfig } from "./config";
+import { getRoleRules, getTempVoiceConfig } from "./config";
 import { fetchVoiceChannel } from "./discord-channels";
 import { checkRename, policyOf } from "./name";
 import { buildPanel, panelId } from "./panel";
+import { limitCap } from "./roles";
 import * as repo from "./repository";
 import {
   canClaimRoom,
@@ -153,6 +154,12 @@ export async function setRoomLimit(room: Room, actor: GuildMember, limit: number
   const denied = denyUnlessManager(room, actor);
   if (denied) return denied;
   if (!Number.isInteger(limit) || limit < 0 || limit > 99) return no("Pick a number from 0 to 99 (0 means no limit).");
+
+  // The cap comes from the roles of whoever is changing it; staff are never limited.
+  if (staffLevel(actor) === null) {
+    const cap = limitCap(await getRoleRules(), new Set(actor.roles.cache.keys()));
+    if (cap !== null && (limit === 0 || limit > cap)) return no(`Your roles allow at most ${cap} members in a room.`);
+  }
 
   await room.channel.setUserLimit(limit, reasonFor(actor));
   await refreshPanel(room);

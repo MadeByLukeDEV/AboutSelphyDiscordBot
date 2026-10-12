@@ -45,12 +45,13 @@ export async function rankOf(xp: number): Promise<number> {
   return (await prisma.memberXp.count({ where: { xp: { gt: xp } } })) + 1;
 }
 
-export function topMembers(skip: number, take: number): Promise<MemberXp[]> {
+export function topMembers(skip: number, take: number, by: "xp" | "voice" = "xp"): Promise<MemberXp[]> {
+  if (by === "voice") return prisma.memberXp.findMany({ where: { voiceMinutes: { gt: 0 } }, orderBy: [{ voiceMinutes: "desc" }, { userId: "asc" }], skip, take });
   return prisma.memberXp.findMany({ orderBy: [{ xp: "desc" }, { userId: "asc" }], skip, take });
 }
 
-export function countMembers(): Promise<number> {
-  return prisma.memberXp.count();
+export function countMembers(by: "xp" | "voice" = "xp"): Promise<number> {
+  return prisma.memberXp.count(by === "voice" ? { where: { voiceMinutes: { gt: 0 } } } : undefined);
 }
 
 /** One conditional UPDATE decides who runs the periodic reset: only the call that still sees `previous` wins. */

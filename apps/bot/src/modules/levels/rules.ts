@@ -51,3 +51,9 @@ export function resetDue(mode: string, lastResetAt: Date | null, now: Date): "no
   if (lastResetAt === null) return "seed";
   return lastResetAt.getTime() < periodStart(mode, now).getTime() ? "reset" : "none";
 }
+
+/** 135 -> "2h 15m", 45 -> "45m". */
+export function formatVoiceTime(minutes: number): string {
+  const m = Math.max(0, Math.floor(minutes));
+  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+}
