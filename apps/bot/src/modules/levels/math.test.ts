@@ -61,6 +61,8 @@ describe("levelSettingsSchema", () => {
     noXpRoleIds: [],
     stackRoles: true,
     publicLeaderboard: false,
+    voiceRequiresUnmuted: false,
+    resetEvery: "off",
     rewards: [],
     boosts: [],
   };

@@ -34,3 +34,20 @@ export function earnsXp(input: { channelId: string; parentId: string | null; mem
   if (input.parentId && input.noXpChannelIds.includes(input.parentId)) return false;
   return !input.noXpRoleIds.some((id) => input.memberRoleIds.has(id));
 }
+
+/** Start (UTC) of the week (Monday 00:00) or month the given moment falls in. */
+export function periodStart(mode: "weekly" | "monthly", now: Date): Date {
+  if (mode === "monthly") return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const sinceMonday = (now.getUTCDay() + 6) % 7;
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - sinceMonday));
+}
+
+/**
+ * Is a periodic XP reset due? "seed" = the first run: only record the time, never wipe (a freshly switched-on reset must
+ * not erase anything); "reset" = a new period began after the last reset.
+ */
+export function resetDue(mode: string, lastResetAt: Date | null, now: Date): "none" | "seed" | "reset" {
+  if (mode !== "weekly" && mode !== "monthly") return "none";
+  if (lastResetAt === null) return "seed";
+  return lastResetAt.getTime() < periodStart(mode, now).getTime() ? "reset" : "none";
+}

@@ -8,7 +8,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { ANNOUNCE_MODES, DEFAULT_ANNOUNCE_TEMPLATE, MAX_ANNOUNCE_TEMPLATE, MAX_BOOST_PERCENT, MAX_BOOSTS, MAX_LEVEL, MAX_NO_XP, MAX_REWARDS, MIN_BOOST_PERCENT, levelSettingsSchema, type LevelSettings } from "@aboutselphy/shared/levels";
+import { ANNOUNCE_MODES, RESET_MODES, DEFAULT_ANNOUNCE_TEMPLATE, MAX_ANNOUNCE_TEMPLATE, MAX_BOOST_PERCENT, MAX_BOOSTS, MAX_LEVEL, MAX_NO_XP, MAX_REWARDS, MIN_BOOST_PERCENT, levelSettingsSchema, type LevelSettings } from "@aboutselphy/shared/levels";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,6 +59,7 @@ export function LevelsManager({
   // A boost can go to any role (it hands out XP, not the role), so every role is offered.
   const boostRoleOptions: SelectOption[] = (roles ?? []).map((r) => ({ value: r.id, label: r.name }));
   for (const b of initial.boosts) if (!boostRoleOptions.some((o) => o.value === b.roleId)) boostRoleOptions.push({ value: b.roleId, label: b.roleId });
+  const resetOptions: SelectOption[] = RESET_MODES.map((m) => ({ value: m, label: t(`reset.modes.${m}`) }));
   const modeOptions: SelectOption[] = ANNOUNCE_MODES.map((m) => ({ value: m, label: t(`announce.modes.${m}`) }));
 
   const pickerLabels = (kind: "channels" | "roles") => ({
@@ -172,6 +173,18 @@ export function LevelsManager({
                 <FieldLabel htmlFor="lv-stack">{t("rewards.stack")}</FieldLabel>
                 <FieldDescription id="lv-stack-help">{t("rewards.stackHelp")}</FieldDescription>
               </div>
+            </Field>
+            <Field orientation="horizontal">
+              <Controller control={form.control} name="voiceRequiresUnmuted" render={({ field }) => <Switch id="lv-unmuted" checked={field.value} onCheckedChange={field.onChange} aria-describedby="lv-unmuted-help" />} />
+              <div className="flex flex-col gap-1">
+                <FieldLabel htmlFor="lv-unmuted">{t("unmuted.label")}</FieldLabel>
+                <FieldDescription id="lv-unmuted-help">{t("unmuted.help")}</FieldDescription>
+              </div>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="lv-reset">{t("reset.label")}</FieldLabel>
+              <FormSelect control={form.control} name="resetEvery" id="lv-reset" options={resetOptions} placeholder={t("reset.label")} />
+              <FieldDescription>{t("reset.help")}</FieldDescription>
             </Field>
             <Field orientation="horizontal">
               <Controller control={form.control} name="publicLeaderboard" render={({ field }) => <Switch id="lv-public" checked={field.value} onCheckedChange={field.onChange} aria-describedby="lv-public-help" />} />

@@ -52,3 +52,14 @@ export function topMembers(skip: number, take: number): Promise<MemberXp[]> {
 export function countMembers(): Promise<number> {
   return prisma.memberXp.count();
 }
+
+/** One conditional UPDATE decides who runs the periodic reset: only the call that still sees `previous` wins. */
+export async function claimReset(previous: Date | null, now: Date): Promise<boolean> {
+  const { count } = await prisma.levelConfig.updateMany({ where: { id: 1, lastResetAt: previous }, data: { lastResetAt: now } });
+  return count === 1;
+}
+
+/** Sets everyone's XP, messages and voice minutes back to zero (the rows stay, so names and the hidden flag survive). */
+export async function wipeAllXp(): Promise<number> {
+  return (await prisma.memberXp.updateMany({ data: { xp: 0, messages: 0, voiceMinutes: 0 } })).count;
+}

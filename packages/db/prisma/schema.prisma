@@ -482,6 +482,12 @@ model LevelConfig {
   stackRoles        Boolean  @default(true)
   /// Show the top members on a public web page (/leaderboard on the dashboard's address). Off by default.
   publicLeaderboard Boolean  @default(false)
+  /// Voice XP only for members who are not muted (self or server).
+  voiceRequiresUnmuted Boolean @default(false)
+  /// "off" | "weekly" | "monthly": everyone's XP is wiped at the start of each period (UTC).
+  resetEvery        String   @default("off") @db.VarChar(8)
+  /// When the last period reset (or its first recording) happened.
+  lastResetAt       DateTime?
   updatedAt         DateTime @updatedAt
 }
 

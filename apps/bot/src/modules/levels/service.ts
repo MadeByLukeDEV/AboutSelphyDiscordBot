@@ -7,8 +7,8 @@ import { log } from "../../lib/log";
 import { moduleOn } from "../../lib/modules";
 import { checkRole } from "../roles";
 import { getLevelConfig } from "./config";
-import { addXp } from "./repository";
-import { cooldownPassed, earnsXp, planRewardRoles, rollXp } from "./rules";
+import { addXp, claimReset, readConfig, wipeAllXp } from "./repository";
+import { cooldownPassed, earnsXp, planRewardRoles, resetDue, rollXp } from "./rules";
 
 // XP from messages (random amount, once per cooldown) and from time in voice (a fixed amount a
 // minute while with someone else). Levels come from the MEE6 curve; reaching one can give a role.
@@ -94,6 +94,7 @@ async function voiceTick(guild: Guild): Promise<void> {
     for (const member of members) {
       const state = member.voice;
       if (state.selfDeaf || state.serverDeaf) continue;
+      if (config.voiceRequiresUnmuted && (state.selfMute || state.serverMute)) continue;
       const roleIds = new Set(member.roles.cache.keys());
       if (!earnsXp({ channelId, parentId: channel?.parentId ?? null, memberRoleIds: roleIds, noXpChannelIds: config.noXpChannelIds, noXpRoleIds: config.noXpRoleIds })) continue;
       try {
@@ -104,6 +105,39 @@ async function voiceTick(guild: Guild): Promise<void> {
       }
     }
   }
+}
+
+/**
+ * The periodic reset (weekly or monthly, UTC). The first run only records the time. A new period wipes everyone's XP and
+ * takes the reward roles back; one conditional UPDATE decides who runs it, so a restart or a second tick never repeats it.
+ */
+async function resetRound(guild: Guild): Promise<void> {
+  if (!(await moduleOn("levels"))) return;
+  const config = await readConfig();
+  if (!config.enabled) return;
+  const now = new Date();
+  const due = resetDue(config.resetEvery, config.lastResetAt, now);
+  if (due === "none") return;
+  if (!(await claimReset(config.lastResetAt, now))) return;
+  if (due === "seed") return void log.info({ mode: config.resetEvery }, "levels: periodic reset armed (nothing wiped)");
+
+  const wiped = await wipeAllXp();
+  const { rewards } = await getLevelConfig();
+  let removed = 0;
+  if (rewards.length > 0) {
+    await guild.members.fetch().catch((err) => log.warn({ err }, "levels: could not load members for the reset"));
+    for (const roleId of new Set(rewards.map((r) => r.roleId))) {
+      for (const member of guild.roles.cache.get(roleId)?.members.values() ?? []) {
+        try {
+          await member.roles.remove(roleId, "Periodic XP reset");
+          removed++;
+        } catch (err) {
+          log.warn({ err, user: member.id, roleId }, "levels: could not take a reward role back");
+        }
+      }
+    }
+  }
+  log.info({ mode: config.resetEvery, wiped, removedRoles: removed }, "levels: periodic XP reset done");
 }
 
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -117,7 +151,9 @@ export function registerLevels(client: Client): void {
   client.once(Events.ClientReady, () => {
     timer = setInterval(() => {
       const guild = client.guilds.cache.get(env().DISCORD_GUILD_ID);
-      if (guild) void voiceTick(guild).catch((err) => log.error({ err }, "voice XP round failed"));
+      if (!guild) return;
+      void voiceTick(guild).catch((err) => log.error({ err }, "voice XP round failed"));
+      void resetRound(guild).catch((err) => log.error({ err }, "level reset round failed"));
     }, VOICE_TICK_MS);
     // The cooldown map only needs recent entries.
     setInterval(() => {

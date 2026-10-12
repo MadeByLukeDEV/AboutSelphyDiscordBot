@@ -1100,6 +1100,35 @@
       "add": "Boost hinzufügen",
       "remove": "Entfernen"
     },
+    "unmuted": {
+      "label": "Voice-XP nur ohne Stummschaltung",
+      "help": "Stummgeschaltete Mitglieder (von sich selbst oder einem Moderator) bekommen keine Voice-XP. Taub geschaltete nie."
+    },
+    "reset": {
+      "label": "XP aller zurücksetzen",
+      "help": "Setzt alle XP, Level und Belohnungsrollen zu Beginn jeder Woche (Montag) oder jedes Monats in UTC zurück. Beim Einschalten wird nichts sofort gelöscht: Der erste Reset passiert, wenn der nächste Zeitraum beginnt.",
+      "modes": {
+        "off": "Nie",
+        "weekly": "Jede Woche",
+        "monthly": "Jeden Monat"
+      }
+    },
+    "import": {
+      "title": "XP von einem anderen Bot importieren",
+      "intro": "Füge eine MEE6-Rangliste (JSON) oder pro Mitglied eine Zeile ein: Discord-ID, XP und optional ein Name. Bis zu {max} Mitglieder. Die XP von niemandem wird je gesenkt. Belohnungsrollen gibt es beim nächsten Levelaufstieg oder wenn du die XP mit /xp set setzt.",
+      "label": "Daten",
+      "help": "Die Level von MEE6 nutzen dieselbe Kurve wie dieser Bot, die Summen gelten also unverändert. Die ID muss die Discord-Nutzer-ID sein.",
+      "button": "Importieren",
+      "importing": "Importiert ...",
+      "done": "Importiert: {created} neu, {raised} erhöht, {unchanged} unverändert, {skipped} übersprungen.",
+      "errors": {
+        "forbidden": "Dazu hast du keine Berechtigung.",
+        "invalid": "Ungültige Anfrage.",
+        "tooLarge": "Das ist zu viel Text.",
+        "nothing": "Keine brauchbaren Einträge gefunden.",
+        "failed": "Etwas ist schiefgelaufen."
+      }
+    },
     "public": {
       "label": "Öffentliche Ranglisten-Seite",
       "help": "Zeigt die Top 100 Mitglieder (Anzeigename, Level und XP) auf einer Webseite unter /leaderboard auf der Adresse des Dashboards, ohne Anmeldung lesbar. Mitglieder können sich mit /mydata hide ausblenden. Standardmäßig aus."

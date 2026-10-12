@@ -1100,6 +1100,35 @@
       "add": "Add a boost",
       "remove": "Remove"
     },
+    "unmuted": {
+      "label": "Voice XP only while unmuted",
+      "help": "Members who are muted (by themselves or by a moderator) earn no voice XP. Deafened members never do."
+    },
+    "reset": {
+      "label": "Reset everyone's XP",
+      "help": "Wipes all XP, levels and reward roles at the start of each week (Monday) or month, in UTC. Turning it on never wipes anything at once: the first reset happens when the next period begins.",
+      "modes": {
+        "off": "Never",
+        "weekly": "Every week",
+        "monthly": "Every month"
+      }
+    },
+    "import": {
+      "title": "Import XP from another bot",
+      "intro": "Paste a MEE6 leaderboard (JSON) or one line per member: Discord ID, XP and optionally a name. Up to {max} members. Nobody's XP is ever lowered. Reward roles are given when a member next levels up, or when you set their XP with /xp set.",
+      "label": "Data",
+      "help": "MEE6's levels use the same curve as this bot, so the totals carry over as they are. The ID must be the Discord user ID.",
+      "button": "Import",
+      "importing": "Importing...",
+      "done": "Imported: {created} new, {raised} raised, {unchanged} unchanged, {skipped} skipped.",
+      "errors": {
+        "forbidden": "You are not allowed to do this.",
+        "invalid": "Invalid request.",
+        "tooLarge": "That is too much text.",
+        "nothing": "No usable entries found.",
+        "failed": "Something went wrong."
+      }
+    },
     "public": {
       "label": "Public leaderboard page",
       "help": "Shows the top 100 members (display name, level and XP) on a web page at /leaderboard on the dashboard's address, readable without signing in. Members can hide themselves with /mydata hide. Off by default."

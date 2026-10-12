@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getLevelsPage } from "@/modules/levels";
 import { LevelsManager } from "@/modules/levels/components/levels-manager";
+import { XpImport } from "@/modules/levels/components/xp-import";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("Levels"))("title") };
@@ -23,6 +24,7 @@ export default async function LevelsPage() {
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
       <LevelsManager initial={settings} leaderboard={leaderboard} total={total} channels={channels} roles={roles} />
+      <XpImport />
     </>
   );
 }

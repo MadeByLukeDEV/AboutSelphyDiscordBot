@@ -1,9 +1,10 @@
 import "server-only";
 import { levelFromXp, type LevelSettings } from "@aboutselphy/shared/levels";
+import { MAX_IMPORT_CHARS, parseXpImport } from "@aboutselphy/shared/levels-import";
 import { errorInfo } from "@/lib/log";
 import { listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
-import { countMembers, readConfig, saveAll, topMembers, topPublic } from "./repository";
-import type { LeaderboardRow, SaveLevelsResult } from "./schema";
+import { countMembers, importRows, readConfig, saveAll, topMembers, topPublic } from "./repository";
+import type { ImportXpResult, LeaderboardRow, SaveLevelsResult } from "./schema";
 
 async function readSettings(): Promise<LevelSettings> {
   const { config: c, rewards, boosts } = await readConfig();
@@ -20,6 +21,8 @@ async function readSettings(): Promise<LevelSettings> {
     noXpRoleIds: c.noXpRoleIds,
     stackRoles: c.stackRoles,
     publicLeaderboard: c.publicLeaderboard,
+    voiceRequiresUnmuted: c.voiceRequiresUnmuted,
+    resetEvery: c.resetEvery === "weekly" || c.resetEvery === "monthly" ? c.resetEvery : "off",
     rewards: rewards.map((r) => ({ level: r.level, roleId: r.roleId })),
     boosts,
   };
@@ -74,6 +77,9 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
         noXpRoleIds: input.noXpRoleIds,
         stackRoles: input.stackRoles,
         publicLeaderboard: input.publicLeaderboard,
+        voiceRequiresUnmuted: input.voiceRequiresUnmuted,
+        resetEvery: input.resetEvery,
+        ...(input.resetEvery !== current.resetEvery ? { lastResetAt: null } : {}),
       },
       input.rewards,
       input.boosts,
@@ -81,6 +87,20 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
     return { ok: true, settings: await readSettings(), botNotified: await reloadBotModule("levels") };
   } catch (error) {
     console.error("[levels] saving failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Imports pasted totals from another bot. Never lowers anyone's XP; reward roles are given when a member next levels up (or with /xp set). */
+export async function importXp(text: string): Promise<ImportXpResult> {
+  try {
+    if (text.length > MAX_IMPORT_CHARS) return { ok: false, error: "tooLarge" };
+    const { rows, skipped } = parseXpImport(text);
+    if (rows.length === 0) return { ok: false, error: "nothing" };
+    const { created, raised } = await importRows(rows);
+    return { ok: true, created, raised, unchanged: rows.length - created - raised, skipped };
+  } catch (error) {
+    console.error("[levels] import failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
 }

@@ -956,7 +956,15 @@ Decided 2026-10-08:
         page is a plain 404. Members can leave it with `/mydata hide` (and come back with `/mydata show`; `MemberXp.hidden`, only
         affects the web page); members without a stored name are left out. `/leaderboard` in Discord links to it when it is on
         (needs the bot's `DASHBOARD_URL`). Privacy policy updated (2026-11-06).
-  - [ ] Still open: importing MEE6 data, weekly resets, voice XP only counting unmuted time.
+  - **Level tools** (2026-11-07, `feature_level-tools`, migration `20261107200000_level_tools`; **not tried live yet**):
+    (1) `voiceRequiresUnmuted`: muted members (self or server) earn no voice XP. (2) Periodic reset `resetEvery`
+    off|weekly|monthly (UTC, Monday / the 1st): `resetRound` runs on the minute tick, `resetDue` (pure, tested) says
+    none|seed|reset, **the first run only records `lastResetAt`** (never wipes), one conditional UPDATE (`claimReset`)
+    decides who runs it, XP/messages/voice minutes go to 0 (rows, names and the hidden flag stay) and reward roles are
+    taken back; changing the mode clears `lastResetAt` so a new schedule never wipes at once. (3) XP import on `/levels`
+    (`@aboutselphy/shared/levels-import`, tested): MEE6 leaderboard JSON or `id xp name` lines, <= 5000 rows, **only
+    ever raises XP** (the curve is identical to MEE6's); reward roles follow at the next level-up or `/xp set`.
+  - [ ] XP boosts per event, importing from other bots' formats.
 - [~] Tickets (2026-10-17, `feature_tickets`, migration `20261017100000_tickets` applied;
       **not tried live yet**; Tier B)
   - Bot (`modules/tickets/`): panel message with an "Open a ticket" button; opening

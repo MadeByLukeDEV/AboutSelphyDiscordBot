@@ -13,6 +13,8 @@ export const MIN_BOOST_PERCENT = 101;
 export const MAX_BOOST_PERCENT = 500;
 export const MAX_ANNOUNCE_TEMPLATE = 300;
 export const DEFAULT_ANNOUNCE_TEMPLATE = "GG {user}, you reached level {level}!";
+export const RESET_MODES = ["off", "weekly", "monthly"] as const;
+export type ResetMode = (typeof RESET_MODES)[number];
 export const ANNOUNCE_MODES = ["off", "same", "channel"] as const;
 export type AnnounceMode = (typeof ANNOUNCE_MODES)[number];
 
@@ -86,6 +88,10 @@ export const levelSettingsSchema = z
     stackRoles: z.boolean(),
     /** Show the top members on a public web page. */
     publicLeaderboard: z.boolean(),
+    /** Voice XP only while not muted. */
+    voiceRequiresUnmuted: z.boolean(),
+    /** Wipe everyone's XP at the start of each week or month (UTC). */
+    resetEvery: z.enum(RESET_MODES),
     rewards: z
       .array(z.object({ level: z.number().int().min(1).max(MAX_LEVEL), roleId: snowflake }))
       .max(MAX_REWARDS),

@@ -5,4 +5,8 @@ import type { LevelSettings } from "@aboutselphy/shared/levels";
 export type LevelsError = "forbidden" | "invalid" | "needsChannel" | "botUnavailable" | "channelNotFound" | "roleNotFound" | "roleNotAllowed" | "failed";
 export type SaveLevelsResult = { ok: true; settings: LevelSettings; botNotified: boolean } | { ok: false; error: LevelsError };
 
+export type ImportXpResult =
+  | { ok: true; created: number; raised: number; unchanged: number; skipped: number }
+  | { ok: false; error: "forbidden" | "invalid" | "tooLarge" | "nothing" | "failed" };
+
 export type LeaderboardRow = { userId: string; name: string; xp: number; level: number; messages: number; voiceMinutes: number };
