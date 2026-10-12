@@ -23,6 +23,7 @@ import {
   type TwitchStreamerView,
 } from "../schema";
 import { MessagePreview } from "./message-preview";
+import { ColorPicker } from "@/components/form/color-picker";
 
 /** The form inside the add/edit dialog. `streamer` is the one being edited, or null for a new one. */
 export function StreamerForm({
@@ -203,17 +204,10 @@ export function StreamerForm({
         <Field data-invalid={Boolean(errors.embedColor) || undefined}>
           <FieldLabel htmlFor="tw-color">{t("color")}</FieldLabel>
           <div className="flex items-center gap-2">
-            <input
-              id="tw-color"
-              type="color"
-              value={colorToHex(color)}
-              onChange={(e) => {
-                const next = hexToColor(e.target.value);
+            <ColorPicker id="tw-color" value={colorToHex(color)} onChange={(hex) => {
+                const next = hexToColor(hex);
                 if (next !== undefined) form.setValue("embedColor", next, { shouldDirty: true, shouldValidate: true });
-              }}
-              className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-            />
-            <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(color)}</span>
+              }} />
             <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("embedColor", DEFAULT_EMBED_COLOR, { shouldDirty: true })}>
               {t("colorReset")}
             </Button>

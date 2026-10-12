@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { postPanelAction, saveTicketSettingsAction } from "../actions";
 import type { TicketRow } from "../schema";
+import { ColorPicker } from "@/components/form/color-picker";
 
 /** The ticket list for staff, and (for admins) the settings and the button that posts the panel. */
 export function TicketsManager({
@@ -148,16 +149,10 @@ export function TicketsManager({
             <Field>
               <FieldLabel htmlFor="tk-color">{t("form.color")}</FieldLabel>
               <div className="flex items-center gap-2">
-                <input
-                  id="tk-color"
-                  type="color"
-                  value={colorToHex(color)}
-                  onChange={(e) => {
-                    const next = hexToColor(e.target.value);
+                <ColorPicker id="tk-color" value={colorToHex(color)} onChange={(hex) => {
+                    const next = hexToColor(hex);
                     if (next !== undefined) form.setValue("panelColor", next, { shouldDirty: true });
-                  }}
-                  className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-                />
+                  }} />
                 <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("panelColor", DEFAULT_TICKET_COLOR, { shouldDirty: true })}>
                   {t("form.colorReset")}
                 </Button>

@@ -29,10 +29,13 @@ export function AnnouncementsManager({
   announcements,
   channels,
   roles,
+  canPingEveryone,
 }: {
   announcements: AnnouncementView[];
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  /** Admins only. */
+  canPingEveryone: boolean;
 }) {
   const t = useTranslations("Announcements");
   const te = useTranslations("Announcements.errors");
@@ -139,6 +142,7 @@ export function AnnouncementsManager({
               announcement={editing.announcement}
               channels={channels}
               roles={roles}
+              canPingEveryone={canPingEveryone}
               onDone={() => {
                 setEditing(null);
                 router.refresh();

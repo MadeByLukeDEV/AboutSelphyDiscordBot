@@ -269,6 +269,8 @@ model Announcement {
   channelId        String             @db.VarChar(20)
   /// The one role that is mentioned, or null for no ping.
   pingRoleId       String?            @db.VarChar(20)
+  /// Also mention @everyone (admins only; the bot needs Mention Everyone for it to ping).
+  pingEveryone     Boolean            @default(false)
   /// When to send it. "Send now" sets this to the current time.
   scheduledFor     DateTime?
   sentAt           DateTime?

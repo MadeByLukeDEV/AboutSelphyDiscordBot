@@ -45,6 +45,8 @@ export const announcementInput = z
     channelId: snowflake,
     /** "" = no ping. */
     pingRoleId: z.union([z.literal(""), snowflake]),
+    /** Also mention @everyone. Only admins may switch it on or off (checked by the action). */
+    pingEveryone: z.boolean().default(false),
     mode: z.enum(ANNOUNCEMENT_MODES),
     scheduledFor: z.string().max(40).optional(),
   })

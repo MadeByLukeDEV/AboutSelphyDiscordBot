@@ -4,7 +4,8 @@ import { truncate } from "../../lib/escape";
 
 // An announcement row as Discord gets it. Staff write the text themselves, so
 // markdown and links are kept, but nothing in it can ping anyone: allowedMentions
-// allows only the one configured role, whatever is typed.
+// allows only the one configured role and, when an admin switched it on, @everyone,
+// whatever is typed.
 
 export type AnnouncementView = {
   content: string;
@@ -14,10 +15,11 @@ export type AnnouncementView = {
   embedColor: number;
   embedImageUrl: string;
   pingRoleId: string | null;
+  pingEveryone?: boolean;
 };
 
 export function buildAnnouncement(a: AnnouncementView) {
-  const ping = a.pingRoleId ? `<@&${a.pingRoleId}>` : "";
+  const ping = [a.pingEveryone ? "@everyone" : "", a.pingRoleId ? `<@&${a.pingRoleId}>` : ""].filter(Boolean).join(" ");
   const text = [ping, a.content.trim()].filter(Boolean).join(" ");
 
   const embeds: EmbedBuilder[] = [];
@@ -33,6 +35,9 @@ export function buildAnnouncement(a: AnnouncementView) {
   return {
     content: truncate(text, 2000),
     embeds,
-    allowedMentions: a.pingRoleId ? { parse: [] as never[], roles: [a.pingRoleId] } : { parse: [] as never[] },
+    allowedMentions: {
+      parse: a.pingEveryone ? (["everyone"] as const) : ([] as never[]),
+      ...(a.pingRoleId ? { roles: [a.pingRoleId] } : {}),
+    },
   };
 }

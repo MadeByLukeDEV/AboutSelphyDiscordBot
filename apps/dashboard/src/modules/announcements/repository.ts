@@ -11,6 +11,7 @@ export type AnnouncementData = {
   embedImageUrl: string;
   channelId: string;
   pingRoleId: string | null;
+  pingEveryone: boolean;
   status: AnnouncementStatus;
   scheduledFor: Date | null;
 };

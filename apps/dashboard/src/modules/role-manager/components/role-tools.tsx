@@ -12,6 +12,7 @@ import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cleanupDanglingAction, mergeRolesAction, updateRoleAction } from "../actions";
 import type { Dangling, RoleRow, UsageKey } from "../schema";
+import { ColorPicker } from "@/components/form/color-picker";
 
 const toHex = (color: number) => `#${color.toString(16).padStart(6, "0")}`;
 
@@ -60,7 +61,7 @@ export function EditRoleDialog({ role, onClose }: { role: RoleRow | null; onClos
             <Field>
               <FieldLabel htmlFor="re-color">{t("color")}</FieldLabel>
               <div className="flex flex-wrap items-center gap-3">
-                <input id="re-color" name="color" type="color" defaultValue={role.color === 0 ? "#99aab5" : toHex(role.color)} className="h-9 w-14 cursor-pointer rounded-md border bg-transparent p-1" />
+                <ColorPicker id="re-color" name="color" defaultValue={role.color === 0 ? "#99aab5" : toHex(role.color)} />
                 <label className="flex items-center gap-2 text-sm">
                   <input type="checkbox" name="none" defaultChecked={role.color === 0} className="size-4 accent-[var(--color-primary)]" />
                   {t("noColor")}

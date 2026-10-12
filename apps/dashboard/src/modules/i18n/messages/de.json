@@ -580,7 +580,10 @@
       "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und postet innerhalb einer Minute nach seiner Rückkehr.",
       "updatedInDiscord": "In Discord aktualisiert",
       "savedNotUpdated": "Gespeichert, aber die Discord-Nachricht konnte nicht aktualisiert werden. Vielleicht wurde sie dort gelöscht.",
-      "channelRequired": "Wähle einen Kanal."
+      "channelRequired": "Wähle einen Kanal.",
+      "everyone": "@everyone pingen",
+      "everyoneHelp": "Benachrichtigt alle Mitglieder des Servers. Der Bot braucht dafür das Recht „@everyone erwähnen“ in diesem Kanal, sonst erscheint nur der Text und niemand wird benachrichtigt. Sparsam einsetzen.",
+      "everyoneAdminOnly": "Nur Admins können das ein- oder ausschalten."
     },
     "errors": {
       "forbidden": "Du hast darauf keinen Zugriff.",
@@ -2371,5 +2374,13 @@
       "channelNotFound": "Diesen Kanal gibt es nicht oder er ist kein Textkanal.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
+  },
+  "ColorPicker": {
+    "label": "Farbe",
+    "area": "Farbfläche: von links nach rechts Sättigung, von unten nach oben Helligkeit",
+    "areaRole": "Farbfläche",
+    "hue": "Farbton",
+    "hex": "Hex-Farbe",
+    "presets": "Fertige Farben"
   }
 }

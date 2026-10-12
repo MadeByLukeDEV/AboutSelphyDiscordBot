@@ -13,6 +13,7 @@ export type AnnouncementView = {
   embedImageUrl: string;
   channelId: string;
   pingRoleId: string;
+  pingEveryone: boolean;
   /** ISO time, or null for a draft. */
   scheduledFor: string | null;
   sentAt: string | null;

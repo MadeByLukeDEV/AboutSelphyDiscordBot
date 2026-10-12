@@ -580,7 +580,10 @@
       "savedBotLater": "Saved. The bot wasn't reachable, so it posts within a minute of coming back.",
       "updatedInDiscord": "Updated in Discord",
       "savedNotUpdated": "Saved, but the Discord message couldn't be updated. It may have been deleted there.",
-      "channelRequired": "Pick a channel."
+      "channelRequired": "Pick a channel.",
+      "everyone": "Ping @everyone",
+      "everyoneHelp": "Notifies every member of the server. The bot needs the Mention Everyone permission in that channel, otherwise the text shows but nobody is notified. Use sparingly.",
+      "everyoneAdminOnly": "Only admins can switch this on or off."
     },
     "errors": {
       "forbidden": "You don't have access to this.",
@@ -2371,5 +2374,13 @@
       "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
       "failed": "Couldn't save the settings. Try again."
     }
+  },
+  "ColorPicker": {
+    "label": "Colour",
+    "area": "Colour square: left to right is saturation, bottom to top is brightness",
+    "areaRole": "colour square",
+    "hue": "Hue",
+    "hex": "Hex colour",
+    "presets": "Ready-made colours"
   }
 }

@@ -26,6 +26,16 @@ describe("buildAnnouncement", () => {
     expect(m.allowedMentions).toEqual({ parse: [], roles: ["123456789012345678"] });
   });
 
+  it("pings @everyone only when an admin switched it on, with or without a role", () => {
+    const only = buildAnnouncement(view({ pingEveryone: true }));
+    expect(only.content.startsWith("@everyone ")).toBe(true);
+    expect(only.allowedMentions).toEqual({ parse: ["everyone"] });
+    const both = buildAnnouncement(view({ pingEveryone: true, pingRoleId: "123456789012345678" }));
+    expect(both.content.startsWith("@everyone <@&123456789012345678> ")).toBe(true);
+    expect(both.allowedMentions).toEqual({ parse: ["everyone"], roles: ["123456789012345678"] });
+    expect(buildAnnouncement(view({ pingEveryone: false })).allowedMentions).toEqual({ parse: [] });
+  });
+
   it("builds an embed only when it has something to show", () => {
     expect(buildAnnouncement(view({ embedEnabled: true })).embeds).toHaveLength(0);
     const m = buildAnnouncement(view({ embedEnabled: true, embedTitle: "Title", embedDescription: "Body", embedColor: 0xff0000 }));

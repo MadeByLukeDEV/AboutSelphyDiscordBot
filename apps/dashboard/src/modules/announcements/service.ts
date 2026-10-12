@@ -25,6 +25,7 @@ const toView = (a: Announcement): AnnouncementView => ({
   embedImageUrl: a.embedImageUrl,
   channelId: a.channelId,
   pingRoleId: a.pingRoleId ?? "",
+  pingEveryone: a.pingEveryone,
   scheduledFor: a.scheduledFor?.toISOString() ?? null,
   sentAt: a.sentAt?.toISOString() ?? null,
   lastError: a.lastError,
@@ -54,6 +55,8 @@ export async function saveAnnouncement(input: AnnouncementInput, by: StaffSessio
     const wasSent = existing?.status === "sent";
     if (wasSent && existing.channelId !== input.channelId) return fail("channelFixed");
 
+    // @everyone reaches the whole server: only an admin may switch it on or off (a moderator can keep what an admin set).
+    if (input.pingEveryone !== (existing?.pingEveryone ?? false) && by.role !== "admin") return fail("forbidden");
     const roleId = input.pingRoleId || null;
     // Only look things up when they changed (or are new).
     if (!existing || existing.channelId !== input.channelId) {
@@ -76,6 +79,7 @@ export async function saveAnnouncement(input: AnnouncementInput, by: StaffSessio
       embedImageUrl: input.embedImageUrl,
       channelId: input.channelId,
       pingRoleId: roleId,
+      pingEveryone: input.pingEveryone,
     };
 
     // What the row becomes. A sent announcement stays sent (it is edited in Discord).

@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { requireStaffPage } from "@/modules/auth";
+import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getAnnouncementsPage } from "@/modules/announcements";
 import { AnnouncementsManager } from "@/modules/announcements/components/announcements-manager";
 
@@ -9,7 +9,7 @@ export async function generateMetadata() {
 
 export default async function AnnouncementsPage() {
   // Moderators and admins may use announcements; every action re-checks the session.
-  await requireStaffPage("/announcements");
+  const session = await requireStaffPage("/announcements");
   const t = await getTranslations("Announcements");
   const { announcements, channels, roles } = await getAnnouncementsPage();
 
@@ -19,7 +19,7 @@ export default async function AnnouncementsPage() {
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <AnnouncementsManager announcements={announcements} channels={channels} roles={roles} />
+      <AnnouncementsManager announcements={announcements} channels={channels} roles={roles} canPingEveryone={isAdmin(session.user.role)} />
     </>
   );
 }

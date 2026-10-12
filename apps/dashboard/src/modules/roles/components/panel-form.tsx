@@ -33,6 +33,7 @@ import type { RolePanelView } from "../schema";
 import { CreateRoleDialog } from "./create-role-dialog";
 import { EmojiPicker } from "./emoji-picker";
 import { PanelPreview } from "./panel-preview";
+import { ColorPicker } from "@/components/form/color-picker";
 
 type FormValues = {
   channelId: string;
@@ -177,17 +178,10 @@ export function PanelForm({
         <Field>
           <FieldLabel htmlFor="rp-color">{t("color")}</FieldLabel>
           <div className="flex items-center gap-2">
-            <input
-              id="rp-color"
-              type="color"
-              value={colorToHex(color)}
-              onChange={(e) => {
-                const next = hexToColor(e.target.value);
+            <ColorPicker id="rp-color" value={colorToHex(color)} onChange={(hex) => {
+                const next = hexToColor(hex);
                 if (next !== undefined) form.setValue("color", next, { shouldDirty: true });
-              }}
-              className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-            />
-            <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(color)}</span>
+              }} />
           </div>
         </Field>
       </FieldGroup>

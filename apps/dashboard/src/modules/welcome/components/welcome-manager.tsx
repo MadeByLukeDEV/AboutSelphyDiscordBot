@@ -29,6 +29,7 @@ import type { CardImageView } from "../schema";
 import { CardSettings } from "./card-settings";
 import { RolePicker } from "./role-picker";
 import { TemplateList } from "./template-list";
+import { ColorPicker } from "@/components/form/color-picker";
 
 type TemplateField = "dmTemplate" | "goodbyeTemplate";
 
@@ -191,17 +192,10 @@ export function WelcomeManager({
               <Field>
                 <FieldLabel htmlFor="w-color">{t("welcome.color")}</FieldLabel>
                 <div className="flex items-center gap-2">
-                  <input
-                    id="w-color"
-                    type="color"
-                    value={colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR)}
-                    onChange={(e) => {
-                      const next = hexToColor(e.target.value);
+                  <ColorPicker id="w-color" value={colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR)} onChange={(hex) => {
+                      const next = hexToColor(hex);
                       if (next !== undefined) form.setValue("welcomeColor", next, { shouldDirty: true });
-                    }}
-                    className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-                  />
-                  <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR)}</span>
+                    }} />
                   <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("welcomeColor", DEFAULT_WELCOME_COLOR, { shouldDirty: true })}>
                     {t("welcome.colorReset")}
                   </Button>

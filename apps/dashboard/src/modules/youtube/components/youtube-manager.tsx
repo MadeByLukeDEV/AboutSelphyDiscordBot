@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { saveYoutubeSettingsAction } from "../actions";
 import { DEFAULT_COLOR, MAX_TEMPLATE_LENGTH, youtubeSettingsSchema, type YoutubeOverview, type YoutubeSettings } from "../schema";
+import { ColorPicker } from "@/components/form/color-picker";
 
 /** Status of the poller, the settings form with a preview, and the latest videos the bot has seen. */
 export function YoutubeManager({
@@ -126,17 +127,10 @@ export function YoutubeManager({
           <Field>
             <FieldLabel htmlFor="yt-color">{t("form.color")}</FieldLabel>
             <div className="flex items-center gap-2">
-              <input
-                id="yt-color"
-                type="color"
-                value={colorToHex(color)}
-                onChange={(e) => {
-                  const next = hexToColor(e.target.value);
+              <ColorPicker id="yt-color" value={colorToHex(color)} onChange={(hex) => {
+                  const next = hexToColor(hex);
                   if (next !== undefined) form.setValue("embedColor", next, { shouldDirty: true });
-                }}
-                className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-              />
-              <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(color)}</span>
+                }} />
               <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("embedColor", DEFAULT_COLOR, { shouldDirty: true })}>
                 {t("form.colorReset")}
               </Button>

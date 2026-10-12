@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { createRoleAction } from "../actions";
 import { createRoleInput, type CreateRoleInput } from "../schema";
+import { ColorPicker } from "@/components/form/color-picker";
 
 const DEFAULTS: CreateRoleInput = { name: "", color: 0x99aab5, hoist: false, mentionable: false };
 
@@ -81,17 +82,10 @@ export function CreateRoleDialog({
               <Field>
                 <FieldLabel htmlFor="role-color">{t("color")}</FieldLabel>
                 <div className="flex items-center gap-2">
-                  <input
-                    id="role-color"
-                    type="color"
-                    value={colorToHex(color)}
-                    onChange={(e) => {
-                      const next = hexToColor(e.target.value);
+                  <ColorPicker id="role-color" value={colorToHex(color)} onChange={(hex) => {
+                      const next = hexToColor(hex);
                       if (next !== undefined) form.setValue("color", next, { shouldDirty: true });
-                    }}
-                    className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-                  />
-                  <span className="text-sm text-muted-foreground tabular-nums">{colorToHex(color)}</span>
+                    }} />
                 </div>
               </Field>
               <Field orientation="horizontal">

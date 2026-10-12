@@ -27,6 +27,7 @@ import { saveAnnouncementAction } from "../actions";
 import { colorToHexString, hexStringToColor, toLocalInputValue } from "../color";
 import type { AnnouncementView } from "../schema";
 import { AnnouncementPreview } from "./announcement-preview";
+import { ColorPicker } from "@/components/form/color-picker";
 
 type FormValues = {
   content: string;
@@ -37,6 +38,7 @@ type FormValues = {
   embedImageUrl: string;
   channelId: string;
   pingRoleId: string;
+  pingEveryone: boolean;
   mode: AnnouncementMode;
   /** datetime-local value in the browser's time zone. */
   scheduledLocal: string;
@@ -53,6 +55,7 @@ const DEFAULTS: FormValues = {
   embedImageUrl: "",
   channelId: "",
   pingRoleId: "",
+  pingEveryone: false,
   mode: "draft",
   scheduledLocal: "",
 };
@@ -62,12 +65,14 @@ export function AnnouncementForm({
   announcement,
   channels,
   roles,
+  canPingEveryone,
   onDone,
 }: {
   announcement: AnnouncementView | null;
   /** Text channels. null = the bot couldn't be reached, so the lists aren't available. */
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
+  canPingEveryone: boolean;
   onDone: () => void;
 }) {
   const t = useTranslations("Announcements.form");
@@ -88,6 +93,7 @@ export function AnnouncementForm({
           embedImageUrl: announcement.embedImageUrl,
           channelId: announcement.channelId,
           pingRoleId: announcement.pingRoleId,
+          pingEveryone: announcement.pingEveryone,
           mode: announcement.status === "scheduled" ? "schedule" : "draft",
           scheduledLocal: announcement.scheduledFor ? toLocalInputValue(new Date(announcement.scheduledFor)) : "",
         }
@@ -95,9 +101,9 @@ export function AnnouncementForm({
   });
   const { errors } = form.formState;
 
-  const [content, embedEnabled, embedTitle, embedDescription, embedColor, embedImageUrl, pingRoleId, mode] = useWatch({
+  const [content, embedEnabled, embedTitle, embedDescription, embedColor, embedImageUrl, pingRoleId, pingEveryone, mode] = useWatch({
     control: form.control,
-    name: ["content", "embedEnabled", "embedTitle", "embedDescription", "embedColor", "embedImageUrl", "pingRoleId", "mode"],
+    name: ["content", "embedEnabled", "embedTitle", "embedDescription", "embedColor", "embedImageUrl", "pingRoleId", "pingEveryone", "mode"],
   });
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({
@@ -114,7 +120,8 @@ export function AnnouncementForm({
     roleOptions.push({ value: announcement.pingRoleId, label: announcement.pingRoleId });
   }
   const modeOptions: SelectOption[] = (["draft", "now", "schedule"] as const).map((m) => ({ value: m, label: t(`modes.${m}`) }));
-  const roleName = pingRoleId ? (roleOptions.find((o) => o.value === pingRoleId)?.label ?? null) : null;
+  const pickedRole = pingRoleId ? (roleOptions.find((o) => o.value === pingRoleId)?.label ?? null) : null;
+  const roleName = [pingEveryone ? "everyone" : null, pickedRole].filter(Boolean).join(" @") || null;
 
   const submit = form.handleSubmit((values) => {
     const scheduleTime = values.mode === "schedule" && values.scheduledLocal ? new Date(values.scheduledLocal) : null;
@@ -128,6 +135,7 @@ export function AnnouncementForm({
       embedImageUrl: values.embedImageUrl.trim(),
       channelId: values.channelId,
       pingRoleId: values.pingRoleId,
+      pingEveryone: values.pingEveryone,
       mode: sent ? ("draft" as const) : values.mode,
       scheduledFor: scheduleTime && !Number.isNaN(scheduleTime.getTime()) ? scheduleTime.toISOString() : undefined,
     };
@@ -189,6 +197,14 @@ export function AnnouncementForm({
           <FieldDescription>{t("roleHelp")}</FieldDescription>
         </Field>
 
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="pingEveryone" render={({ field }) => <Switch id="ann-everyone" checked={field.value} onCheckedChange={field.onChange} disabled={!canPingEveryone} />} />
+          <div className="flex flex-col gap-0.5">
+            <FieldLabel htmlFor="ann-everyone">{t("everyone")}</FieldLabel>
+            <FieldDescription>{canPingEveryone ? t("everyoneHelp") : t("everyoneAdminOnly")}</FieldDescription>
+          </div>
+        </Field>
+
         <Field data-invalid={Boolean(errors.content) || undefined}>
           <FieldLabel htmlFor="ann-content">{t("content")}</FieldLabel>
           <Textarea id="ann-content" rows={4} maxLength={MAX_CONTENT} aria-invalid={Boolean(errors.content) || undefined} {...form.register("content")} />
@@ -234,17 +250,10 @@ export function AnnouncementForm({
             <Field>
               <FieldLabel htmlFor="ann-color">{t("color")}</FieldLabel>
               <div className="flex items-center gap-2">
-                <input
-                  id="ann-color"
-                  type="color"
-                  value={colorToHexString(embedColor)}
-                  onChange={(e) => {
-                    const next = hexStringToColor(e.target.value);
+                <ColorPicker id="ann-color" value={colorToHexString(embedColor)} onChange={(hex) => {
+                    const next = hexStringToColor(hex);
                     if (next !== undefined) form.setValue("embedColor", next, { shouldDirty: true });
-                  }}
-                  className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-transparent p-1"
-                />
-                <span className="text-sm text-muted-foreground tabular-nums">{colorToHexString(embedColor)}</span>
+                  }} />
                 <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("embedColor", DEFAULT_ANNOUNCEMENT_COLOR, { shouldDirty: true })}>
                   {t("colorReset")}
                 </Button>

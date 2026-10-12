@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { postModGuideAction, saveModGuideAction } from "../actions";
 import type { ModGuidePageData } from "../schema";
+import { ColorPicker } from "@/components/form/color-picker";
 
 /** The moderators' guide: the text around it, a look at the commands it lists, and the post button. */
 export function ModGuideManager({ data, channels }: { data: ModGuidePageData; channels: GuildChannel[] | null }) {
@@ -95,7 +96,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
           <Field data-invalid={Boolean(errors.color) || undefined}>
             <FieldLabel htmlFor="mg-color">{t("form.color")}</FieldLabel>
             <div className="flex items-center gap-3">
-              <input type="color" aria-label={t("form.color")} className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1" value={color} onChange={(e) => form.setValue("color", e.target.value.toUpperCase(), { shouldDirty: true, shouldValidate: true })} />
+              <ColorPicker value={color} onChange={(hex) => form.setValue("color", hex, { shouldDirty: true, shouldValidate: true })} />
               <Input id="mg-color" className="max-w-[9rem]" maxLength={7} aria-invalid={Boolean(errors.color) || undefined} {...form.register("color")} />
             </div>
             {errors.color && <FieldError>{te("badColor")}</FieldError>}

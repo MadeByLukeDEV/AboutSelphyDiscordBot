@@ -818,6 +818,16 @@ Decided 2026-10-08:
     (`nav-groups`). The phone "More" sheet builds from the same groups.
   - **Catalog keys never contain a dot** (next-intl reads it as nesting and throws
     INVALID_KEY on every page): `catalogs.test.ts` enforces this and equal en/de keys.
+- [x] Colour picker (2026-10-29, `feature_everyone-ping-colorpicker`): `components/form/color-picker.tsx` replaces every native
+      `<input type="color">` (announcements, mod guide, role create/edit, role panels, tickets, Twitch, welcome, YouTube): a
+      popover with a saturation/brightness square (pointer and arrow keys), hue slider, hex field and 12 ready-made colours;
+      controlled (`value` + `onChange(hex)`) or uncontrolled (`defaultValue` + `name`, a hidden field for plain forms). Hand
+      written on purpose: `react-colorful` injects a `<style>` tag, which the nonce CSP would block. Maths and tests in
+      `lib/color-math.ts`.
+- [x] Announcement @everyone (2026-10-29, migration `20261029180000_announcement_everyone`): `Announcement.pingEveryone`.
+      **Admins only**: the action refuses a moderator who changes it (they may keep what an admin set). The bot adds
+      `@everyone` to the text and `allowedMentions.parse = ["everyone"]`; it also needs the **Mention Everyone** permission in
+      the channel (left out of the invite link on purpose), otherwise the text shows but nobody is pinged.
 - [x] Dates (2026-10-29): `components/form/date-time-picker.tsx` (`DateTimePicker` / `FormDateTime`) replaces the browser's
       `datetime-local` everywhere (announcements, giveaways, polls): the shadcn calendar (`react-day-picker` 10.0.2,
       `date-fns` 4.4.0, pinned) in a popover plus hour and minute fields; the value is still the same
