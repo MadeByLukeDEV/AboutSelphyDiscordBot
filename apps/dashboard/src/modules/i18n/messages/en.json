@@ -2621,10 +2621,18 @@
     "history": "History",
     "none": "No cases for this member yet.",
     "lookup": {
-      "label": "Discord ID",
-      "help": "In Discord turn on Developer Mode (Settings, Advanced), then right-click a member and choose Copy User ID. Case pages link here too.",
+      "label": "Name or Discord ID",
+      "placeholder": "Name or 123456789012345678",
+      "help": "Type at least two letters of a name to search the server and earlier cases, or paste a Discord ID (Developer Mode, Copy User ID) to open the member directly.",
       "open": "Open",
-      "bad": "That isn't a Discord ID (17 to 20 digits)."
+      "searching": "Searching...",
+      "bad": "Enter a Discord ID (17 to 20 digits) or 2 to 32 letters of a name.",
+      "failed": "The search failed. Try again.",
+      "results": "Results for \"{query}\"",
+      "noResults": "Nobody found with that name.",
+      "botDown": "The bot can't be reached, so only people with earlier cases are shown.",
+      "inServer": "In the server",
+      "notInServer": "Not in the server"
     },
     "act": {
       "title": "Take action",

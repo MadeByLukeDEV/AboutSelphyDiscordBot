@@ -2621,10 +2621,18 @@
     "history": "Verlauf",
     "none": "Noch keine Fälle für dieses Mitglied.",
     "lookup": {
-      "label": "Discord-ID",
-      "help": "Aktiviere in Discord den Entwicklermodus (Einstellungen, Erweitert), klicke dann ein Mitglied mit rechts an und wähle Benutzer-ID kopieren. Auch die Fallseiten verlinken hierher.",
+      "label": "Name oder Discord-ID",
+      "placeholder": "Name oder 123456789012345678",
+      "help": "Gib mindestens zwei Buchstaben eines Namens ein, um den Server und frühere Fälle zu durchsuchen, oder füge eine Discord-ID ein (Entwicklermodus, Benutzer-ID kopieren), um das Mitglied direkt zu öffnen.",
       "open": "Öffnen",
-      "bad": "Das ist keine Discord-ID (17 bis 20 Ziffern)."
+      "searching": "Sucht ...",
+      "bad": "Gib eine Discord-ID (17 bis 20 Ziffern) oder 2 bis 32 Buchstaben eines Namens ein.",
+      "failed": "Die Suche ist fehlgeschlagen. Versuche es noch einmal.",
+      "results": "Ergebnisse für \"{query}\"",
+      "noResults": "Niemand mit diesem Namen gefunden.",
+      "botDown": "Der Bot ist nicht erreichbar, deshalb werden nur Personen mit früheren Fällen angezeigt.",
+      "inServer": "Im Server",
+      "notInServer": "Nicht im Server"
     },
     "act": {
       "title": "Aktion ausführen",

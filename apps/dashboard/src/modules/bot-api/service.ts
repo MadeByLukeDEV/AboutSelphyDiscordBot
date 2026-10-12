@@ -58,6 +58,8 @@ import {
   type ReloadModule,
   type TempVoiceOverview,
   type TwitchResolveResponse,
+  memberSearchResponse,
+  type MemberSearchHit,
 } from "@aboutselphy/shared";
 import type { GiveawayAction } from "@aboutselphy/shared/giveaways";
 import { env } from "@/lib/env";
@@ -329,6 +331,14 @@ export async function mergeRolesViaBot(input: { sourceIds: string[]; targetId: s
   if (!res?.ok) return null;
   const parsed = roleMergeResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;
+}
+
+/** Searches the server's members by name. Null if the bot can't be reached. */
+export async function searchGuildMembers(query: string): Promise<MemberSearchHit[] | null> {
+  const res = await botFetch(`/internal/guild/members/search?q=${encodeURIComponent(query)}`);
+  if (!res?.ok) return null;
+  const parsed = memberSearchResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data.members : null;
 }
 
 /** A member of the server by ID. Undefined = the bot can't be reached, null = no such member. */

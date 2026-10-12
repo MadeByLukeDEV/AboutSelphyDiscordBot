@@ -1184,6 +1184,11 @@ Decided 2026-10-08:
     session. New nav group "Joining" (welcome, verification, screening, raid); "Members and roles" keeps the rest.
     Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-11-07). No automatic retention for entries yet.
   - [ ] Questions asked of the new member before the card, auto-reject after N days, a retention job.
+- [~] Members search by name (2026-11-07, `feature_members-search`, no migration; **not tried live yet**): the
+      `/members` lookup takes a Discord ID (opens directly) or 2-32 letters of a name. `GET /api/members/search?q=`
+      (staff session checked in the route) combines the bot's `GET /internal/guild/members/search` (Discord's own
+      member search, up to 10) with people who have an earlier case under that name (members who left; the bot being
+      down only drops the live part, flagged `botDown`). Results link to `/members/<id>`; names render as plain text.
 - [~] Role manager (2026-10-21, `feature_role-manager`, no migration; **not tried live yet**;
       asked for by the user)
   - Dashboard `/role-manager` (admins only): every role but @everyone with member count, colour,

@@ -97,3 +97,16 @@ export async function moderatorStats(since: Date) {
   }
   return [...merged.values()].sort((a, b) => b.count - a.count);
 }
+
+/** People with a past case whose name at the time contains the text (members who left can still be found). */
+export async function findCaseTargetsByName(query: string, take: number): Promise<Array<{ targetId: string; targetName: string }>> {
+  const rows = await prisma.modCase.findMany({
+    where: { targetName: { contains: query, mode: "insensitive" } },
+    select: { targetId: true, targetName: true },
+    orderBy: { caseNumber: "desc" },
+    take: take * 5,
+  });
+  const seen = new Map<string, string>();
+  for (const r of rows) if (r.targetName && !seen.has(r.targetId)) seen.set(r.targetId, r.targetName);
+  return [...seen].slice(0, take).map(([targetId, targetName]) => ({ targetId, targetName }));
+}

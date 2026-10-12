@@ -1,13 +1,15 @@
 import "server-only";
 import type { ModCase, ModConfig } from "@aboutselphy/db";
 import { errorInfo } from "@/lib/log";
-import { listChannels, moderationActViaBot, refreshCaseLog, reloadBotModule } from "@/modules/bot-api";
+import { listChannels, moderationActViaBot, refreshCaseLog, reloadBotModule, searchGuildMembers } from "@/modules/bot-api";
+import { MEMBER_SEARCH_MAX, MEMBER_SEARCH_MIN, type MemberSearchHit } from "@aboutselphy/shared";
 import type { StaffSession } from "@/modules/auth";
 import {
   caseStats,
   editReason,
   exportCases,
   findCase,
+  findCaseTargetsByName,
   moderatorStats,
   listCases,
   listCasesForTarget,
@@ -168,4 +170,20 @@ export async function editCaseReason(caseNumber: number, reason: string, by: Sta
 /** The cases matching the cases page's filter as a CSV file (at most 10 000, newest first). */
 export async function getCasesCsv(query: Pick<CaseQuery, "type" | "q">): Promise<string> {
   return casesToCsv(await exportCases(caseWhere(query), 10_000));
+}
+
+/**
+ * Finds people by name for the member lookup: current members first (through the bot), then people with an earlier case
+ * under that name who may have left. `botDown` tells the page the live part is missing.
+ */
+export async function searchMembers(raw: string): Promise<{ members: MemberSearchHit[]; botDown: boolean }> {
+  const query = raw.trim();
+  if (query.length < MEMBER_SEARCH_MIN || query.length > MEMBER_SEARCH_MAX) return { members: [], botDown: false };
+  const [live, past] = await Promise.all([searchGuildMembers(query), findCaseTargetsByName(query, 10)]);
+  const members = [...(live ?? [])];
+  for (const p of past) {
+    if (members.length >= 20) break;
+    if (!members.some((m) => m.id === p.targetId)) members.push({ id: p.targetId, username: p.targetName, name: p.targetName, inServer: false });
+  }
+  return { members, botDown: live === null };
 }

@@ -24,6 +24,8 @@ import {
   reloadModule as reloadModuleSchema,
   twitchResolveBody,
   type BotHealth,
+  MEMBER_SEARCH_MIN,
+  MEMBER_SEARCH_MAX,
 } from "@aboutselphy/shared";
 import { getClient } from "../client";
 import { env } from "../lib/env";
@@ -144,6 +146,16 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { results: await deleteRoles(guild, body.data.ids, body.data.by) });
+  }
+
+  if (req.method === "GET" && url.pathname === "/internal/guild/members/search") {
+    const q = (url.searchParams.get("q") ?? "").trim();
+    if (q.length < MEMBER_SEARCH_MIN || q.length > MEMBER_SEARCH_MAX) return json(res, 400, { error: "invalid query" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    const found = await guild.members.search({ query: q, limit: 10 }).catch(() => null);
+    if (!found) return json(res, 502, { error: "search failed" });
+    return json(res, 200, { members: [...found.values()].map((m) => ({ id: m.id, username: m.user.username.slice(0, 100), name: m.displayName.slice(0, 100), inServer: true })) });
   }
 
   if (req.method === "GET" && url.pathname === "/internal/guild/member") {

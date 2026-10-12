@@ -307,3 +307,10 @@ export type SuggestionDecideStatus = z.infer<typeof suggestionDecideStatus>;
 export const pollActionBody = z.object({ id: z.string().min(1).max(64), action: z.enum(["start", "end", "delete"]) });
 export const pollActionStatus = z.enum(["done", "channel", "not-found", "wrong-state", "failed"]);
 export type PollActionStatus = z.infer<typeof pollActionStatus>;
+
+/** Searching members by name (staff member lookup). */
+export const MEMBER_SEARCH_MIN = 2;
+export const MEMBER_SEARCH_MAX = 32;
+export const memberSearchHit = z.object({ id: z.string().regex(/^\d{17,20}$/), username: z.string().max(100), name: z.string().max(100), inServer: z.boolean() });
+export const memberSearchResponse = z.object({ members: z.array(memberSearchHit).max(25) });
+export type MemberSearchHit = z.infer<typeof memberSearchHit>;
