@@ -38,6 +38,7 @@
     "./member-card": "./src/member-card.ts",
     "./sticky": "./src/sticky.ts",
     "./modguide": "./src/modguide.ts",
+    "./antibot": "./src/antibot.ts",
     "./custom-commands": "./src/custom-commands.ts",
     "./counting": "./src/counting.ts",
     "./modules": "./src/modules.ts",

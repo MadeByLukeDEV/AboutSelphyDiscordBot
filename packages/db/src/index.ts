@@ -23,6 +23,7 @@ export type {
   CustomCommand,
   StickyMessage,
   ModGuide,
+  AntiBotConfig,
   AutoPublishChannel,
   MemberCardImage,
   StatChannel,

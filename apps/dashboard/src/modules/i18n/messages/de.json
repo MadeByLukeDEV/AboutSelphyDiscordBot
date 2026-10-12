@@ -41,7 +41,8 @@
         "modules": "Module",
         "webhooks": "Webhooks",
         "feeds": "Feed-Ankündigungen",
-        "modGuide": "Moderatoren-Leitfaden"
+        "modGuide": "Moderatoren-Leitfaden",
+        "antiBot": "Anti-Bot-Kanal"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2320,5 +2321,55 @@
     "minute": "Minute",
     "clear": "Leeren",
     "done": "Fertig"
+  },
+  "AntiBot": {
+    "title": "Anti-Bot-Kanal",
+    "intro": "Ein Köderkanal für Spam-Bots. Wer dort schreibt, verliert die Nachricht, bekommt einen Timeout und wird danach gekickt, jeweils als Fall im Mod-Log. Team, Server-Inhaber, Bots und Personen mit Administrator oder Server verwalten werden nie angefasst.",
+    "noChannel": "Noch kein Kanal",
+    "stats": {
+      "title": "Bisher",
+      "caught": "{count, plural, one {# Mitglied erwischt} other {# Mitglieder erwischt}}",
+      "last": "Zuletzt: {time}"
+    },
+    "form": {
+      "title": "Einstellungen",
+      "intro": "Nur Admins können das ändern. Es passiert nichts, bis der Kanal gewählt und der Schalter an ist.",
+      "channel": "Köderkanal",
+      "channelHelp": "Der Bot muss ihn sehen und dort Nachrichten löschen dürfen (Nachrichten verwalten) und braucht Mitglieder timeouten und Mitglieder kicken.",
+      "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
+      "timeout": "Timeout vor dem Kick",
+      "timeoutHelp": "Wird zuerst gesetzt, damit das Mitglied stummgeschaltet ist, auch wenn der Kick abgelehnt wird (z. B. wegen der Rollenreihenfolge). Nach einem Kick spielt er keine Rolle mehr.",
+      "dryRun": "Probelauf",
+      "dryRunHelp": "Nur protokollieren, was passieren würde, und dem Mod-Log Bescheid geben. Nichts wird gelöscht, getimeoutet oder gekickt. Gut zum Ausprobieren.",
+      "enabled": "Der Anti-Bot-Kanal ist an",
+      "live": "Das ist scharf: Das nächste normale Mitglied, das in diesem Kanal schreibt, wird getimeoutet und gekickt.",
+      "save": "Speichern",
+      "saving": "Speichern…",
+      "saved": "Gespeichert",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar, er übernimmt es innerhalb einer Minute."
+    },
+    "timeouts": {
+      "hour": "1 Stunde",
+      "day": "1 Tag",
+      "week": "7 Tage",
+      "fourWeeks": "28 Tage",
+      "custom": "{seconds} Sekunden"
+    },
+    "how": {
+      "title": "So funktioniert es",
+      "delete": "Jede Nachricht eines normalen Mitglieds in dem Kanal wird gelöscht, auch bei einer ganzen Serie.",
+      "timeout": "Das Mitglied bekommt zuerst einen Timeout (Fall wird angelegt, Hinweis per DM, wenn in den Einstellungen an).",
+      "kick": "Danach wird es gekickt (zweiter Fall). Beides steht im Mod-Log als automatische Aktion des Bots.",
+      "spared": "Team-Rollen, der Server-Inhaber, Bots und Personen mit Administrator oder Server verwalten dürfen dort schreiben.",
+      "setup": "Lass den Kanal für Bots einladend wirken, z. B. mit einem Namen wie #verify oder #free-nitro, für alle sichtbar, und sag in den Regeln, dass man dort niemals schreiben soll."
+    },
+    "errors": {
+      "forbidden": "Du hast hierauf keinen Zugriff.",
+      "invalid": "Einige Werte sind ungültig.",
+      "needsChannel": "Wähle einen Kanal, um es einzuschalten.",
+      "botUnavailable": "Der Bot ist nicht erreichbar. Versuche es gleich noch einmal.",
+      "channelNotFound": "Diesen Kanal gibt es nicht oder er ist kein Textkanal.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
   }
 }

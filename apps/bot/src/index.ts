@@ -13,6 +13,7 @@ import { startFeeds, stopFeeds } from "./modules/feeds";
 import { startAutoResponders } from "./modules/autoresponders";
 import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
+import { startAntiBot } from "./modules/antibot";
 import { registerStarboard } from "./modules/starboard";
 import { startStatChannels, stopStatChannels } from "./modules/statchannels";
 import { registerSuggestionControls } from "./modules/suggestions";
@@ -63,6 +64,7 @@ async function main() {
   startReminders(client);
   startStatChannels(client);
   startSticky(client);
+  startAntiBot(client);
   startAutoPublish(client);
   startFeeds(client);
   startCounting(client);

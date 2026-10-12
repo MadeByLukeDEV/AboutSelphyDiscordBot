@@ -41,7 +41,8 @@
         "modules": "Modules",
         "webhooks": "Webhooks",
         "feeds": "Feed announcer",
-        "modGuide": "Moderator guide"
+        "modGuide": "Moderator guide",
+        "antiBot": "Anti-bot channel"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2320,5 +2321,55 @@
     "minute": "Minute",
     "clear": "Clear",
     "done": "Done"
+  },
+  "AntiBot": {
+    "title": "Anti-bot channel",
+    "intro": "A trap channel for spam bots. Anyone who writes in it loses the message, is timed out and then kicked, each recorded as a case in the mod log. Staff, the server owner, bots and people with Administrator or Manage Server are never touched.",
+    "noChannel": "No channel yet",
+    "stats": {
+      "title": "So far",
+      "caught": "{count, plural, one {# member caught} other {# members caught}}",
+      "last": "Last one: {time}"
+    },
+    "form": {
+      "title": "Settings",
+      "intro": "Only admins can change these. Nothing happens until the channel is picked and the switch is on.",
+      "channel": "Trap channel",
+      "channelHelp": "The bot needs to see it and delete messages there (Manage Messages), and it needs Timeout Members and Kick Members.",
+      "botOffline": "The bot is offline, so the channel list isn't available.",
+      "timeout": "Timeout before the kick",
+      "timeoutHelp": "Applied first, so the member is muted even if the kick is refused (for example by role order). After a kick it no longer matters.",
+      "dryRun": "Dry run",
+      "dryRunHelp": "Only log what would happen and tell the mod log. Nothing is deleted, timed out or kicked. Good for trying it out.",
+      "enabled": "The anti-bot channel is on",
+      "live": "This is live: the next ordinary member who writes in that channel is timed out and kicked.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+    },
+    "timeouts": {
+      "hour": "1 hour",
+      "day": "1 day",
+      "week": "7 days",
+      "fourWeeks": "28 days",
+      "custom": "{seconds} seconds"
+    },
+    "how": {
+      "title": "How it works",
+      "delete": "Every message in the channel from an ordinary member is deleted, also in a burst.",
+      "timeout": "The member is timed out first (case recorded, member told by DM if that is on in Settings).",
+      "kick": "Then they are kicked (second case). Both appear in the mod log as automatic actions by the bot.",
+      "spared": "Staff roles, the server owner, bots and people with Administrator or Manage Server may write there.",
+      "setup": "Make the channel look inviting to bots, for example named like #verify or #free-nitro, visible to everyone, and tell people in the rules never to write in it."
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Some of these values aren't valid.",
+      "needsChannel": "Pick a channel to switch it on.",
+      "botUnavailable": "Can't reach the bot. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "failed": "Couldn't save the settings. Try again."
+    }
   }
 }

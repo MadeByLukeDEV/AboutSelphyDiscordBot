@@ -643,7 +643,18 @@ Decided 2026-10-08:
         with it too). Invite tracking (GuildInvites intent) is still open.
   - [ ] Case notes editing, a per-member history page, and dashboard-issued
         actions (warn/timeout from the dashboard)
-- [ ] Phase 2 — anti-bot
+- [~] Phase 2 — anti-bot: **only the trap channel exists** (2026-10-29, `feature_calendar-honeypot`, migration
+      `20261029100000_antibot`; **not tried live yet**; asked for by the user). The pattern engine (regex via `re2`,
+      rules, hit counters) is still **not built**; the user brings it back when ready.
+  - Bot (`modules/antibot/`): anyone who writes in the chosen channel loses the message (every message, also in a
+    burst), is timed out (default 7 days, 1 min to 28 days) and then kicked, both through `performAction` as the bot
+    (source `automod`, reason "Wrote in the anti-bot channel"), so they are numbered cases in the mod log. The kick
+    is tried even if the timeout was refused. Spared (`rules.ts` `judge`, tested): bots/webhooks/system messages, the
+    server owner, staff by the configured roles, and anyone with Administrator or Manage Server. One member at a time
+    (`KeyedMutex`). **Dry run** only logs and posts a note to the mod log. Needs Manage Messages in the channel,
+    Moderate Members and Kick Members. Only runs in production or with `BOT_INTEGRATIONS_IN_DEV` (it kicks people).
+    Config singleton `AntiBotConfig` (CHECKs: timeout range, a channel when on) + a catch counter; reload key `antibot`.
+  - Dashboard `/anti-bot` (admins, Moderation group): channel, timeout, dry run, on/off, a red warning when it is live.
 - [x] Phase 3 — went live (2026-10-12, `feature_twitch-went-live`; migrations
       `20261012120000_twitch` and `20261012180000_twitch_message_options` applied;
       connect, add/edit and the socket **tried live by the user**; a real
@@ -807,6 +818,12 @@ Decided 2026-10-08:
     (`nav-groups`). The phone "More" sheet builds from the same groups.
   - **Catalog keys never contain a dot** (next-intl reads it as nesting and throws
     INVALID_KEY on every page): `catalogs.test.ts` enforces this and equal en/de keys.
+- [x] Dates (2026-10-29): `components/form/date-time-picker.tsx` (`DateTimePicker` / `FormDateTime`) replaces the browser's
+      `datetime-local` everywhere (announcements, giveaways, polls): the shadcn calendar (`react-day-picker` 10.0.2,
+      `date-fns` 4.4.0, pinned) in a popover plus hour and minute fields; the value is still the same
+      "YYYY-MM-DDTHH:mm" text. After `shadcn add`, `cn` imports were fixed to `@/lib/utils`.
+      **Dialog lesson**: never put a `sticky` column and the footer in the same grid, the column slides over the footer
+      (the announcement buttons were covered); keep the footer outside the grid.
 - [~] Moderator guide (2026-10-28, `feature_mod-guide`, migration `20261028100000_mod_guide`; **not tried live
       yet**; asked for by the user)
   - Admin page `/mod-guide`: channel, title, description, cover picture (https only, shown big on the first

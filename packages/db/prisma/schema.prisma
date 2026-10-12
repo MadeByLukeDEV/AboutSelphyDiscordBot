@@ -996,3 +996,18 @@ model ModGuide {
   postedAt    DateTime?
   updatedAt   DateTime  @updatedAt
 }
+
+/// The anti-bot channel: whoever writes in it is timed out and kicked (singleton, id 1).
+model AntiBotConfig {
+  id             Int       @id @default(1)
+  enabled        Boolean   @default(false)
+  channelId      String?   @db.VarChar(20)
+  /// Timeout length before the kick, 60 s to 28 days (CHECK in the migration).
+  timeoutSeconds Int       @default(604800)
+  /// Log only: nothing is deleted, timed out or kicked.
+  dryRun         Boolean   @default(false)
+  /// Members caught so far and when the last one was.
+  hits           Int       @default(0)
+  lastHitAt      DateTime?
+  updatedAt      DateTime  @updatedAt
+}

@@ -20,6 +20,7 @@ export const RELOADABLE_MODULES = [
   "reminders",
   "statchannels",
   "sticky",
+  "antibot",
   "autopublish",
   "customcommands",
   "counting",
