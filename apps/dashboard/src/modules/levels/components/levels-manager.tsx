@@ -173,6 +173,13 @@ export function LevelsManager({
                 <FieldDescription id="lv-stack-help">{t("rewards.stackHelp")}</FieldDescription>
               </div>
             </Field>
+            <Field orientation="horizontal">
+              <Controller control={form.control} name="publicLeaderboard" render={({ field }) => <Switch id="lv-public" checked={field.value} onCheckedChange={field.onChange} aria-describedby="lv-public-help" />} />
+              <div className="flex flex-col gap-1">
+                <FieldLabel htmlFor="lv-public">{t("public.label")}</FieldLabel>
+                <FieldDescription id="lv-public-help">{t("public.help")}</FieldDescription>
+              </div>
+            </Field>
             {rewards.fields.length === 0 && <p className="rounded-xl border border-dashed px-4 py-4 text-sm text-muted-foreground">{t("rewards.empty")}</p>}
             <ul className="flex flex-col gap-3">
               {rewards.fields.map((field, index) => (

@@ -15,6 +15,7 @@ describe("public paths", () => {
     expect(isPublicPath("/terms")).toBe(true);
     expect(isPublicPath("/privacy")).toBe(true);
     expect(isPublicPath("/privacy/")).toBe(true);
+    expect(isPublicPath("/leaderboard")).toBe(true);
   });
 
   it("nothing else is, whatever it looks like", () => {

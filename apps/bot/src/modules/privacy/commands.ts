@@ -2,7 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Compon
 import type { Command } from "../../commands/types";
 import { log } from "../../lib/log";
 import { unlinkMember } from "../twitchvip";
-import { deleteMember, exportMember } from "./repository";
+import { deleteMember, exportMember, setLeaderboardHidden } from "./repository";
 
 const NO_MENTIONS = { parse: [] as never[] };
 
@@ -16,10 +16,17 @@ const mydata: Command = {
     .setContexts(InteractionContextType.Guild)
     .addSubcommand((s) => s.setName("export").setDescription("Get a file with everything stored about you (only you see it)"))
     .addSubcommand((s) => s.setName("delete").setDescription("Delete your birthday, reminders, levels, votes and links"))
+    .addSubcommand((s) => s.setName("hide").setDescription("Leave me off the public leaderboard web page"))
+    .addSubcommand((s) => s.setName("show").setDescription("Show me on the public leaderboard web page again"))
     .toJSON(),
   async execute(i) {
     if (!i.inCachedGuild()) return;
     const sub = i.options.getSubcommand();
+
+    if (sub === "hide" || sub === "show") {
+      const changed = await setLeaderboardHidden(i.user.id, sub === "hide");
+      return void (await i.reply({ content: changed ? (sub === "hide" ? "Done. You're no longer shown on the public leaderboard page (you still appear inside Discord)." : "Done. You're shown on the public leaderboard page again.") : "You haven't earned any XP yet, so there is nothing to hide or show.", flags: MessageFlags.Ephemeral, allowedMentions: NO_MENTIONS }));
+    }
 
     if (sub === "export") {
       await i.deferReply({ flags: MessageFlags.Ephemeral });

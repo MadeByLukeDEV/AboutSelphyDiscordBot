@@ -60,6 +60,7 @@ describe("levelSettingsSchema", () => {
     noXpChannelIds: [],
     noXpRoleIds: [],
     stackRoles: true,
+    publicLeaderboard: false,
     rewards: [],
     boosts: [],
   };

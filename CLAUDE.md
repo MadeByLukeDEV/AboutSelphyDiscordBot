@@ -950,7 +950,13 @@ Decided 2026-10-08:
         `LevelBoost` (role, percent 101-500, DB CHECK, up to 10, any role, set on `/levels`): a member's message and voice XP is
         `applyBoost(roll, boostPercent(roles, boosts))` (shared, tested: the **highest** boost wins, they don't add up,
         rounded, never lower than before). The boosts are cached with the level config (60 s + reload).
-  - [ ] Still open: a public leaderboard page, importing MEE6 data, weekly resets, voice XP only counting unmuted time.
+  - [x] **Public leaderboard page** (2026-11-06, `feature_public-leaderboard`, migration `20261105100000_public_leaderboard`; **not tried live
+        yet**): `/leaderboard` on the dashboard's address, readable without signing in (added to `lib/public-paths.ts`), top 100
+        members (display name, level, XP). **Off by default** (`LevelConfig.publicLeaderboard`, a switch on `/levels`); while off the
+        page is a plain 404. Members can leave it with `/mydata hide` (and come back with `/mydata show`; `MemberXp.hidden`, only
+        affects the web page); members without a stored name are left out. `/leaderboard` in Discord links to it when it is on
+        (needs the bot's `DASHBOARD_URL`). Privacy policy updated (2026-11-06).
+  - [ ] Still open: importing MEE6 data, weekly resets, voice XP only counting unmuted time.
 - [~] Tickets (2026-10-17, `feature_tickets`, migration `20261017100000_tickets` applied;
       **not tried live yet**; Tier B)
   - Bot (`modules/tickets/`): panel message with an "Open a ticket" button; opening

@@ -84,6 +84,8 @@ export const levelSettingsSchema = z
     noXpChannelIds: idList,
     noXpRoleIds: idList,
     stackRoles: z.boolean(),
+    /** Show the top members on a public web page. */
+    publicLeaderboard: z.boolean(),
     rewards: z
       .array(z.object({ level: z.number().int().min(1).max(MAX_LEVEL), roleId: snowflake }))
       .max(MAX_REWARDS),

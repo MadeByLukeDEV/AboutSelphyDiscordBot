@@ -1097,6 +1097,10 @@
       "percent": "XP in %",
       "add": "Boost hinzufügen",
       "remove": "Entfernen"
+    },
+    "public": {
+      "label": "Öffentliche Ranglisten-Seite",
+      "help": "Zeigt die Top 100 Mitglieder (Anzeigename, Level und XP) auf einer Webseite unter /leaderboard auf der Adresse des Dashboards, ohne Anmeldung lesbar. Mitglieder können sich mit /mydata hide ausblenden. Standardmäßig aus."
     }
   },
   "Tickets": {
@@ -2763,5 +2767,13 @@
       "left": "ist gegangen"
     },
     "note": "Die Einträge werden ein Jahr aufbewahrt. Mitglieder können ihre mit /mydata ansehen und löschen. Das Team kann ein Mitglied mit /invites nachschlagen."
+  },
+  "Leaderboard": {
+    "title": "Rangliste",
+    "intro": "Die aktivsten Mitglieder des Servers.",
+    "empty": "Noch hat niemand XP verdient.",
+    "level": "Level {level}",
+    "xp": "{xp} XP",
+    "note": "Mitglieder können sich in Discord mit /mydata hide von dieser Seite ausblenden."
   }
 }

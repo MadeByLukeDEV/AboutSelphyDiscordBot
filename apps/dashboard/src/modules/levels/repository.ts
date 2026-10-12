@@ -23,6 +23,7 @@ export type ConfigData = {
   noXpChannelIds: string[];
   noXpRoleIds: string[];
   stackRoles: boolean;
+  publicLeaderboard: boolean;
 };
 
 /** Saves the settings and replaces the whole reward list in one transaction. */
@@ -42,4 +43,9 @@ export function topMembers(take: number): Promise<MemberXp[]> {
 
 export function countMembers(): Promise<number> {
   return prisma.memberXp.count();
+}
+
+/** The top members for the public page: only those who haven't hidden themselves and have a name to show. */
+export function topPublic(take: number): Promise<MemberXp[]> {
+  return prisma.memberXp.findMany({ where: { hidden: false, name: { not: "" } }, orderBy: [{ xp: "desc" }, { userId: "asc" }], take });
 }

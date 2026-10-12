@@ -37,6 +37,11 @@ export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
   return result;
 }
 
+/** Hides the member from (or shows them on) the public leaderboard page. False when they have no XP row. */
+export async function setLeaderboardHidden(userId: string, hidden: boolean): Promise<boolean> {
+  return (await prisma.memberXp.updateMany({ where: { userId }, data: { hidden } })).count > 0;
+}
+
 // -- one member's data -------------------------------------------------------------------------------
 
 /** Everything the bot holds about one member, shaped for a JSON file they can read. Moderators' names are left out. */
@@ -64,7 +69,7 @@ export async function exportMember(userId: string) {
     note: "Everything the bot stores about you. Moderator names are left out. Message content is not stored, except in tickets you opened.",
     birthday: birthday ? { month: birthday.month, day: birthday.day } : null,
     pendingReminders: reminders.map((r) => ({ remindAt: r.remindAt.toISOString(), message: clip(r.message) })),
-    levels: xp ? { xp: xp.xp, messages: xp.messages, voiceMinutes: xp.voiceMinutes } : null,
+    levels: xp ? { xp: xp.xp, messages: xp.messages, voiceMinutes: xp.voiceMinutes, hiddenFromPublicPage: xp.hidden } : null,
     rememberedRoles: snapshot ? { roleIds: snapshot.roleIds, savedAt: snapshot.savedAt.toISOString() } : null,
     suggestions: suggestions.map((s) => ({ number: s.number, text: clip(s.content, 1500), status: s.status, createdAt: s.createdAt.toISOString() })),
     counts: { suggestionVotes, pollVotes, giveawayEntries, starboardPosts: starboard },

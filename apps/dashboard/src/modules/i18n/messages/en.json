@@ -1097,6 +1097,10 @@
       "percent": "XP in %",
       "add": "Add a boost",
       "remove": "Remove"
+    },
+    "public": {
+      "label": "Public leaderboard page",
+      "help": "Shows the top 100 members (display name, level and XP) on a web page at /leaderboard on the dashboard's address, readable without signing in. Members can hide themselves with /mydata hide. Off by default."
     }
   },
   "Tickets": {
@@ -2763,5 +2767,13 @@
       "left": "has left"
     },
     "note": "Records are kept for one year. Members can see and delete theirs with /mydata. Staff can look up a member with /invites."
+  },
+  "Leaderboard": {
+    "title": "Leaderboard",
+    "intro": "The most active members of the server.",
+    "empty": "Nobody has earned XP yet.",
+    "level": "Level {level}",
+    "xp": "{xp} XP",
+    "note": "Members can hide themselves from this page with /mydata hide in Discord."
   }
 }

@@ -2,7 +2,7 @@ import "server-only";
 import { levelFromXp, type LevelSettings } from "@aboutselphy/shared/levels";
 import { errorInfo } from "@/lib/log";
 import { listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
-import { countMembers, readConfig, saveAll, topMembers } from "./repository";
+import { countMembers, readConfig, saveAll, topMembers, topPublic } from "./repository";
 import type { LeaderboardRow, SaveLevelsResult } from "./schema";
 
 async function readSettings(): Promise<LevelSettings> {
@@ -19,6 +19,7 @@ async function readSettings(): Promise<LevelSettings> {
     noXpChannelIds: c.noXpChannelIds,
     noXpRoleIds: c.noXpRoleIds,
     stackRoles: c.stackRoles,
+    publicLeaderboard: c.publicLeaderboard,
     rewards: rewards.map((r) => ({ level: r.level, roleId: r.roleId })),
     boosts,
   };
@@ -72,6 +73,7 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
         noXpChannelIds: input.noXpChannelIds,
         noXpRoleIds: input.noXpRoleIds,
         stackRoles: input.stackRoles,
+        publicLeaderboard: input.publicLeaderboard,
       },
       input.rewards,
       input.boosts,
@@ -81,4 +83,14 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
     console.error("[levels] saving failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
+}
+
+export type PublicRow = { rank: number; name: string; level: number; xp: number; messages: number };
+
+/** The public web page's data, or null when the page is switched off. Hidden members and members without a name are left out. */
+export async function getPublicLeaderboard(): Promise<PublicRow[] | null> {
+  const { config } = await readConfig();
+  if (!config.enabled || !config.publicLeaderboard) return null;
+  const rows = await topPublic(100);
+  return rows.map((m, i) => ({ rank: i + 1, name: m.name, level: levelFromXp(m.xp), xp: m.xp, messages: m.messages }));
 }

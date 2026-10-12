@@ -480,6 +480,8 @@ model LevelConfig {
   noXpRoleIds       String[] @default([])
   /// Keep every reward role up to the member's level (true), or only the highest (false).
   stackRoles        Boolean  @default(true)
+  /// Show the top members on a public web page (/leaderboard on the dashboard's address). Off by default.
+  publicLeaderboard Boolean  @default(false)
   updatedAt         DateTime @updatedAt
 }
 
@@ -498,6 +500,8 @@ model MemberXp {
   voiceMinutes Int      @default(0)
   /// Last known name, for the leaderboard of people who have left.
   name         String   @default("") @db.VarChar(100)
+  /// The member asked to be left off the public web page (they still appear inside Discord).
+  hidden       Boolean  @default(false)
   updatedAt    DateTime @updatedAt
 
   @@index([xp])

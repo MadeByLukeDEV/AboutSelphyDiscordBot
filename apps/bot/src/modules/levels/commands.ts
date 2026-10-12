@@ -1,3 +1,4 @@
+import { env } from "../../lib/env";
 import { AttachmentBuilder, EmbedBuilder, InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from "discord.js";
 import { levelFromXp, progressOf } from "@aboutselphy/shared/levels";
 import type { Command } from "../../commands/types";
@@ -76,6 +77,8 @@ const leaderboard: Command = {
       return `${medal} <@${r.userId}> · level **${levelFromXp(r.xp)}** · ${r.xp.toLocaleString("en")} XP`;
     });
     const embed = new EmbedBuilder().setColor(BRAND).setTitle(`${escapeText(i.guild.name)} leaderboard`).setDescription(lines.join("\n") || "Nobody has earned XP yet.").setFooter({ text: `Page ${page} of ${pages}` });
+    // When the public web page is on, the full list is one click away.
+    if (config.publicLeaderboard && env().DASHBOARD_URL) embed.setDescription(`${lines.join("\n") || "Nobody has earned XP yet."}\n\n[Full leaderboard](${env().DASHBOARD_URL!.replace(/\/+$/, "")}/leaderboard)`);
     await i.reply({ embeds: [embed], allowedMentions: NO_MENTIONS });
   },
 };
