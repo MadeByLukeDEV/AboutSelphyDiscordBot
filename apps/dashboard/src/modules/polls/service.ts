@@ -3,7 +3,7 @@ import type { PollInput } from "@aboutselphy/shared/polls";
 import { errorInfo } from "@/lib/log";
 import { listChannels, pollAction } from "@/modules/bot-api";
 import type { StaffSession } from "@/modules/auth";
-import { createPoll, deleteInactive, findPoll, listPolls, type PollWithVotes } from "./repository";
+import { createPoll, deleteInactive, findPoll, listPolls, updateDraft, type PollWithVotes } from "./repository";
 import type { PollActionResult, PollError, PollView, SavePollResult } from "./schema";
 
 const toView = (p: PollWithVotes): PollView => ({
@@ -31,16 +31,23 @@ const fromStatus = (status: string | null): PollError | null =>
   status === "done" ? null : status === null ? "botUnavailable" : status === "channel" ? "channelNotFound" : status === "not-found" ? "notFound" : status === "wrong-state" ? "wrongState" : "failed";
 
 /** Saves a poll as a draft and posts it right away if asked. The channel must exist in the server (checked through the bot). */
-export async function savePoll(input: PollInput & { start: boolean }, by: StaffSession["user"]): Promise<SavePollResult> {
+export async function savePoll(input: PollInput & { start: boolean }, by: StaffSession["user"], editId?: string): Promise<SavePollResult> {
   try {
     const channels = await listChannels(["text"]);
     if (!channels) return fail("botUnavailable");
     if (!channels.some((c) => c.id === input.channelId)) return fail("channelNotFound");
-    const poll = await createPoll(
-      { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, imageUrl: input.imageUrl, endsAt: input.endsAt ? new Date(input.endsAt) : null },
-      { userId: by.id, name: by.name },
-    );
-    const startError = input.start ? fromStatus(await pollAction(poll.id, "start")) : null;
+    const fields = { channelId: input.channelId, question: input.question, options: input.options, multiple: input.multiple, imageUrl: input.imageUrl, endsAt: input.endsAt ? new Date(input.endsAt) : null };
+    let id: string;
+    if (editId) {
+      // Only a draft can be edited: once it is running, people have voted for these exact options.
+      const existing = await findPoll(editId);
+      if (!existing) return fail("notFound");
+      if (existing.status !== "draft" || !(await updateDraft(editId, fields))) return fail("wrongState");
+      id = editId;
+    } else {
+      id = (await createPoll(fields, { userId: by.id, name: by.name })).id;
+    }
+    const startError = input.start ? fromStatus(await pollAction(id, "start")) : null;
     return { ok: true, started: input.start && startError === null, startError };
   } catch (error) {
     console.error("[polls] saving failed", errorInfo(error));

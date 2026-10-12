@@ -35,7 +35,8 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
   const format = useFormatter();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [creating, setCreating] = useState(false);
+  // null = closed, "new" = a blank form, a poll = editing that draft
+  const [editing, setEditing] = useState<PollView | "new" | null>(null);
   const [confirm, setConfirm] = useState<{ poll: PollView; kind: "end" | "delete" } | null>(null);
 
   const channelName = (id: string) => (channels?.find((c) => c.id === id) ? `#${channels.find((c) => c.id === id)!.name}` : id);
@@ -60,7 +61,7 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
         <h2 id="poll-heading" className="text-fluid-lg font-bold">
           {t("list.title")}
         </h2>
-        <Button size="sm" onClick={() => setCreating(true)}>
+        <Button size="sm" onClick={() => setEditing("new")}>
           <Plus aria-hidden />
           {t("new")}
         </Button>
@@ -112,6 +113,11 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
                   </div>
                   <div className="ml-auto flex flex-wrap items-center gap-2">
                     {p.status === "draft" && (
+                      <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditing(p)}>
+                        {t("actions.edit")}
+                      </Button>
+                    )}
+                    {p.status === "draft" && (
                       <Button size="sm" disabled={pending} onClick={() => run(() => pollControlAction(p.id, "start"), t("started"))}>
                         {t("actions.start")}
                       </Button>
@@ -134,17 +140,19 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
         </ul>
       )}
 
-      <Dialog open={creating} onOpenChange={(open) => !open && setCreating(false)}>
+      <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>{t("dialog.title")}</DialogTitle>
+            <DialogTitle>{editing !== null && editing !== "new" ? t("dialog.editTitle") : t("dialog.title")}</DialogTitle>
             <DialogDescription>{t("dialog.intro")}</DialogDescription>
           </DialogHeader>
-          {creating && (
+          {editing !== null && (
             <PollForm
+              key={editing === "new" ? "new" : editing.id}
+              poll={editing === "new" ? null : editing}
               channels={channels}
               onDone={() => {
-                setCreating(false);
+                setEditing(null);
                 router.refresh();
               }}
             />
@@ -179,13 +187,17 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
   );
 }
 
-function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDone: () => void }) {
+function PollForm({ poll, channels, onDone }: { poll: PollView | null; channels: GuildChannel[] | null; onDone: () => void }) {
   const t = useTranslations("Polls.form");
   const te = useTranslations("Polls.errors");
   const [pending, startTransition] = useTransition();
   // The earliest end that can be chosen, computed once when the form opens.
   const [minLocal] = useState(() => toLocalInput(new Date(Date.now() + MIN_SCHEDULE_AHEAD_MS)));
-  const form = useForm<FormValues>({ defaultValues: { channelId: "", question: "", optionsText: "", multiple: false, imageUrl: "", endsLocal: "" } });
+  const form = useForm<FormValues>({
+    defaultValues: poll
+      ? { channelId: poll.channelId, question: poll.question, optionsText: poll.options.join("\n"), multiple: poll.multiple, imageUrl: poll.imageUrl, endsLocal: poll.endsAt ? toLocalInput(new Date(poll.endsAt)) : "" }
+      : { channelId: "", question: "", optionsText: "", multiple: false, imageUrl: "", endsLocal: "" },
+  });
   const { errors } = form.formState;
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined }));
@@ -212,7 +224,7 @@ function PollForm({ channels, onDone }: { channels: GuildChannel[] | null; onDon
         return;
       }
       startTransition(async () => {
-        const result = await createPollAction(checked.data, start);
+        const result = await createPollAction(checked.data, start, poll?.id);
         if (!result.ok) return void toast.error(te(result.error));
         if (result.startError) toast.error(te(`start.${result.startError}` as "failed"));
         else toast.success(result.started ? t("started") : t("saved"));

@@ -20,12 +20,13 @@ async function staff(): Promise<StaffSession | null> {
 
 const validId = (id: unknown): id is string => typeof id === "string" && id.length > 0 && id.length <= 64;
 
-export async function createPollAction(input: unknown, start: unknown): Promise<SavePollResult> {
+/** Creates a poll, or (with `id`) changes a draft; posts it right away if `start`. */
+export async function createPollAction(input: unknown, start: unknown, id?: unknown): Promise<SavePollResult> {
   const session = await staff();
   if (!session) return { ok: false, error: "forbidden" };
   const parsed = pollInput.safeParse(input);
-  if (!parsed.success || typeof start !== "boolean") return { ok: false, error: "invalid" };
-  return savePoll({ ...parsed.data, start }, session.user);
+  if (!parsed.success || typeof start !== "boolean" || (id !== undefined && !validId(id))) return { ok: false, error: "invalid" };
+  return savePoll({ ...parsed.data, start }, session.user, id);
 }
 
 export async function pollControlAction(id: unknown, action: unknown): Promise<PollActionResult> {

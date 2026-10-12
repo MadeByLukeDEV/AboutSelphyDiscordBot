@@ -993,7 +993,10 @@ Decided 2026-10-08:
     (start|end|delete).
   - Dashboard `/polls` (all staff): create (options one per line, channel, optional end,
     multiple choice), live results with bars, start a draft, end now, remove (not while running).
-  - [ ] Editing a draft, a results chart over time, reminders before it ends.
+  - [x] Editing a draft (2026-11-01, `feature_poll-edit-draft`): the "Edit" button on a draft reuses the create form;
+        `updateDraft` is one UPDATE with `status = draft` in the condition, so a poll started a moment ago can't be changed under
+        the bot (once it runs people have voted for those exact options).
+  - [ ] Still open: a results chart over time, reminders before it ends.
   - **Picture** (2026-10-22, `feature_giveaway-poll-images`, migration `20261022180000_giveaway_poll_images`):
     `imageUrl` on polls and giveaways (https only, shared `isAllowedImageUrl`, a DB CHECK, re-checked by the
     bot), shown big in the post; the dashboard forms and `/poll image:` take the address.

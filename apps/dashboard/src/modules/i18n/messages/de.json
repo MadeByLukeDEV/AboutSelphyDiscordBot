@@ -1386,7 +1386,8 @@
     "actions": {
       "start": "Starten",
       "end": "Jetzt beenden",
-      "delete": "Entfernen"
+      "delete": "Entfernen",
+      "edit": "Bearbeiten"
     },
     "empty": {
       "title": "Noch keine Umfragen",
@@ -1394,7 +1395,8 @@
     },
     "dialog": {
       "title": "Neue Umfrage",
-      "intro": "Alles, was du eingibst, wird als einfacher Text angezeigt und pingt niemanden."
+      "intro": "Alles, was du eingibst, wird als einfacher Text angezeigt und pingt niemanden.",
+      "editTitle": "Entwurf bearbeiten"
     },
     "form": {
       "question": "Frage",

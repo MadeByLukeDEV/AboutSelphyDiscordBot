@@ -25,6 +25,11 @@ export function createPoll(data: { channelId: string; question: string; options:
   return prisma.poll.create({ data: { ...data, createdById: by.userId, createdByName: by.name.slice(0, 100) } });
 }
 
+/** Changes a draft. The status condition is part of the UPDATE, so a poll that was started a moment ago can't be edited under the bot. */
+export async function updateDraft(id: string, data: { channelId: string; question: string; options: string[]; multiple: boolean; imageUrl: string; endsAt: Date | null }): Promise<boolean> {
+  return (await prisma.poll.updateMany({ where: { id, status: "draft" }, data })).count > 0;
+}
+
 /** A running poll must be ended first, so its post and the end job stay consistent. */
 export async function deleteInactive(id: string): Promise<boolean> {
   return (await prisma.poll.deleteMany({ where: { id, status: { not: "active" } } })).count > 0;

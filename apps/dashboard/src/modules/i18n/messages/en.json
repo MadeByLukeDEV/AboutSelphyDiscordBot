@@ -1386,7 +1386,8 @@
     "actions": {
       "start": "Start",
       "end": "End now",
-      "delete": "Remove"
+      "delete": "Remove",
+      "edit": "Edit"
     },
     "empty": {
       "title": "No polls yet",
@@ -1394,7 +1395,8 @@
     },
     "dialog": {
       "title": "New poll",
-      "intro": "Everything you type is shown as plain text and pings nobody."
+      "intro": "Everything you type is shown as plain text and pings nobody.",
+      "editTitle": "Edit draft"
     },
     "form": {
       "question": "Question",
