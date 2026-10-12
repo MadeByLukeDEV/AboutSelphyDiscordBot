@@ -37,7 +37,7 @@ export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
 
 /** Everything the bot holds about one member, shaped for a JSON file they can read. Moderators' names are left out. */
 export async function exportMember(userId: string) {
-  const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases] = await Promise.all([
+  const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases, room] = await Promise.all([
     prisma.birthday.findUnique({ where: { userId } }),
     prisma.reminder.findMany({ where: { userId, deliveredAt: null }, take: 100 }),
     prisma.memberXp.findUnique({ where: { userId } }),
@@ -50,6 +50,7 @@ export async function exportMember(userId: string) {
     prisma.starboardPost.count({ where: { authorId: userId } }),
     prisma.twitchVipLink.findUnique({ where: { discordUserId: userId } }),
     prisma.modCase.findMany({ where: { targetId: userId }, orderBy: { caseNumber: "asc" }, take: 500 }),
+    prisma.tempVoicePreference.findUnique({ where: { userId } }),
   ]);
   return {
     generatedAt: new Date().toISOString(),
@@ -62,12 +63,13 @@ export async function exportMember(userId: string) {
     suggestions: suggestions.map((s) => ({ number: s.number, text: clip(s.content, 1500), status: s.status, createdAt: s.createdAt.toISOString() })),
     counts: { suggestionVotes, pollVotes, giveawayEntries, starboardPosts: starboard },
     tickets: tickets.map((t) => ({ number: t.number, status: t.status, openedAt: t.createdAt.toISOString(), closedAt: t.closedAt?.toISOString() ?? null, messagesSaved: t.messageCount })),
+    rememberedVoiceRoom: room ? { name: room.name, userLimit: room.userLimit, locked: room.locked } : null,
     twitchVipLink: vip ? { twitchAccount: vip.twitchLogin, confirmed: vip.approved } : null,
     moderationCases: cases.map((c) => ({ caseNumber: c.caseNumber, type: c.type, reason: clip(c.reason, 1000), createdAt: c.createdAt.toISOString(), active: c.active })),
   };
 }
 
-export type DeleteCounts = { birthday: number; reminders: number; levels: number; rememberedRoles: number; votes: number; entries: number; suggestionsAnonymised: number; starboardAnonymised: number };
+export type DeleteCounts = { voiceRoom: number; birthday: number; reminders: number; levels: number; rememberedRoles: number; votes: number; entries: number; suggestionsAnonymised: number; starboardAnonymised: number };
 
 /**
  * Removes what the member can remove themselves, in one transaction. Moderation cases and tickets stay (the policy says
@@ -75,7 +77,8 @@ export type DeleteCounts = { birthday: number; reminders: number; levels: number
  * other people's votes and comments hang off them. The Twitch link is handled by the caller (the role must come off first).
  */
 export async function deleteMember(userId: string): Promise<DeleteCounts> {
-  const [birthday, reminders, levels, snapshot, sv, pv, entries, suggestions, starboard] = await prisma.$transaction([
+  const [voice, birthday, reminders, levels, snapshot, sv, pv, entries, suggestions, starboard] = await prisma.$transaction([
+    prisma.tempVoicePreference.deleteMany({ where: { userId } }),
     prisma.birthday.deleteMany({ where: { userId } }),
     prisma.reminder.deleteMany({ where: { userId } }),
     prisma.memberXp.deleteMany({ where: { userId } }),
@@ -86,6 +89,6 @@ export async function deleteMember(userId: string): Promise<DeleteCounts> {
     prisma.suggestion.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
     prisma.starboardPost.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
   ]);
-  return { birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };
+  return { voiceRoom: voice.count, birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };
 }
 

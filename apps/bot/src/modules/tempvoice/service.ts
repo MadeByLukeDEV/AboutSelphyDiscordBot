@@ -9,6 +9,8 @@ import { loadRoom, postPanel } from "./controller";
 import { fetchVoiceChannel, humansIn } from "./discord-channels";
 import { policyOf, renderRoomName } from "./name";
 import { initialOverwrites } from "./permissions";
+import { startOfRoom } from "./preference";
+import { deriveRoomState, type OverwriteBits } from "./state";
 import * as repo from "./repository";
 import { planTransition } from "./transition";
 
@@ -100,18 +102,26 @@ async function createRoomFor(member: GuildMember, lobby: TempVoiceLobby, config:
   }
 
   const lobbyChannel = await fetchVoiceChannel(guild, lobby.channelId);
-  const name = renderRoomName(lobby.nameTemplate, member.displayName, policyOf(config));
+  // What this room starts with: the lobby's own settings, or what the member's last room looked like (if the admin turned that on).
+  const remembered = config.rememberSettings ? await repo.findPreference(member.id).catch(() => null) : null;
+  const start = startOfRoom(
+    { name: renderRoomName(lobby.nameTemplate, member.displayName, policyOf(config)), userLimit: lobby.defaultUserLimit, allowVideo: lobby.allowVideoByDefault, allowSoundboard: lobby.allowSoundboardByDefault },
+    remembered,
+    { words: config.blockedWords ?? [], useDefaultList: config.useDefaultBlocklist },
+  );
+  const name = start.name;
 
   const channel = await guild.channels.create({
     name,
     type: ChannelType.GuildVoice,
     parent: lobby.categoryId ?? lobbyChannel?.parentId ?? null,
-    userLimit: lobby.defaultUserLimit,
+    userLimit: start.userLimit,
     permissionOverwrites: initialOverwrites({
       everyoneId: guild.id,
       ownerId: member.id,
-      allowVideo: lobby.allowVideoByDefault,
-      allowSoundboard: lobby.allowSoundboardByDefault,
+      allowVideo: start.allowVideo,
+      allowSoundboard: start.allowSoundboard,
+      locked: start.locked,
     }),
     reason: `Temporary voice room for ${member.user.username}`,
   });
@@ -163,6 +173,7 @@ async function deleteIfEmpty(guild: Guild, channelId: string): Promise<void> {
 
   if (humansIn(channel).size > 0) return;
 
+  await rememberRoom(channel).catch((err) => log.warn({ err, channel: channelId }, "could not remember the room's settings"));
   await channel.delete("Temporary voice room is empty");
   await forget(channelId);
   log.info({ channel: channelId }, "empty temporary room deleted");
@@ -208,4 +219,17 @@ export async function onChannelDeleted(guildId: string, channelId: string): Prom
   if (guildId !== env().DISCORD_GUILD_ID || !rooms.has(channelId)) return;
   await forget(channelId);
   log.info({ channel: channelId }, "temporary room deleted outside the bot, row removed");
+}
+
+/** Before an empty room goes: if the admin turned it on, keep how the owner had set it up for their next one. */
+async function rememberRoom(channel: import("discord.js").VoiceChannel): Promise<void> {
+  const config = await getTempVoiceConfig();
+  if (!config.rememberSettings) return;
+  const row = await repo.findRoom(channel.id);
+  if (!row) return;
+  const me = channel.guild.members.me;
+  const overwrites: OverwriteBits[] = [...channel.permissionOverwrites.cache.values()].map((o) => ({ id: o.id, kind: o.type === 0 ? "role" : "member", allow: o.allow.bitfield, deny: o.deny.bitfield }));
+  const state = deriveRoomState({ overwrites, everyoneId: channel.guild.id, ownerId: row.ownerId, botId: me?.id ?? "", userLimit: channel.userLimit });
+  await repo.savePreference(row.ownerId, { name: channel.name.slice(0, 100), userLimit: Math.min(99, Math.max(0, state.userLimit)), locked: state.locked, videoAllowed: state.videoAllowed, soundboardAllowed: state.soundboardAllowed });
+  log.info({ owner: row.ownerId }, "tempvoice: remembered the room's settings");
 }

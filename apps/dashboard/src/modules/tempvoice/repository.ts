@@ -6,7 +6,7 @@ export function readConfig(): Promise<TempVoiceConfig> {
   return prisma.tempVoiceConfig.findUniqueOrThrow({ where: { id: 1 } });
 }
 
-export function updateConfig(data: { enabled: boolean; blockedWords: string[]; useDefaultBlocklist: boolean }): Promise<TempVoiceConfig> {
+export function updateConfig(data: { enabled: boolean; blockedWords: string[]; useDefaultBlocklist: boolean; rememberSettings: boolean }): Promise<TempVoiceConfig> {
   return prisma.tempVoiceConfig.update({ where: { id: 1 }, data });
 }
 

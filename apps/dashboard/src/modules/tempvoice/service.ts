@@ -31,6 +31,7 @@ const toGlobal = (c: TempVoiceConfig): GlobalSettings => ({
   enabled: c.enabled,
   blockedWords: c.blockedWords ?? [],
   useDefaultBlocklist: c.useDefaultBlocklist,
+  rememberSettings: c.rememberSettings,
 });
 
 const toLobbyView = (l: TempVoiceLobby): LobbyView => ({

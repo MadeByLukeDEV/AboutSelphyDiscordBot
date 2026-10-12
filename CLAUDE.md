@@ -829,7 +829,14 @@ Decided 2026-10-08:
         template isn't blocked. Client components must not import
         `@aboutselphy/shared`'s index (it carries the word list): constants are
         passed down from the server page.
-  - [x] Dashboard (2026-10-11, `feature_dashboard-tempvoice`, admins only):
+    - [x] **Remember my room** (2026-11-01, `feature_tempvoice-remember`, migration `20261101180000_tempvoice_remember`; **not tried
+        live yet**): `TempVoiceConfig.rememberSettings` (off by default, a switch on the general settings). Before an empty room is
+        deleted the bot saves its owner's name, limit, lock and video/soundboard state (`TempVoicePreference`, one row per
+        member, derived from the channel with `deriveRoomState`); the member's next room starts like that
+        (`startOfRoom`, pure and tested: the name goes through the blocklist again, the limit stays 0-99, a lobby that switches
+        video or soundboard off keeps them off). `/mydata export` and `delete` include it; the privacy policy mentions it
+        (`LEGAL_LAST_UPDATED` 2026-11-01). Per-role limits, bitrate and an AFK handler are still open.
+- [x] Dashboard (2026-10-11, `feature_dashboard-tempvoice`, admins only):
         `/voice-rooms` with a **live view** of the open rooms (owner, who is in
         them, locked/open, limit, video and soundboard off, let-in/blocked counts,
         age; polled every 8 s from the bot's `GET /internal/tempvoice/overview`,

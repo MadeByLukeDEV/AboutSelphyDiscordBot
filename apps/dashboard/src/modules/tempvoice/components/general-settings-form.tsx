@@ -44,7 +44,7 @@ export function GeneralSettingsForm({
     }),
   );
 
-  const toggle = (name: "enabled" | "useDefaultBlocklist", label: string, help: string) => (
+  const toggle = (name: "enabled" | "useDefaultBlocklist" | "rememberSettings", label: string, help: string) => (
     <Field orientation="horizontal">
       <Controller
         control={form.control}
@@ -63,6 +63,7 @@ export function GeneralSettingsForm({
       <FieldGroup>
         {toggle("enabled", t("enabled"), t("enabledHelp"))}
         {toggle("useDefaultBlocklist", t("defaultBlocklist"), t("defaultBlocklistHelp", { count: builtInCount }))}
+        {toggle("rememberSettings", t("remember"), t("rememberHelp"))}
 
         <Field data-invalid={Boolean(errors.blockedWordsText) || undefined}>
           <FieldLabel htmlFor="blockedWordsText">{t("blocked")}</FieldLabel>

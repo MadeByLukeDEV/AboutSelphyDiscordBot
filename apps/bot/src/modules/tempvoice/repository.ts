@@ -68,3 +68,10 @@ export function setOwner(channelId: string, ownerId: string) {
 export function setPanelMessage(channelId: string, panelMessageId: string | null) {
   return prisma.tempVoiceChannel.update({ where: { channelId }, data: { panelMessageId } });
 }
+
+// -- remembered rooms ---------------------------------------------------------------------
+
+export const findPreference = (userId: string) => prisma.tempVoicePreference.findUnique({ where: { userId } });
+
+export const savePreference = (userId: string, data: { name: string; userLimit: number; locked: boolean; videoAllowed: boolean; soundboardAllowed: boolean }) =>
+  prisma.tempVoicePreference.upsert({ where: { userId }, update: data, create: { userId, ...data } });

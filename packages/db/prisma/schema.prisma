@@ -126,6 +126,8 @@ model TempVoiceConfig {
   /// Also refuse the built-in list of common insults and slurs (English and
   /// German, defined in packages/shared). On by default.
   useDefaultBlocklist Boolean  @default(true)
+  /// Remember each owner's last room (name, limit, lock, video, soundboard) and give it to their next one.
+  rememberSettings    Boolean  @default(false)
   updatedAt           DateTime @updatedAt
 }
 
@@ -1064,4 +1066,15 @@ model RetentionConfig {
   /// What the last run removed, in words (never personal data).
   lastResult           String    @default("") @db.VarChar(300)
   updatedAt            DateTime  @updatedAt
+}
+
+/// What a member's last temporary room looked like, so their next one starts the same (only while rememberSettings is on).
+model TempVoicePreference {
+  userId            String   @id @db.VarChar(20)
+  name              String   @db.VarChar(100)
+  userLimit         Int      @default(0)
+  locked            Boolean  @default(false)
+  videoAllowed      Boolean  @default(true)
+  soundboardAllowed Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
 }

@@ -363,7 +363,9 @@
       "save": "Save settings",
       "saving": "Saving…",
       "saved": "Settings saved",
-      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute."
+      "savedBotLater": "Settings saved. The bot wasn't reachable, so it picks them up within a minute.",
+      "remember": "Remember each member's room",
+      "rememberHelp": "When a room is deleted, its owner's name, limit, lock and video/soundboard settings are kept and their next room starts the same. Names go through the blocklist again, and a lobby that switches video or soundboard off keeps them off. Members can delete this with /mydata delete."
     },
     "errors": {
       "forbidden": "Only admins can change these settings.",

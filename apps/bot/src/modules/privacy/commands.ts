@@ -42,7 +42,7 @@ const mydata: Command = {
     );
     const prompt = await i.reply({
       content:
-        "This deletes your **birthday, pending reminders, level record, remembered roles, votes, giveaway entries and Twitch link** (and the VIP role that came with it). Your name is removed from suggestions you wrote and from starboard posts.\n" +
+        "This deletes your **birthday, pending reminders, level record, remembered roles, remembered voice room, votes, giveaway entries and Twitch link** (and the VIP role that came with it). Your name is removed from suggestions you wrote and from starboard posts.\n" +
         "Moderation cases and tickets are **kept**: they protect other members and answer appeals. Ask a moderator if you want those looked at.\nThis can't be undone.",
       components: [row],
       flags: MessageFlags.Ephemeral,

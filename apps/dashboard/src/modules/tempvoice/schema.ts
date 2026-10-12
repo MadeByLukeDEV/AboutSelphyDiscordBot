@@ -31,6 +31,8 @@ const globalBase = {
   enabled: z.boolean(),
   /** Also refuse the built-in list of common insults and slurs (English and German). */
   useDefaultBlocklist: z.boolean(),
+  /** Remember each owner's last room (name, limit, lock, video, soundboard) for their next one. */
+  rememberSettings: z.boolean(),
 };
 
 /** What the server action accepts (the blocked words already split into a list). */

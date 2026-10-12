@@ -17,10 +17,13 @@ export function initialOverwrites(opts: {
   ownerId: string;
   allowVideo: boolean;
   allowSoundboard: boolean;
+  /** Start locked: @everyone can't connect (the owner still can). */
+  locked?: boolean;
 }): OverwriteSpec[] {
   const everyone: OverwriteSpec = { id: opts.everyoneId, type: OverwriteType.Role, allow: [], deny: [] };
   (opts.allowVideo ? everyone.allow : everyone.deny).push(P.Stream);
   (opts.allowSoundboard ? everyone.allow : everyone.deny).push(P.UseSoundboard, P.UseExternalSounds);
+  if (opts.locked) everyone.deny.push(P.Connect);
 
   const owner: OverwriteSpec = {
     id: opts.ownerId,
