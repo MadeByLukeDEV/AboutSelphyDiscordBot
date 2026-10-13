@@ -42,3 +42,22 @@ export function renderFeedMessage(template: string, item: { name: string; title:
 export function isDue(feed: { lastCheckedAt: Date | null; intervalMinutes: number }, now: Date): boolean {
   return feed.lastCheckedAt === null || now.getTime() - feed.lastCheckedAt.getTime() >= feed.intervalMinutes * 60_000;
 }
+
+const fold = (text: string): string => text.normalize("NFKC").toLowerCase();
+
+/**
+ * Does an item pass a feed's keyword filters? Words are plain text (never patterns), compared on the title after NFKC and lower case.
+ * Any exclude word rejects; with include words at least one must be present.
+ */
+export function passesFilter(title: string, include: readonly string[], exclude: readonly string[]): boolean {
+  const t = fold(title);
+  if (exclude.some((w) => w.trim() !== "" && t.includes(fold(w)))) return false;
+  const wanted = include.filter((w) => w.trim() !== "");
+  return wanted.length === 0 || wanted.some((w) => t.includes(fold(w)));
+}
+
+/** The embed variant of an announcement: the title links to the item, the source and the time sit on it. Escaped, nothing pings. */
+export function feedEmbedData(feedName: string, item: { title: string; link: string; publishedAt: Date | null }): { title: string; url: string | undefined; footer: string; at: Date | null } {
+  const link = safeLink(item.link);
+  return { title: truncate(escapeText(item.title), 256) || "New item", url: link === "" ? undefined : link, footer: truncate(escapeText(feedName), 60), at: item.publishedAt };
+}

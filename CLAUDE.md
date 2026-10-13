@@ -1450,7 +1450,12 @@ Decided 2026-10-08:
     `http://<service name>:1200/tiktok/user/@name?key=<ACCESS_KEY>` with that service name in
     `RSS_INTERNAL_HOSTS`. TikTok blocks many datacenter addresses, so that route can be flaky: the status
     on the page tells. Other projects can use the same RSSHub.
-  - [ ] A "watch" embed instead of a plain link, per-feed filters (keywords), several items in one message.
+  - **Keyword filters and embed** (2026-11-08, `feature_feed-filters`, migration `20261108120000_feed_filters`; **not tried live yet**):
+    per feed `includeWords` (only titles containing one, empty = all) and `excludeWords` (never announce), up to 10 each, plain text
+    compared after NFKC + lower case (`passesFilter`, pure, tested; never patterns); items that don't pass are **remembered silently**.
+    `useEmbed` posts a link embed (`feedEmbedData`: escaped title as the link text, http(s)-only link, source name, time) with only the
+    role ping as text. Words are typed one per line on `/feeds`.
+  - [ ] Several items in one message, filters on the description.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)
   - **Incoming** (`/webhooks` admin page, public route `POST /api/webhooks/in/<id>`, outside the sign-in gate):

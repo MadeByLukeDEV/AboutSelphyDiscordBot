@@ -7,7 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { DEFAULT_FEED_TEMPLATE, DEFAULT_INTERVAL_MINUTES, feedInput, MAX_FEED_TEMPLATE, MAX_FEED_URL, MAX_FEEDS, MAX_INTERVAL_MINUTES, MIN_INTERVAL_MINUTES } from "@aboutselphy/shared/feeds";
+import { MAX_FILTER_WORDS, parseWordList, DEFAULT_FEED_TEMPLATE, DEFAULT_INTERVAL_MINUTES, feedInput, MAX_FEED_TEMPLATE, MAX_FEED_URL, MAX_FEEDS, MAX_INTERVAL_MINUTES, MIN_INTERVAL_MINUTES } from "@aboutselphy/shared/feeds";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import { checkFeedAction, removeFeedAction, saveFeedAction } from "../actions";
 import type { FeedRow } from "../schema";
 import { EmoteInsert } from "@/components/form/emote-insert";
 
-type FormValues = { name: string; url: string; channelId: string; pingRoleId: string; messageTemplate: string; intervalMinutes: number; enabled: boolean };
+type FormValues = { name: string; url: string; channelId: string; pingRoleId: string; messageTemplate: string; intervalMinutes: number; includeText: string; excludeText: string; useEmbed: boolean; enabled: boolean };
 
 /** The feeds with add, edit, check now and remove. State flows in as props; changes call router.refresh(). */
 export function FeedsManager({ feeds, channels, roles, ready }: { feeds: FeedRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; ready: boolean }) {
@@ -134,8 +134,8 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     defaultValues: row
-      ? { name: row.name, url: "", channelId: row.channelId, pingRoleId: row.pingRoleId ?? "", messageTemplate: row.messageTemplate, intervalMinutes: row.intervalMinutes, enabled: row.enabled }
-      : { name: "", url: "", channelId: "", pingRoleId: "", messageTemplate: DEFAULT_FEED_TEMPLATE, intervalMinutes: DEFAULT_INTERVAL_MINUTES, enabled: true },
+      ? { name: row.name, url: "", channelId: row.channelId, pingRoleId: row.pingRoleId ?? "", messageTemplate: row.messageTemplate, intervalMinutes: row.intervalMinutes, includeText: row.includeWords.join("\n"), excludeText: row.excludeWords.join("\n"), useEmbed: row.useEmbed, enabled: row.enabled }
+      : { name: "", url: "", channelId: "", pingRoleId: "", messageTemplate: DEFAULT_FEED_TEMPLATE, intervalMinutes: DEFAULT_INTERVAL_MINUTES, includeText: "", excludeText: "", useEmbed: false, enabled: true },
   });
   const { errors } = form.formState;
 
@@ -145,7 +145,8 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
   if (row?.pingRoleId && !roleOptions.some((o) => o.value === row.pingRoleId)) roleOptions.push({ value: row.pingRoleId, label: row.pingRoleId });
 
   const submit = form.handleSubmit((values) => {
-    const checked = feedInput.safeParse({ ...(row ? { id: row.id } : {}), ...values });
+    const { includeText, excludeText, ...rest } = values;
+    const checked = feedInput.safeParse({ ...(row ? { id: row.id } : {}), ...rest, includeWords: parseWordList(includeText), excludeWords: parseWordList(excludeText) });
     if (!checked.success) {
       form.clearErrors();
       for (const issue of checked.error.issues) {
@@ -193,6 +194,23 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
 <EmoteInsert targetId="fd-template" />
           <FieldDescription>{t("templateHelp")}</FieldDescription>
           {errors.messageTemplate && <FieldError>{te("needsTemplate")}</FieldError>}
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="fd-include">{t("include")}</FieldLabel>
+          <Textarea id="fd-include" rows={2} {...form.register("includeText")} />
+          <FieldDescription>{t("includeHelp", { max: MAX_FILTER_WORDS })}</FieldDescription>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="fd-exclude">{t("exclude")}</FieldLabel>
+          <Textarea id="fd-exclude" rows={2} {...form.register("excludeText")} />
+          <FieldDescription>{t("excludeHelp", { max: MAX_FILTER_WORDS })}</FieldDescription>
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="useEmbed" render={({ field }) => <Switch id="fd-embed" checked={field.value} onCheckedChange={field.onChange} aria-describedby="fd-embed-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="fd-embed">{t("embed")}</FieldLabel>
+            <FieldDescription id="fd-embed-help">{t("embedHelp")}</FieldDescription>
+          </div>
         </Field>
         <Field data-invalid={Boolean(errors.intervalMinutes) || undefined}>
           <FieldLabel htmlFor="fd-interval">{t("interval")}</FieldLabel>

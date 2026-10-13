@@ -10,6 +10,22 @@ export const DEFAULT_INTERVAL_MINUTES = 10;
 export const MAX_FEED_TEMPLATE = 300;
 export const DEFAULT_FEED_TEMPLATE = "{name}: {title} {link}";
 export const MAX_FEED_URL = 500;
+export const MAX_FILTER_WORDS = 10;
+export const MAX_FILTER_WORD = 40;
+
+/** "one per line or separated by commas" -> clean words: trimmed, collapsed spaces, duplicates (any case) dropped. */
+export function parseWordList(text: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of text.split(/[\n,]+/)) {
+    const word = raw.trim().replace(/\s+/g, " ");
+    const key = word.toLowerCase();
+    if (!word || seen.has(key)) continue;
+    seen.add(key);
+    out.push(word);
+  }
+  return out;
+}
 
 /**
  * A syntax check: http or https, a host, no credentials, no whitespace. Whether the bot may connect is
@@ -39,6 +55,12 @@ export const feedInput = z
     pingRoleId: z.union([z.literal(""), snowflake]),
     messageTemplate: z.string().trim().min(1).max(MAX_FEED_TEMPLATE),
     intervalMinutes: z.number().int().min(MIN_INTERVAL_MINUTES).max(MAX_INTERVAL_MINUTES),
+    /** Only titles containing one of these are announced; empty = all. */
+    includeWords: z.array(z.string().trim().min(1).max(MAX_FILTER_WORD)).max(MAX_FILTER_WORDS).default([]),
+    /** Titles containing one of these are never announced. */
+    excludeWords: z.array(z.string().trim().min(1).max(MAX_FILTER_WORD)).max(MAX_FILTER_WORDS).default([]),
+    /** A link embed instead of the plain message. */
+    useEmbed: z.boolean().default(false),
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {

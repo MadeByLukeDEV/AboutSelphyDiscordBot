@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { feedInput, isFeedUrlSyntax } from "@aboutselphy/shared/feeds";
 import { parseFeed, type FeedItemData } from "./parse";
-import { isDue, MAX_POSTS_PER_CHECK, renderFeedMessage, safeLink, selectNew } from "./rules";
+import { feedEmbedData, passesFilter, isDue, MAX_POSTS_PER_CHECK, renderFeedMessage, safeLink, selectNew } from "./rules";
 
 const RSS = `<?xml version="1.0"?><rss version="2.0"><channel><title>x</title>
 <item><title>Second video</title><link>https://example.com/v/2</link><guid isPermaLink="false">id-2</guid><pubDate>Mon, 05 Oct 2026 12:00:00 GMT</pubDate></item>
@@ -117,5 +117,28 @@ describe("feed input", () => {
     expect(isFeedUrlSyntax("http://rsshub:1200/tiktok/user/@x")).toBe(true);
     expect(isFeedUrlSyntax("https://a.com/x?key=1")).toBe(true);
     for (const bad of ["", "a.com/x", "javascript:alert(1)", "https://a.com/a b", "https://u:p@a.com/x"]) expect(isFeedUrlSyntax(bad), bad).toBe(false);
+  });
+});
+
+describe("keyword filters and embeds", () => {
+  it("lets everything through without words", () => {
+    expect(passesFilter("Anything", [], [])).toBe(true);
+  });
+  it("needs an include word when there are some, any case", () => {
+    expect(passesFilter("New Video: Minecraft Live", ["minecraft"], [])).toBe(true);
+    expect(passesFilter("New Video: Fortnite", ["minecraft"], [])).toBe(false);
+  });
+  it("rejects on any exclude word, even when an include word matches", () => {
+    expect(passesFilter("Minecraft sponsored", ["minecraft"], ["Sponsored"])).toBe(false);
+  });
+  it("folds look-alike forms and ignores blank words", () => {
+    expect(passesFilter("ＬＩＶＥ now", ["live"], [])).toBe(true);
+    expect(passesFilter("hello", [" "], [""])).toBe(true);
+  });
+  it("builds a safe embed", () => {
+    const e = feedEmbedData("**Src**", { title: "@everyone [x](https://evil)", link: "javascript:alert(1)", publishedAt: null });
+    expect(e.url).toBeUndefined();
+    expect(e.title).not.toContain("[x](");
+    expect(feedEmbedData("S", { title: "T", link: "https://a.example/x", publishedAt: null }).url).toBe("https://a.example/x");
   });
 });

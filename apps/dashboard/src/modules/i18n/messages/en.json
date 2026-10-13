@@ -2503,6 +2503,12 @@
       "intro": "The address is stored encrypted and only its host is shown here afterwards."
     },
     "form": {
+      "include": "Only announce titles containing (optional)",
+      "includeHelp": "One word or phrase per line, up to {max}. Case doesn't matter. Empty = every item.",
+      "exclude": "Never announce titles containing (optional)",
+      "excludeHelp": "One word or phrase per line, up to {max}. Skipped items are remembered, so they never come back.",
+      "embed": "Post as a link embed",
+      "embedHelp": "A tidy embed with the title as a link, the source name and the time, instead of the plain message above (a role ping stays as text).",
       "name": "Name",
       "nameHelp": "Used in the message, e.g. the account name.",
       "url": "Feed address",

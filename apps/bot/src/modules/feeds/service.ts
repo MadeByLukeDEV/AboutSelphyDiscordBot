@@ -1,4 +1,4 @@
-import { Events, type Client, type Guild } from "discord.js";
+import { EmbedBuilder, Events, type Client, type Guild } from "discord.js";
 import type { FeedSource } from "@aboutselphy/db";
 import type { FeedCheckResponse } from "@aboutselphy/shared";
 import { decryptToken } from "@aboutselphy/shared/token-cipher";
@@ -10,7 +10,7 @@ import { moduleOn } from "../../lib/modules";
 import { getText } from "../../lib/safe-http";
 import { parseFeed } from "./parse";
 import { findFeed, listEnabled, markChecked, pruneItems, remember, rememberMany, seenGuids } from "./repository";
-import { isDue, renderFeedMessage, selectNew } from "./rules";
+import { feedEmbedData, isDue, passesFilter, renderFeedMessage, selectNew } from "./rules";
 
 // The feed announcer. A round every minute checks the feeds that are due (each has its own interval).
 // A feed's first successful check only remembers what is there: nothing old is ever announced. After
@@ -60,7 +60,10 @@ export function checkFeed(guild: Guild, feed: FeedSource): Promise<FeedCheckResp
         return await done("ok", 0, true);
       }
 
-      const { toPost, toRemember } = selectNew(items, seen, new Date());
+      const selected = selectNew(items, seen, new Date());
+      // Keyword filters: an item that doesn't pass is remembered silently, so it is never reconsidered.
+      const toPost = selected.toPost.filter((i) => passesFilter(i.title, feed.includeWords, feed.excludeWords));
+      const toRemember = [...selected.toRemember, ...selected.toPost.filter((i) => !toPost.includes(i))];
       if (toRemember.length > 0) await rememberMany(feed.id, toRemember.map((i) => i.guid));
       const channel = toPost.length > 0 ? await guild.channels.fetch(feed.channelId).catch(() => null) : null;
       let announced = 0;
@@ -70,9 +73,18 @@ export function checkFeed(guild: Guild, feed: FeedSource): Promise<FeedCheckResp
           log.warn({ feed: feed.id, channelId: feed.channelId }, "feeds: the channel is missing or the bot can't post in it");
           return await done("channel", announced);
         }
-        const text = renderFeedMessage(feed.messageTemplate, { name: feed.name, title: item.title, link: item.link });
+        const ping = feed.pingRoleId ? `<@&${feed.pingRoleId}> ` : "";
+        const embed = (() => {
+          if (!feed.useEmbed) return null;
+          const d = feedEmbedData(feed.name, item);
+          const e = new EmbedBuilder().setColor(0x00ffa8).setTitle(d.title).setFooter({ text: d.footer });
+          if (d.url) e.setURL(d.url);
+          if (d.at) e.setTimestamp(d.at);
+          return e;
+        })();
+        const content = embed ? ping.trim() : `${ping}${renderFeedMessage(feed.messageTemplate, { name: feed.name, title: item.title, link: item.link })}`;
         await channel
-          .send({ content: `${feed.pingRoleId ? `<@&${feed.pingRoleId}> ` : ""}${text}`, allowedMentions: { parse: [], roles: feed.pingRoleId ? [feed.pingRoleId] : [] } })
+          .send({ content, ...(embed ? { embeds: [embed] } : {}), allowedMentions: { parse: [], roles: feed.pingRoleId ? [feed.pingRoleId] : [] } })
           .then(() => {
             announced++;
             log.info({ feed: feed.id, guid: item.guid }, "feeds: announced");

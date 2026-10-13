@@ -1084,6 +1084,12 @@ model FeedSource {
   /// {title} {link} {name} are replaced (plain text; the title is escaped).
   messageTemplate String    @default("{name}: {title} {link}") @db.VarChar(300)
   intervalMinutes Int       @default(10)
+  /// Only items whose title contains one of these (case-insensitive) are announced; empty = all.
+  includeWords    String[]  @default([])
+  /// Items whose title contains one of these are never announced.
+  excludeWords    String[]  @default([])
+  /// Post a link embed (title, source, time) instead of the plain text message.
+  useEmbed        Boolean   @default(false)
   enabled         Boolean   @default(true)
   /// false until the first successful check, which only remembers what is there (nothing is announced).
   baselined       Boolean   @default(false)

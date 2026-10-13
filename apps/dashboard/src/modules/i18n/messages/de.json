@@ -2503,6 +2503,12 @@
       "intro": "Die Adresse wird verschlüsselt gespeichert und danach wird hier nur ihr Host angezeigt."
     },
     "form": {
+      "include": "Nur Titel ankündigen, die enthalten (optional)",
+      "includeHelp": "Ein Wort oder eine Wendung pro Zeile, bis zu {max}. Groß-/Kleinschreibung egal. Leer = jeder Eintrag.",
+      "exclude": "Titel nie ankündigen, die enthalten (optional)",
+      "excludeHelp": "Ein Wort oder eine Wendung pro Zeile, bis zu {max}. Übersprungene Einträge werden gemerkt und kommen nie wieder.",
+      "embed": "Als Link-Embed posten",
+      "embedHelp": "Ein aufgeräumtes Embed mit dem Titel als Link, dem Namen der Quelle und der Zeit statt der einfachen Nachricht oben (ein Rollen-Ping bleibt Text).",
       "name": "Name",
       "nameHelp": "Wird in der Nachricht verwendet, z. B. der Kontoname.",
       "url": "Feed-Adresse",

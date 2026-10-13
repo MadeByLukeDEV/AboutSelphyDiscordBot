@@ -9,6 +9,9 @@ export type FeedRow = {
   pingRoleId: string | null;
   messageTemplate: string;
   intervalMinutes: number;
+  includeWords: string[];
+  excludeWords: string[];
+  useEmbed: boolean;
   enabled: boolean;
   baselined: boolean;
   lastCheckedAt: string | null;
