@@ -10,7 +10,7 @@ export type RoleRow = ManagedRole & { usedBy: UsageKey[] };
 export type RoleManagerError = "forbidden" | "invalid" | "botUnavailable" | "failed";
 export type DeleteRolesResult = { ok: true; deleted: string[]; skipped: Array<{ id: string; status: "not-found" | "protected" | "failed" }> } | { ok: false; error: RoleManagerError };
 
-export type RoleToolError = "forbidden" | "invalid" | "botUnavailable" | "notFound" | "protected" | "targetInvalid" | "sourceInvalid" | "failed";
+export type RoleToolError = "forbidden" | "invalid" | "botUnavailable" | "notFound" | "protected" | "targetInvalid" | "sourceInvalid" | "edge" | "sourcePowerful" | "same" | "failed";
 export type UpdateRoleResult = { ok: true } | { ok: false; error: RoleToolError };
 export type MergeRolesResult = { ok: true; added: number; alreadyHad: number; failed: number; deleted: string[] } | { ok: false; error: RoleToolError };
 

@@ -1,8 +1,8 @@
 import type { Guild } from "discord.js";
-import type { ManagedRole, RoleDeleteStatus, RoleMergeResponse, RoleUpdateStatus } from "@aboutselphy/shared";
+import type { ManagedRole, RoleCopyStatus, RoleDeleteStatus, RoleMergeResponse, RoleMoveStatus, RoleUpdateStatus } from "@aboutselphy/shared";
 import { env } from "../../lib/env";
 import { log } from "../../lib/log";
-import { checkMerge, isPowerful, protectionOf } from "./manage-rules";
+import { checkCopy, checkMerge, isPowerful, planMove, protectionOf } from "./manage-rules";
 import { checkRole } from "./service";
 
 // The role manager: lists every role with its member count and deletes the ones staff pick.
@@ -121,5 +121,43 @@ export async function mergeRoles(guild: Guild, input: { sourceIds: string[]; tar
   } catch (err) {
     log.error({ err }, "role manager: merge failed");
     return { status: "failed", ...empty };
+  }
+}
+
+/** Moves a role one place up or down. The same protections as editing apply, and it never goes above the bot's own role. */
+export async function moveRole(guild: Guild, input: { id: string; direction: "up" | "down" }, by: string): Promise<RoleMoveStatus> {
+  const role = input.id === guild.id ? null : guild.roles.cache.get(input.id) ?? (await guild.roles.fetch(input.id).catch(() => null));
+  if (!role) return "not-found";
+  const top = await botTop(guild);
+  if (protectionOf({ id: role.id, guildId: guild.id, managed: role.managed, position: role.position, permissions: role.permissions.bitfield }, top, staffRoleIds()) !== null) return "protected";
+  const next = planMove(role.position, input.direction, top);
+  if (next === null) return "edge";
+  try {
+    await role.setPosition(next, { reason: `Moved from the dashboard by ${by}` });
+    log.info({ role: role.id, direction: input.direction, by }, "role moved from the dashboard");
+    return "moved";
+  } catch (err) {
+    log.error({ err, role: role.id }, "role manager: move failed");
+    return "failed";
+  }
+}
+
+/** Gives the target role the permissions of the source role, unless the source is powerful (see checkCopy) or the target is protected. */
+export async function copyPermissions(guild: Guild, input: { sourceId: string; targetId: string }, by: string): Promise<RoleCopyStatus> {
+  const get = async (id: string) => guild.roles.cache.get(id) ?? (await guild.roles.fetch(id).catch(() => null));
+  const source = await get(input.sourceId);
+  const target = input.targetId === guild.id ? null : await get(input.targetId);
+  if (!source || !target) return "not-found";
+  const top = await botTop(guild);
+  if (protectionOf({ id: target.id, guildId: guild.id, managed: target.managed, position: target.position, permissions: target.permissions.bitfield }, top, staffRoleIds()) !== null) return "protected";
+  const verdict = checkCopy(source.id, target.id, source.permissions.bitfield);
+  if (!verdict.ok) return verdict.reason;
+  try {
+    await target.setPermissions(source.permissions, `Permissions copied from ${source.name} by ${by}`);
+    log.info({ source: source.id, target: target.id, by }, "role permissions copied from the dashboard");
+    return "done";
+  } catch (err) {
+    log.error({ err, target: target.id }, "role manager: copying permissions failed");
+    return "failed";
   }
 }

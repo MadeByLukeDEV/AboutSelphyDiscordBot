@@ -1855,6 +1855,9 @@
       "deleting": "Deleting…"
     },
     "errors": {
+      "edge": "That role can't go any further in that direction.",
+      "sourcePowerful": "That role has powerful permissions, so they can't be copied.",
+      "same": "Pick a different role.",
       "forbidden": "You don't have access to this.",
       "invalid": "That selection isn't valid.",
       "botUnavailable": "Can't reach the bot. Nothing was deleted. Try again in a moment.",
@@ -1866,6 +1869,22 @@
       "pickTarget": "Pick the role to merge into."
     },
     "mergeSelected": "Merge selected ({count})",
+    "move": {
+      "up": "Move {name} up one place",
+      "down": "Move {name} down one place"
+    },
+    "copy": {
+      "open": "Copy permissions to {name}",
+      "title": "Copy permissions to {name}",
+      "intro": "The role gets exactly the permissions of the role you pick (its own are replaced). Members keep the role.",
+      "source": "Copy from",
+      "pick": "Pick a role",
+      "help": "Roles with powerful permissions (administrator, manage, kick, ban, timeout, mention everyone ...) are not offered: copying must never hand out power.",
+      "cancel": "Cancel",
+      "copy": "Copy permissions",
+      "copying": "Copying…",
+      "done": "Permissions copied"
+    },
     "edit": {
       "open": "Edit {name}",
       "title": "Edit role",

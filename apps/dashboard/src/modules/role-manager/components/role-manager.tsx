@@ -3,7 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { GitMerge, Pencil, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Copy, GitMerge, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,9 +11,9 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { deleteRolesAction } from "../actions";
+import { deleteRolesAction, moveRoleAction } from "../actions";
 import type { Dangling, RoleRow } from "../schema";
-import { DanglingCard, EditRoleDialog, MergeDialog } from "./role-tools";
+import { CopyPermissionsDialog, DanglingCard, EditRoleDialog, MergeDialog } from "./role-tools";
 
 type Filter = "all" | "empty" | "unused" | "deletable" | "protected";
 const FILTERS: Filter[] = ["all", "empty", "unused", "deletable", "protected"];
@@ -35,6 +35,15 @@ export function RoleManager({ roles, dangling }: { roles: RoleRow[] | null; dang
   const [typed, setTyped] = useState("");
   const [editing, setEditing] = useState<RoleRow | null>(null);
   const [merging, setMerging] = useState(false);
+  const [copying, setCopying] = useState<RoleRow | null>(null);
+
+  function move(id: string, direction: "up" | "down") {
+    startTransition(async () => {
+      const result = await moveRoleAction({ id, direction });
+      if (result.ok) router.refresh();
+      else toast.error(te(result.error));
+    });
+  }
 
   const all = useMemo(() => roles ?? [], [roles]);
   const byId = useMemo(() => new Map(all.map((r) => [r.id, r])), [all]);
@@ -170,6 +179,15 @@ export function RoleManager({ roles, dangling }: { roles: RoleRow[] | null; dang
                     ))}
                     {r.protectedReason && <Badge>{t(`protected.${r.protectedReason}`)}</Badge>}
                   </div>
+                  <Button variant="ghost" size="icon-sm" disabled={locked || pending} aria-label={t("move.up", { name: r.name })} onClick={() => move(r.id, "up")}>
+                    <ArrowUp aria-hidden />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" disabled={locked || pending} aria-label={t("move.down", { name: r.name })} onClick={() => move(r.id, "down")}>
+                    <ArrowDown aria-hidden />
+                  </Button>
+                  <Button variant="ghost" size="icon-sm" disabled={locked} aria-label={t("copy.open", { name: r.name })} onClick={() => setCopying(r)}>
+                    <Copy aria-hidden />
+                  </Button>
                   <Button variant="ghost" size="icon-sm" disabled={locked} aria-label={t("edit.open", { name: r.name })} onClick={() => setEditing(r)}>
                     <Pencil aria-hidden />
                   </Button>
@@ -181,6 +199,7 @@ export function RoleManager({ roles, dangling }: { roles: RoleRow[] | null; dang
       )}
 
       <EditRoleDialog role={editing} onClose={() => setEditing(null)} />
+      <CopyPermissionsDialog role={copying} roles={all} onClose={() => setCopying(null)} />
       <MergeDialog
         open={merging}
         sources={chosen}

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { cleanupDanglingAction, mergeRolesAction, updateRoleAction } from "../actions";
+import { cleanupDanglingAction, copyPermissionsAction, mergeRolesAction, updateRoleAction } from "../actions";
 import type { Dangling, RoleRow, UsageKey } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
 
@@ -186,5 +186,56 @@ export function DanglingCard({ dangling }: { dangling: Dangling }) {
         </Button>
       </div>
     </section>
+  );
+}
+
+/** Copy the permissions of another role onto this one. Roles with powerful permissions can't be a source. */
+export function CopyPermissionsDialog({ role, roles, onClose }: { role: RoleRow | null; roles: RoleRow[]; onClose: () => void }) {
+  const t = useTranslations("RoleManager.copy");
+  const te = useTranslations("RoleManager.errors");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const form = useForm<{ sourceId: string }>({ defaultValues: { sourceId: "" } });
+  const options: SelectOption[] = roles.filter((r) => r.id !== role?.id && !r.powerful).map((r) => ({ value: r.id, label: r.name }));
+  return (
+    <Dialog open={role !== null} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("title", { name: role?.name ?? "" })}</DialogTitle>
+          <DialogDescription>{t("intro")}</DialogDescription>
+        </DialogHeader>
+        {role && (
+          <form
+            key={role.id}
+            className="flex flex-col gap-4"
+            onSubmit={form.handleSubmit((values) => {
+              if (!values.sourceId) return void toast.error(te("invalid"));
+              startTransition(async () => {
+                const result = await copyPermissionsAction({ sourceId: values.sourceId, targetId: role.id });
+                if (result.ok) {
+                  toast.success(t("done"));
+                  onClose();
+                  router.refresh();
+                } else {
+                  toast.error(te(result.error));
+                }
+              });
+            })}
+          >
+            <Field>
+              <FieldLabel htmlFor="rc-source">{t("source")}</FieldLabel>
+              <FormSelect control={form.control} name="sourceId" id="rc-source" options={options} placeholder={t("pick")} />
+              <FieldDescription>{t("help")}</FieldDescription>
+            </Field>
+            <DialogFooter>
+              <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>
+              <Button type="submit" disabled={pending}>
+                {pending ? t("copying") : t("copy")}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

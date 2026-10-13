@@ -1,6 +1,6 @@
 import { PermissionFlagsBits as P } from "discord.js";
 import { describe, expect, it } from "vitest";
-import { checkMerge, isPowerful, protectionOf, type ManageFacts } from "./manage-rules";
+import { checkCopy, checkMerge, planMove, isPowerful, protectionOf, type ManageFacts } from "./manage-rules";
 
 const base: ManageFacts = { id: "222222222222222222", guildId: "111111111111111111", managed: false, position: 3, permissions: 0n };
 const none = new Set<string>();
@@ -44,5 +44,21 @@ describe("checkMerge", () => {
   it("refuses @everyone or the target as a source", () => {
     expect(checkMerge({ ...input, sourceIds: [input.guildId] }, { assignable: true }, none)).toEqual({ ok: false, reason: "source-invalid" });
     expect(checkMerge({ ...input, sourceIds: [input.targetId] }, { assignable: true }, none)).toEqual({ ok: false, reason: "source-invalid" });
+  });
+});
+
+describe("moving and copying", () => {
+  it("moves one place, never above the bot or below the first place", () => {
+    expect(planMove(5, "up", 10)).toBe(6);
+    expect(planMove(9, "up", 10)).toBeNull();
+    expect(planMove(5, "down", 10)).toBe(4);
+    expect(planMove(1, "down", 10)).toBeNull();
+  });
+  it("refuses to copy from a powerful role or onto itself", () => {
+    expect(checkCopy("a", "b", 0n)).toEqual({ ok: true });
+    expect(checkCopy("a", "a", 0n)).toEqual({ ok: false, reason: "same" });
+    expect(checkCopy("a", "b", P.Administrator)).toEqual({ ok: false, reason: "source-powerful" });
+    expect(checkCopy("a", "b", P.KickMembers)).toEqual({ ok: false, reason: "source-powerful" });
+    expect(checkCopy("a", "b", P.SendMessages | P.ViewChannel)).toEqual({ ok: true });
   });
 });

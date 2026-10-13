@@ -60,6 +60,10 @@ import {
   type TwitchResolveResponse,
   memberSearchResponse,
   suggestionMergeStatus,
+  roleMoveStatus,
+  roleCopyStatus,
+  type RoleMoveStatus,
+  type RoleCopyStatus,
   type SuggestionMergeStatus,
   type MemberSearchHit,
 } from "@aboutselphy/shared";
@@ -332,6 +336,22 @@ export async function updateRoleViaBot(input: { id: string; name?: string; color
   const res = await botFetch("/internal/roles/update", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" } });
   if (!res?.ok) return null;
   const parsed = roleUpdateStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Moves a role one place up or down. Null if the bot can't be reached. */
+export async function moveRoleViaBot(input: { id: string; direction: "up" | "down" }, by: string): Promise<RoleMoveStatus | null> {
+  const res = await botFetch("/internal/roles/move", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" } });
+  if (!res?.ok) return null;
+  const parsed = roleMoveStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Copies one role's permissions onto another (the bot re-checks everything). Null if the bot can't be reached. */
+export async function copyRolePermissionsViaBot(input: { sourceId: string; targetId: string }, by: string): Promise<RoleCopyStatus | null> {
+  const res = await botFetch("/internal/roles/copy-permissions", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" } });
+  if (!res?.ok) return null;
+  const parsed = roleCopyStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

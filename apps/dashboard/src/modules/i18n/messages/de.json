@@ -1855,6 +1855,9 @@
       "deleting": "Löschen…"
     },
     "errors": {
+      "edge": "Die Rolle kann in diese Richtung nicht weiter.",
+      "sourcePowerful": "Diese Rolle hat mächtige Berechtigungen, sie können nicht kopiert werden.",
+      "same": "Wähle eine andere Rolle.",
       "forbidden": "Du hast darauf keinen Zugriff.",
       "invalid": "Diese Auswahl ist ungültig.",
       "botUnavailable": "Der Bot ist nicht erreichbar. Es wurde nichts gelöscht. Versuche es gleich noch einmal.",
@@ -1866,6 +1869,22 @@
       "pickTarget": "Wähle die Rolle, in die zusammengeführt wird."
     },
     "mergeSelected": "Auswahl zusammenführen ({count})",
+    "move": {
+      "up": "{name} eine Stelle nach oben",
+      "down": "{name} eine Stelle nach unten"
+    },
+    "copy": {
+      "open": "Berechtigungen auf {name} kopieren",
+      "title": "Berechtigungen auf {name} kopieren",
+      "intro": "Die Rolle bekommt genau die Berechtigungen der gewählten Rolle (ihre eigenen werden ersetzt). Mitglieder behalten die Rolle.",
+      "source": "Kopieren von",
+      "pick": "Rolle wählen",
+      "help": "Rollen mit mächtigen Berechtigungen (Administrator, Verwalten, Kick, Bann, Timeout, @everyone erwähnen ...) werden nicht angeboten: Kopieren darf nie Macht verteilen.",
+      "cancel": "Abbrechen",
+      "copy": "Berechtigungen kopieren",
+      "copying": "Kopiert …",
+      "done": "Berechtigungen kopiert"
+    },
     "edit": {
       "open": "{name} bearbeiten",
       "title": "Rolle bearbeiten",

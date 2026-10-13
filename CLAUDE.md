@@ -1274,7 +1274,11 @@ Decided 2026-10-08:
     roles and birthdays left without channel or role are switched off, and the affected bot modules
     reload. Already posted role panels must be posted again. Long calls use their own timeout in
     `botFetch` (`timeoutMs`).
-  - [ ] Reorder roles, copy permissions between roles.
+  - **Reorder and copy permissions** (2026-11-08, `feature_role-order-copy`, no migration; **not tried live yet**): arrows on each role move it one
+    place (`POST /internal/roles/move`, `planMove` pure and tested: never at or above the bot's own top role, never below position 1; same
+    protections as editing: managed, above the bot, staff roles refused). A copy button gives a role exactly another role's permissions
+    (`POST /internal/roles/copy-permissions`, `checkCopy`: **a source with powerful permissions is refused**, so a copy can never hand out
+    power; the target must be unprotected; copying onto itself is refused). Both are admin-only audited actions; the bot re-checks everything.
 - [~] Stat channels (2026-10-22, `feature_stat-channels`, migration `20261022100000_stat_channels`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/statchannels/`): up to 10 voice channels whose name shows a live number

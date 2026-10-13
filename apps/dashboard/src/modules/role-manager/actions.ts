@@ -4,7 +4,7 @@ import { z } from "zod";
 import { MAX_MERGE_SOURCES, MAX_ROLE_DELETES } from "@aboutselphy/shared";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import type { CleanupResult, DeleteRolesResult, MergeRolesResult, UpdateRoleResult } from "./schema";
-import { cleanupDangling, deleteRoles, mergeRoles, updateRole } from "./service";
+import { cleanupDangling, copyPermissions, deleteRoles, mergeRoles, moveRole, updateRole } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself
@@ -71,4 +71,30 @@ export async function mergeRolesAction(...args: Parameters<typeof mergeRolesActi
 
 export async function cleanupDanglingAction(...args: Parameters<typeof cleanupDanglingActionRun>): ReturnType<typeof cleanupDanglingActionRun> {
   return audited("role-manager.cleanupDangling", cleanupDanglingActionRun, args);
+}
+
+const snowflakeId = z.string().regex(/^\d{17,20}$/);
+
+async function moveRoleActionRun(input: unknown): Promise<UpdateRoleResult> {
+  const session = await admin();
+  if (!session) return { ok: false, error: "forbidden" };
+  const parsed = z.object({ id: snowflakeId, direction: z.enum(["up", "down"]) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return moveRole(parsed.data, session.user.name);
+}
+
+async function copyPermissionsActionRun(input: unknown): Promise<UpdateRoleResult> {
+  const session = await admin();
+  if (!session) return { ok: false, error: "forbidden" };
+  const parsed = z.object({ sourceId: snowflakeId, targetId: snowflakeId }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return copyPermissions(parsed.data, session.user.name);
+}
+
+export async function moveRoleAction(...args: Parameters<typeof moveRoleActionRun>): ReturnType<typeof moveRoleActionRun> {
+  return audited("role-manager.moveRole", moveRoleActionRun, args);
+}
+
+export async function copyPermissionsAction(...args: Parameters<typeof copyPermissionsActionRun>): ReturnType<typeof copyPermissionsActionRun> {
+  return audited("role-manager.copyPermissions", copyPermissionsActionRun, args);
 }

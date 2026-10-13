@@ -38,3 +38,25 @@ export function checkMerge(
   if (input.sourceIds.some((id) => id === input.targetId || id === input.guildId)) return { ok: false, reason: "source-invalid" };
   return { ok: true };
 }
+
+/**
+ * Where a role lands when moved one place. Up needs room below the bot's own top role (the bot can't place a role at or above itself),
+ * down needs a place above @everyone (position 0). Null = it is already at that edge.
+ */
+export function planMove(position: number, direction: "up" | "down", botTopPosition: number): number | null {
+  const next = direction === "up" ? position + 1 : position - 1;
+  if (next < 1 || next >= botTopPosition) return null;
+  return next;
+}
+
+export type CopyCheck = { ok: true } | { ok: false; reason: "source-powerful" | "same" };
+
+/**
+ * May the permissions of `source` be copied to `target`? A copy must never hand out power: a source with Administrator, Manage* , Kick,
+ * Ban, Timeout, Mention Everyone and the like is refused, so copying can't make a role (that many members hold) more dangerous.
+ */
+export function checkCopy(sourceId: string, targetId: string, sourcePermissions: bigint): CopyCheck {
+  if (sourceId === targetId) return { ok: false, reason: "same" };
+  if (isPowerful(sourcePermissions)) return { ok: false, reason: "source-powerful" };
+  return { ok: true };
+}

@@ -323,3 +323,13 @@ export const suggestionMergeBody = z.object({
 });
 export const suggestionMergeStatus = z.enum(["done", "not-found", "target-not-found", "wrong-state", "same", "failed"]);
 export type SuggestionMergeStatus = z.infer<typeof suggestionMergeStatus>;
+
+/** POST /internal/roles/move: move a role one place up or down in the list (the bot re-checks everything). */
+export const roleMoveBody = z.object({ id: z.string().regex(/^\d{17,20}$/), direction: z.enum(["up", "down"]), by: z.string().max(60) });
+export const roleMoveStatus = z.enum(["moved", "not-found", "protected", "edge", "failed"]);
+export type RoleMoveStatus = z.infer<typeof roleMoveStatus>;
+
+/** POST /internal/roles/copy-permissions: give the target role the permissions of the source role. */
+export const roleCopyBody = z.object({ sourceId: z.string().regex(/^\d{17,20}$/), targetId: z.string().regex(/^\d{17,20}$/), by: z.string().max(60) });
+export const roleCopyStatus = z.enum(["done", "not-found", "protected", "source-powerful", "same", "failed"]);
+export type RoleCopyStatus = z.infer<typeof roleCopyStatus>;

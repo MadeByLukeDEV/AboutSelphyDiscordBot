@@ -4,5 +4,5 @@ export { registerReactionRoles } from "./reactions";
 export { checkRole, createRole, deletePanelMessage, publishPanel } from "./service";
 export { toComponentEmoji } from "./panel";
 export { whyUnassignable } from "./safety";
-export { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "./manage";
+export { copyPermissions, deleteRoles, listManagedRoles, mergeRoles, moveRole, updateRole } from "./manage";
 export { isPowerful } from "./manage-rules";

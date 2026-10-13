@@ -1,5 +1,5 @@
 import "server-only";
-import { deleteRolesViaBot, listManagedRoles, mergeRolesViaBot, reloadBotModule, updateRoleViaBot } from "@/modules/bot-api";
+import { copyRolePermissionsViaBot, deleteRolesViaBot, listManagedRoles, moveRoleViaBot, mergeRolesViaBot, reloadBotModule, updateRoleViaBot } from "@/modules/bot-api";
 import { errorInfo } from "@/lib/log";
 import { references, removeReferences } from "./repository";
 import type { CleanupResult, DeleteRolesResult, Dangling, MergeRolesResult, RoleRow, UpdateRoleResult, UsageKey } from "./schema";
@@ -83,4 +83,18 @@ export async function cleanupDangling(byName: string): Promise<CleanupResult> {
     console.error("[role-manager] cleanup failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
+}
+
+export async function moveRole(input: { id: string; direction: "up" | "down" }, byName: string): Promise<UpdateRoleResult> {
+  const status = await moveRoleViaBot(input, byName);
+  if (status === null) return { ok: false, error: "botUnavailable" };
+  if (status === "moved") return { ok: true };
+  return { ok: false, error: status === "not-found" ? "notFound" : status === "protected" ? "protected" : status === "edge" ? "edge" : "failed" };
+}
+
+export async function copyPermissions(input: { sourceId: string; targetId: string }, byName: string): Promise<UpdateRoleResult> {
+  const status = await copyRolePermissionsViaBot(input, byName);
+  if (status === null) return { ok: false, error: "botUnavailable" };
+  if (status === "done") return { ok: true };
+  return { ok: false, error: status === "not-found" ? "notFound" : status === "protected" ? "protected" : status === "source-powerful" ? "sourcePowerful" : status === "same" ? "same" : "failed" };
 }

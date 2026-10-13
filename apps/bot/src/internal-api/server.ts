@@ -16,6 +16,8 @@ import {
   twitchVipLinkedBody,
   roleMergeBody,
   roleUpdateBody,
+  roleMoveBody,
+  roleCopyBody,
   suggestionDecideBody,
   suggestionMergeBody,
   channelKind,
@@ -45,7 +47,7 @@ import { decideEntry } from "../modules/screening";
 import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
-import { deleteRoles, listManagedRoles, mergeRoles, updateRole } from "../modules/roles";
+import { copyPermissions, deleteRoles, listManagedRoles, mergeRoles, moveRole, updateRole } from "../modules/roles";
 import { decideSuggestion, mergeSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
 import { renderPreviewCard } from "../modules/welcome";
@@ -174,6 +176,22 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await updateRole(guild, body.data, body.data.by) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/move") {
+    const body = roleMoveBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await moveRole(guild, body.data, body.data.by) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/roles/copy-permissions") {
+    const body = roleCopyBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await copyPermissions(guild, body.data, body.data.by) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/roles/merge") {
