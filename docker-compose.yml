@@ -97,6 +97,9 @@ services:
       YOUTUBE_CHANNEL_ID: ${YOUTUBE_CHANNEL_ID:-}
       # Internal hosts the feed announcer may read (a feed bridge such as RSSHub), comma separated.
       RSS_INTERNAL_HOSTS: ${RSS_INTERNAL_HOSTS:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
       LOG_LEVEL: ${LOG_LEVEL:-info}
     # No ports and no domain: only the dashboard talks to the bot. The image has its own HEALTHCHECK.
     stop_grace_period: 20s

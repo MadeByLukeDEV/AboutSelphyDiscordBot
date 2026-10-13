@@ -23,7 +23,7 @@ export const listRules = (): Promise<EventRule[]> => prisma.eventRule.findMany({
 export const countRules = () => prisma.eventRule.count();
 export const findRule = (id: string) => prisma.eventRule.findUnique({ where: { id } });
 
-type RuleData = { name: string; words: string[]; categories: string[]; channelId: string; pingRoleId: string | null; daysAhead: number; enabled: boolean };
+type RuleData = { name: string; words: string[]; categories: string[]; channelId: string; pingRoleId: string | null; daysAhead: number; useAi: boolean; enabled: boolean };
 export const createRule = (data: RuleData) => prisma.eventRule.create({ data });
 /** A changed match or channel starts over for the rule: its next check only remembers what matches. */
 export const updateRule = (id: string, data: RuleData, reseed: boolean) => prisma.eventRule.update({ where: { id }, data: { ...data, ...(reseed ? { seeded: false } : {}) } });

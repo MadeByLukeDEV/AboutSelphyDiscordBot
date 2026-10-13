@@ -3,6 +3,7 @@ import { EmbedBuilder } from "discord.js";
 import { escapeText, truncate } from "../../lib/escape";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
+import type { EventSummaryData } from "./summary";
 
 // Which events a rule posts, when, and what the messages look like. Pure, so the rules are testable.
 
@@ -41,19 +42,22 @@ export function whenText(e: Pick<CalEvent, "start" | "end" | "allDay">): { start
 }
 
 /** The message for one event. The calendar's text is escaped (it comes from outside), nothing can ping but the rule's role. */
-export function eventMessage(e: CalEvent, pingRoleId: string | null) {
+export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null) {
   const { starts, ends } = whenText(e);
   const embed = new EmbedBuilder().setColor(e.color ?? 0x00ffa8).setTitle(truncate(escapeText(e.summary), 256)).addFields({ name: "Starts", value: starts, inline: false });
   if (ends) embed.addFields({ name: "Ends", value: ends, inline: false });
-  const text = e.description
+  // With an AI summary the post shows it, the rewards and who can take part; otherwise the event's own text.
+  const text = (ai ? ai.summary : e.description)
     .split("\n")
     .map((l) => escapeText(l))
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   if (text) embed.setDescription(truncate(text, 1500));
+  if (ai && ai.rewards.length > 0) embed.addFields({ name: "Rewards", value: truncate(ai.rewards.map((r) => `• ${escapeText(r)}`).join("\n"), 1000) });
+  if (ai && ai.audience !== "unknown") embed.addFields({ name: "Who can take part", value: ai.audience === "everyone" ? "Everyone — partnered or not" : "Partnered streamers only" });
   if (e.image) embed.setImage(e.image);
-  embed.setFooter({ text: "Event calendar" });
+  embed.setFooter({ text: ai ? "Event calendar · summary by AI" : "Event calendar" });
   return {
     content: pingRoleId ? `<@&${pingRoleId}>` : "",
     embeds: [embed],

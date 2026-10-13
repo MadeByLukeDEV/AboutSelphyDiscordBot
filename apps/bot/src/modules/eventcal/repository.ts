@@ -27,3 +27,9 @@ export const setOverview = (channelId: string, messageId: string, hash: string) 
 export const setOverviewHash = (hash: string) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { overviewHash: hash } });
 
 export const listArticles = () => prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, take: 4 });
+
+export async function readSummary(hash: string): Promise<string | null> {
+  return (await prisma.eventSummary.findUnique({ where: { hash } }))?.json ?? null;
+}
+export const saveSummary = (hash: string, json: string) => prisma.eventSummary.upsert({ where: { hash }, update: { json }, create: { hash, json } });
+export const pruneSummaries = (before: Date) => prisma.eventSummary.deleteMany({ where: { createdAt: { lt: before } } });

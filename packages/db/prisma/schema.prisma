@@ -1382,6 +1382,8 @@ model EventRule {
   enabled    Boolean     @default(true)
   /// false until the rule's first check, which only remembers what matches (a new rule never posts old events).
   seeded     Boolean     @default(false)
+  /// Use an AI-written summary (rewards, who can take part) when the bot has one configured.
+  useAi      Boolean     @default(true)
   createdAt  DateTime    @default(now())
   posts      EventPost[]
 }
@@ -1412,6 +1414,15 @@ model EventArticle {
   text           String   @db.Text
   importedByName String   @db.VarChar(100)
   createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// A cached AI summary, keyed by a hash of the event text it came from (so one event costs one call).
+model EventSummary {
+  hash      String   @id @db.VarChar(40)
+  json      String   @db.VarChar(4000)
+  createdAt DateTime @default(now())
 
   @@index([createdAt])
 }

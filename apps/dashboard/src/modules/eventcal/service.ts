@@ -8,7 +8,7 @@ import { countRules, createRule, deleteArticle, deleteRule, listArticles, saveAr
 import type { ArticleRow, CheckEventsResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 
 const toSettings = (c: EventCalendarConfig): EventSettings => ({ enabled: c.enabled, icsUrl: c.icsUrl, overviewChannelId: c.overviewChannelId ?? "", overviewDays: c.overviewDays });
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, enabled: r.enabled });
 
 /** Settings, the rules, and the channels and roles to pick from (null = bot unreachable). */
 export async function getEventsPage() {
@@ -52,7 +52,7 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.daysAhead, enabled: input.enabled };
+    const data = { name: input.name, words: input.words, categories: input.categories, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.daysAhead, useAi: input.useAi, enabled: input.enabled };
     if (existing) {
       const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);

@@ -2973,6 +2973,8 @@
       "removeBody": "Rule \"{name}\" stops posting. Messages already posted stay in Discord."
     },
     "ruleForm": {
+      "useAi": "AI summary",
+      "useAiHelp": "A short summary, the list of rewards and who can take part (everyone, or partnered streamers only), written from the event's text. Needs AI_API_KEY, AI_BASE_URL and AI_MODEL on the bot; without them, or if the AI fails, the post shows the event's own text.",
       "name": "Rule name",
       "words": "Event name contains",
       "wordsPlaceholder": "Twitch Drops",

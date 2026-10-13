@@ -52,6 +52,14 @@ const schema = z.object({
   DISCORD_MESSAGE_CONTENT: bool,
   // Hosts the feed announcer may reach even though they are on the internal network, comma separated
   // (a feed bridge such as RSSHub, e.g. "rsshub"). Everything else must be a public https host.
+  // Optional AI summaries for the event calendar: any OpenAI-compatible chat API (for example Groq or Gemini's compatibility endpoint).
+  AI_API_KEY: z.string().optional(),
+  AI_BASE_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith("https://"), "must be https")
+    .optional(),
+  AI_MODEL: z.string().optional(),
   RSS_INTERNAL_HOSTS: z
     .string()
     .default("")

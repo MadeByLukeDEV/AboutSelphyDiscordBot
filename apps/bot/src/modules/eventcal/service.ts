@@ -6,8 +6,10 @@ import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { getText } from "../../lib/safe-http";
 import { parseArticle } from "@aboutselphy/shared/eventcal-article";
+import { aiConfigured } from "../../lib/ai";
 import { parseCalendar, type CalEvent } from "./ics";
-import { claimPost, findPost, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
+import { claimPost, findPost, pruneSummaries, readSummary, saveSummary, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
+import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
 import { eventHash, eventMessage, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
@@ -20,6 +22,26 @@ const DAY = 86_400_000;
 const MAX_BYTES = 4_000_000;
 const mutex = new KeyedMutex();
 let timer: ReturnType<typeof setInterval> | undefined;
+const MAX_AI_CALLS_PER_CHECK = 6;
+
+/** The cached AI summary of an event, or a fresh one (at most a few new calls per check). Null when AI isn't set up or fails: the post then shows the event's own text. */
+async function summaryFor(event: CalEvent, budget: { left: number }): Promise<EventSummaryData | null> {
+  if (!aiConfigured()) return null;
+  const key = summaryKey(event);
+  const cached = await readSummary(key);
+  if (cached) {
+    try {
+      return parseSummary(JSON.parse(cached));
+    } catch {
+      // a damaged cache row: ask again
+    }
+  }
+  if (budget.left <= 0) return null;
+  budget.left--;
+  const fresh = await summarizeEvent(event);
+  if (fresh) await saveSummary(key, JSON.stringify(fresh)).catch(() => undefined);
+  return fresh;
+}
 
 async function textChannel(guild: Guild, id: string) {
   const channel = await guild.channels.fetch(id).catch(() => null);
@@ -60,6 +82,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
       if (loaded.length === 0) return await finish("empty");
       result.events = loaded.length;
       const rules = await listRules();
+      const budget = { left: MAX_AI_CALLS_PER_CHECK };
 
       for (const rule of rules) {
         const matching = loaded.filter((e) => matchesRule(e, rule) && isPostable(e, now, rule.daysAhead));
@@ -79,7 +102,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
           if (!existing) {
             if (!(await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null }))) continue;
             try {
-              const message = await channel.send(eventMessage(event, rule.pingRoleId));
+              const message = await channel.send(eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget) : null));
               await setPostMessage(rule.id, event.key, message.id);
               result.posted++;
               log.info({ rule: rule.id, event: event.summary }, "eventcal: posted");
@@ -90,7 +113,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
           } else if (existing.hash !== hash && existing.messageId) {
             const message = await channel.messages.fetch(existing.messageId).catch(() => null);
             if (message) {
-              await message.edit({ ...eventMessage(event, rule.pingRoleId), content: message.content }).then(async () => {
+              await message.edit({ ...eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget) : null), content: message.content }).then(async () => {
                 await setPostHash(rule.id, event.key, hash);
                 result.edited++;
                 log.info({ rule: rule.id, event: event.summary }, "eventcal: edited (the event changed)");
@@ -105,7 +128,10 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
       for (const rule of rules.filter((r) => !r.seeded)) await markSeeded(rule.id);
 
       await refreshOverview(guild, loaded, rules, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the overview"));
-      if (Math.random() < 0.05) await prunePosts(new Date(now.getTime() - 120 * DAY));
+      if (Math.random() < 0.05) {
+        await prunePosts(new Date(now.getTime() - 120 * DAY));
+        await pruneSummaries(new Date(now.getTime() - 120 * DAY));
+      }
       return await finish("ok", true);
     } catch (err) {
       log.error({ err }, "eventcal: check failed");

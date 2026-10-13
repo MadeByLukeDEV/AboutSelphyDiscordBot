@@ -289,7 +289,7 @@ export function EventsManager({ overview, rules, channels, roles, articles }: { 
   );
 }
 
-type RuleValues = { name: string; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; enabled: boolean };
+type RuleValues = { name: string; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
 
 function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; roles: GuildRole[] | null; onDone: () => void }) {
   const t = useTranslations("Events.ruleForm");
@@ -297,8 +297,8 @@ function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow 
   const [pending, startTransition] = useTransition();
   const form = useForm<RuleValues>({
     defaultValues: rule
-      ? { name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, enabled: rule.enabled }
-      : { name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, enabled: true },
+      ? { name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
+      : { name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
   });
   const { errors } = form.formState;
   const roleOptions: SelectOption[] = [{ value: "", label: t("noRole") }, ...(roles ?? []).map((r) => ({ value: r.id, label: r.name }))];
@@ -314,6 +314,7 @@ function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow 
       channelId: values.channelId,
       pingRoleId: values.pingRoleId,
       daysAhead: Number(values.daysAhead),
+      useAi: values.useAi,
       enabled: values.enabled,
     });
     if (!checked.success) {
@@ -367,6 +368,13 @@ function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow 
           <Input id="er-days" type="number" inputMode="numeric" min={0} max={MAX_DAYS_AHEAD} className="max-w-[8rem]" {...form.register("daysAhead", { valueAsNumber: true })} />
           <FieldDescription>{t("daysAheadHelp", { max: MAX_DAYS_AHEAD })}</FieldDescription>
           {errors.daysAhead && <FieldError>{te("badDaysAhead", { max: MAX_DAYS_AHEAD })}</FieldError>}
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="useAi" render={({ field }) => <Switch id="er-ai" checked={field.value} onCheckedChange={field.onChange} aria-describedby="er-ai-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="er-ai">{t("useAi")}</FieldLabel>
+            <FieldDescription id="er-ai-help">{t("useAiHelp")}</FieldDescription>
+          </div>
         </Field>
         <Field orientation="horizontal">
           <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="er-enabled" checked={field.value} onCheckedChange={field.onChange} />} />

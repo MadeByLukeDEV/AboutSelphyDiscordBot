@@ -1494,8 +1494,16 @@ Decided 2026-10-08:
     "Every Tuesday" section gives its text to every event of that name; a dated section the calendar lacks becomes an **all-day** event (key `article|name|date`,
     postable for its whole day). The last four articles are kept (`EventArticle`, same month replaces), saving triggers a check; a text with no readable section is refused.
     Changed texts edit already posted messages through the normal hash check.
-  - [ ] An AI-written summary of an event (needs a provider and a key; the calendar's own description is shown for now), a reminder at the start time, one rule
-        posting to several channels, other calendar formats.
+  - **AI summaries** (2026-11-13, `feature_event-ai`, migration `20261113140000_event_ai`; **needs a key, not tried live yet**): optional, per rule (`EventRule.useAi`,
+    default on). `lib/ai.ts` is a minimal client for **any OpenAI-compatible chat API** configured by the operator with `AI_API_KEY`, `AI_BASE_URL` (https) and
+    `AI_MODEL` (bot env, compose, `.env.example`; free options: Groq, or Google AI Studio's compatibility endpoint; **pick a current model name from the provider**).
+    Without them nothing changes. `eventcal/summary.ts` sends only the event's own public text with a system prompt that says to use only those facts and ignore
+    instructions inside them, asks for JSON `{summary, rewards[], audience: everyone|partners|unknown}`, validates it strictly (`parseSummary`, zod, capped, duplicates
+    dropped; anything else is thrown away) and caches it in `EventSummary` keyed by a hash of name + text + prompt version, so an event costs one call (at most 6 new
+    calls per check; cache pruned after 120 days). The post then shows the short summary, a "Rewards" list and "Who can take part" (everyone, partnered streamers
+    only, or omitted when unknown), all escaped, with the footer "summary by AI"; on any failure it shows the event's own text. Already posted messages are not
+    rewritten (their hash didn't change). The key is only a bearer header and never logged.
+  - [ ] A reminder at the start time, one rule posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)
   - **Incoming** (`/webhooks` admin page, public route `POST /api/webhooks/in/<id>`, outside the sign-in gate):

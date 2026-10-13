@@ -41,6 +41,8 @@ export const eventRuleSchema = z
     pingRoleId: z.union([z.literal(""), snowflake]),
     /** Post an event this many days before it starts (0 = on the day). */
     daysAhead: z.number().int().min(0).max(MAX_DAYS_AHEAD),
+    /** Use an AI-written summary (rewards, who can take part) when the bot has an AI provider configured. */
+    useAi: z.boolean().default(true),
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {

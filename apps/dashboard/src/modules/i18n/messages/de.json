@@ -2973,6 +2973,8 @@
       "removeBody": "Die Regel \"{name}\" postet nicht mehr. Bereits gepostete Nachrichten bleiben in Discord."
     },
     "ruleForm": {
+      "useAi": "KI-Zusammenfassung",
+      "useAiHelp": "Eine kurze Zusammenfassung, die Liste der Belohnungen und wer teilnehmen kann (alle oder nur Partner-Streamer), geschrieben aus dem Text des Events. Braucht AI_API_KEY, AI_BASE_URL und AI_MODEL beim Bot; ohne sie, oder wenn die KI ausfällt, zeigt der Beitrag den eigenen Text des Events.",
       "name": "Name der Regel",
       "words": "Event-Name enthält",
       "wordsPlaceholder": "Twitch Drops",
