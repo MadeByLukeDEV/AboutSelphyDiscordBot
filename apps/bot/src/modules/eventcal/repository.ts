@@ -1,15 +1,66 @@
 // Private to the eventcal module: only service.ts imports this.
-import { prisma, type EventCalendarConfig, type EventRule } from "@aboutselphy/db";
+import { prisma, type EventRule } from "@aboutselphy/db";
 
-export const readConfig = (): Promise<EventCalendarConfig> => prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+/** The state of one source: the main calendar (id null, config row) or an article-only game (EventSource row). The columns share their names. */
+export type SourceState = {
+  id: string | null;
+  name: string;
+  enabled: boolean;
+  /** Null = no calendar feed, the events come from pasted articles only. */
+  icsUrl: string | null;
+  overviewChannelId: string | null;
+  overviewMessageId: string | null;
+  overviewHash: string;
+  overviewDays: number;
+  summaryChannelId: string | null;
+  summaryMonth: string | null;
+  summaryMessageIds: string[];
+  summaryHash: string;
+  baselined: boolean;
+};
 
-export const listRules = (): Promise<EventRule[]> => prisma.eventRule.findMany({ where: { enabled: true }, orderBy: { createdAt: "asc" } });
+const MAIN_NAME = "Calendar";
+
+async function readMain(): Promise<SourceState> {
+  const c = await prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
+  return { ...c, id: null, name: MAIN_NAME };
+}
+
+/** The main calendar first, then every enabled game source. */
+export async function listSources(): Promise<SourceState[]> {
+  const extra = await prisma.eventSource.findMany({ where: { enabled: true }, orderBy: { createdAt: "asc" } });
+  return [await readMain(), ...extra.map((s) => ({ ...s, icsUrl: null }))];
+}
+
+/** One source by id ("" or null = the main calendar). Null when it no longer exists. */
+export async function readSource(id: string | null): Promise<SourceState | null> {
+  if (!id) return readMain();
+  const s = await prisma.eventSource.findUnique({ where: { id } });
+  return s ? { ...s, icsUrl: null } : null;
+}
+
+type StateChange = Partial<{
+  overviewChannelId: string;
+  overviewMessageId: string;
+  overviewHash: string;
+  summaryMonth: string;
+  summaryMessageIds: string[];
+  summaryHash: string;
+  baselined: boolean;
+  lastCheckedAt: Date;
+  lastStatus: string;
+}>;
+
+export async function saveState(id: string | null, data: StateChange): Promise<void> {
+  if (!id) await prisma.eventCalendarConfig.update({ where: { id: 1 }, data });
+  else await prisma.eventSource.updateMany({ where: { id }, data });
+}
+
+export const listRules = (sourceId: string | null): Promise<EventRule[]> => prisma.eventRule.findMany({ where: { enabled: true, sourceId }, orderBy: { createdAt: "asc" } });
 
 export const markSeeded = (ruleId: string) => prisma.eventRule.update({ where: { id: ruleId }, data: { seeded: true } });
 
-export function recordCheck(status: string, baselined?: boolean) {
-  return prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { lastCheckedAt: new Date(), lastStatus: status.slice(0, 40), ...(baselined ? { baselined: true } : {}) } });
-}
+export const recordCheck = (id: string | null, status: string, baselined?: boolean) => saveState(id, { lastCheckedAt: new Date(), lastStatus: status.slice(0, 40), ...(baselined ? { baselined: true } : {}) });
 
 export const findPost = (ruleId: string, eventKey: string) => prisma.eventPost.findUnique({ where: { ruleId_eventKey: { ruleId, eventKey } } });
 
@@ -23,10 +74,10 @@ export const setPostHash = (ruleId: string, eventKey: string, hash: string) => p
 export const unclaimPost = (ruleId: string, eventKey: string) => prisma.eventPost.deleteMany({ where: { ruleId, eventKey: eventKey.slice(0, 160) } });
 export const prunePosts = (before: Date) => prisma.eventPost.deleteMany({ where: { startsAt: { lt: before } } });
 
-export const setOverview = (channelId: string, messageId: string, hash: string) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { overviewChannelId: channelId, overviewMessageId: messageId, overviewHash: hash } });
-export const setOverviewHash = (hash: string) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { overviewHash: hash } });
+export const setOverview = (id: string | null, channelId: string, messageId: string, hash: string) => saveState(id, { overviewChannelId: channelId, overviewMessageId: messageId, overviewHash: hash });
+export const setOverviewHash = (id: string | null, hash: string) => saveState(id, { overviewHash: hash });
 
-export const listArticles = () => prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, take: 4 });
+export const listArticles = (sourceId: string | null) => prisma.eventArticle.findMany({ where: { sourceId }, orderBy: { createdAt: "desc" }, take: 4 });
 
 export async function readSummary(hash: string): Promise<string | null> {
   return (await prisma.eventSummary.findUnique({ where: { hash } }))?.json ?? null;
@@ -37,4 +88,4 @@ export const pruneSummaries = (before: Date) => prisma.eventSummary.deleteMany({
 export const findPostById = (id: string) => prisma.eventPost.findUnique({ where: { id }, include: { rule: true } });
 export const updatePostMessage = (id: string, messageId: string, hash: string) => prisma.eventPost.update({ where: { id }, data: { messageId, hash } });
 
-export const setMonthly = (data: { summaryMonth: string; summaryMessageIds: string[]; summaryHash: string }) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data });
+export const setMonthly = (id: string | null, data: { summaryMonth: string; summaryMessageIds: string[]; summaryHash: string }) => saveState(id, data);

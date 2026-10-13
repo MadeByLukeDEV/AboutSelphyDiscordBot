@@ -74,3 +74,13 @@ describe("the post with an AI summary", () => {
     expect(json.fields?.find((f) => f.name === "Rewards")?.value).not.toContain("](https");
   });
 });
+
+describe("the game a source is about", () => {
+  it("is named in the prompt and changes the cache key only when given", () => {
+    const e = { summary: "Drops", description: "Some text about the event." };
+    expect(buildUserPrompt(e, "Hunt: Showdown")).toMatch(/^Game: Hunt: Showdown\nEvent: Drops/);
+    expect(buildUserPrompt(e)).toMatch(/^Event: Drops/);
+    expect(summaryKey(e)).toBe(summaryKey(e, null));
+    expect(summaryKey(e, "Hunt: Showdown")).not.toBe(summaryKey(e));
+  });
+});

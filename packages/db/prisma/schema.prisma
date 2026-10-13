@@ -1392,6 +1392,9 @@ model EventRule {
   useAi      Boolean     @default(true)
   createdAt  DateTime    @default(now())
   posts      EventPost[]
+  /// null = the main calendar; otherwise an article-only source (one game).
+  sourceId   String?
+  source     EventSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 }
 
 /// An occurrence that was posted (or silently remembered) for a rule. Unique per rule and occurrence, so nothing is posted twice.
@@ -1422,8 +1425,33 @@ model EventArticle {
   text           String   @db.Text
   importedByName String   @db.VarChar(100)
   createdAt      DateTime @default(now())
+  /// null = the main calendar's articles.
+  sourceId       String?
+  source         EventSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
+}
+
+/// Another game whose events come only from pasted articles (for example Hunt: Showdown). Same state as the main calendar, own rules, articles, overview and monthly summary.
+model EventSource {
+  id                String    @id @default(cuid())
+  name              String    @db.VarChar(40)
+  enabled           Boolean   @default(true)
+  overviewChannelId String?   @db.VarChar(20)
+  overviewMessageId String?   @db.VarChar(20)
+  overviewHash      String    @default("") @db.VarChar(40)
+  overviewDays      Int       @default(30)
+  summaryChannelId  String?   @db.VarChar(20)
+  summaryMonth      String?   @db.VarChar(7)
+  summaryMessageIds String[]  @default([])
+  summaryHash       String    @default("") @db.VarChar(40)
+  /// true from the start: an article-only source has no old posts to protect (rules still seed themselves silently).
+  baselined         Boolean   @default(true)
+  lastCheckedAt     DateTime?
+  lastStatus        String?   @db.VarChar(40)
+  createdAt         DateTime  @default(now())
+  rules             EventRule[]
+  articles          EventArticle[]
 }
 
 /// A cached AI summary, keyed by a hash of the event text it came from (so one event costs one call).

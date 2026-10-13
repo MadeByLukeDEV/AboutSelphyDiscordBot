@@ -16,8 +16,9 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { GameSources } from "./game-sources";
 import { postEventMonthlyAction, checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, repostEventAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
-import type { ArticleRow, EventOverview, EventRuleRow, PostedEventRow } from "../schema";
+import type { ArticleRow, EventOverview, EventRuleRow, PostedEventRow, SourceRow } from "../schema";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
 const parseTerms = (text: string): string[] => {
@@ -34,7 +35,7 @@ const parseTerms = (text: string): string[] => {
 };
 
 /** The calendar settings, the posting rules, and the overview message. State flows in as props; changes call router.refresh(). */
-export function EventsManager({ overview, rules, channels, roles, articles, posted }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[]; posted: PostedEventRow[] }) {
+export function EventsManager({ overview, rules, channels, roles, articles, posted, sources }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[]; posted: PostedEventRow[]; sources: SourceRow[] }) {
   const t = useTranslations("Events");
   const te = useTranslations("Events.errors");
   const format = useFormatter();
@@ -76,7 +77,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
 
   function monthly(month: "current" | "next") {
     startTransition(async () => {
-      const result = await postEventMonthlyAction({ month });
+      const result = await postEventMonthlyAction({ month, sourceId: "" });
       if (result.ok) toast.success(result.status === "posted" ? t("monthly.posted") : t("monthly.updated"));
       else toast.error(te(result.error));
       router.refresh();
@@ -94,7 +95,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
 
   function overviewNow() {
     startTransition(async () => {
-      const result = await postEventOverviewAction();
+      const result = await postEventOverviewAction({ sourceId: "" });
       if (result.ok) toast.success(result.status === "posted" ? t("overview.posted") : t("overview.updated"));
       else toast.error(te(result.error));
       router.refresh();
@@ -103,7 +104,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
 
   function importArticle() {
     startTransition(async () => {
-      const result = await importEventArticleAction({ text: articleText });
+      const result = await importEventArticleAction({ text: articleText, sourceId: "" });
       if (result.ok) {
         toast.success(t("article.done", { dated: result.dated, repeating: result.repeating, month: result.month }));
         setArticleText("");
@@ -264,6 +265,8 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
         )}
       </section>
 
+      <GameSources sources={sources} channelOptions={channelOptions} channelsReady={channels !== null} />
+
       <section aria-labelledby="ev-rules" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
@@ -287,6 +290,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{r.name}</span>
                     <Badge variant={r.enabled ? "default" : "secondary"}>{r.enabled ? t("on") : t("off")}</Badge>
+                    {r.sourceId && <Badge variant="outline">{sources.find((s) => s.id === r.sourceId)?.name ?? "?"}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {[...r.words, ...r.categories.map((c) => `#${c}`)].join(", ")} → #{channelName(r.channelId)} · {t("rules.ahead", { days: r.daysAhead })}
@@ -317,6 +321,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
               key={editing.rule?.id ?? "new"}
               rule={editing.rule}
               channelOptions={channelOptions}
+              sources={sources}
               roles={roles}
               onDone={() => {
                 setEditing(null);
@@ -345,18 +350,19 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
   );
 }
 
-type RuleValues = { name: string; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
+type RuleValues = { sourceId: string; name: string; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
 
-function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; roles: GuildRole[] | null; onDone: () => void }) {
+function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; sources: SourceRow[]; roles: GuildRole[] | null; onDone: () => void }) {
   const t = useTranslations("Events.ruleForm");
   const te = useTranslations("Events.errors");
   const [pending, startTransition] = useTransition();
   const form = useForm<RuleValues>({
     defaultValues: rule
-      ? { name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
-      : { name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
+      ? { sourceId: rule.sourceId, name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
+      : { sourceId: "", name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
   });
   const { errors } = form.formState;
+  const sourceOptions: SelectOption[] = [{ value: "", label: t("mainSource") }, ...sources.map((s) => ({ value: s.id, label: s.name }))];
   const roleOptions: SelectOption[] = [{ value: "", label: t("noRole") }, ...(roles ?? []).map((r) => ({ value: r.id, label: r.name }))];
   if (rule?.pingRoleId && !roleOptions.some((o) => o.value === rule.pingRoleId)) roleOptions.push({ value: rule.pingRoleId, label: rule.pingRoleId });
   if (rule && !channelOptions.some((o) => o.value === rule.channelId)) channelOptions = [...channelOptions, { value: rule.channelId, label: rule.channelId }];
@@ -364,6 +370,7 @@ function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow 
   const submit = form.handleSubmit((values) => {
     const checked = eventRuleSchema.safeParse({
       ...(rule ? { id: rule.id } : {}),
+      sourceId: values.sourceId,
       name: values.name,
       words: parseTerms(values.wordsText),
       categories: parseTerms(values.categoriesText),
@@ -393,6 +400,13 @@ function RuleForm({ rule, channelOptions, roles, onDone }: { rule: EventRuleRow 
   return (
     <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-5" noValidate>
       <FieldGroup>
+        {sources.length > 0 && (
+          <Field>
+            <FieldLabel htmlFor="er-source">{t("source")}</FieldLabel>
+            <FormSelect control={form.control} name="sourceId" id="er-source" options={sourceOptions} placeholder={t("mainSource")} />
+            <FieldDescription>{t("sourceHelp")}</FieldDescription>
+          </Field>
+        )}
         <Field data-invalid={Boolean(errors.name) || undefined}>
           <FieldLabel htmlFor="er-name">{t("name")}</FieldLabel>
           <Input id="er-name" maxLength={60} aria-invalid={Boolean(errors.name) || undefined} {...form.register("name")} />

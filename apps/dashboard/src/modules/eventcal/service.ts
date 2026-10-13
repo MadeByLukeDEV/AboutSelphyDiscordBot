@@ -1,22 +1,27 @@
 import "server-only";
 import type { EventCalendarConfig, EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
-import { MAX_EVENT_RULES, type EventRuleInput, type EventSettings } from "@aboutselphy/shared/eventcal";
+import { MAX_EVENT_RULES, MAX_EVENT_SOURCES, type EventRuleInput, type EventSettings, type EventSourceInput } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
 import { checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
-import { countRules, createRule, deleteArticle, deleteRule, listArticles, listPostedEvents, saveArticle, findRule, listRules, readConfig, updateConfig, updateRule } from "./repository";
-import type { ArticleRow, CheckEventsResult, PostedEventRow, RepostResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
+import { countRules, countSources, createRule, createSource, deleteArticle, deleteRule, deleteSource, findSource, listArticles, listPostedEvents, listSources, saveArticle, findRule, listRules, readConfig, updateConfig, updateRule, updateSource } from "./repository";
+import type { SaveSourceResult, SourceRow, ArticleRow, CheckEventsResult, PostedEventRow, RepostResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 
 const toSettings = (c: EventCalendarConfig): EventSettings => ({ enabled: c.enabled, icsUrl: c.icsUrl, overviewChannelId: c.overviewChannelId ?? "", overviewDays: c.overviewDays, summaryChannelId: c.summaryChannelId ?? "" });
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
+
+type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
+const toSourceRow = (s: SourceModel, articles: ArticleRow[]): SourceRow => ({ id: s.id, name: s.name, enabled: s.enabled, overviewChannelId: s.overviewChannelId ?? "", overviewDays: s.overviewDays, summaryChannelId: s.summaryChannelId ?? "", hasOverview: s.overviewMessageId !== null, lastCheckedAt: s.lastCheckedAt?.toISOString() ?? null, lastStatus: s.lastStatus, articles });
 
 /** Settings, the rules, and the channels and roles to pick from (null = bot unreachable). */
 export async function getEventsPage() {
-  const [config, rules, channels, roles, articleRows, postedRows] = await Promise.all([readConfig(), listRules(), listChannels(["text"]), listRoles(), listArticles(), listPostedEvents()]);
+  const [config, rules, channels, roles, articleRows, postedRows, sourceRows] = await Promise.all([readConfig(), listRules(), listChannels(["text"]), listRoles(), listArticles(), listPostedEvents(), listSources()]);
   const posted: PostedEventRow[] = postedRows.map((p) => ({ id: p.id, title: p.title || p.eventKey.split("|")[0] || "event", rule: p.rule.name, startsAt: p.startsAt.toISOString() }));
-  const articles: ArticleRow[] = articleRows.map((a) => ({ id: a.id, title: a.title, monthKey: a.monthKey, events: parseArticle(a.text).length, createdAt: a.createdAt.toISOString() }));
+  const toArticle = (a: (typeof articleRows)[number]): ArticleRow => ({ id: a.id, title: a.title, monthKey: a.monthKey, events: parseArticle(a.text).length, createdAt: a.createdAt.toISOString() });
+  const articles: ArticleRow[] = articleRows.filter((a) => a.sourceId === null).map(toArticle);
+  const sources: SourceRow[] = sourceRows.map((s) => toSourceRow(s, articleRows.filter((a) => a.sourceId === s.id).map(toArticle)));
   const overview: EventOverview = { settings: toSettings(config), hasOverview: config.overviewMessageId !== null, lastCheckedAt: config.lastCheckedAt?.toISOString() ?? null, lastStatus: config.lastStatus, baselined: config.baselined };
-  return { overview, rules: rules.map(toRow), channels, roles, articles, posted };
+  return { overview, rules: rules.map(toRow), channels, roles, articles, posted, sources };
 }
 
 export async function saveEventSettings(input: EventSettings): Promise<SaveEventSettingsResult> {
@@ -43,6 +48,8 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
     const existing = input.id ? await findRule(input.id) : null;
     if (input.id && !existing) return { ok: false, error: "notFound" };
     if (!existing && (await countRules()) >= MAX_EVENT_RULES) return { ok: false, error: "tooMany" };
+    const sourceId = input.sourceId || null;
+    if (sourceId && !(await findSource(sourceId))) return { ok: false, error: "notFound" };
     const roleId = input.pingRoleId || null;
     if (!existing || existing.channelId !== input.channelId) {
       const channels = await listChannels(["text"]);
@@ -54,9 +61,9 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.daysAhead, useAi: input.useAi, enabled: input.enabled };
+    const data = { name: input.name, words: input.words, categories: input.categories, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.daysAhead, useAi: input.useAi, enabled: input.enabled, sourceId };
     if (existing) {
-      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || (!existing.enabled && data.enabled);
+      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);
     } else {
       await createRule(data);
@@ -84,8 +91,8 @@ export async function checkNow(): Promise<CheckEventsResult> {
 }
 
 /** Asks the bot to post (or update) the overview message. */
-export async function postOverview(): Promise<OverviewResult> {
-  const status = await postEventOverviewViaBot();
+export async function postOverview(sourceId = ""): Promise<OverviewResult> {
+  const status = await postEventOverviewViaBot(sourceId);
   if (status === null) return { ok: false, error: "botUnavailable" };
   if (status === "posted" || status === "updated") return { ok: true, status };
   return { ok: false, error: status === "needsSetup" ? "needsSetup" : status === "channel" ? "channelNotFound" : "failed" };
@@ -95,8 +102,9 @@ export async function postOverview(): Promise<OverviewResult> {
  * Saves a pasted monthly news article. Its sections add dates and details to the calendar's events (and events the calendar lacks). The text
  * is only ever parsed, never run; an article we can't read is refused so a wrong paste doesn't silently do nothing.
  */
-export async function importArticle(text: string, byName: string): Promise<ImportArticleResult> {
+export async function importArticle(text: string, byName: string, sourceId = ""): Promise<ImportArticleResult> {
   try {
+    if (sourceId && !(await findSource(sourceId))) return { ok: false, error: "notFound" };
     if (text.length > MAX_ARTICLE_CHARS) return { ok: false, error: "tooLong" };
     const events = parseArticle(text);
     const dated = events.filter((e) => e.start !== null);
@@ -104,7 +112,7 @@ export async function importArticle(text: string, byName: string): Promise<Impor
     const first = dated[0]?.start ?? new Date();
     const monthKey = `${first.getUTCFullYear()}-${String(first.getUTCMonth() + 1).padStart(2, "0")}`;
     const title = (text.split("\n").map((l) => l.trim()).find((l) => l !== "") ?? "Monthly article").slice(0, 200);
-    await saveArticle({ monthKey, title, text, importedByName: byName.slice(0, 100) });
+    await saveArticle({ monthKey, title, text, importedByName: byName.slice(0, 100), sourceId: sourceId || null });
     await reloadBotModule("eventcal");
     return { ok: true, dated: dated.length, repeating: events.length - dated.length, month: monthKey };
   } catch (error) {
@@ -133,9 +141,43 @@ export async function repostEvent(id: string): Promise<RepostResult> {
 }
 
 /** Asks the bot to post (or update) the detailed monthly summary. */
-export async function postMonthlySummary(month: "current" | "next"): Promise<OverviewResult> {
-  const status = await postEventMonthlyViaBot(month);
+export async function postMonthlySummary(month: "current" | "next", sourceId = ""): Promise<OverviewResult> {
+  const status = await postEventMonthlyViaBot(month, sourceId);
   if (status === null) return { ok: false, error: "botUnavailable" };
   if (status === "posted" || status === "updated") return { ok: true, status };
   return { ok: false, error: status === "needsSetup" ? "needsSetup" : status === "channel" ? "channelNotFound" : "failed" };
+}
+
+/** Adds (no id) or changes (with id) a game whose events come from pasted articles. Its channels must exist (checked through the bot). */
+export async function saveSource(input: EventSourceInput): Promise<SaveSourceResult> {
+  try {
+    const existing = input.id ? await findSource(input.id) : null;
+    if (input.id && !existing) return { ok: false, error: "notFound" };
+    if (!existing && (await countSources()) >= MAX_EVENT_SOURCES) return { ok: false, error: "tooMany" };
+    const newChannels = [input.overviewChannelId !== (existing?.overviewChannelId ?? "") ? input.overviewChannelId : "", input.summaryChannelId !== (existing?.summaryChannelId ?? "") ? input.summaryChannelId : ""].filter(Boolean);
+    if (newChannels.length > 0) {
+      const channels = await listChannels(["text"]);
+      if (!channels) return { ok: false, error: "botUnavailable" };
+      if (newChannels.some((id) => !channels.some((c) => c.id === id))) return { ok: false, error: "channelNotFound" };
+    }
+    const data = { name: input.name, enabled: input.enabled, overviewChannelId: input.overviewChannelId || null, overviewDays: input.overviewDays, summaryChannelId: input.summaryChannelId || null };
+    if (existing) await updateSource(existing.id, data);
+    else await createSource(data);
+    return { ok: true, botNotified: await reloadBotModule("eventcal") };
+  } catch (error) {
+    console.error("[eventcal] saving a source failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Removes a game with its rules, posted-event records and articles (the messages already in Discord stay). */
+export async function removeSource(id: string): Promise<SimpleEventResult> {
+  try {
+    const gone = (await deleteSource(id)) > 0;
+    if (gone) await reloadBotModule("eventcal");
+    return gone ? { ok: true } : { ok: false, error: "notFound" };
+  } catch (error) {
+    console.error("[eventcal] removing a source failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
 }

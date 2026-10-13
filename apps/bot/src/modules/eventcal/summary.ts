@@ -30,12 +30,12 @@ export const SYSTEM_PROMPT = [
 ].join("\n");
 
 /** What the model reads: the event's name and its text, cut to a safe size. */
-export function buildUserPrompt(e: Pick<CalEvent, "summary" | "description">): string {
-  return `Event: ${e.summary}\n\nText:\n${e.description.slice(0, MAX_TEXT)}`;
+export function buildUserPrompt(e: Pick<CalEvent, "summary" | "description">, game: string | null = null): string {
+  return `${game ? `Game: ${game}\n` : ""}Event: ${e.summary}\n\nText:\n${e.description.slice(0, MAX_TEXT)}`;
 }
 
 /** The cache key: the same name and text always map to the same summary (until the prompt changes). */
-export const summaryKey = (e: Pick<CalEvent, "summary" | "description">): string => createHash("sha1").update(`${PROMPT_VERSION}\u0000${e.summary}\u0000${e.description}`).digest("hex");
+export const summaryKey = (e: Pick<CalEvent, "summary" | "description">, game: string | null = null): string => createHash("sha1").update(`${PROMPT_VERSION}\u0000${e.summary}\u0000${e.description}${game ? `\u0000${game}` : ""}`).digest("hex");
 
 /** Validates the model's answer. Null if it isn't what we asked for. */
 export function parseSummary(raw: unknown): EventSummaryData | null {
@@ -53,7 +53,7 @@ export function parseSummary(raw: unknown): EventSummaryData | null {
 }
 
 /** Asks the model about one event. Null when there is nothing to summarise or the model fails. */
-export async function summarizeEvent(e: Pick<CalEvent, "summary" | "description">): Promise<EventSummaryData | null> {
+export async function summarizeEvent(e: Pick<CalEvent, "summary" | "description">, game: string | null = null): Promise<EventSummaryData | null> {
   if (e.description.trim().length < 40) return null; // nothing worth summarising
-  return parseSummary(await chatJson(SYSTEM_PROMPT, buildUserPrompt(e)));
+  return parseSummary(await chatJson(SYSTEM_PROMPT, buildUserPrompt(e, game)));
 }

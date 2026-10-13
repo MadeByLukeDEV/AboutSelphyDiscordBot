@@ -1,11 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import { eventMonthlyBody, eventRuleSchema, eventSettingsSchema } from "@aboutselphy/shared/eventcal";
+import { eventMonthlyBody, eventOverviewBody, eventRuleSchema, eventSettingsSchema, eventSourceSchema } from "@aboutselphy/shared/eventcal";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import type { CheckEventsResult, ImportArticleResult, OverviewResult, RepostResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
+import type { CheckEventsResult, ImportArticleResult, OverviewResult, RepostResult, SaveEventSettingsResult, SaveRuleResult, SaveSourceResult, SimpleEventResult } from "./schema";
 import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
-import { checkNow, importArticle, postMonthlySummary, repostEvent, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
+import { checkNow, importArticle, postMonthlySummary, repostEvent, postOverview, removeArticle, removeRule, removeSource, saveEventSettings, saveRule, saveSource } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
@@ -41,9 +41,11 @@ async function deleteEventRuleActionRun(input: unknown): Promise<SimpleEventResu
   return removeRule(parsed.data.id);
 }
 
-async function postEventOverviewActionRun(): Promise<OverviewResult> {
+async function postEventOverviewActionRun(input: unknown): Promise<OverviewResult> {
   if (!(await adminOnly())) return { ok: false, error: "forbidden" };
-  return postOverview();
+  const parsed = eventOverviewBody.safeParse(input ?? {});
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return postOverview(parsed.data.sourceId);
 }
 
 export async function saveEventSettingsAction(...args: Parameters<typeof saveEventSettingsActionRun>): ReturnType<typeof saveEventSettingsActionRun> {
@@ -76,9 +78,9 @@ async function importEventArticleActionRun(input: unknown): Promise<ImportArticl
     if (error instanceof AuthorizationError) return { ok: false, error: "forbidden" };
     throw error;
   }
-  const parsed = z.object({ text: z.string().min(1).max(MAX_ARTICLE_CHARS) }).safeParse(input);
+  const parsed = z.object({ text: z.string().min(1).max(MAX_ARTICLE_CHARS), sourceId: z.string().max(64).default("") }).safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
-  return importArticle(parsed.data.text, session.user.name);
+  return importArticle(parsed.data.text, session.user.name, parsed.data.sourceId);
 }
 
 async function deleteEventArticleActionRun(input: unknown): Promise<SimpleEventResult> {
@@ -111,9 +113,31 @@ async function postEventMonthlyActionRun(input: unknown): Promise<OverviewResult
   if (!(await adminOnly())) return { ok: false, error: "forbidden" };
   const parsed = eventMonthlyBody.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
-  return postMonthlySummary(parsed.data.month);
+  return postMonthlySummary(parsed.data.month, parsed.data.sourceId);
 }
 
 export async function postEventMonthlyAction(...args: Parameters<typeof postEventMonthlyActionRun>): ReturnType<typeof postEventMonthlyActionRun> {
   return audited("eventcal.postEventMonthly", postEventMonthlyActionRun, args);
+}
+
+async function saveEventSourceActionRun(input: unknown): Promise<SaveSourceResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = eventSourceSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return saveSource(parsed.data);
+}
+
+async function deleteEventSourceActionRun(input: unknown): Promise<SimpleEventResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = z.object({ id: z.string().min(1).max(64) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return removeSource(parsed.data.id);
+}
+
+export async function saveEventSourceAction(...args: Parameters<typeof saveEventSourceActionRun>): ReturnType<typeof saveEventSourceActionRun> {
+  return audited("eventcal.saveEventSource", saveEventSourceActionRun, args);
+}
+
+export async function deleteEventSourceAction(...args: Parameters<typeof deleteEventSourceActionRun>): ReturnType<typeof deleteEventSourceActionRun> {
+  return audited("eventcal.deleteEventSource", deleteEventSourceActionRun, args);
 }

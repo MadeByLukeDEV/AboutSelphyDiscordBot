@@ -12,6 +12,8 @@ export const MAX_TERM = 40;
 export const MIN_OVERVIEW_DAYS = 7;
 export const MAX_OVERVIEW_DAYS = 90;
 export const MAX_DAYS_AHEAD = 60;
+/** Extra article-only sources (one per game) besides the main calendar. */
+export const MAX_EVENT_SOURCES = 8;
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
 const term = z.string().trim().min(1).max(MAX_TERM);
@@ -45,6 +47,8 @@ export const eventRuleSchema = z
     daysAhead: z.number().int().min(0).max(MAX_DAYS_AHEAD),
     /** Use an AI-written summary (rewards, who can take part) when the bot has an AI provider configured. */
     useAi: z.boolean().default(true),
+    /** "" = the main calendar, otherwise the id of an article-only source (a game). */
+    sourceId: z.string().max(64).default(""),
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {
@@ -63,4 +67,18 @@ export const eventRepostStatus = z.enum(["done", "not-found", "gone", "channel",
 export type EventRepostStatus = z.infer<typeof eventRepostStatus>;
 
 /** POST /internal/eventcal/monthly: post (or update) the detailed summary of this month or the next. */
-export const eventMonthlyBody = z.object({ month: z.enum(["current", "next"]) });
+export const eventMonthlyBody = z.object({ month: z.enum(["current", "next"]), sourceId: z.string().max(64).default("") });
+
+/** POST /internal/eventcal/overview: which source's overview message to post. "" = the main calendar. */
+export const eventOverviewBody = z.object({ sourceId: z.string().max(64).default("") });
+
+/** A game whose events come only from pasted articles. */
+export const eventSourceSchema = z.object({
+  id: z.string().min(1).max(64).optional(),
+  name: z.string().trim().min(1).max(40),
+  enabled: z.boolean(),
+  overviewChannelId: z.union([z.literal(""), snowflake]),
+  overviewDays: z.number().int().min(MIN_OVERVIEW_DAYS).max(MAX_OVERVIEW_DAYS),
+  summaryChannelId: z.union([z.literal(""), snowflake]),
+});
+export type EventSourceInput = z.infer<typeof eventSourceSchema>;

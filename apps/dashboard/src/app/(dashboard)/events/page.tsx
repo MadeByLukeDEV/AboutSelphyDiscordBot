@@ -13,14 +13,14 @@ export default async function EventsPage() {
   // Admins only (the nav hides it from moderators; this and the actions enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
   const t = await getTranslations("Events");
-  const { overview, rules, channels, roles, articles, posted } = await getEventsPage();
+  const { overview, rules, channels, roles, articles, posted, sources } = await getEventsPage();
   return (
     <>
       <header className="flex flex-col gap-1">
         <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
-      <EventsManager overview={overview} rules={rules} channels={channels} roles={roles} articles={articles} posted={posted} />
+      <EventsManager overview={overview} rules={rules} channels={channels} roles={roles} articles={articles} posted={posted} sources={sources} />
     </>
   );
 }

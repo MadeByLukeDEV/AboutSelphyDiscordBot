@@ -15,4 +15,7 @@ export type RepostResult = { ok: true } | { ok: false; error: EventError | "gone
 export type ArticleRow = { id: string; title: string; monthKey: string; events: number; createdAt: string };
 
 export type EventRuleRow = Required<Pick<EventRuleInput, "id">> & Omit<EventRuleInput, "id">;
+/** An article-only source (one game) with its pasted articles. */
+export type SourceRow = { id: string; name: string; enabled: boolean; overviewChannelId: string; overviewDays: number; summaryChannelId: string; hasOverview: boolean; lastCheckedAt: string | null; lastStatus: string | null; articles: ArticleRow[] };
+export type SaveSourceResult = { ok: true; botNotified: boolean } | { ok: false; error: EventError };
 export type EventOverview = { settings: EventSettings; hasOverview: boolean; lastCheckedAt: string | null; lastStatus: string | null; baselined: boolean };
