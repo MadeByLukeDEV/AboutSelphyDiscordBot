@@ -182,11 +182,17 @@ export function monthlyEntries(events: readonly CalEvent[]): MonthlyEntry[] {
 
 const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-/** The first sentence of a text, cut to `max` characters: the fallback line when there is no AI blurb. */
+/** The first whole sentences of a text that fit `max` characters (the first one cut if it alone is too long): the fallback line when there is no AI blurb. */
 export function firstSentence(text: string, max: number): string {
   const flat = text.replace(/\s+/g, " ").trim();
-  const m = /^(.+?[.!?])(\s|$)/.exec(flat);
-  return truncate(m ? m[1]! : flat, max);
+  const sentences = flat.match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) ?? [flat];
+  let out = "";
+  for (const sentence of sentences) {
+    const next = out ? `${out} ${sentence.trim()}` : sentence.trim();
+    if (next.length > max) break;
+    out = next;
+  }
+  return out || truncate(flat, max);
 }
 
 /** One entry as text: "**Name** · <date> – <date>" and, below, its one-line blurb. Everything from outside is escaped. */
@@ -202,7 +208,7 @@ export function monthlyLine(entry: MonthlyEntry, blurb: string): string {
     when = `<t:${unix(e.start)}:D>${lastDay ? ` – <t:${unix(lastDay)}:D>` : ""}`;
   }
   const line = `**${escapeText(truncate(e.summary, 80))}** · ${when}`;
-  const b = blurb.trim() ? `\n> ${escapeText(truncate(blurb, 160))}` : "";
+  const b = blurb.trim() ? `\n> ${escapeText(truncate(blurb, 300))}` : "";
   return line + b;
 }
 

@@ -199,7 +199,8 @@ describe("the monthly summary", () => {
     expect(monthlyLine({ event: ev({ allDay: true, start: new Date("2026-10-22T00:00:00Z"), end: null }), weekly: null }, "")).toMatch(/· <t:\d+:D>$/);
   });
   it("cuts a first sentence", () => {
-    expect(firstSentence("The update lands. It has more.", 140)).toBe("The update lands.");
+    expect(firstSentence("The update lands. It has more. And a third one here.", 25)).toBe("The update lands.");
+    expect(firstSentence("The update lands. It has more.", 140)).toBe("The update lands. It has more.");
     expect(firstSentence("x".repeat(300), 50)).toHaveLength(50);
   });
   it("splits long lists into messages that fit Discord's limits", () => {

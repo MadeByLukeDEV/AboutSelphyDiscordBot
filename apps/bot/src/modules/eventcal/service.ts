@@ -231,7 +231,7 @@ async function monthlyLines(loaded: CalEvent[], year: number, month: number, bud
   const lines: string[] = [];
   for (const entry of entries) {
     const ai = await summaryFor(entry.event, budget, game);
-    const blurb = ai?.blurb || firstSentence(entry.event.description, 140);
+    const blurb = ai?.blurb || firstSentence(entry.event.description, 280);
     lines.push(monthlyLine(entry, blurb));
   }
   return lines;
