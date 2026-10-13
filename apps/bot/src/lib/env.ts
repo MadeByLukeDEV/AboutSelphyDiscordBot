@@ -24,7 +24,7 @@ const bool = z
 // An empty value in .env (KEY="") means "not set", not "invalid".
 const optional = <T extends z.ZodType>(type: T) => z.preprocess((v) => (v === "" ? undefined : v), type.optional());
 
-const schema = z.object({
+export const envSchema = z.object({
   DISCORD_BOT_TOKEN: z.string().min(50),
   DISCORD_APP_ID: snowflake,
   DISCORD_GUILD_ID: snowflake,
@@ -50,18 +50,14 @@ const schema = z.object({
   // true once the "Message Content" privileged intent is enabled in the Developer Portal (Bot ->
   // Privileged Gateway Intents). Needed to read message text, e.g. for ticket transcripts.
   DISCORD_MESSAGE_CONTENT: bool,
+  // Optional AI summaries for the event calendar: any OpenAI-compatible chat API (for example Groq or Gemini's compatibility endpoint).
+  AI_API_KEY: optional(z.string().min(1)),
+  AI_BASE_URL: optional(z.url().refine((u) => u.startsWith("https://"), "must be https")),
+  AI_MODEL: optional(z.string().min(1)),
+  // Thinking models (Gemini 3) spend output tokens on reasoning: "low" or "minimal" keeps that small. Leave empty for providers that don't know the field.
+  AI_REASONING_EFFORT: optional(z.enum(["none", "minimal", "low", "medium", "high"])),
   // Hosts the feed announcer may reach even though they are on the internal network, comma separated
   // (a feed bridge such as RSSHub, e.g. "rsshub"). Everything else must be a public https host.
-  // Optional AI summaries for the event calendar: any OpenAI-compatible chat API (for example Groq or Gemini's compatibility endpoint).
-  AI_API_KEY: z.string().optional(),
-  AI_BASE_URL: z
-    .string()
-    .url()
-    .refine((u) => u.startsWith("https://"), "must be https")
-    .optional(),
-  AI_MODEL: z.string().optional(),
-  // Thinking models (Gemini 3) spend output tokens on reasoning: "low" or "minimal" keeps that small. Leave empty for providers that don't know the field.
-  AI_REASONING_EFFORT: z.enum(["none", "minimal", "low", "medium", "high"]).optional().or(z.literal("").transform(() => undefined)),
   RSS_INTERNAL_HOSTS: z
     .string()
     .default("")
@@ -76,7 +72,7 @@ const schema = z.object({
   LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error"]).default("info"),
 });
 
-export type Env = z.infer<typeof schema>;
+export type Env = z.infer<typeof envSchema>;
 
 let cached: Env | undefined;
 
@@ -86,7 +82,7 @@ let cached: Env | undefined;
  */
 export function env(): Env {
   if (cached) return cached;
-  const parsed = schema.safeParse(process.env);
+  const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
     const names = [...new Set(parsed.error.issues.map((i) => i.path.join(".")))];
     throw new Error(`Invalid or missing environment variables: ${names.join(", ")}`);
