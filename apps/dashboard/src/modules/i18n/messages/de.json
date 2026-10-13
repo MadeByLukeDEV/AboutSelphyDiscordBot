@@ -2946,6 +2946,18 @@
       "posted": "Übersicht gepostet.",
       "updated": "Übersicht aktualisiert."
     },
+    "article": {
+      "title": "Monatlicher News-Artikel",
+      "intro": "Dem Kalender fehlen oft Details oder ganze Events. Füge den Text des Monatsartikels ein (zum Beispiel \"This Month in Sea of Thieves\") und der Bot ergänzt seine Daten und Beschreibungen: Ein Kalender-Event mit demselben Namen bekommt den Text des Artikels, \"Every Tuesday\"-Abschnitte füllen die wöchentlichen Events, und Events, die im Kalender fehlen, werden als ganztägige Events hinzugefügt. Deine Regeln behandeln sie dann wie jedes andere Event.",
+      "label": "Artikeltext",
+      "placeholder": "This Month in Sea of Thieves: October 2026\nPosted in: Announcements on 06 Oct 2026\n\nTwitch Drops – Friday, October 23rd – Monday, October 26th\n\nThere's a tasty new selection of Drops ...",
+      "help": "Kopiere den ganzen Artikel von der Seite und füge ihn hier ein. Er braucht die Zeile \"Posted in: ... on 06 Oct 2026\" (oder Monat und Jahr im Titel) und Überschriften wie \"Event name – Friday, October 23rd – Monday, October 26th\". Die letzten vier Artikel bleiben gespeichert; derselbe Monat ersetzt den alten.",
+      "import": "Artikel importieren",
+      "done": "{month} importiert: {dated} Events mit Datum und {repeating} wöchentliche Abschnitte gefunden. Die Events wurden sofort geprüft.",
+      "unreadable": "In diesem Text habe ich keine Events gefunden. Füge den ganzen Artikel mit der \"Posted in\"-Zeile und den Überschriften ein.",
+      "tooLong": "Dieser Text ist zu lang.",
+      "row": "{month} · {events} Abschnitte"
+    },
     "rules": {
       "title": "Regeln",
       "count": "{count} von {max}",

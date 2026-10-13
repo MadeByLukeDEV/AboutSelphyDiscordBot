@@ -1486,6 +1486,14 @@ Decided 2026-10-08:
     production or with `BOT_INTEGRATIONS_IN_DEV`; own on/off switch (not on the Modules page).
   - Dashboard `/events` (admins, Streams group): calendar address, overview channel and days, "Check now", "Post overview", and the rules (name, words, tags, channel,
     role, lead days).
+  - **Monthly news article import** (2026-11-13, `feature_event-articles`, migration `20261113120000_event_articles`; **not tried live yet**): the calendar is often
+    short on events and details, and `news.rss` only carries a one-line teaser per article (and both sit behind the site's WAF). An admin pastes the article text on
+    `/events`; `@aboutselphy/shared/eventcal-article` (pure, tested with the real article's shape) finds the sections ("Name – Friday, October 23rd – Monday,
+    October 26th", "Name – Until ...", "Name – Every Tuesday"), drops video captions and the sign-off paragraph, and tags Twitch Drops. `mergeArticle`
+    (bot, pure, tested): a calendar event with the same name (one name may contain the other) on those days **keeps its exact times** but gets the article's text; an
+    "Every Tuesday" section gives its text to every event of that name; a dated section the calendar lacks becomes an **all-day** event (key `article|name|date`,
+    postable for its whole day). The last four articles are kept (`EventArticle`, same month replaces), saving triggers a check; a text with no readable section is refused.
+    Changed texts edit already posted messages through the normal hash check.
   - [ ] An AI-written summary of an event (needs a provider and a key; the calendar's own description is shown for now), a reminder at the start time, one rule
         posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public

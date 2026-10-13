@@ -16,8 +16,8 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { checkEventCalendarAction, deleteEventRuleAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
-import type { EventOverview, EventRuleRow } from "../schema";
+import { checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
+import type { ArticleRow, EventOverview, EventRuleRow } from "../schema";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
 const parseTerms = (text: string): string[] => {
@@ -34,7 +34,7 @@ const parseTerms = (text: string): string[] => {
 };
 
 /** The calendar settings, the posting rules, and the overview message. State flows in as props; changes call router.refresh(). */
-export function EventsManager({ overview, rules, channels, roles }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null }) {
+export function EventsManager({ overview, rules, channels, roles, articles }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[] }) {
   const t = useTranslations("Events");
   const te = useTranslations("Events.errors");
   const format = useFormatter();
@@ -42,6 +42,7 @@ export function EventsManager({ overview, rules, channels, roles }: { overview: 
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<{ rule: EventRuleRow | null } | null>(null);
   const [removing, setRemoving] = useState<EventRuleRow | null>(null);
+  const [articleText, setArticleText] = useState("");
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined }));
   const channelName = (id: string) => channels?.find((c) => c.id === id)?.name ?? id;
@@ -88,6 +89,27 @@ export function EventsManager({ overview, rules, channels, roles }: { overview: 
       if (result.ok) toast.success(result.status === "posted" ? t("overview.posted") : t("overview.updated"));
       else toast.error(te(result.error));
       router.refresh();
+    });
+  }
+
+  function importArticle() {
+    startTransition(async () => {
+      const result = await importEventArticleAction({ text: articleText });
+      if (result.ok) {
+        toast.success(t("article.done", { dated: result.dated, repeating: result.repeating, month: result.month }));
+        setArticleText("");
+        router.refresh();
+      } else {
+        toast.error(result.error === "unreadable" ? t("article.unreadable") : result.error === "tooLong" ? t("article.tooLong") : te(result.error));
+      }
+    });
+  }
+
+  function removeArticle(id: string) {
+    startTransition(async () => {
+      const result = await deleteEventArticleAction({ id });
+      if (result.ok) router.refresh();
+      else toast.error(te(result.error));
     });
   }
 
@@ -151,6 +173,40 @@ export function EventsManager({ overview, rules, channels, roles }: { overview: 
           {t("status", { time: when(overview.lastCheckedAt), status: overview.lastStatus ?? "-" })} {!overview.baselined && overview.lastCheckedAt === null ? t("firstCheck") : ""}
         </p>
       </form>
+
+      <section aria-labelledby="ev-article" className="surface flex flex-col gap-4 p-5">
+        <div className="flex flex-col gap-1">
+          <h2 id="ev-article" className="text-fluid-lg font-bold">
+            {t("article.title")}
+          </h2>
+          <p className="max-w-prose text-sm text-muted-foreground">{t("article.intro")}</p>
+        </div>
+        <Field>
+          <FieldLabel htmlFor="ev-article-text">{t("article.label")}</FieldLabel>
+          <Textarea id="ev-article-text" rows={8} className="font-mono text-xs" value={articleText} onChange={(e) => setArticleText(e.target.value)} placeholder={t("article.placeholder")} />
+          <FieldDescription>{t("article.help")}</FieldDescription>
+        </Field>
+        <div>
+          <Button type="button" disabled={pending || articleText.trim() === ""} onClick={importArticle}>
+            {t("article.import")}
+          </Button>
+        </div>
+        {articles.length > 0 && (
+          <ul className="flex flex-col divide-y text-sm">
+            {articles.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="min-w-0 truncate font-medium">{a.title}</span>
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  {t("article.row", { month: a.monthKey, events: a.events })}
+                  <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => removeArticle(a.id)}>
+                    {t("remove")}
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section aria-labelledby="ev-rules" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">

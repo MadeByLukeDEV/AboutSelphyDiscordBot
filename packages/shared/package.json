@@ -46,6 +46,7 @@
     "./screening": "./src/screening.ts",
     "./levels-import": "./src/levels-import.ts",
     "./eventcal": "./src/eventcal.ts",
+    "./eventcal-article": "./src/eventcal-article.ts",
     "./webhook-presets": "./src/webhook-presets.ts",
     "./tempvoice": "./src/tempvoice.ts",
     "./custom-commands": "./src/custom-commands.ts",

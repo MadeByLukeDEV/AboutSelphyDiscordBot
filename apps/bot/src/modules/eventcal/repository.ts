@@ -25,3 +25,5 @@ export const prunePosts = (before: Date) => prisma.eventPost.deleteMany({ where:
 
 export const setOverview = (channelId: string, messageId: string, hash: string) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { overviewChannelId: channelId, overviewMessageId: messageId, overviewHash: hash } });
 export const setOverviewHash = (hash: string) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data: { overviewHash: hash } });
+
+export const listArticles = () => prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, take: 4 });

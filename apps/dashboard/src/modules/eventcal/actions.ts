@@ -3,8 +3,9 @@
 import { z } from "zod";
 import { eventRuleSchema, eventSettingsSchema } from "@aboutselphy/shared/eventcal";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import type { CheckEventsResult, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
-import { checkNow, postOverview, removeRule, saveEventSettings, saveRule } from "./service";
+import type { CheckEventsResult, ImportArticleResult, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
+import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
+import { checkNow, importArticle, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
@@ -65,4 +66,32 @@ export async function postEventOverviewAction(...args: Parameters<typeof postEve
 export async function checkEventCalendarAction(): Promise<CheckEventsResult> {
   if (!(await adminOnly())) return { ok: false, error: "forbidden" };
   return checkNow();
+}
+
+async function importEventArticleActionRun(input: unknown): Promise<ImportArticleResult> {
+  let session;
+  try {
+    session = await requireAdmin();
+  } catch (error) {
+    if (error instanceof AuthorizationError) return { ok: false, error: "forbidden" };
+    throw error;
+  }
+  const parsed = z.object({ text: z.string().min(1).max(MAX_ARTICLE_CHARS) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return importArticle(parsed.data.text, session.user.name);
+}
+
+async function deleteEventArticleActionRun(input: unknown): Promise<SimpleEventResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = z.object({ id: z.string().min(1).max(64) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return removeArticle(parsed.data.id);
+}
+
+export async function importEventArticleAction(...args: Parameters<typeof importEventArticleActionRun>): ReturnType<typeof importEventArticleActionRun> {
+  return audited("eventcal.importEventArticle", importEventArticleActionRun, args);
+}
+
+export async function deleteEventArticleAction(...args: Parameters<typeof deleteEventArticleActionRun>): ReturnType<typeof deleteEventArticleActionRun> {
+  return audited("eventcal.deleteEventArticle", deleteEventArticleActionRun, args);
 }

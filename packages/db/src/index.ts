@@ -37,6 +37,7 @@ export type {
   EventCalendarConfig,
   EventRule,
   EventPost,
+  EventArticle,
   TempVoiceRoleRule,
   ScreeningEntry,
   AutoPublishChannel,

@@ -8,6 +8,17 @@ export function updateConfig(data: { enabled: boolean; icsUrl: string; overviewC
   return prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 
+export const listArticles = () => prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, take: 12 });
+
+/** Saves an article, replacing an earlier one of the same month, and keeps only the newest four. */
+export async function saveArticle(data: { monthKey: string; title: string; text: string; importedByName: string }): Promise<void> {
+  await prisma.$transaction([prisma.eventArticle.deleteMany({ where: { monthKey: data.monthKey } }), prisma.eventArticle.create({ data })]);
+  const old = await prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, skip: 4, select: { id: true } });
+  if (old.length > 0) await prisma.eventArticle.deleteMany({ where: { id: { in: old.map((o) => o.id) } } });
+}
+
+export const deleteArticle = async (id: string) => (await prisma.eventArticle.deleteMany({ where: { id } })).count;
+
 export const listRules = (): Promise<EventRule[]> => prisma.eventRule.findMany({ orderBy: { createdAt: "asc" } });
 export const countRules = () => prisma.eventRule.count();
 export const findRule = (id: string) => prisma.eventRule.findUnique({ where: { id } });

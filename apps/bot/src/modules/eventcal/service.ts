@@ -5,9 +5,10 @@ import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { getText } from "../../lib/safe-http";
+import { parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { parseCalendar, type CalEvent } from "./ics";
-import { claimPost, findPost, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
-import { eventHash, eventMessage, isPostable, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
+import { claimPost, findPost, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
+import { eventHash, eventMessage, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
 // matching event that starts within the rule's lead time, one message per event. An occurrence is claimed in the database BEFORE it is
@@ -30,8 +31,12 @@ async function loadEvents(url: string, now: Date): Promise<CalEvent[] | string> 
   if (!res.ok) return res.detail ? `${res.reason}: ${res.detail}`.slice(0, 40) : res.reason;
   if (res.status < 200 || res.status >= 300) return `http ${res.status}`;
   try {
-    const events = parseCalendar(res.body, new Date(now.getTime() - 2 * DAY), new Date(now.getTime() + 120 * DAY));
-    return events;
+    const from = new Date(now.getTime() - 2 * DAY);
+    const to = new Date(now.getTime() + 120 * DAY);
+    const events = parseCalendar(res.body, from, to);
+    // Imported news articles add the dates and details the calendar lacks.
+    const articles = (await listArticles()).flatMap((a) => parseArticle(a.text));
+    return articles.length > 0 ? mergeArticle(events, articles, from, to) : events;
   } catch {
     return "parse";
   }

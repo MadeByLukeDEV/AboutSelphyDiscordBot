@@ -1402,3 +1402,16 @@ model EventPost {
   @@unique([ruleId, eventKey])
   @@index([startsAt])
 }
+
+/// A monthly news article pasted by an admin ("This Month in Sea of Thieves"). Its sections add dates and details the calendar lacks.
+model EventArticle {
+  id             String   @id @default(cuid())
+  /// "YYYY-MM" of the article (from its byline), only to show and replace.
+  monthKey       String   @db.VarChar(7)
+  title          String   @db.VarChar(200)
+  text           String   @db.Text
+  importedByName String   @db.VarChar(100)
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+}

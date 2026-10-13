@@ -2946,6 +2946,18 @@
       "posted": "Overview posted.",
       "updated": "Overview updated."
     },
+    "article": {
+      "title": "Monthly news article",
+      "intro": "The calendar is often short on details, or missing events. Paste the text of the monthly article (for example \"This Month in Sea of Thieves\") and the bot adds its dates and descriptions: a calendar event with the same name gets the article's text, \"Every Tuesday\" sections fill in the weekly events, and events the calendar doesn't have are added as all-day events. Your rules then treat them like any other event.",
+      "label": "Article text",
+      "placeholder": "This Month in Sea of Thieves: October 2026\nPosted in: Announcements on 06 Oct 2026\n\nTwitch Drops – Friday, October 23rd – Monday, October 26th\n\nThere's a tasty new selection of Drops ...",
+      "help": "Copy the whole article from the page and paste it here. It needs the line \"Posted in: ... on 06 Oct 2026\" (or the month and year in the title) and headings like \"Event name – Friday, October 23rd – Monday, October 26th\". The last four articles are kept; importing the same month again replaces it.",
+      "import": "Import article",
+      "done": "Imported {month}: {dated} dated events and {repeating} weekly sections found. Events were checked right away.",
+      "unreadable": "I couldn't find any events in that text. Paste the whole article including the \"Posted in\" line and the headings.",
+      "tooLong": "That text is too long.",
+      "row": "{month} · {events} sections"
+    },
     "rules": {
       "title": "Rules",
       "count": "{count} of {max}",
