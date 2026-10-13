@@ -843,6 +843,13 @@ model StarboardPost {
   @@index([stars])
 }
 
+/// A member who marked themselves away with /afk (their next message ends it).
+model AfkStatus {
+  userId String   @id @db.VarChar(20)
+  reason String   @default("") @db.VarChar(100)
+  since  DateTime @default(now())
+}
+
 /// Birthdays: members choose their own day and month (never the year); the bot celebrates them.
 model BirthdayConfig {
   id        Int      @id @default(1)

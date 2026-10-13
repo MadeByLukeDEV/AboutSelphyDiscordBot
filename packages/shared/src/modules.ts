@@ -61,7 +61,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   autoresponders: { group: "tools", commands: [], prefixes: [] },
   feeds: { group: "tools", commands: [], prefixes: [] },
   reminders: { group: "tools", commands: ["remind"], prefixes: ["rm"] },
-  utility: { group: "tools", commands: ["userinfo", "serverinfo", "roleinfo", "avatar"], prefixes: [] },
+  utility: { group: "tools", commands: ["userinfo", "serverinfo", "roleinfo", "avatar", "afk", "embed"], prefixes: [] },
   tempvoice: { group: "voice", commands: ["tempvoice", "voice"], prefixes: ["tv"] },
   invites: { group: "tools", commands: ["invites"], prefixes: [] },
 };

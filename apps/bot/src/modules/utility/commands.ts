@@ -1,5 +1,7 @@
 import { ChannelType, EmbedBuilder, InteractionContextType, MessageFlags, PermissionsBitField, SlashCommandBuilder, type GuildMember } from "discord.js";
 import type { Command } from "../../commands/types";
+import { afkCommand } from "./afk";
+import { embedCommand } from "./embed";
 import { escapeText, truncate } from "../../lib/escape";
 import { isPowerful } from "../roles";
 import { dateAndAgo, listMentions, stamp, yesNo } from "./rules";
@@ -113,4 +115,4 @@ const avatar: Command = {
   },
 };
 
-export const utilityCommands: Command[] = [userinfo, serverinfo, roleinfo, avatar];
+export const utilityCommands: Command[] = [userinfo, serverinfo, roleinfo, avatar, afkCommand, embedCommand];

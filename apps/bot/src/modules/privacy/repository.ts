@@ -46,6 +46,7 @@ export async function setLeaderboardHidden(userId: string, hidden: boolean): Pro
 
 /** Everything the bot holds about one member, shaped for a JSON file they can read. Moderators' names are left out. */
 export async function exportMember(userId: string) {
+  const afkRow = await prisma.afkStatus.findUnique({ where: { userId } });
   const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases, room, joins, invited] = await Promise.all([
     prisma.birthday.findUnique({ where: { userId } }),
     prisma.reminder.findMany({ where: { userId, deliveredAt: null }, take: 100 }),
@@ -68,6 +69,7 @@ export async function exportMember(userId: string) {
     discordUserId: userId,
     note: "Everything the bot stores about you. Moderator names are left out. Message content is not stored, except in tickets you opened.",
     birthday: birthday ? { month: birthday.month, day: birthday.day, year: birthday.year } : null,
+    afk: afkRow ? { reason: afkRow.reason, since: afkRow.since.toISOString() } : null,
     pendingReminders: reminders.map((r) => ({ remindAt: r.remindAt.toISOString(), message: clip(r.message) })),
     levels: xp ? { xp: xp.xp, messages: xp.messages, voiceMinutes: xp.voiceMinutes, hiddenFromPublicPage: xp.hidden } : null,
     rememberedRoles: snapshot ? { roleIds: snapshot.roleIds, savedAt: snapshot.savedAt.toISOString() } : null,
@@ -103,6 +105,7 @@ export async function deleteMember(userId: string): Promise<DeleteCounts> {
     prisma.giveawayEntry.deleteMany({ where: { userId } }),
     prisma.suggestion.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
     prisma.starboardPost.updateMany({ where: { authorId: userId }, data: { authorName: "deleted user" } }),
+    prisma.afkStatus.deleteMany({ where: { userId } }),
   ]);
   await prisma.memberInvite.updateMany({ where: { inviterId: userId }, data: { inviterId: null, inviterName: null } });
   return { invites: inv.count, voiceRoom: voice.count, birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };

@@ -11,6 +11,7 @@ import { startReminders, stopReminders } from "./modules/reminders";
 import { startAutoPublish } from "./modules/autopublish";
 import { startFeeds, stopFeeds } from "./modules/feeds";
 import { startAutoResponders } from "./modules/autoresponders";
+import { startAfk } from "./modules/utility";
 import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
 import { startEmotes } from "./lib/emotes";
@@ -87,6 +88,7 @@ async function main() {
   startFeeds(client);
   startCounting(client);
   startAutoResponders(client);
+  startAfk(client);
   startPolls(client);
   registerTicketEvents(client);
   startTwitch(client);

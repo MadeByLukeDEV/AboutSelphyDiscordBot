@@ -1143,6 +1143,14 @@ Decided 2026-10-08:
     asker may use (members, then the team; admin commands are hidden from moderators), built from the
     registered command list at call time. No dashboard page (nothing to configure). `/afk` is not built:
     it needs to read messages.
+  - **`/afk` and `/embed`** (2026-11-08, `feature_afk-embed`, migration `20261108140000_afk`; **not tried live yet**): `/afk [reason]` stores an
+    `AfkStatus` row (reason <= 100 chars, mirrored in memory); when someone mentions an AFK member the bot replies (escaped reason, time, nothing
+    pings, one notice per channel per 15 s, at most 3 names), and the member's next message ends it. Needs **no privileged intent** (it only
+    reads who a message mentions); runs only in production or with `BOT_INTEGRATIONS_IN_DEV`, under the `utility` module switch. Forgotten when
+    the member leaves or runs `/mydata delete`; `/mydata export` includes it; privacy policy updated (2026-11-09). `/embed` (moderators; title,
+    description with `
+`, channel, hex colour, https picture, footer) posts a staff embed, markdown kept, server emotes work, nothing pings
+    (`buildStaffEmbed`, pure, tested); listed in the mod guide under channel tools.
 - [~] Counting channel (2026-10-25, `feature_counting-autoresponders`, migration
       `20261025100000_counting_autoresponders`; **not tried live yet**; Tier B)
   - Bot (`modules/counting/`): a message starting with a whole number in the chosen channel is judged
