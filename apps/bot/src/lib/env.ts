@@ -60,6 +60,8 @@ const schema = z.object({
     .refine((u) => u.startsWith("https://"), "must be https")
     .optional(),
   AI_MODEL: z.string().optional(),
+  // Thinking models (Gemini 3) spend output tokens on reasoning: "low" or "minimal" keeps that small. Leave empty for providers that don't know the field.
+  AI_REASONING_EFFORT: z.enum(["none", "minimal", "low", "medium", "high"]).optional().or(z.literal("").transform(() => undefined)),
   RSS_INTERNAL_HOSTS: z
     .string()
     .default("")

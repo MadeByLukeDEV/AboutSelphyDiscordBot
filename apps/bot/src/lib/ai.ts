@@ -9,7 +9,7 @@ export const aiConfigured = (): boolean => Boolean(env().AI_API_KEY && env().AI_
 
 /** Asks the model for a JSON object. Returns the parsed JSON, or null on any failure (timeout, quota, bad answer). */
 export async function chatJson(system: string, user: string, opts: { maxTokens?: number; timeoutMs?: number } = {}): Promise<unknown | null> {
-  const { AI_API_KEY, AI_BASE_URL, AI_MODEL } = env();
+  const { AI_API_KEY, AI_BASE_URL, AI_MODEL, AI_REASONING_EFFORT } = env();
   if (!AI_API_KEY || !AI_BASE_URL || !AI_MODEL) return null;
   try {
     const res = await fetch(`${AI_BASE_URL.replace(/\/+$/, "")}/chat/completions`, {
@@ -18,7 +18,8 @@ export async function chatJson(system: string, user: string, opts: { maxTokens?:
       body: JSON.stringify({
         model: AI_MODEL,
         temperature: 0.2,
-        max_tokens: opts.maxTokens ?? 700,
+        max_tokens: opts.maxTokens ?? 1500,
+        ...(AI_REASONING_EFFORT ? { reasoning_effort: AI_REASONING_EFFORT } : {}),
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: system },
