@@ -47,7 +47,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   roles: { group: "community", commands: [], prefixes: ["rp"] },
   levels: { group: "community", commands: ["rank", "leaderboard", "xp"], prefixes: [] },
   birthdays: { group: "community", commands: ["birthday"], prefixes: [] },
-  starboard: { group: "community", commands: [], prefixes: [] },
+  starboard: { group: "community", commands: ["starboard"], prefixes: [] },
   counting: { group: "community", commands: [], prefixes: [] },
   giveaways: { group: "engagement", commands: ["giveaway"], prefixes: ["gw"] },
   polls: { group: "engagement", commands: ["poll"], prefixes: ["pl"] },

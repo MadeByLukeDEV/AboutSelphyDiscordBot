@@ -8,13 +8,14 @@ import { useFormatter, useTranslations } from "next-intl";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
-import { MAX_THRESHOLD, MIN_THRESHOLD, starboardSettingsSchema, type StarboardSettings } from "@aboutselphy/shared/starboard";
+import { MAX_IGNORED, MAX_THRESHOLD, MIN_THRESHOLD, starboardSettingsSchema, type StarboardSettings } from "@aboutselphy/shared/starboard";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { MultiPicker, type PickItem } from "@/components/form/multi-picker";
 import { saveStarboardAction } from "../actions";
 import type { StarboardRow } from "../schema";
 
@@ -30,7 +31,7 @@ export function StarboardManager({ initial, posts, channels }: { initial: Starbo
   const { errors, isDirty } = form.formState;
   const channelOptions: SelectOption[] = [
     { value: "", label: t("noChannel") },
-    ...(channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined })),
+    ...(channels ?? []).filter((c) => c.kind === "text").map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined })),
   ];
   if (initial.channelId && !channelOptions.some((o) => o.value === initial.channelId)) channelOptions.push({ value: initial.channelId, label: initial.channelId });
   const channelName = (id: string) => (channels?.find((c) => c.id === id) ? `#${channels.find((c) => c.id === id)!.name}` : id);
@@ -83,6 +84,24 @@ export function StarboardManager({ initial, posts, channels }: { initial: Starbo
           <Field orientation="horizontal">
             <Controller control={form.control} name="allowSelf" render={({ field }) => <Switch id="sb-self" checked={field.value} onCheckedChange={field.onChange} />} />
             <FieldLabel htmlFor="sb-self">{t("form.allowSelf")}</FieldLabel>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="sb-ignored">{t("form.ignored")}</FieldLabel>
+            <Controller
+              control={form.control}
+              name="ignoredChannelIds"
+              render={({ field }) => (
+                <MultiPicker
+                  id="sb-ignored"
+                  value={field.value}
+                  onChange={field.onChange}
+                  items={channels && channels.map((c): PickItem => ({ id: c.id, label: c.kind === "category" ? c.name : `#${c.name}` }))}
+                  max={MAX_IGNORED}
+                  labels={{ selected: t("form.ignoredSelected"), none: t("form.ignoredNone"), search: t("form.ignoredSearch"), noMatch: t("form.ignoredNoMatch"), full: t("form.ignoredFull", { max: MAX_IGNORED }), offline: t("form.botOffline"), remove: (name: string) => t("form.ignoredRemove", { name }) }}
+                />
+              )}
+            />
+            <FieldDescription>{t("form.ignoredHelp")}</FieldDescription>
           </Field>
         </FieldGroup>
         <div>

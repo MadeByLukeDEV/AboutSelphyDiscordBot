@@ -821,6 +821,8 @@ model StarboardConfig {
   /// Reactions needed (not counting the bot, nor the author unless allowSelf).
   threshold Int      @default(3)
   allowSelf Boolean  @default(false)
+  /// Channels (or whole categories) whose messages never reach the starboard.
+  ignoredChannelIds String[] @default([])
   updatedAt DateTime @updatedAt
 }
 

@@ -73,3 +73,12 @@ export function safeImage(url: string | null | undefined): string | null {
     return null;
   }
 }
+
+/** Is this channel (or its category) on the ignore list? */
+export const isIgnoredChannel = (channelId: string, parentId: string | null, ignored: readonly string[]): boolean => ignored.includes(channelId) || (parentId !== null && ignored.includes(parentId));
+
+/** The text for `/starboard random`: the saved facts about a starred message, escaped, nothing that can ping. */
+export function randomPostText(p: { stars: number; authorId: string; excerpt: string; jumpUrl: string }, emoji: string): string {
+  const quote = p.excerpt.trim() === "" ? "" : `\n> ${escapeText(p.excerpt).slice(0, 200)}`;
+  return `${emoji} **${p.stars}** · by <@${p.authorId}>${quote}\n${p.jumpUrl}`;
+}

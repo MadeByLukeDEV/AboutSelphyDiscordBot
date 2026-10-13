@@ -1097,7 +1097,12 @@ Decided 2026-10-08:
     Message Content intent (`DISCORD_MESSAGE_CONTENT=true`); without it the re-post still shows
     the author, attachments and the jump link.
   - Dashboard `/starboard` (admins): settings and the most starred messages.
-  - [ ] Custom server emoji, a channel ignore list, a random-star command, a per-member count.
+  - **Ignore list, `/starboard`** (2026-11-08, `feature_starboard-extras`, migration `20261108100000_starboard_ignore`; **not tried live yet**):
+    `StarboardConfig.ignoredChannelIds` (<= 30 channels or whole categories, DB CHECK, picked on `/starboard`, validated through the bot):
+    `isIgnoredChannel` (pure, tested) makes the reaction handler skip them. `/starboard random|stats|top` (every member, switched with the
+    `starboard` module): a random post that is on the board (saved excerpt, escaped, link, nothing pings), a member's posts and total stars,
+    and the top ten authors, all from `StarboardPost` rows that currently have a re-post.
+  - [ ] Custom server emoji.
 - [~] Sticky messages (2026-10-23, `feature_sticky-publish`, migration `20261023180000_sticky_publish`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/sticky/`): up to 10 channels, each with a staff-written text kept at the bottom as

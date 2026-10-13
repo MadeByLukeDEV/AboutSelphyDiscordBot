@@ -4,7 +4,7 @@ import { prisma, type StarboardConfig } from "@aboutselphy/db";
 
 export const readConfig = (): Promise<StarboardConfig> => prisma.starboardConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
-export function updateConfig(data: { enabled: boolean; channelId: string | null; emoji: string; threshold: number; allowSelf: boolean }): Promise<StarboardConfig> {
+export function updateConfig(data: { enabled: boolean; channelId: string | null; emoji: string; threshold: number; allowSelf: boolean; ignoredChannelIds: string[] }): Promise<StarboardConfig> {
   return prisma.starboardConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 

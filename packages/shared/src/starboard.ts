@@ -18,6 +18,8 @@ export function isSingleEmoji(value: string): boolean {
   return segments.length === 1;
 }
 
+export const MAX_IGNORED = 30;
+
 const snowflake = z.string().regex(/^\d{17,20}$/);
 
 export const starboardSettingsSchema = z
@@ -28,6 +30,11 @@ export const starboardSettingsSchema = z
     emoji: z.string().max(16).refine(isSingleEmoji, "emoji"),
     threshold: z.number().int().min(MIN_THRESHOLD).max(MAX_THRESHOLD),
     allowSelf: z.boolean(),
+    /** Channels or categories that never reach the starboard. */
+    ignoredChannelIds: z
+      .array(snowflake)
+      .max(MAX_IGNORED)
+      .refine((ids) => new Set(ids).size === ids.length, "duplicate"),
   })
   .superRefine((v, ctx) => {
     if (v.enabled && !v.channelId) ctx.addIssue({ code: "custom", path: ["channelId"], message: "needsChannel" });

@@ -6,7 +6,7 @@ import { moduleOn } from "../../lib/modules";
 import { truncate } from "../../lib/escape";
 import { getStarboardConfig } from "./config";
 import { clearBoardMessage, deletePost, findByBoardMessage, findPost, setStars, upsertPost } from "./repository";
-import { buildStarMessage, countStars, decide, isStarEmoji, medal, safeImage } from "./rules";
+import { buildStarMessage, countStars, decide, isIgnoredChannel, isStarEmoji, medal, safeImage } from "./rules";
 
 // The starboard. Reactions are handled one message at a time (KeyedMutex) because a burst of
 // reactions would otherwise post the same message twice. The count is recomputed from Discord
@@ -32,6 +32,8 @@ async function onReaction(reactionIn: MessageReaction | PartialMessageReaction, 
   if (!config.enabled || !config.channelId) return;
   if (!isStarEmoji(config.emoji, { id: reaction.emoji.id, name: reaction.emoji.name })) return;
   if (reaction.message.channelId === config.channelId) return;
+  const parentId = "parentId" in reaction.message.channel ? (reaction.message.channel.parentId ?? null) : null;
+  if (isIgnoredChannel(reaction.message.channelId, parentId, config.ignoredChannelIds)) return void log.debug({ channelId: reaction.message.channelId }, "starboard: skipped (ignored channel)");
 
   await mutex.run(reaction.message.id, async () => {
     const message = reaction.message.partial ? await reaction.message.fetch().catch(() => null) : reaction.message;

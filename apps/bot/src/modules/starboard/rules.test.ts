@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isSingleEmoji, starboardSettingsSchema } from "@aboutselphy/shared/starboard";
-import { buildStarMessage, countStars, decide, isStarEmoji, medal, safeImage } from "./rules";
+import { buildStarMessage, countStars, decide, isIgnoredChannel, isStarEmoji, medal, randomPostText, safeImage } from "./rules";
 
 describe("isSingleEmoji", () => {
   it("takes one emoji, with or without a variation selector or modifiers", () => {
@@ -13,7 +13,7 @@ describe("isSingleEmoji", () => {
 });
 
 describe("settings", () => {
-  const base = { enabled: true, channelId: "123456789012345678", emoji: "\u2B50", threshold: 3, allowSelf: false };
+  const base = { enabled: true, channelId: "123456789012345678", emoji: "\u2B50", threshold: 3, allowSelf: false, ignoredChannelIds: [] as string[] };
   it("needs a channel when on, a sane threshold and an emoji", () => {
     expect(starboardSettingsSchema.safeParse(base).success).toBe(true);
     expect(starboardSettingsSchema.safeParse({ ...base, channelId: "" }).success).toBe(false);
@@ -84,5 +84,21 @@ describe("the re-post", () => {
     const m = buildStarMessage(view({ content: "  ", attachmentCount: 3, imageUrl: "https://cdn.discordapp.com/a.png" }));
     expect(text(m)).toContain("3 attachments");
     expect(text(m)).toContain("cdn.discordapp.com/a.png");
+  });
+});
+
+describe("ignore list and random star", () => {
+  it("ignores a channel or its category", () => {
+    expect(isIgnoredChannel("c1", "cat", ["c1"])).toBe(true);
+    expect(isIgnoredChannel("c2", "cat", ["cat"])).toBe(true);
+    expect(isIgnoredChannel("c2", null, ["cat"])).toBe(false);
+    expect(isIgnoredChannel("c2", "x", [])).toBe(false);
+  });
+  it("makes the random text safe", () => {
+    const text = randomPostText({ stars: 5, authorId: "123", excerpt: "**hi** @everyone <@&1>", jumpUrl: "https://discord.com/channels/1/2/3" }, "⭐");
+    expect(text).toContain("by <@123>");
+    expect(text).not.toContain("**hi**");
+    expect(text).not.toMatch(/(?<!\\)<@&/);
+    expect(text.endsWith("https://discord.com/channels/1/2/3")).toBe(true);
   });
 });
