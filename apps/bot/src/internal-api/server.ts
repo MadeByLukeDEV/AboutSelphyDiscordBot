@@ -47,6 +47,7 @@ import { decideEntry } from "../modules/screening";
 import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
+import { checkCalendar, postOverview } from "../modules/eventcal";
 import { copyPermissions, deleteRoles, listManagedRoles, mergeRoles, moveRole, updateRole } from "../modules/roles";
 import { decideSuggestion, mergeSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
@@ -176,6 +177,18 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await updateRole(guild, body.data, body.data.by) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/eventcal/check") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await checkCalendar(guild));
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/eventcal/overview") {
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, { status: await postOverview(guild) });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/roles/move") {

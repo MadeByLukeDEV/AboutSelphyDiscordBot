@@ -31,6 +31,7 @@ export const RELOADABLE_MODULES = [
   "counting",
   "modules",
   "feeds",
+  "eventcal",
   "autoresponders",
   "webhooks",
 ] as const;

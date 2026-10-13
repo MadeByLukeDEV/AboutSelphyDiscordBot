@@ -1,3 +1,4 @@
+import { eventCheckResponse, eventOverviewStatus, type EventCheckResponse, type EventOverviewStatus } from "@aboutselphy/shared/eventcal";
 import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
@@ -336,6 +337,22 @@ export async function updateRoleViaBot(input: { id: string; name?: string; color
   const res = await botFetch("/internal/roles/update", { method: "POST", body: { ...input, by: by.slice(0, 60) || "the dashboard" } });
   if (!res?.ok) return null;
   const parsed = roleUpdateStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to read the event calendar now. Null if the bot can't be reached. */
+export async function checkEventCalendarViaBot(): Promise<EventCheckResponse | null> {
+  const res = await botFetch("/internal/eventcal/check", { method: "POST", timeoutMs: 60_000 });
+  if (!res?.ok) return null;
+  const parsed = eventCheckResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post (or update) the overview message. Null if the bot can't be reached. */
+export async function postEventOverviewViaBot(): Promise<EventOverviewStatus | null> {
+  const res = await botFetch("/internal/eventcal/overview", { method: "POST", timeoutMs: 60_000 });
+  if (!res?.ok) return null;
+  const parsed = eventOverviewStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

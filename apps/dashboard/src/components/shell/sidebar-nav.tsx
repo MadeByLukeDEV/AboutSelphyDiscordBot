@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, ClipboardCheck, History, Link2, ChevronDown, Crown, Hourglass, ShieldCheck, Siren, UserSearch, ShieldAlert, LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, ToggleRight, Webhook, Rss, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
+import { BookOpen, CalendarDays, ClipboardCheck, History, Link2, ChevronDown, Crown, Hourglass, ShieldCheck, Siren, UserSearch, ShieldAlert, LayoutDashboard, Megaphone, Mic, Tags, HandHeart, FileClock, Trophy, Ticket, Gift, Lightbulb, BarChart3, Star, Cake, AlarmClock, UserCog, Hash, Pin, Share2, Terminal, ListOrdered, ToggleRight, Webhook, Rss, MessageSquareReply, Radio, SquarePlay, ScrollText, Settings, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { NavGroup, NavLabel } from "./nav";
 
@@ -39,6 +39,7 @@ export const NAV_ICONS: Record<NavLabel, LucideIcon> = {
   verification: ShieldCheck,
   raid: Siren,
   screening: ClipboardCheck,
+  events: CalendarDays,
   audit: History,
   invites: Link2,
   autoPublish: Share2,

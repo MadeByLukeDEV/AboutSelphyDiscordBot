@@ -12,6 +12,7 @@ import { startAutoPublish } from "./modules/autopublish";
 import { startFeeds, stopFeeds } from "./modules/feeds";
 import { startAutoResponders } from "./modules/autoresponders";
 import { startAfk } from "./modules/utility";
+import { startEventCalendar, stopEventCalendar } from "./modules/eventcal";
 import { startCounting } from "./modules/counting";
 import { startSticky, stopSticky } from "./modules/sticky";
 import { startEmotes } from "./lib/emotes";
@@ -89,6 +90,7 @@ async function main() {
   startCounting(client);
   startAutoResponders(client);
   startAfk(client);
+  startEventCalendar(client);
   startPolls(client);
   registerTicketEvents(client);
   startTwitch(client);
@@ -115,6 +117,7 @@ async function main() {
     stopTwitchVip();
     stopRetention();
     stopVerification();
+    stopEventCalendar();
     stopRaidProtection();
     stopFeeds();
     stopYoutube();

@@ -1468,6 +1468,26 @@ Decided 2026-10-08:
     `useEmbed` posts a link embed (`feedEmbedData`: escaped title as the link text, http(s)-only link, source name, time) with only the
     role ping as text. Words are typed one per line on `/feeds`.
   - [ ] Several items in one message, filters on the description.
+- [~] Event calendar (2026-11-13, `feature_event-calendar`, migrations `20261113100000_event_calendar` and `20261113110000_event_rule_seeded`; **not tried
+      live yet**; asked for by the user: Sea of Thieves Twitch Drops and other events, filtered, one message per event plus an overview)
+  - The source is a **public iCalendar feed**, not the news page (seaofthieves.com sits behind an Azure WAF challenge that blocks plain fetches). Default:
+    the community-run Sea of Thieves calendar (`calendar.seaofthieves.rarethief.com` reads this public Google Calendar,
+    `DEFAULT_CALENDAR_URL` in `@aboutselphy/shared/eventcal`); any public https `.ics` works. Fetched with `lib/safe-http.ts` (public https hosts only, 4 MB cap).
+  - Bot (`modules/eventcal/`): `ics.ts` (pure, tested incl. a hostile-input case) reads DTSTART/DTEND (UTC, TZID, dates), SUMMARY, DESCRIPTION, UID, STATUS,
+    EXDATE and **weekly RRULEs** (BYDAY list, INTERVAL, UNTIL; capped at 200 occurrences; other repeat kinds count as single events), drops cancelled events,
+    cleans the HTML description and parses the calendar's `||EVENT_INFO||{json}` tail: tags (`twitch_drop`, `in_game`, `sot_shot`), colour, and a picture that is
+    only accepted from the calendar's own image host. `rules.ts` (pure, tested): a rule matches when the event name contains one of its words (NFKC, any case,
+    plain text) **or** carries one of its tags. Every 30 min (and on dashboard changes) each rule posts its matching events that start within its lead time
+    (0-60 days), one embed per event (escaped text, Discord timestamps so every member sees their own time zone, only the rule's role can ping). An occurrence is
+    **claimed in the database before it is posted** (`EventPost`, unique per rule and occurrence); if the calendar changes it later (`eventHash`) its message is
+    edited once. **Nothing old is ever posted**: the first successful check, and the first check of every new or changed rule (`EventRule.seeded`), only
+    remember what matches. One **overview** message (all events matching any rule that run now or start within N days) is posted from the dashboard button and
+    then edited by the bot only when its content changes. Internal API `POST /internal/eventcal/check|overview`, reload key `eventcal`. Runs only in
+    production or with `BOT_INTEGRATIONS_IN_DEV`; own on/off switch (not on the Modules page).
+  - Dashboard `/events` (admins, Streams group): calendar address, overview channel and days, "Check now", "Post overview", and the rules (name, words, tags, channel,
+    role, lead days).
+  - [ ] An AI-written summary of an event (needs a provider and a key; the calendar's own description is shown for now), a reminder at the start time, one rule
+        posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)
   - **Incoming** (`/webhooks` admin page, public route `POST /api/webhooks/in/<id>`, outside the sign-in gate):

@@ -1346,3 +1346,59 @@ model AnnouncementTemplate {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
+
+// ---- event calendar -------------------------------------------------------------------
+// Reads a public calendar (.ics), posts the events that match a rule (one message per event) and keeps one overview message up to date.
+
+/// Singleton (id 1).
+model EventCalendarConfig {
+  id                Int       @id @default(1)
+  enabled           Boolean   @default(false)
+  /// An https address of a public iCalendar feed.
+  icsUrl            String    @default("https://calendar.google.com/calendar/ical/c_10fomfvgafp5atjgb2t8i190i4%40group.calendar.google.com/public/basic.ics") @db.VarChar(500)
+  /// Where the overview message lives; null = no overview.
+  overviewChannelId String?   @db.VarChar(20)
+  overviewMessageId String?   @db.VarChar(20)
+  /// Fingerprint of what the overview shows, so it is only edited when something changed.
+  overviewHash      String    @default("") @db.VarChar(40)
+  overviewDays      Int       @default(30)
+  /// false until the first successful check, which only remembers what is there (nothing is announced).
+  baselined         Boolean   @default(false)
+  lastCheckedAt     DateTime?
+  /// "ok", "http 404", "blocked", "timeout", "parse", "empty" ... of the last check.
+  lastStatus        String?   @db.VarChar(40)
+  updatedAt         DateTime  @updatedAt
+}
+
+/// "Events whose name contains X (or that carry tag Y) go to channel Z."
+model EventRule {
+  id         String      @id @default(cuid())
+  name       String      @db.VarChar(60)
+  words      String[]    @default([])
+  categories String[]    @default([])
+  channelId  String      @db.VarChar(20)
+  pingRoleId String?     @db.VarChar(20)
+  daysAhead  Int         @default(7)
+  enabled    Boolean     @default(true)
+  /// false until the rule's first check, which only remembers what matches (a new rule never posts old events).
+  seeded     Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  posts      EventPost[]
+}
+
+/// An occurrence that was posted (or silently remembered) for a rule. Unique per rule and occurrence, so nothing is posted twice.
+model EventPost {
+  id        String    @id @default(cuid())
+  ruleId    String
+  rule      EventRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  eventKey  String    @db.VarChar(160)
+  startsAt  DateTime
+  /// Null = remembered silently (first check).
+  messageId String?   @db.VarChar(20)
+  channelId String    @db.VarChar(20)
+  hash      String    @db.VarChar(40)
+  createdAt DateTime  @default(now())
+
+  @@unique([ruleId, eventKey])
+  @@index([startsAt])
+}
