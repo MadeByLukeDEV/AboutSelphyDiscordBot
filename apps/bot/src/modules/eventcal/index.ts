@@ -1,2 +1,2 @@
 // Public surface of the event calendar module. Others import only from here.
-export { checkCalendar, postOverview, repostEvent, startEventCalendar, stopEventCalendar } from "./service";
+export { checkCalendar, postMonthly, postOverview, repostEvent, startEventCalendar, stopEventCalendar } from "./service";

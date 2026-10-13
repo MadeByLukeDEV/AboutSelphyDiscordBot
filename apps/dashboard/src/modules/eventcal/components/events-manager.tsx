@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { LayoutList, Plus, RefreshCw, RotateCcw } from "lucide-react";
+import { CalendarRange, LayoutList, Plus, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { eventRuleSchema, eventSettingsSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_OVERVIEW_DAYS, MAX_RULE_TERMS, MIN_OVERVIEW_DAYS, type EventSettings } from "@aboutselphy/shared/eventcal";
@@ -16,7 +16,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, repostEventAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
+import { postEventMonthlyAction, checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, repostEventAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
 import type { ArticleRow, EventOverview, EventRuleRow, PostedEventRow } from "../schema";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
@@ -73,6 +73,15 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
       }
     });
   });
+
+  function monthly(month: "current" | "next") {
+    startTransition(async () => {
+      const result = await postEventMonthlyAction({ month });
+      if (result.ok) toast.success(result.status === "posted" ? t("monthly.posted") : t("monthly.updated"));
+      else toast.error(te(result.error));
+      router.refresh();
+    });
+  }
 
   function check() {
     startTransition(async () => {
@@ -159,6 +168,11 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
             <FormSelect control={form.control} name="overviewChannelId" id="ev-overview-channel" options={overviewChannelOptions} placeholder={t("settings.noOverview")} disabled={channels === null} />
             <FieldDescription>{t("settings.overviewHelp")}</FieldDescription>
           </Field>
+          <Field>
+            <FieldLabel htmlFor="ev-summary-channel">{t("settings.summaryChannel")}</FieldLabel>
+            <FormSelect control={form.control} name="summaryChannelId" id="ev-summary-channel" options={overviewChannelOptions.map((o) => (o.value === "" ? { ...o, label: t("settings.noSummary") } : o))} placeholder={t("settings.noSummary")} disabled={channels === null} />
+            <FieldDescription>{t("settings.summaryHelp")}</FieldDescription>
+          </Field>
           <Field data-invalid={Boolean(errors.overviewDays) || undefined}>
             <FieldLabel htmlFor="ev-days">{t("settings.overviewDays")}</FieldLabel>
             <Input id="ev-days" type="number" inputMode="numeric" min={MIN_OVERVIEW_DAYS} max={MAX_OVERVIEW_DAYS} className="max-w-[8rem]" {...form.register("overviewDays", { valueAsNumber: true })} />
@@ -172,6 +186,14 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
           <Button type="button" variant="outline" disabled={pending || isDirty} onClick={check}>
             <RefreshCw aria-hidden />
             {t("checkNow")}
+          </Button>
+          <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.summaryChannelId} onClick={() => monthly("current")}>
+            <CalendarRange aria-hidden />
+            {t("monthly.current")}
+          </Button>
+          <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.summaryChannelId} onClick={() => monthly("next")}>
+            <CalendarRange aria-hidden />
+            {t("monthly.next")}
           </Button>
           <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.overviewChannelId} onClick={overviewNow}>
             <LayoutList aria-hidden />

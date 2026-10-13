@@ -4,7 +4,7 @@ import { prisma, type EventCalendarConfig, type EventRule } from "@aboutselphy/d
 
 export const readConfig = (): Promise<EventCalendarConfig> => prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
-export function updateConfig(data: { enabled: boolean; icsUrl: string; overviewChannelId: string | null; overviewDays: number; baselined?: false }): Promise<EventCalendarConfig> {
+export function updateConfig(data: { enabled: boolean; icsUrl: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; baselined?: false }): Promise<EventCalendarConfig> {
   return prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 

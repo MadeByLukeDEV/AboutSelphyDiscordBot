@@ -1362,6 +1362,12 @@ model EventCalendarConfig {
   /// Fingerprint of what the overview shows, so it is only edited when something changed.
   overviewHash      String    @default("") @db.VarChar(40)
   overviewDays      Int       @default(30)
+  /// Where the detailed monthly summary is posted; null = none.
+  summaryChannelId  String?   @db.VarChar(20)
+  /// "YYYY-MM" of the posted summary, its messages (it can need several), and a fingerprint of what it shows.
+  summaryMonth      String?   @db.VarChar(7)
+  summaryMessageIds String[]  @default([])
+  summaryHash       String    @default("") @db.VarChar(40)
   /// false until the first successful check, which only remembers what is there (nothing is announced).
   baselined         Boolean   @default(false)
   lastCheckedAt     DateTime?

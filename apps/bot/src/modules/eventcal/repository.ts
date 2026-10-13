@@ -36,3 +36,5 @@ export const pruneSummaries = (before: Date) => prisma.eventSummary.deleteMany({
 
 export const findPostById = (id: string) => prisma.eventPost.findUnique({ where: { id }, include: { rule: true } });
 export const updatePostMessage = (id: string, messageId: string, hash: string) => prisma.eventPost.update({ where: { id }, data: { messageId, hash } });
+
+export const setMonthly = (data: { summaryMonth: string; summaryMessageIds: string[]; summaryHash: string }) => prisma.eventCalendarConfig.update({ where: { id: 1 }, data });

@@ -2927,6 +2927,9 @@
     "status": "Letzte Prüfung: {time} ({status}).",
     "firstCheck": "Die erste Prüfung merkt sich nur, was es gibt, es wird also nichts Altes gepostet.",
     "settings": {
+      "summaryChannel": "Kanal für die Monatsübersicht",
+      "noSummary": "Keine Monatsübersicht",
+      "summaryHelp": "Ein ausführlicher Beitrag mit jedem Event eines Monats (nicht nur denen, die zu einer Regel passen), eine Zeile pro Event mit Kurzbeschreibung; wöchentliche Events sind in einer Zeile zusammengefasst. Poste ihn mit den Buttons unten; danach bearbeitet der Bot ihn, wenn sich etwas ändert.",
       "title": "Kalender",
       "enabled": "Das Lesen des Kalenders ist an",
       "url": "Kalender-Adresse (.ics)",
@@ -2939,6 +2942,12 @@
       "saving": "Speichert …",
       "saved": "Gespeichert.",
       "savedBotLater": "Gespeichert. Der Bot übernimmt es innerhalb einer halben Stunde."
+    },
+    "monthly": {
+      "current": "Übersicht dieses Monats posten",
+      "next": "Übersicht des nächsten Monats posten",
+      "posted": "Monatsübersicht gepostet.",
+      "updated": "Monatsübersicht aktualisiert."
     },
     "overview": {
       "post": "Übersicht posten",
@@ -2955,7 +2964,7 @@
     },
     "article": {
       "title": "Monatlicher News-Artikel",
-      "intro": "Dem Kalender fehlen oft Details oder ganze Events. Füge den Text des Monatsartikels ein (zum Beispiel \"This Month in Sea of Thieves\") und der Bot ergänzt seine Daten und Beschreibungen: Ein Kalender-Event mit demselben Namen bekommt den Text des Artikels, \"Every Tuesday\"-Abschnitte füllen die wöchentlichen Events, und Events, die im Kalender fehlen, werden als ganztägige Events hinzugefügt. Deine Regeln behandeln sie dann wie jedes andere Event.",
+      "intro": "Dem Kalender fehlen oft Details oder ganze Events. Füge den Text des Monatsartikels ein (zum Beispiel \"This Month in Sea of Thieves\") und der Bot ergänzt seine Daten und Beschreibungen: Ein Kalender-Event mit demselben Namen bekommt den Text des Artikels, \"Every Tuesday\"-Abschnitte füllen die wöchentlichen Events, und Events, die im Kalender fehlen, werden als ganztägige Events hinzugefügt. Deine Regeln behandeln sie dann wie jedes andere Event. Für ein Bild oder Video zu einem Event setze den Link (Bild mit .png/.jpg/.webp/.gif oder YouTube-, Twitch-, Vimeo-Link) allein in eine eigene Zeile unter den Abschnitt.",
       "label": "Artikeltext",
       "placeholder": "This Month in Sea of Thieves: October 2026\nPosted in: Announcements on 06 Oct 2026\n\nTwitch Drops – Friday, October 23rd – Monday, October 26th\n\nThere's a tasty new selection of Drops ...",
       "help": "Kopiere den ganzen Artikel von der Seite und füge ihn hier ein. Er braucht die Zeile \"Posted in: ... on 06 Oct 2026\" (oder Monat und Jahr im Titel) und Überschriften wie \"Event name – Friday, October 23rd – Monday, October 26th\". Die letzten vier Artikel bleiben gespeichert; derselbe Monat ersetzt den alten.",

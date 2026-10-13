@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { articleYear, parseArticle } from "@aboutselphy/shared/eventcal-article";
+import { articleYear, classifyMedia, parseArticle } from "@aboutselphy/shared/eventcal-article";
 
 const ARTICLE = `This Month in Sea of Thieves: October 2026
 Find out about the seafaring shenanigans currently planned for the month ahead!
@@ -107,5 +107,43 @@ describe("year and bad input", () => {
   });
   it("survives huge or odd input", () => {
     expect(() => parseArticle("x – y\n\n".repeat(5000), 2026)).not.toThrow();
+  });
+});
+
+describe("pictures and videos in an article", () => {
+  const text = `Posted in: Announcements on 06 Oct 2026
+
+October Game Update – Thursday, October 22nd
+
+The next monthly update is due to dock.
+
+https://www.youtube.com/watch?v=l-gDZD1_jiw
+
+https://assets.example.com/update/banner.png?w=800
+
+https://unknown.example/page
+
+Twitch Drops – Friday, October 23rd – Monday, October 26th
+
+Drops text.
+
+https://evil.example/not-an-image
+`;
+  const events = parseArticle(text);
+  it("attaches a video link and a picture to their section", () => {
+    expect(events[0]!.video).toBe("https://www.youtube.com/watch?v=l-gDZD1_jiw");
+    expect(events[0]!.image).toBe("https://assets.example.com/update/banner.png?w=800");
+  });
+  it("keeps links out of the text and ignores links that are neither", () => {
+    expect(events[0]!.text).toBe("The next monthly update is due to dock.");
+    expect(events[1]).toMatchObject({ image: null, video: null, text: "Drops text." });
+  });
+  it("only accepts https pictures and known video sites", () => {
+    expect(classifyMedia("https://youtu.be/abc123")).toBe("video");
+    expect(classifyMedia("https://www.twitch.tv/videos/123456")).toBe("video");
+    expect(classifyMedia("https://example.com/a.JPG")).toBe("image");
+    expect(classifyMedia("http://example.com/a.png")).toBeNull();
+    expect(classifyMedia("https://example.com/watch?v=1")).toBeNull();
+    expect(classifyMedia("javascript:alert(1)")).toBeNull();
   });
 });

@@ -2927,6 +2927,9 @@
     "status": "Last check: {time} ({status}).",
     "firstCheck": "The first check only remembers what exists, so nothing old is posted.",
     "settings": {
+      "summaryChannel": "Monthly summary channel",
+      "noSummary": "No monthly summary",
+      "summaryHelp": "A detailed post of every event of a month (not only those a rule matches), one line each with a short description; weekly events are folded into one line. Use the buttons below to post it; after that the bot edits it when something changes.",
       "title": "Calendar",
       "enabled": "Reading the calendar is on",
       "url": "Calendar address (.ics)",
@@ -2939,6 +2942,12 @@
       "saving": "Saving…",
       "saved": "Saved.",
       "savedBotLater": "Saved. The bot will pick it up within half an hour."
+    },
+    "monthly": {
+      "current": "Post this month's summary",
+      "next": "Post next month's summary",
+      "posted": "Monthly summary posted.",
+      "updated": "Monthly summary updated."
     },
     "overview": {
       "post": "Post overview",
@@ -2955,7 +2964,7 @@
     },
     "article": {
       "title": "Monthly news article",
-      "intro": "The calendar is often short on details, or missing events. Paste the text of the monthly article (for example \"This Month in Sea of Thieves\") and the bot adds its dates and descriptions: a calendar event with the same name gets the article's text, \"Every Tuesday\" sections fill in the weekly events, and events the calendar doesn't have are added as all-day events. Your rules then treat them like any other event.",
+      "intro": "The calendar is often short on details, or missing events. Paste the text of the monthly article (for example \"This Month in Sea of Thieves\") and the bot adds its dates and descriptions: a calendar event with the same name gets the article's text, \"Every Tuesday\" sections fill in the weekly events, and events the calendar doesn't have are added as all-day events. Your rules then treat them like any other event. To add a picture or video to an event, put its link (an image ending in .png/.jpg/.webp/.gif, or a YouTube, Twitch or Vimeo link) alone on its own line under that section.",
       "label": "Article text",
       "placeholder": "This Month in Sea of Thieves: October 2026\nPosted in: Announcements on 06 Oct 2026\n\nTwitch Drops – Friday, October 23rd – Monday, October 26th\n\nThere's a tasty new selection of Drops ...",
       "help": "Copy the whole article from the page and paste it here. It needs the line \"Posted in: ... on 06 Oct 2026\" (or the month and year in the title) and headings like \"Event name – Friday, October 23rd – Monday, October 26th\". The last four articles are kept; importing the same month again replaces it.",

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventSettingsSchema, eventRuleSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
-import { eventHash, eventMessage, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
+import { eventHash, eventMessage, firstSentence, isPostable, matchesRule, mergeArticle, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
 
 const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   key: "u|2026-09-18T10:00:00.000Z",
@@ -13,6 +13,7 @@ const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   description: "Link your accounts.",
   categories: ["twitch_drop"],
   image: null,
+  video: null,
   color: 0x5f70c5,
   ...over,
 });
@@ -115,7 +116,7 @@ describe("merging a news article into the calendar", () => {
   const win: [Date, Date] = [day("2026-10-01"), day("2026-11-30")];
   const calDrops = ev({ key: "cal-drops", summary: "Twitch Drops", start: new Date("2026-10-23T10:00:00Z"), end: new Date("2026-10-26T10:00:00Z"), description: "Short text." });
   const fight = ev({ key: "cal-fight", summary: "Fight Nights", start: new Date("2026-10-20T10:00:00Z"), end: new Date("2026-10-21T10:00:00Z"), description: "", categories: ["in_game"] });
-  const art = (over: Partial<ArticleEvent>): ArticleEvent => ({ title: "Twitch Drops", start: day("2026-10-23"), end: day("2026-10-26"), everyWeekday: null, text: "Article text with the drops.", categories: ["twitch_drop"], ...over });
+  const art = (over: Partial<ArticleEvent>): ArticleEvent => ({ title: "Twitch Drops", start: day("2026-10-23"), end: day("2026-10-26"), everyWeekday: null, text: "Article text with the drops.", categories: ["twitch_drop"], image: null, video: null, ...over });
 
   it("gives a calendar event the article's text and keeps its exact times", () => {
     const [m] = mergeArticle([calDrops], [art({})], ...win);
@@ -150,5 +151,72 @@ describe("merging a news article into the calendar", () => {
     const allDay = ev({ allDay: true, start: day("2026-10-22") });
     expect(isPostable(allDay, new Date("2026-10-22T15:00:00Z"), 0)).toBe(true);
     expect(isPostable(allDay, new Date("2026-10-23T00:30:00Z"), 0)).toBe(false);
+  });
+});
+
+describe("media on posts", () => {
+  it("puts a video link in the text so Discord shows the player, and the picture in the embed", () => {
+    const m = eventMessage(ev({ video: "https://www.youtube.com/watch?v=l-gDZD1_jiw", image: "https://assets.example.com/a.png" }), "123456789012345678");
+    expect(m.content).toBe("<@&123456789012345678>\nhttps://www.youtube.com/watch?v=l-gDZD1_jiw");
+    expect(m.embeds[0]!.toJSON().image?.url).toBe("https://assets.example.com/a.png");
+    expect(eventMessage(ev({ video: "https://youtu.be/x1" }), null).content).toBe("https://youtu.be/x1");
+  });
+  it("takes the article's picture and video over the calendar's", () => {
+    const cal = ev({ key: "c", summary: "October Game Update", image: "https://sea-of-thieves-calendar.s3.amazonaws.com/x.png", start: new Date("2026-10-22T09:00:00Z") });
+    const art: ArticleEvent = { title: "October Game Update", start: new Date("2026-10-22T00:00:00Z"), end: null, everyWeekday: null, text: "Update.", categories: [], image: "https://assets.example.com/b.png", video: "https://youtu.be/abc" };
+    const [m] = mergeArticle([cal], [art], new Date("2026-10-01T00:00:00Z"), new Date("2026-11-30T00:00:00Z"));
+    expect(m!.image).toBe("https://assets.example.com/b.png");
+    expect(m!.video).toBe("https://youtu.be/abc");
+  });
+  it("changes the hash when the video changes", () => {
+    expect(eventHash(ev())).not.toBe(eventHash(ev({ video: "https://youtu.be/abc" })));
+  });
+});
+
+describe("the monthly summary", () => {
+  const at = (iso: string, over: Partial<CalEvent> = {}) => ev({ key: iso + (over.summary ?? ""), start: new Date(iso), end: new Date(new Date(iso).getTime() + 86_400_000), ...over });
+  const weekly = [6, 13, 20, 27].map((d) => at(`2026-10-${String(d).padStart(2, "0")}T10:00:00Z`, { summary: "Fight Nights" }));
+
+  it("keeps every event of the month, whatever a rule matches, and the ones that run into it", () => {
+    const events = [at("2026-09-30T10:00:00Z", { summary: "Runs in", end: new Date("2026-10-03T10:00:00Z") }), at("2026-10-22T09:00:00Z", { summary: "Update" }), at("2026-11-02T10:00:00Z", { summary: "Next month" })];
+    expect(monthEvents(events, 2026, 10).map((e) => e.summary)).toEqual(["Runs in", "Update"]);
+  });
+  it("folds a weekly event into one entry and keeps single ones", () => {
+    const entries = monthlyEntries([...weekly, at("2026-10-22T09:00:00Z", { summary: "Update" })]);
+    expect(entries.map((e) => [e.event.summary, e.weekly])).toEqual([["Fight Nights", 2], ["Update", null]]);
+  });
+  it("does not fold events that are not a week apart, or fewer than three", () => {
+    expect(monthlyEntries([weekly[0]!, weekly[1]!]).every((e) => e.weekly === null)).toBe(true);
+    expect(monthlyEntries([weekly[0]!, weekly[1]!, at("2026-10-28T10:00:00Z", { summary: "Fight Nights" })]).every((e) => e.weekly === null)).toBe(true);
+  });
+  it("writes a line with the dates and an escaped blurb", () => {
+    const line = monthlyLine({ event: ev({ summary: "Twitch Drops **x**" }), weekly: null }, "Watch @everyone [x](https://evil.example)");
+    expect(line).toMatch(/^\*\*Twitch Drops \\\*\\\*x\\\*\\\*\*\* · <t:\d+:D> – <t:\d+:D>\n> /);
+    expect(line).not.toContain("](https");
+    expect(monthlyLine({ event: weekly[0]!, weekly: 2 }, "")).toBe("**Fight Nights** · every Tuesday");
+  });
+  it("shows a one-day event with one date", () => {
+    expect(monthlyLine({ event: ev({ allDay: true, start: new Date("2026-10-22T00:00:00Z"), end: null }), weekly: null }, "")).toMatch(/· <t:\d+:D>$/);
+  });
+  it("cuts a first sentence", () => {
+    expect(firstSentence("The update lands. It has more.", 140)).toBe("The update lands.");
+    expect(firstSentence("x".repeat(300), 50)).toHaveLength(50);
+  });
+  it("splits long lists into messages that fit Discord's limits", () => {
+    const lines = Array.from({ length: 120 }, (_, i) => `**Event ${i}** · <t:1:D>\n> ${"words ".repeat(20)}`);
+    const messages = monthlyMessages(lines, "October 2026");
+    expect(messages.length).toBeGreaterThan(1);
+    for (const m of messages) {
+      expect(m.embeds.length).toBeLessThanOrEqual(10);
+      expect(m.embeds.reduce((n, e) => n + (e.toJSON().description?.length ?? 0) + (e.toJSON().title?.length ?? 0), 0)).toBeLessThanOrEqual(6000);
+      for (const e of m.embeds) expect(e.toJSON().description!.length).toBeLessThanOrEqual(4096);
+    }
+    expect(messages[0]!.embeds[0]!.toJSON().title).toBe("October 2026: what's on");
+  });
+  it("still posts something when nothing is planned, and fingerprints the lines", () => {
+    expect(monthlyMessages([], "October 2026")[0]!.embeds[0]!.toJSON().description).toContain("Nothing");
+    expect(monthlyHash(["a"])).toBe(monthlyHash(["a"]));
+    expect(monthlyHash(["a"])).not.toBe(monthlyHash(["b"]));
+    expect(monthLabel(2026, 10)).toBe("October 2026");
   });
 });

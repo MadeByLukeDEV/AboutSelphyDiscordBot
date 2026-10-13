@@ -3,11 +3,11 @@ import type { EventCalendarConfig, EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { MAX_EVENT_RULES, type EventRuleInput, type EventSettings } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
-import { checkEventCalendarViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
+import { checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
 import { countRules, createRule, deleteArticle, deleteRule, listArticles, listPostedEvents, saveArticle, findRule, listRules, readConfig, updateConfig, updateRule } from "./repository";
 import type { ArticleRow, CheckEventsResult, PostedEventRow, RepostResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 
-const toSettings = (c: EventCalendarConfig): EventSettings => ({ enabled: c.enabled, icsUrl: c.icsUrl, overviewChannelId: c.overviewChannelId ?? "", overviewDays: c.overviewDays });
+const toSettings = (c: EventCalendarConfig): EventSettings => ({ enabled: c.enabled, icsUrl: c.icsUrl, overviewChannelId: c.overviewChannelId ?? "", overviewDays: c.overviewDays, summaryChannelId: c.summaryChannelId ?? "" });
 const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, enabled: r.enabled });
 
 /** Settings, the rules, and the channels and roles to pick from (null = bot unreachable). */
@@ -22,13 +22,14 @@ export async function getEventsPage() {
 export async function saveEventSettings(input: EventSettings): Promise<SaveEventSettingsResult> {
   try {
     const current = await readConfig();
-    if (input.overviewChannelId && input.overviewChannelId !== current.overviewChannelId) {
+    const newChannels = [input.overviewChannelId !== current.overviewChannelId ? input.overviewChannelId : "", input.summaryChannelId !== (current.summaryChannelId ?? "") ? input.summaryChannelId : ""].filter(Boolean);
+    if (newChannels.length > 0) {
       const channels = await listChannels(["text"]);
       if (!channels) return { ok: false, error: "botUnavailable" };
-      if (!channels.some((c) => c.id === input.overviewChannelId)) return { ok: false, error: "channelNotFound" };
+      if (newChannels.some((id) => !channels.some((c) => c.id === id))) return { ok: false, error: "channelNotFound" };
     }
     // Another calendar address starts over: the first check of it only remembers what is there.
-    const saved = await updateConfig({ enabled: input.enabled, icsUrl: input.icsUrl, overviewChannelId: input.overviewChannelId || null, overviewDays: input.overviewDays, ...(input.icsUrl !== current.icsUrl ? { baselined: false as const } : {}) });
+    const saved = await updateConfig({ enabled: input.enabled, icsUrl: input.icsUrl, overviewChannelId: input.overviewChannelId || null, overviewDays: input.overviewDays, summaryChannelId: input.summaryChannelId || null, ...(input.icsUrl !== current.icsUrl ? { baselined: false as const } : {}) });
     return { ok: true, settings: toSettings(saved), botNotified: await reloadBotModule("eventcal") };
   } catch (error) {
     console.error("[eventcal] saving the settings failed", errorInfo(error));
@@ -129,4 +130,12 @@ export async function repostEvent(id: string): Promise<RepostResult> {
   if (status === null) return { ok: false, error: "botUnavailable" };
   if (status === "done") return { ok: true };
   return { ok: false, error: status === "not-found" ? "notFound" : status === "gone" ? "gone" : status === "channel" ? "channelNotFound" : "failed" };
+}
+
+/** Asks the bot to post (or update) the detailed monthly summary. */
+export async function postMonthlySummary(month: "current" | "next"): Promise<OverviewResult> {
+  const status = await postEventMonthlyViaBot(month);
+  if (status === null) return { ok: false, error: "botUnavailable" };
+  if (status === "posted" || status === "updated") return { ok: true, status };
+  return { ok: false, error: status === "needsSetup" ? "needsSetup" : status === "channel" ? "channelNotFound" : "failed" };
 }

@@ -8,9 +8,9 @@ import { getText } from "../../lib/safe-http";
 import { parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { aiConfigured } from "../../lib/ai";
 import { parseCalendar, type CalEvent } from "./ics";
-import { claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
+import { setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
-import { eventHash, eventMessage, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
+import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
 // matching event that starts within the rule's lead time, one message per event. An occurrence is claimed in the database BEFORE it is
@@ -128,6 +128,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
       for (const rule of rules.filter((r) => !r.seeded)) await markSeeded(rule.id);
 
       await refreshOverview(guild, loaded, rules, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the overview"));
+      await refreshMonthly(guild, loaded, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the monthly summary"));
       if (Math.random() < 0.05) {
         await prunePosts(new Date(now.getTime() - 120 * DAY));
         await pruneSummaries(new Date(now.getTime() - 120 * DAY));
@@ -187,6 +188,77 @@ export function repostEvent(guild: Guild, postId: string): Promise<EventRepostSt
       return "failed";
     }
   });
+}
+
+/** The lines of the monthly summary for a month: one per event or weekly series, with an AI blurb when there is one, else the first sentence of the text. */
+async function monthlyLines(loaded: CalEvent[], year: number, month: number, budget: { left: number }): Promise<string[]> {
+  const entries = monthlyEntries(monthEvents(loaded, year, month));
+  const lines: string[] = [];
+  for (const entry of entries) {
+    const ai = await summaryFor(entry.event, budget);
+    const blurb = ai?.blurb || firstSentence(entry.event.description, 140);
+    lines.push(monthlyLine(entry, blurb));
+  }
+  return lines;
+}
+
+/** Posts or edits the monthly summary's messages in place; extra old ones are deleted. Returns the message ids. */
+async function writeMonthly(guild: Guild, channelId: string, lines: string[], label: string, existing: string[]): Promise<string[] | null> {
+  const channel = await textChannel(guild, channelId);
+  if (!channel) return null;
+  const messages = monthlyMessages(lines, label);
+  const ids: string[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const old = existing[i] ? await channel.messages.fetch(existing[i]!).catch(() => null) : null;
+    if (old) {
+      await old.edit(messages[i]!);
+      ids.push(old.id);
+    } else {
+      ids.push((await channel.send(messages[i]!)).id);
+    }
+  }
+  for (const extra of existing.slice(messages.length)) await channel.messages.delete(extra).catch(() => undefined);
+  return ids;
+}
+
+/** Keeps a posted summary of the current month up to date (only when its content changed). */
+async function refreshMonthly(guild: Guild, loaded: CalEvent[], now: Date): Promise<void> {
+  const config = await readConfig();
+  const key = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  if (!config.summaryChannelId || config.summaryMonth !== key || config.summaryMessageIds.length === 0) return;
+  const lines = await monthlyLines(loaded, now.getUTCFullYear(), now.getUTCMonth() + 1, { left: 3 });
+  const hash = monthlyHash(lines);
+  if (hash === config.summaryHash) return;
+  const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(now.getUTCFullYear(), now.getUTCMonth() + 1), config.summaryMessageIds);
+  if (ids) {
+    await setMonthly({ summaryMonth: key, summaryMessageIds: ids, summaryHash: hash });
+    log.info({ messages: ids.length }, "eventcal: monthly summary updated");
+  }
+}
+
+/** The dashboard's "Post monthly summary" for this month or the next. Every event of the month is listed, not only those a rule matches. */
+export async function postMonthly(guild: Guild, which: "current" | "next"): Promise<EventOverviewStatus> {
+  try {
+    const config = await readConfig();
+    if (!config.summaryChannelId) return "needsSetup";
+    const now = new Date();
+    const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + (which === "next" ? 1 : 0), 1));
+    const year = target.getUTCFullYear();
+    const month = target.getUTCMonth() + 1;
+    const key = `${year}-${String(month).padStart(2, "0")}`;
+    const loaded = await loadEvents(config.icsUrl, now);
+    if (typeof loaded === "string") return "failed";
+    const lines = await monthlyLines(loaded, year, month, { left: 15 });
+    const existing = config.summaryMonth === key ? config.summaryMessageIds : [];
+    const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(year, month), existing);
+    if (!ids) return "channel";
+    await setMonthly({ summaryMonth: key, summaryMessageIds: ids, summaryHash: monthlyHash(lines) });
+    log.info({ month: key, messages: ids.length }, "eventcal: monthly summary posted");
+    return existing.length > 0 ? "updated" : "posted";
+  } catch (err) {
+    log.error({ err }, "eventcal: posting the monthly summary failed");
+    return "failed";
+  }
 }
 
 /** The dashboard's "Post / update overview": posts the message, or edits the existing one. */

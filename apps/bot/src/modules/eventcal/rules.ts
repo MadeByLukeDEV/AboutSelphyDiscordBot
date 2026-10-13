@@ -30,7 +30,7 @@ export function isPostable(event: Pick<CalEvent, "start" | "allDay">, now: Date,
 
 /** A fingerprint of what a message shows, so a changed event (moved, renamed, new text) edits its message once. */
 export function eventHash(e: CalEvent): string {
-  return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.color ?? ""].join("\u0000")).digest("hex");
+  return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.video ?? "", e.color ?? ""].join("\u0000")).digest("hex");
 }
 
 const unix = (d: Date) => Math.floor(d.getTime() / 1000);
@@ -54,12 +54,14 @@ export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSu
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   if (text) embed.setDescription(truncate(text, 1500));
-  if (ai && ai.rewards.length > 0) embed.addFields({ name: "Rewards", value: truncate(ai.rewards.map((r) => `• ${escapeText(r)}`).join("\n"), 1000) });
+  if (ai && ai.rewards.length > 0) embed.addFields({ name: "Rewards", value: truncate(ai.rewards.map((r) => `• **${escapeText(r)}**`).join("\n"), 1000) });
   if (ai && ai.audience !== "unknown") embed.addFields({ name: "Who can take part", value: ai.audience === "everyone" ? "Everyone — partnered or not" : "Partnered streamers only" });
   if (e.image) embed.setImage(e.image);
   embed.setFooter({ text: ai ? "Event calendar · summary by AI" : "Event calendar" });
+  // A video link goes in the text so Discord shows its player under the embed.
+  const content = [pingRoleId ? `<@&${pingRoleId}>` : "", e.video ?? ""].filter(Boolean).join("\n");
   return {
-    content: pingRoleId ? `<@&${pingRoleId}>` : "",
+    content,
     embeds: [embed],
     allowedMentions: pingRoleId ? { parse: [] as never[], roles: [pingRoleId] } : { parse: [] as never[] },
   };
@@ -114,14 +116,23 @@ export function mergeArticle(calendar: readonly CalEvent[], articleEvents: reado
   const out = calendar.map((e) => ({ ...e }));
   for (const a of articleEvents) {
     if (a.everyWeekday !== null) {
-      for (const e of out) if (sameName(e.summary, a.title) && a.text) e.description = a.text;
+      for (const e of out) {
+        if (!sameName(e.summary, a.title)) continue;
+        if (a.text) e.description = a.text;
+        if (a.image) e.image = a.image;
+        if (a.video) e.video = a.video;
+      }
       continue;
     }
     if (!a.start) continue;
     const last = a.end ?? a.start;
     const matches = out.filter((e) => sameName(e.summary, a.title) && dayMs(e.start) >= a.start!.getTime() - DAY && dayMs(e.start) <= last.getTime() + DAY);
     if (matches.length > 0) {
-      for (const e of matches) if (a.text) e.description = a.text;
+      for (const e of matches) {
+        if (a.text) e.description = a.text;
+        if (a.image) e.image = a.image;
+        if (a.video) e.video = a.video;
+      }
       continue;
     }
     if (last.getTime() + DAY < windowStart.getTime() || a.start.getTime() > windowEnd.getTime()) continue;
@@ -133,9 +144,108 @@ export function mergeArticle(calendar: readonly CalEvent[], articleEvents: reado
       allDay: true,
       description: a.text,
       categories: a.categories,
-      image: null,
+      image: a.image,
+      video: a.video,
       color: null,
     });
   }
   return out.sort((x, y) => x.start.getTime() - y.start.getTime());
 }
+
+// ---- the detailed monthly summary: every event of a month (not only those a rule matches), one line each, repeating events folded ----
+
+export type MonthlyEntry = { event: CalEvent; weekly: number | null };
+
+/** Events that run during the given UTC month (a running event counts in every month it touches). */
+export function monthEvents(events: readonly CalEvent[], year: number, month: number): CalEvent[] {
+  const from = Date.UTC(year, month - 1, 1);
+  const to = Date.UTC(year, month, 1);
+  return events.filter((e) => e.start.getTime() < to && (e.end ?? e.start).getTime() >= from).sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+/** Three or more events of the same name exactly a week apart become one "every <weekday>" entry; everything else stays single. */
+export function monthlyEntries(events: readonly CalEvent[]): MonthlyEntry[] {
+  const groups = new Map<string, CalEvent[]>();
+  for (const e of events) (groups.get(norm(e.summary)) ?? groups.set(norm(e.summary), []).get(norm(e.summary))!).push(e);
+  const folded = new Set<CalEvent>();
+  const entries: MonthlyEntry[] = [];
+  for (const group of groups.values()) {
+    const sorted = [...group].sort((a, b) => a.start.getTime() - b.start.getTime());
+    const weekly = sorted.length >= 3 && sorted.every((e, i) => i === 0 || Math.abs(e.start.getTime() - sorted[i - 1]!.start.getTime() - 7 * DAY) <= 3_600_000);
+    if (!weekly) continue;
+    for (const e of sorted) folded.add(e);
+    entries.push({ event: sorted[0]!, weekly: sorted[0]!.start.getUTCDay() });
+  }
+  for (const e of events) if (!folded.has(e)) entries.push({ event: e, weekly: null });
+  return entries.sort((a, b) => a.event.start.getTime() - b.event.start.getTime());
+}
+
+const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/** The first sentence of a text, cut to `max` characters: the fallback line when there is no AI blurb. */
+export function firstSentence(text: string, max: number): string {
+  const flat = text.replace(/\s+/g, " ").trim();
+  const m = /^(.+?[.!?])(\s|$)/.exec(flat);
+  return truncate(m ? m[1]! : flat, max);
+}
+
+/** One entry as text: "**Name** · <date> – <date>" and, below, its one-line blurb. Everything from outside is escaped. */
+export function monthlyLine(entry: MonthlyEntry, blurb: string): string {
+  const { event: e } = entry;
+  let when: string;
+  if (entry.weekly !== null) when = `every ${WEEKDAY_NAMES[entry.weekly]}`;
+  else {
+    const endsLater = e.end && Math.floor(e.end.getTime() / DAY) > Math.floor(e.start.getTime() / DAY);
+    // A date-only range ends on its last day itself; a timed range ends when the clock says (so the last day is the day before midnight).
+    const last = e.end && endsLater ? (e.allDay ? e.end : new Date(e.end.getTime() - 1)) : null;
+    const lastDay = last && Math.floor(last.getTime() / DAY) > Math.floor(e.start.getTime() / DAY) ? last : null;
+    when = `<t:${unix(e.start)}:D>${lastDay ? ` – <t:${unix(lastDay)}:D>` : ""}`;
+  }
+  const line = `**${escapeText(truncate(e.summary, 80))}** · ${when}`;
+  const b = blurb.trim() ? `\n> ${escapeText(truncate(blurb, 160))}` : "";
+  return line + b;
+}
+
+const MAX_EMBED_TEXT = 3800;
+const MAX_MESSAGE_CHARS = 5200;
+const MAX_EMBEDS = 10;
+
+/** Packs the lines into as few messages as fit Discord's limits (embed text, 6000 characters and 10 embeds per message). */
+export function monthlyMessages(lines: readonly string[], monthLabel: string) {
+  const messages: Array<{ embeds: EmbedBuilder[]; allowedMentions: { parse: never[] } }> = [];
+  let embeds: EmbedBuilder[] = [];
+  let used = 0;
+  let text = "";
+  const titleOf = () => (messages.length === 0 && embeds.length === 0 ? `${monthLabel}: what's on` : null);
+  const flushEmbed = () => {
+    if (text === "") return;
+    const e = new EmbedBuilder().setColor(0x00ffa8).setDescription(text.trim());
+    const t = titleOf();
+    if (t) e.setTitle(t);
+    embeds.push(e);
+    used += text.length + (t?.length ?? 0);
+    text = "";
+  };
+  const flushMessage = () => {
+    flushEmbed();
+    if (embeds.length > 0) messages.push({ embeds, allowedMentions: { parse: [] } });
+    embeds = [];
+    used = 0;
+  };
+  for (const line of lines) {
+    if (text.length + line.length + 2 > MAX_EMBED_TEXT) flushEmbed();
+    if (embeds.length >= MAX_EMBEDS || used + text.length + line.length + 2 > MAX_MESSAGE_CHARS) flushMessage();
+    text += `${line}\n\n`;
+  }
+  flushMessage();
+  if (messages.length === 0) {
+    messages.push({ embeds: [new EmbedBuilder().setColor(0x00ffa8).setTitle(`${monthLabel}: what's on`).setDescription("Nothing is planned yet.")], allowedMentions: { parse: [] } });
+  }
+  messages.at(-1)!.embeds.at(-1)!.setFooter({ text: "Event calendar" });
+  return messages;
+}
+
+export const monthlyHash = (lines: readonly string[]): string => createHash("sha1").update(lines.join("\n\n")).digest("hex");
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export const monthLabel = (year: number, month: number): string => `${MONTH_NAMES[month - 1]} ${year}`;

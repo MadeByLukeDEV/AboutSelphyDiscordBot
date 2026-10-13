@@ -16,6 +16,8 @@ export type CalEvent = {
   categories: string[];
   /** Only a picture from the calendar's own image host. */
   image: string | null;
+  /** A video link added from an article; shown as a player under the post. */
+  video: string | null;
   color: number | null;
 };
 
@@ -164,7 +166,7 @@ export function parseCalendar(text: string, windowStart: Date, windowEnd: Date):
     const filter = Array.isArray(info.filter) ? info.filter.filter((f): f is string => typeof f === "string").map((f) => f.toLowerCase().slice(0, 40)) : [];
     const imageRaw = typeof info.large_image === "string" ? info.large_image : typeof info.small_image === "string" ? info.small_image : "";
     const colorRaw = typeof info["event-color"] === "string" ? /^#([0-9a-f]{6})$/i.exec(info["event-color"]) : null;
-    const base = { summary: summary.slice(0, 120), allDay: start.allDay, description: description.slice(0, 3000), categories: filter.slice(0, 10), image: IMAGE_HOST.test(imageRaw) ? imageRaw : null, color: colorRaw ? parseInt(colorRaw[1]!, 16) : null };
+    const base = { summary: summary.slice(0, 120), allDay: start.allDay, description: description.slice(0, 3000), categories: filter.slice(0, 10), image: IMAGE_HOST.test(imageRaw) ? imageRaw : null, video: null, color: colorRaw ? parseInt(colorRaw[1]!, 16) : null };
 
     const make = (s: Date): CalEvent => ({ ...base, key: `${uid}|${s.toISOString()}`, start: s, end: durationMs !== null && durationMs > 0 ? new Date(s.getTime() + durationMs) : null });
     const rrule = get("RRULE");

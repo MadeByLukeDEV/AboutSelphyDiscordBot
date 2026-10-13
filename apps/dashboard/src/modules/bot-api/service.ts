@@ -356,6 +356,14 @@ export async function repostEventViaBot(id: string): Promise<EventRepostStatus |
   return parsed.success ? parsed.data : null;
 }
 
+/** Asks the bot to post (or update) the monthly summary. Null if the bot can't be reached. */
+export async function postEventMonthlyViaBot(month: "current" | "next"): Promise<EventOverviewStatus | null> {
+  const res = await botFetch("/internal/eventcal/monthly", { method: "POST", body: { month }, timeoutMs: 180_000 });
+  if (!res?.ok) return null;
+  const parsed = eventOverviewStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
 /** Asks the bot to post (or update) the overview message. Null if the bot can't be reached. */
 export async function postEventOverviewViaBot(): Promise<EventOverviewStatus | null> {
   const res = await botFetch("/internal/eventcal/overview", { method: "POST", timeoutMs: 60_000 });

@@ -1,11 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import { eventRuleSchema, eventSettingsSchema } from "@aboutselphy/shared/eventcal";
+import { eventMonthlyBody, eventRuleSchema, eventSettingsSchema } from "@aboutselphy/shared/eventcal";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import type { CheckEventsResult, ImportArticleResult, OverviewResult, RepostResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
-import { checkNow, importArticle, repostEvent, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
+import { checkNow, importArticle, postMonthlySummary, repostEvent, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
@@ -105,4 +105,15 @@ async function repostEventActionRun(input: unknown): Promise<RepostResult> {
 
 export async function repostEventAction(...args: Parameters<typeof repostEventActionRun>): ReturnType<typeof repostEventActionRun> {
   return audited("eventcal.repostEvent", repostEventActionRun, args);
+}
+
+async function postEventMonthlyActionRun(input: unknown): Promise<OverviewResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = eventMonthlyBody.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return postMonthlySummary(parsed.data.month);
+}
+
+export async function postEventMonthlyAction(...args: Parameters<typeof postEventMonthlyActionRun>): ReturnType<typeof postEventMonthlyActionRun> {
+  return audited("eventcal.postEventMonthly", postEventMonthlyActionRun, args);
 }

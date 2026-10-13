@@ -25,6 +25,8 @@ export const eventSettingsSchema = z
     overviewChannelId: z.union([z.literal(""), snowflake]),
     /** The overview lists events that run now or start within this many days. */
     overviewDays: z.number().int().min(MIN_OVERVIEW_DAYS).max(MAX_OVERVIEW_DAYS),
+    /** Where the detailed monthly summary goes. "" = none. */
+    summaryChannelId: z.union([z.literal(""), snowflake]).default(""),
   });
 export type EventSettings = z.infer<typeof eventSettingsSchema>;
 
@@ -59,3 +61,6 @@ export type EventOverviewStatus = z.infer<typeof eventOverviewStatus>;
 export const eventRepostBody = z.object({ id: z.string().min(1).max(64) });
 export const eventRepostStatus = z.enum(["done", "not-found", "gone", "channel", "failed"]);
 export type EventRepostStatus = z.infer<typeof eventRepostStatus>;
+
+/** POST /internal/eventcal/monthly: post (or update) the detailed summary of this month or the next. */
+export const eventMonthlyBody = z.object({ month: z.enum(["current", "next"]) });

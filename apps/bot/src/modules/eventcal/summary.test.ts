@@ -12,6 +12,7 @@ const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   description: "The door is open to streamers of all sizes, Partner or not. Included: the Stalwart Sea Dog Bucket and the Bat Cutout Emote.",
   categories: ["twitch_drop"],
   image: null,
+  video: null,
   color: null,
   ...over,
 });
@@ -19,10 +20,10 @@ const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
 describe("parseSummary", () => {
   it("accepts the shape we ask for", () => {
     const s = parseSummary({ summary: "Watch streams to earn cosmetics.", rewards: ["Stalwart Sea Dog Bucket", "Bat Cutout Emote"], audience: "everyone" });
-    expect(s).toEqual({ summary: "Watch streams to earn cosmetics.", rewards: ["Stalwart Sea Dog Bucket", "Bat Cutout Emote"], audience: "everyone" });
+    expect(s).toEqual({ summary: "Watch streams to earn cosmetics.", rewards: ["Stalwart Sea Dog Bucket", "Bat Cutout Emote"], audience: "everyone", blurb: "" });
   });
   it("defaults the optional parts and ignores extra keys", () => {
-    expect(parseSummary({ summary: "Short.", extra: "x" })).toEqual({ summary: "Short.", rewards: [], audience: "unknown" });
+    expect(parseSummary({ summary: "Short.", extra: "x" })).toEqual({ summary: "Short.", rewards: [], audience: "unknown", blurb: "" });
   });
   it("refuses anything else", () => {
     for (const bad of [null, "text", 5, {}, { summary: "" }, { summary: "x".repeat(601) }, { summary: "ok", audience: "everybody" }, { summary: "ok", rewards: "a" }]) expect(parseSummary(bad), JSON.stringify(bad)).toBeNull();
@@ -49,10 +50,10 @@ describe("prompts and cache keys", () => {
 });
 
 describe("the post with an AI summary", () => {
-  const ai = { summary: "Watch **streams** to earn cosmetics.", rewards: ["Stalwart Sea Dog Bucket", "Bat Cutout Emote"], audience: "everyone" as const };
+  const ai = { summary: "Watch **streams** to earn cosmetics.", rewards: ["Stalwart Sea Dog Bucket", "Bat Cutout Emote"], audience: "everyone" as const, blurb: "" };
   it("shows the summary, the rewards and who can take part", () => {
     const json = eventMessage(ev(), null, ai).embeds[0]!.toJSON();
-    expect(json.fields?.find((f) => f.name === "Rewards")?.value).toBe("• Stalwart Sea Dog Bucket\n• Bat Cutout Emote");
+    expect(json.fields?.find((f) => f.name === "Rewards")?.value).toBe("• **Stalwart Sea Dog Bucket**\n• **Bat Cutout Emote**");
     expect(json.fields?.find((f) => f.name === "Who can take part")?.value).toContain("Everyone");
     expect(json.description).not.toContain("**streams**");
     expect(json.footer?.text).toContain("AI");
