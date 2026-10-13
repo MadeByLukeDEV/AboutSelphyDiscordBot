@@ -3,19 +3,20 @@ import type { EventCalendarConfig, EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { MAX_EVENT_RULES, type EventRuleInput, type EventSettings } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
-import { checkEventCalendarViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
-import { countRules, createRule, deleteArticle, deleteRule, listArticles, saveArticle, findRule, listRules, readConfig, updateConfig, updateRule } from "./repository";
-import type { ArticleRow, CheckEventsResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
+import { checkEventCalendarViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
+import { countRules, createRule, deleteArticle, deleteRule, listArticles, listPostedEvents, saveArticle, findRule, listRules, readConfig, updateConfig, updateRule } from "./repository";
+import type { ArticleRow, CheckEventsResult, PostedEventRow, RepostResult, ImportArticleResult, EventOverview, EventRuleRow, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 
 const toSettings = (c: EventCalendarConfig): EventSettings => ({ enabled: c.enabled, icsUrl: c.icsUrl, overviewChannelId: c.overviewChannelId ?? "", overviewDays: c.overviewDays });
 const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, enabled: r.enabled });
 
 /** Settings, the rules, and the channels and roles to pick from (null = bot unreachable). */
 export async function getEventsPage() {
-  const [config, rules, channels, roles, articleRows] = await Promise.all([readConfig(), listRules(), listChannels(["text"]), listRoles(), listArticles()]);
+  const [config, rules, channels, roles, articleRows, postedRows] = await Promise.all([readConfig(), listRules(), listChannels(["text"]), listRoles(), listArticles(), listPostedEvents()]);
+  const posted: PostedEventRow[] = postedRows.map((p) => ({ id: p.id, title: p.title || p.eventKey.split("|")[0] || "event", rule: p.rule.name, startsAt: p.startsAt.toISOString() }));
   const articles: ArticleRow[] = articleRows.map((a) => ({ id: a.id, title: a.title, monthKey: a.monthKey, events: parseArticle(a.text).length, createdAt: a.createdAt.toISOString() }));
   const overview: EventOverview = { settings: toSettings(config), hasOverview: config.overviewMessageId !== null, lastCheckedAt: config.lastCheckedAt?.toISOString() ?? null, lastStatus: config.lastStatus, baselined: config.baselined };
-  return { overview, rules: rules.map(toRow), channels, roles, articles };
+  return { overview, rules: rules.map(toRow), channels, roles, articles, posted };
 }
 
 export async function saveEventSettings(input: EventSettings): Promise<SaveEventSettingsResult> {
@@ -120,4 +121,12 @@ export async function removeArticle(id: string): Promise<SimpleEventResult> {
     console.error("[eventcal] removing an article failed", errorInfo(error));
     return { ok: false, error: "failed" };
   }
+}
+
+/** Asks the bot to post one already announced event again (the old message is deleted). */
+export async function repostEvent(id: string): Promise<RepostResult> {
+  const status = await repostEventViaBot(id);
+  if (status === null) return { ok: false, error: "botUnavailable" };
+  if (status === "done") return { ok: true };
+  return { ok: false, error: status === "not-found" ? "notFound" : status === "gone" ? "gone" : status === "channel" ? "channelNotFound" : "failed" };
 }

@@ -1503,6 +1503,11 @@ Decided 2026-10-08:
     calls per check; cache pruned after 120 days). The post then shows the short summary, a "Rewards" list and "Who can take part" (everyone, partnered streamers
     only, or omitted when unknown), all escaped, with the footer "summary by AI"; on any failure it shows the event's own text. Already posted messages are not
     rewritten (their hash didn't change). The key is only a bearer header and never logged.
+  - **Repost and a startup fix** (2026-11-13, `feature_event-repost`, migration `20261113150000_event_post_title`): `/events` lists the last 15 posted events with a
+    "Repost" button (`POST /internal/eventcal/repost`, `repostEvent`, inside the same lock as the checks): it posts the event again with the current text and AI
+    summary, deletes the old message and points the row at the new one ("gone" when the calendar no longer has that occurrence). `EventPost.title` keeps the name for
+    the list. **Lesson**: the compose file passes unset variables as empty strings, so every optional env var must go through the `optional()` helper in `lib/env.ts`
+    (an empty `AI_BASE_URL` with a plain `.url()` stopped the bot from starting; `env.test.ts` covers it).
   - [ ] A reminder at the start time, one rule posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)

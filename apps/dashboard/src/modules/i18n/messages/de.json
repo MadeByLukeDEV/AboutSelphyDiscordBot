@@ -2946,6 +2946,13 @@
       "posted": "Übersicht gepostet.",
       "updated": "Übersicht aktualisiert."
     },
+    "posted": {
+      "title": "Geposte Events",
+      "intro": "Die letzten Events, die der Bot gepostet hat. Neu posten schreibt das Event mit dem aktuellen Text und der KI-Zusammenfassung noch einmal und löscht die alte Nachricht, zum Beispiel nachdem du den Artikel oder den KI-Schlüssel hinzugefügt hast.",
+      "repost": "Neu posten",
+      "done": "Neu gepostet.",
+      "gone": "Der Kalender kennt dieses Event nicht mehr."
+    },
     "article": {
       "title": "Monatlicher News-Artikel",
       "intro": "Dem Kalender fehlen oft Details oder ganze Events. Füge den Text des Monatsartikels ein (zum Beispiel \"This Month in Sea of Thieves\") und der Bot ergänzt seine Daten und Beschreibungen: Ein Kalender-Event mit demselben Namen bekommt den Text des Artikels, \"Every Tuesday\"-Abschnitte füllen die wöchentlichen Events, und Events, die im Kalender fehlen, werden als ganztägige Events hinzugefügt. Deine Regeln behandeln sie dann wie jedes andere Event.",

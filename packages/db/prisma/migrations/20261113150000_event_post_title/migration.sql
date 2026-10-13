@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "EventPost" ADD COLUMN "title" VARCHAR(120) NOT NULL DEFAULT '';

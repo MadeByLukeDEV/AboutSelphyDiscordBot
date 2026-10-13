@@ -1,4 +1,4 @@
-import { eventCheckResponse, eventOverviewStatus, type EventCheckResponse, type EventOverviewStatus } from "@aboutselphy/shared/eventcal";
+import { eventCheckResponse, eventOverviewStatus, eventRepostStatus, type EventCheckResponse, type EventOverviewStatus, type EventRepostStatus } from "@aboutselphy/shared/eventcal";
 import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
@@ -345,6 +345,14 @@ export async function checkEventCalendarViaBot(): Promise<EventCheckResponse | n
   const res = await botFetch("/internal/eventcal/check", { method: "POST", timeoutMs: 60_000 });
   if (!res?.ok) return null;
   const parsed = eventCheckResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post one event again. Null if the bot can't be reached. */
+export async function repostEventViaBot(id: string): Promise<EventRepostStatus | null> {
+  const res = await botFetch("/internal/eventcal/repost", { method: "POST", body: { id }, timeoutMs: 90_000 });
+  if (!res?.ok) return null;
+  const parsed = eventRepostStatus.safeParse((await res.json().catch(() => null))?.status);
   return parsed.success ? parsed.data : null;
 }
 

@@ -3,9 +3,9 @@
 import { z } from "zod";
 import { eventRuleSchema, eventSettingsSchema } from "@aboutselphy/shared/eventcal";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
-import type { CheckEventsResult, ImportArticleResult, OverviewResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
+import type { CheckEventsResult, ImportArticleResult, OverviewResult, RepostResult, SaveEventSettingsResult, SaveRuleResult, SimpleEventResult } from "./schema";
 import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
-import { checkNow, importArticle, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
+import { checkNow, importArticle, repostEvent, postOverview, removeArticle, removeRule, saveEventSettings, saveRule } from "./service";
 import { audited } from "@/modules/audit";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
@@ -94,4 +94,15 @@ export async function importEventArticleAction(...args: Parameters<typeof import
 
 export async function deleteEventArticleAction(...args: Parameters<typeof deleteEventArticleActionRun>): ReturnType<typeof deleteEventArticleActionRun> {
   return audited("eventcal.deleteEventArticle", deleteEventArticleActionRun, args);
+}
+
+async function repostEventActionRun(input: unknown): Promise<RepostResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = z.object({ id: z.string().min(1).max(64) }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return repostEvent(parsed.data.id);
+}
+
+export async function repostEventAction(...args: Parameters<typeof repostEventActionRun>): ReturnType<typeof repostEventActionRun> {
+  return audited("eventcal.repostEvent", repostEventActionRun, args);
 }

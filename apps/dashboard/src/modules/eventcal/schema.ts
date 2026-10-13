@@ -10,6 +10,8 @@ export type CheckEventsResult = { ok: true; status: string; events: number; post
 export type OverviewResult = { ok: true; status: "posted" | "updated" } | { ok: false; error: EventError };
 
 export type ImportArticleResult = { ok: true; dated: number; repeating: number; month: string } | { ok: false; error: EventError | "unreadable" | "tooLong" };
+export type PostedEventRow = { id: string; title: string; rule: string; startsAt: string };
+export type RepostResult = { ok: true } | { ok: false; error: EventError | "gone" };
 export type ArticleRow = { id: string; title: string; monthKey: string; events: number; createdAt: string };
 
 export type EventRuleRow = Required<Pick<EventRuleInput, "id">> & Omit<EventRuleInput, "id">;

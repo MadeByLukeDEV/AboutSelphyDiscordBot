@@ -8,6 +8,8 @@ export function updateConfig(data: { enabled: boolean; icsUrl: string; overviewC
   return prisma.eventCalendarConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 
+export const listPostedEvents = () => prisma.eventPost.findMany({ where: { messageId: { not: null } }, orderBy: { startsAt: "desc" }, take: 15, include: { rule: { select: { name: true } } } });
+
 export const listArticles = () => prisma.eventArticle.findMany({ orderBy: { createdAt: "desc" }, take: 12 });
 
 /** Saves an article, replacing an earlier one of the same month, and keeps only the newest four. */

@@ -54,3 +54,8 @@ export const eventCheckResponse = z.object({ status: z.string().max(40), events:
 export type EventCheckResponse = z.infer<typeof eventCheckResponse>;
 export const eventOverviewStatus = z.enum(["posted", "updated", "needsSetup", "channel", "failed"]);
 export type EventOverviewStatus = z.infer<typeof eventOverviewStatus>;
+
+/** POST /internal/eventcal/repost: post an event again (the old message is deleted). */
+export const eventRepostBody = z.object({ id: z.string().min(1).max(64) });
+export const eventRepostStatus = z.enum(["done", "not-found", "gone", "channel", "failed"]);
+export type EventRepostStatus = z.infer<typeof eventRepostStatus>;

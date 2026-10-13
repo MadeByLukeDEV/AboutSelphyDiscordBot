@@ -14,8 +14,8 @@ export function recordCheck(status: string, baselined?: boolean) {
 export const findPost = (ruleId: string, eventKey: string) => prisma.eventPost.findUnique({ where: { ruleId_eventKey: { ruleId, eventKey } } });
 
 /** Claims an occurrence for a rule. False when it was already there, so only one caller posts it. */
-export async function claimPost(data: { ruleId: string; eventKey: string; startsAt: Date; channelId: string; hash: string; messageId: string | null }): Promise<boolean> {
-  return (await prisma.eventPost.createMany({ data: [{ ...data, eventKey: data.eventKey.slice(0, 160) }], skipDuplicates: true })).count === 1;
+export async function claimPost(data: { ruleId: string; eventKey: string; startsAt: Date; channelId: string; hash: string; messageId: string | null; title?: string }): Promise<boolean> {
+  return (await prisma.eventPost.createMany({ data: [{ ...data, eventKey: data.eventKey.slice(0, 160), title: (data.title ?? "").slice(0, 120) }], skipDuplicates: true })).count === 1;
 }
 
 export const setPostMessage = (ruleId: string, eventKey: string, messageId: string) => prisma.eventPost.update({ where: { ruleId_eventKey: { ruleId, eventKey: eventKey.slice(0, 160) } }, data: { messageId } });
@@ -33,3 +33,6 @@ export async function readSummary(hash: string): Promise<string | null> {
 }
 export const saveSummary = (hash: string, json: string) => prisma.eventSummary.upsert({ where: { hash }, update: { json }, create: { hash, json } });
 export const pruneSummaries = (before: Date) => prisma.eventSummary.deleteMany({ where: { createdAt: { lt: before } } });
+
+export const findPostById = (id: string) => prisma.eventPost.findUnique({ where: { id }, include: { rule: true } });
+export const updatePostMessage = (id: string, messageId: string, hash: string) => prisma.eventPost.update({ where: { id }, data: { messageId, hash } });

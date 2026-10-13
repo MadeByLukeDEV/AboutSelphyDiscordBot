@@ -1,5 +1,5 @@
 import { Events, type Client, type Guild } from "discord.js";
-import type { EventCheckResponse, EventOverviewStatus } from "@aboutselphy/shared/eventcal";
+import type { EventCheckResponse, EventOverviewStatus, EventRepostStatus } from "@aboutselphy/shared/eventcal";
 import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
@@ -8,7 +8,7 @@ import { getText } from "../../lib/safe-http";
 import { parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { aiConfigured } from "../../lib/ai";
 import { parseCalendar, type CalEvent } from "./ics";
-import { claimPost, findPost, pruneSummaries, readSummary, saveSummary, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
+import { claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listArticles, listRules, markSeeded, prunePosts, readConfig, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
 import { eventHash, eventMessage, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
@@ -91,7 +91,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
           const existing = await findPost(rule.id, event.key.slice(0, 160));
           if (!config.baselined || !rule.seeded) {
             // First look at the calendar or at this rule: remember everything, announce nothing.
-            await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null });
+            await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary });
             continue;
           }
           const channel = await textChannel(guild, rule.channelId);
@@ -100,7 +100,7 @@ export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
             continue;
           }
           if (!existing) {
-            if (!(await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null }))) continue;
+            if (!(await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary }))) continue;
             try {
               const message = await channel.send(eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget) : null));
               await setPostMessage(rule.id, event.key, message.id);
@@ -157,6 +157,36 @@ async function refreshOverview(guild: Guild, loaded: CalEvent[], rules: Awaited<
   await message.edit(overviewMessage(shown, config.overviewDays));
   await setOverviewHash(hash);
   log.info({ events: shown.length }, "eventcal: overview updated");
+}
+
+/**
+ * The dashboard's "Repost": posts one event again with the current text (and AI summary), deletes the old message, and keeps the row pointing at the new one.
+ * Runs inside the same lock as the checks so it can't race a check.
+ */
+export function repostEvent(guild: Guild, postId: string): Promise<EventRepostStatus> {
+  return mutex.run("calendar", async () => {
+    try {
+      const post = await findPostById(postId);
+      if (!post) return "not-found";
+      const config = await readConfig();
+      const loaded = await loadEvents(config.icsUrl, new Date());
+      if (typeof loaded === "string") return "failed";
+      const event = loaded.find((e) => e.key.slice(0, 160) === post.eventKey);
+      if (!event) return "gone"; // the calendar no longer has this occurrence
+      const channel = await textChannel(guild, post.rule.channelId);
+      if (!channel) return "channel";
+      const summary = post.rule.useAi ? await summaryFor(event, { left: 1 }) : null;
+      const message = await channel.send(eventMessage(event, post.rule.pingRoleId, summary));
+      const oldChannel = post.messageId ? await textChannel(guild, post.channelId) : null;
+      if (post.messageId && oldChannel) await oldChannel.messages.delete(post.messageId).catch(() => undefined);
+      await updatePostMessage(post.id, message.id, eventHash(event));
+      log.info({ rule: post.ruleId, event: event.summary }, "eventcal: reposted from the dashboard");
+      return "done";
+    } catch (err) {
+      log.error({ err }, "eventcal: reposting failed");
+      return "failed";
+    }
+  });
 }
 
 /** The dashboard's "Post / update overview": posts the message, or edits the existing one. */

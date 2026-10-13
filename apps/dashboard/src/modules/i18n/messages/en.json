@@ -2946,6 +2946,13 @@
       "posted": "Overview posted.",
       "updated": "Overview updated."
     },
+    "posted": {
+      "title": "Posted events",
+      "intro": "The latest events the bot has posted. Repost writes the event again with the current text and AI summary and deletes the old message, for example after you added the article or the AI key.",
+      "repost": "Repost",
+      "done": "Reposted.",
+      "gone": "The calendar doesn't have this event any more."
+    },
     "article": {
       "title": "Monthly news article",
       "intro": "The calendar is often short on details, or missing events. Paste the text of the monthly article (for example \"This Month in Sea of Thieves\") and the bot adds its dates and descriptions: a calendar event with the same name gets the article's text, \"Every Tuesday\" sections fill in the weekly events, and events the calendar doesn't have are added as all-day events. Your rules then treat them like any other event.",

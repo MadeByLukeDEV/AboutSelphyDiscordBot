@@ -1399,6 +1399,8 @@ model EventPost {
   messageId String?   @db.VarChar(20)
   channelId String    @db.VarChar(20)
   hash      String    @db.VarChar(40)
+  /// The event's name, for the dashboard list.
+  title     String    @default("") @db.VarChar(120)
   createdAt DateTime  @default(now())
 
   @@unique([ruleId, eventKey])

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { LayoutList, Plus, RefreshCw } from "lucide-react";
+import { LayoutList, Plus, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { eventRuleSchema, eventSettingsSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_OVERVIEW_DAYS, MAX_RULE_TERMS, MIN_OVERVIEW_DAYS, type EventSettings } from "@aboutselphy/shared/eventcal";
@@ -16,8 +16,8 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
-import type { ArticleRow, EventOverview, EventRuleRow } from "../schema";
+import { checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, repostEventAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
+import type { ArticleRow, EventOverview, EventRuleRow, PostedEventRow } from "../schema";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
 const parseTerms = (text: string): string[] => {
@@ -34,7 +34,7 @@ const parseTerms = (text: string): string[] => {
 };
 
 /** The calendar settings, the posting rules, and the overview message. State flows in as props; changes call router.refresh(). */
-export function EventsManager({ overview, rules, channels, roles, articles }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[] }) {
+export function EventsManager({ overview, rules, channels, roles, articles, posted }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[]; posted: PostedEventRow[] }) {
   const t = useTranslations("Events");
   const te = useTranslations("Events.errors");
   const format = useFormatter();
@@ -102,6 +102,15 @@ export function EventsManager({ overview, rules, channels, roles, articles }: { 
       } else {
         toast.error(result.error === "unreadable" ? t("article.unreadable") : result.error === "tooLong" ? t("article.tooLong") : te(result.error));
       }
+    });
+  }
+
+  function repost(id: string) {
+    startTransition(async () => {
+      const result = await repostEventAction({ id });
+      if (result.ok) toast.success(t("posted.done"));
+      else toast.error(result.error === "gone" ? t("posted.gone") : te(result.error));
+      router.refresh();
     });
   }
 
@@ -173,6 +182,31 @@ export function EventsManager({ overview, rules, channels, roles, articles }: { 
           {t("status", { time: when(overview.lastCheckedAt), status: overview.lastStatus ?? "-" })} {!overview.baselined && overview.lastCheckedAt === null ? t("firstCheck") : ""}
         </p>
       </form>
+
+      {posted.length > 0 && (
+        <section aria-labelledby="ev-posted" className="surface flex flex-col gap-3 p-5">
+          <div className="flex flex-col gap-1">
+            <h2 id="ev-posted" className="text-fluid-lg font-bold">
+              {t("posted.title")}
+            </h2>
+            <p className="max-w-prose text-sm text-muted-foreground">{t("posted.intro")}</p>
+          </div>
+          <ul className="flex flex-col divide-y text-sm">
+            {posted.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="min-w-0 truncate font-medium">{p.title}</span>
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  {p.rule} · {when(p.startsAt)}
+                  <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => repost(p.id)}>
+                    <RotateCcw aria-hidden />
+                    {t("posted.repost")}
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="ev-article" className="surface flex flex-col gap-4 p-5">
         <div className="flex flex-col gap-1">
