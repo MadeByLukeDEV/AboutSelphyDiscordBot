@@ -57,6 +57,9 @@ type CardContext = { theme: CardTheme; themeStamp: string; items: Map<string, { 
 
 const sha1 = (text: string): string => createHash("sha1").update(text).digest("hex");
 
+/** "#00ffa8" -> the number Discord wants for an embed colour. */
+const accentNumber = (hex: string): number => Number.parseInt(hex.replace("#", ""), 16) || 0x00ffa8;
+
 /** The game's look (accent colour, background) and the pictures of the items the events mention, loaded once per round. */
 async function cardContext(src: SourceState, events: readonly CalEvent[]): Promise<CardContext> {
   const background = await readBackground(src.id);
@@ -224,7 +227,7 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
 /** The overview shows every event of the game that runs now or starts within the window, not only those a rule posts. */
 async function overviewFor(loaded: CalEvent[], days: number, now: Date) {
   const shown = overviewEvents(loaded, now, days);
-  return { shown, hash: overviewHash(shown) };
+  return { shown, hash: overviewHash(shown, now) };
 }
 
 /** Edits the overview message when its content changed (only if one was posted from the dashboard). */
@@ -237,7 +240,7 @@ async function refreshOverview(guild: Guild, sourceId: string, loaded: CalEvent[
   const channel = await textChannel(guild, config.overviewChannelId);
   const message = channel ? await channel.messages.fetch(config.overviewMessageId).catch(() => null) : null;
   if (!message) return void log.warn({ channelId: config.overviewChannelId }, "eventcal: the overview message is gone (post it again from the dashboard)");
-  await message.edit(overviewMessage(shown, config.overviewDays));
+  await message.edit(overviewMessage(shown, config.overviewDays, now, accentNumber(config.accentColor)));
   await setOverviewHash(sourceId, hash);
   log.info({ events: shown.length }, "eventcal: overview updated");
 }
@@ -393,9 +396,10 @@ export async function postOverview(guild: Guild, sourceId: string | null = null)
     if (!config.overviewChannelId) return "needsSetup";
     const channel = await textChannel(guild, config.overviewChannelId);
     if (!channel) return "channel";
-    const loaded = await storedEvents(config, new Date());
-    const { shown, hash } = await overviewFor(loaded, config.overviewDays, new Date());
-    const payload = overviewMessage(shown, config.overviewDays);
+    const now = new Date();
+    const loaded = await storedEvents(config, now);
+    const { shown, hash } = await overviewFor(loaded, config.overviewDays, now);
+    const payload = overviewMessage(shown, config.overviewDays, now, accentNumber(config.accentColor));
     const existing = config.overviewMessageId ? await channel.messages.fetch(config.overviewMessageId).catch(() => null) : null;
     if (existing) {
       await existing.edit(payload);

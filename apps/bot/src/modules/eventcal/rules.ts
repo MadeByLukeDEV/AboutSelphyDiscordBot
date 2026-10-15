@@ -105,29 +105,85 @@ export function overviewEvents(events: readonly CalEvent[], now: Date, days: num
     .sort((a, b) => a.start.getTime() - b.start.getTime());
 }
 
-/** One line per event ("**Name** · <start> - <end>"), at most `max`, with a note for the rest. */
-export function overviewLines(events: readonly CalEvent[], max = 25): string[] {
-  const lines = events.slice(0, max).map((e) => {
-    if (e.recurrence) return `**${escapeText(truncate(e.summary, 60))}** · ${escapeText(e.recurrence)}`;
-    const end = e.end && !e.allDay ? ` – <t:${unix(e.end)}:d>` : "";
-    return `**${escapeText(truncate(e.summary, 60))}** · <t:${unix(e.start)}:d>${end}`;
-  });
-  if (events.length > max) lines.push(`... and ${events.length - max} more`);
-  return lines;
+const KIND_ICON: Record<string, string> = { drop: "🎁", event: "🎉", update: "🛠️", sale: "🏷️", other: "📌" };
+const DAY_ABBR = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const shortDay = (d: Date): string => `${DAY_ABBR[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH_ABBR[d.getUTCMonth()]}`;
+const dayNumber = (d: Date): number => Math.floor(d.getTime() / DAY);
+
+/** When an event runs, short and readable: "Fri 23 Oct – Mon 26 Oct", "Thu 22 Oct", or (events with a time) the viewer's own time through Discord. */
+export function overviewWhen(e: CalEvent): string {
+  if (!e.allDay) return `<t:${unix(e.start)}:f>${e.end ? ` → <t:${unix(e.end)}:t>` : ""}`;
+  return e.end && dayNumber(e.end) > dayNumber(e.start) ? `${shortDay(e.start)} – ${shortDay(e.end)}` : shortDay(e.start);
 }
 
-export function overviewMessage(events: readonly CalEvent[], days: number) {
-  const lines = overviewLines(events);
-  const embed = new EmbedBuilder()
-    .setColor(0x00ffa8)
-    .setTitle("Upcoming events")
-    .setDescription(lines.length > 0 ? truncate(lines.join("\n"), 4000) : `Nothing planned in the next ${days} days.`)
-    .setFooter({ text: "Event calendar" })
-    .setTimestamp();
+/** The moment an event is over: a date-only event lasts until the end of its last day. */
+const overAt = (e: CalEvent): number => (e.allDay ? (e.end ?? e.start).getTime() + DAY : (e.end ?? e.start).getTime());
+
+/** One event as two lines: its name with a kind icon, then when it runs and a relative time ("in 8 days" / "ends in 3 days"). */
+export function overviewEntry(e: CalEvent, now: Date): string {
+  const icon = e.recurrence ? "🔁" : (KIND_ICON[e.kind ?? "event"] ?? "🎉");
+  const name = `${icon} **${escapeText(truncate(e.summary, 70))}**`;
+  if (e.recurrence) return `${name}\n${escapeText(e.recurrence)}`;
+  const running = e.start.getTime() <= now.getTime();
+  const relative = running ? (overAt(e) > now.getTime() && (e.end || e.allDay) ? ` · ends <t:${Math.floor(overAt(e) / 1000)}:R>` : "") : ` · starts <t:${unix(e.start)}:R>`;
+  return `${name}\n${overviewWhen(e)}${relative}`;
+}
+
+export type OverviewSection = { title: string; entries: string[] };
+
+/** The overview in sections: happening now, the next seven days, later, and repeating entries. At most `max` events in all, with a note for the rest. */
+export function overviewSections(events: readonly CalEvent[], now: Date, max = 25): OverviewSection[] {
+  const nowMs = now.getTime();
+  const sorted = [...events].sort((a, b) => a.start.getTime() - b.start.getTime());
+  const groups: Array<{ title: string; list: CalEvent[] }> = [
+    { title: "🟢 Happening now", list: sorted.filter((e) => !e.recurrence && e.start.getTime() <= nowMs) },
+    { title: "📅 Next 7 days", list: sorted.filter((e) => !e.recurrence && e.start.getTime() > nowMs && e.start.getTime() <= nowMs + 7 * DAY) },
+    { title: "🗓️ Later", list: sorted.filter((e) => !e.recurrence && e.start.getTime() > nowMs + 7 * DAY) },
+    { title: "🔁 Repeating", list: sorted.filter((e) => e.recurrence) },
+  ];
+  let left = max;
+  let cut = 0;
+  const out: OverviewSection[] = [];
+  for (const g of groups) {
+    if (g.list.length === 0) continue;
+    const take = g.list.slice(0, Math.max(left, 0));
+    cut += g.list.length - take.length;
+    left -= take.length;
+    if (take.length > 0) out.push({ title: g.title, entries: take.map((e) => overviewEntry(e, now)) });
+  }
+  if (cut > 0 && out.length > 0) out[out.length - 1]!.entries.push(`… and ${cut} more`);
+  return out;
+}
+
+/** Field values hold at most 1024 characters: a long section continues in another field. */
+function chunkEntries(entries: readonly string[], limit = 1000): string[] {
+  const chunks: string[] = [];
+  let current = "";
+  for (const entry of entries) {
+    const next = current ? `${current}\n\n${entry}` : entry;
+    if (next.length > limit && current) {
+      chunks.push(current);
+      current = entry;
+    } else current = next;
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+export function overviewMessage(events: readonly CalEvent[], days: number, now: Date, color = 0x00ffa8) {
+  const sections = overviewSections(events, now);
+  const embed = new EmbedBuilder().setColor(color).setTitle("Upcoming events").setFooter({ text: "Event calendar" }).setTimestamp();
+  if (sections.length === 0) embed.setDescription(`Nothing planned in the next ${days} days.`);
+  else {
+    embed.setDescription(`The next ${days} days`);
+    for (const section of sections) chunkEntries(section.entries).forEach((value, i) => embed.addFields({ name: i === 0 ? section.title : `${section.title} (continued)`, value, inline: false }));
+  }
   return { embeds: [embed], allowedMentions: { parse: [] as never[] } };
 }
 
-export const overviewHash = (events: readonly CalEvent[]): string => createHash("sha1").update(overviewLines(events).join("\n")).digest("hex");
+/** A fingerprint of what the overview shows, so the message is only edited when it changes (including an event moving to another section). */
+export const overviewHash = (events: readonly CalEvent[], now: Date): string => createHash("sha1").update(JSON.stringify(overviewSections(events, now))).digest("hex");
 
 const norm = (t: string): string => fold(t).replace(/[^a-z0-9]+/g, "");
 /** "Twitch Drops" and "Season 21 Community Weekend" vs "Community Weekend": one name contains the other. */

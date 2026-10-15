@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
-import { eventHash, eventMessage, firstSentence, foldSeries, recurrenceText, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
+import { eventHash, eventMessage, firstSentence, foldSeries, recurrenceText, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEntry, overviewEvents, overviewHash, overviewMessage, overviewSections, overviewWhen, whenText } from "./rules";
 
 const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   key: "u|2026-09-18T10:00:00.000Z",
@@ -88,18 +88,50 @@ describe("overview", () => {
   it("lists running and upcoming events, soonest first, within the window", () => {
     expect(overviewEvents([a, b, running, past, far], now, 30).map((e) => e.summary)).toEqual(["R", "B", "A"]);
   });
-  it("cuts a long list and notes the rest", () => {
-    const many = Array.from({ length: 30 }, (_, i) => ev({ summary: `E${i}`, start: new Date(now.getTime() + i * 3_600_000) }));
-    const lines = overviewLines(many, 25);
-    expect(lines).toHaveLength(26);
-    expect(lines.at(-1)).toBe("... and 5 more");
+  it("groups into happening now, the next seven days, later and repeating", () => {
+    const rep = ev({ summary: "Fight Nights", start: new Date("2026-09-22T18:00:00Z"), end: new Date("2026-12-01T19:00:00Z"), recurrence: "Every Tuesday" });
+    const sections = overviewSections([far, a, b, running, rep], now);
+    expect(sections.map((s) => s.title)).toEqual(["🟢 Happening now", "📅 Next 7 days", "🗓️ Later", "🔁 Repeating"]);
+    expect(sections[0]!.entries[0]).toContain("**R**");
+    expect(sections[1]!.entries[0]).toContain("**B**");
+    expect(sections[1]!.entries[1]).toContain("**A**");
+    expect(sections[2]!.entries[0]).toContain("**F**");
+    expect(sections[3]!.entries[0]).toBe("🔁 **Fight Nights**\nEvery Tuesday");
   });
-  it("has a stable fingerprint that changes with the list", () => {
-    expect(overviewHash([a, b])).toBe(overviewHash([a, b]));
-    expect(overviewHash([a, b])).not.toBe(overviewHash([a]));
+  it("writes each event on two lines with a short date and a relative time", () => {
+    const drop = ev({ summary: "Twitch Drops", kind: "drop", allDay: true, start: new Date("2026-09-23T00:00:00Z"), end: new Date("2026-09-26T00:00:00Z") });
+    const entry = overviewEntry(drop, now);
+    const [name, when] = entry.split("\n");
+    expect(name).toBe("🎁 **Twitch Drops**");
+    expect(when).toMatch(/^Wed 23 Sep – Sat 26 Sep · starts <t:\d+:R>$/);
+    expect(overviewWhen(ev({ allDay: true, start: new Date("2026-09-22T00:00:00Z"), end: null }))).toBe("Tue 22 Sep");
+    expect(overviewWhen(ev({ allDay: false }))).toMatch(/^<t:\d+:f> → <t:\d+:t>$/);
+  });
+  it("says when a running event ends", () => {
+    const runningEntry = overviewEntry(ev({ summary: "R", allDay: true, start: new Date("2026-09-14T00:00:00Z"), end: new Date("2026-09-16T00:00:00Z") }), now);
+    expect(runningEntry).toMatch(/ · ends <t:\d+:R>$/);
+  });
+  it("cuts a long list and notes the rest", () => {
+    const many = Array.from({ length: 30 }, (_, i) => ev({ summary: `E${i}`, start: new Date(now.getTime() + (i + 1) * 3_600_000) }));
+    const sections = overviewSections(many, now, 25);
+    expect(sections.flatMap((s) => s.entries)).toHaveLength(26);
+    expect(sections.at(-1)!.entries.at(-1)).toBe("… and 5 more");
+  });
+  it("keeps every field within Discord's limit and escapes names", () => {
+    const many = Array.from({ length: 25 }, (_, i) => ev({ summary: `**Event** @everyone ${"x".repeat(60)} ${i}`, start: new Date(now.getTime() + (i + 1) * 3_600_000) }));
+    const message = overviewMessage(many, 30, now);
+    const json = message.embeds[0]!.toJSON();
+    for (const f of json.fields!) expect(f.value.length).toBeLessThanOrEqual(1024);
+    expect(JSON.stringify(json)).not.toContain("**Event** @everyone");
+    expect(message.allowedMentions).toEqual({ parse: [] });
+  });
+  it("has a stable fingerprint that changes with the list and when an event moves section", () => {
+    expect(overviewHash([a, b], now)).toBe(overviewHash([a, b], now));
+    expect(overviewHash([a, b], now)).not.toBe(overviewHash([a], now));
+    expect(overviewHash([a], now)).not.toBe(overviewHash([a], new Date("2026-09-20T12:00:00Z")));
   });
   it("says so when nothing is planned", () => {
-    expect(overviewMessage([], 30).embeds[0]!.toJSON().description).toContain("Nothing planned");
+    expect(overviewMessage([], 30, now).embeds[0]!.toJSON().description).toContain("Nothing planned");
   });
 });
 
@@ -325,7 +357,7 @@ describe("repeating series", () => {
   });
   it("shows a series as one line in the overview and the monthly summary", () => {
     const [series] = foldSeries(weekly("Fight Nights", "2026-10-06T18:00:00Z", 8), now);
-    expect(overviewLines([series!])[0]).toBe("**Fight Nights** · Every Tuesday");
+    expect(overviewEntry(series!, now)).toBe("🔁 **Fight Nights**\nEvery Tuesday");
     expect(monthlyLine({ event: series!, weekly: null }, "")).toBe("**Fight Nights** · Every Tuesday");
   });
 });
