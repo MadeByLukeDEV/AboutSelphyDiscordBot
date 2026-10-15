@@ -20,6 +20,8 @@ export type SourceState = {
   summaryMessageIds: string[];
   summaryHash: string;
   summaryAuto: boolean;
+  accentColor: string;
+  summaryImage: boolean;
   baselined: boolean;
 };
 
@@ -133,4 +135,18 @@ export async function claimMonth(id: string, key: string, previous: string | nul
 
 /** Gives the month back (the post failed), so the next round tries again. */
 export const releaseMonth = (id: string, key: string, previous: string | null) => prisma.eventSource.updateMany({ where: { id, summaryMonth: key }, data: { summaryMonth: previous } });
+
+// ---- items and pictures
+
+/** Makes sure every item name of the events has a row in the game's item library (without a picture until an admin uploads one). */
+export async function ensureItems(sourceId: string, items: Array<{ key: string; name: string }>): Promise<void> {
+  if (items.length === 0) return;
+  await prisma.eventItem.createMany({ data: items.map((i) => ({ sourceId, key: i.key, name: i.name.slice(0, 80) })), skipDuplicates: true });
+}
+
+export const readItems = (sourceId: string, keys: string[]) => prisma.eventItem.findMany({ where: { sourceId, key: { in: keys } }, select: { key: true, name: true, imageData: true, imageUpdatedAt: true } });
+
+export const readBackground = (sourceId: string) => prisma.eventSourceImage.findUnique({ where: { sourceId } });
+
+export const readGameEvent = (sourceId: string, id: string) => prisma.gameEvent.findFirst({ where: { id, sourceId } });
 

@@ -1,4 +1,4 @@
-import { eventCheckResponse, eventOverviewStatus, eventRepostStatus, type EventCheckResponse, type EventOverviewStatus, type EventRepostStatus } from "@aboutselphy/shared/eventcal";
+import { eventCheckResponse, eventOverviewStatus, eventRepostStatus, type EventCheckResponse, type EventOverviewStatus, type EventRepostStatus, eventPreviewResponse } from "@aboutselphy/shared/eventcal";
 import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
@@ -274,6 +274,14 @@ export async function checkFeedViaBot(id: string): Promise<{ status: string; ann
   if (!res?.ok) return null;
   const parsed = feedCheckResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;
+}
+
+/** A sample picture of the event calendar (an event's card, or a month's overview) drawn by the bot. Null if the bot can't be reached or can't draw it. */
+export async function getEventPreviewCard(body: { sourceId: string; eventId: string; month: "none" | "current" | "next" }): Promise<Uint8Array | null> {
+  const res = await botFetch("/internal/eventcal/preview", { method: "POST", body, timeoutMs: 30_000 });
+  if (!res?.ok) return null;
+  const parsed = eventPreviewResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? new Uint8Array(Buffer.from(parsed.data.png, "base64")) : null;
 }
 
 /** A sample birthday or reminder card from the saved settings. Null if the bot can't be reached or can't draw it. */

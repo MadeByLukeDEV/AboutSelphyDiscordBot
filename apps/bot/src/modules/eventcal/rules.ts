@@ -67,7 +67,7 @@ export function whenText(e: Pick<CalEvent, "start" | "end" | "allDay">): { start
  * The message for one event. The calendar's text is escaped (it comes from outside), nothing can ping but the rule's role. A reminder (a later lead
  * time of the same rule) gets a line saying when the event starts.
  */
-export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null, opts: { reminder?: boolean } = {}) {
+export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null, opts: { reminder?: boolean; cardName?: string } = {}) {
   const { starts, ends } = whenText(e);
   const embed = new EmbedBuilder().setColor(e.color ?? 0x00ffa8).setTitle(truncate(escapeText(e.summary), 256)).addFields({ name: "Starts", value: starts, inline: false });
   if (ends) embed.addFields({ name: "Ends", value: ends, inline: false });
@@ -81,7 +81,9 @@ export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSu
   if (text) embed.setDescription(truncate(text, 1500));
   if (ai && ai.rewards.length > 0) embed.addFields({ name: "Rewards", value: truncate(ai.rewards.map((r) => `• **${escapeText(r)}**`).join("\n"), 1000) });
   if (ai && ai.audience !== "unknown") embed.addFields({ name: "Who can take part", value: ai.audience === "everyone" ? "Everyone — partnered or not" : "Partnered streamers only" });
-  if (e.image) embed.setImage(e.image);
+  // A drawn card (attached by the caller) replaces the plain picture.
+  if (opts.cardName) embed.setImage(`attachment://${opts.cardName}`);
+  else if (e.image) embed.setImage(e.image);
   embed.setFooter({ text: ai ? "Event calendar · summary by AI" : "Event calendar" });
   // A video link goes in the text so Discord shows its player under the embed.
   const lead = [pingRoleId ? `<@&${pingRoleId}>` : "", opts.reminder ? `⏰ **Reminder:** starts <t:${unix(e.start)}:R>` : ""].filter(Boolean).join(" ");

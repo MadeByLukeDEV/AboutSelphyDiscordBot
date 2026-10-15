@@ -3018,7 +3018,31 @@
       "summaryAuto": "Post the monthly summary automatically",
       "summaryAutoHelp": "When a new month has events, the bot posts its summary by itself (once). Needs the monthly summary channel.",
       "reminders": "Reminders for this event (days before)",
-      "remindersHelp": "Leave empty to use the rules' lead times. For example 7, 2 posts the announcement a week before and a reminder two days before."
+      "remindersHelp": "Leave empty to use the rules' lead times. For example 7, 2 posts the announcement a week before and a reminder two days before.",
+      "pictures": "Pictures and items ({count} items, {missing} without a picture)",
+      "picturesIntro": "Upload a picture for each drop item once; the bot reuses it every time that item appears. Items are added here by themselves when an event lists them. Pictures show on the drawn cards, which a rule can attach to its posts.",
+      "uploadBackground": "Upload background",
+      "replaceBackground": "Replace background",
+      "backgroundRemoved": "Background removed.",
+      "previewMonthCurrent": "Preview this month's picture",
+      "previewMonthNext": "Preview next month's picture",
+      "previewCard": "Card",
+      "previewIntro": "Drawn by the bot from your saved settings. Nothing is posted.",
+      "previewFailed": "The bot couldn't draw this picture. Is it reachable, and is there something to show?",
+      "previewLoading": "Drawing...",
+      "noItems": "No items yet. They appear here when an event lists drop items.",
+      "itemMissing": "Needs a picture",
+      "uploadPicture": "Upload",
+      "replacePicture": "Replace",
+      "removePicture": "Remove picture",
+      "deleteItem": "Remove item",
+      "pictureSaved": "Picture saved.",
+      "pictureRemoved": "Picture removed.",
+      "itemRemoved": "Item removed.",
+      "accent": "Colour of the pictures",
+      "accentHelp": "The accent colour of this game's drawn cards and monthly picture.",
+      "summaryImage": "Draw a picture for the monthly summary",
+      "summaryImageHelp": "Puts a drawn overview of the month on top of the monthly summary."
     },
     "posted": {
       "title": "Posted events",
@@ -3085,7 +3109,9 @@
         "other": "Other"
       },
       "leadDays": "Post this many days before it starts",
-      "leadDaysHelp": "One to {max} numbers from 0 to {limit}, for example 7, 2. The first post is the announcement, the later ones are reminders. 0 = on the day."
+      "leadDaysHelp": "One to {max} numbers from 0 to {limit}, for example 7, 2. The first post is the announcement, the later ones are reminders. 0 = on the day.",
+      "useCard": "Attach a drawn picture",
+      "useCardHelp": "Draws a card for the event (the drop items with their pictures, in the game's colour) and shows it in the post."
     },
     "errors": {
       "forbidden": "You don't have access to this.",
@@ -3106,7 +3132,11 @@
       "badVideo": "Enter a YouTube, Twitch or Vimeo video address.",
       "badRange": "The end can't be before the start.",
       "needsSource": "Pick a game.",
-      "badLeadDays": "Enter one to {max} numbers from 0 to {limit}, for example 7, 2."
+      "badLeadDays": "Enter one to {max} numbers from 0 to {limit}, for example 7, 2.",
+      "pictureNoFile": "Choose a picture first.",
+      "pictureType": "Use a PNG, JPEG or WebP picture.",
+      "pictureSize": "The picture must be 3 MB or less.",
+      "pictureDimensions": "The picture must be 64 to 4096 pixels on each side."
     }
   },
   "Verification": {

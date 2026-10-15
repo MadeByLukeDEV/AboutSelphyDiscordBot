@@ -7,7 +7,8 @@ import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import { contentHash, extractEvents } from "./extract";
 import { fetchPage, pageUrlsFor } from "./fetcher";
 import { htmlToText } from "./html-text";
-import { listArticles, markVanished, readFetch, saveFetch, saveState, upsertEvent, type SourceState } from "./repository";
+import { itemKey } from "@aboutselphy/shared/eventcal";
+import { ensureItems, listArticles, markVanished, readFetch, saveFetch, saveState, upsertEvent, type SourceState } from "./repository";
 import { mergeArticle } from "./rules";
 import { toRow } from "./store";
 
@@ -128,6 +129,10 @@ async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
     seen.push(row.key);
     await upsertEvent(src.id, e.key.startsWith("article|") ? "article" : "calendar", row);
   }
+  // Every item name becomes a row of the game's item library, ready for a picture.
+  const seenItems = new Map<string, string>();
+  for (const e of merged) for (const name of e.items ?? []) if (!seenItems.has(itemKey(name))) seenItems.set(itemKey(name), name);
+  await ensureItems(src.id, [...seenItems].map(([key, name]) => ({ key, name }))).catch((err) => log.warn({ err }, "eventcal: could not update the item library"));
   // Only a read that fully succeeded may declare an event gone.
   if (allOk) {
     const gone = await markVanished(src.id, seen, from, to);

@@ -3018,7 +3018,31 @@
       "summaryAuto": "Monatsübersicht automatisch posten",
       "summaryAutoHelp": "Sobald ein neuer Monat Events hat, postet der Bot die Übersicht von selbst (einmal). Braucht den Kanal für die Monatsübersicht.",
       "reminders": "Erinnerungen für dieses Event (Tage vorher)",
-      "remindersHelp": "Leer lassen, um die Vorlaufzeiten der Regeln zu nutzen. Zum Beispiel 7, 2 postet die Ankündigung eine Woche vorher und eine Erinnerung zwei Tage vorher."
+      "remindersHelp": "Leer lassen, um die Vorlaufzeiten der Regeln zu nutzen. Zum Beispiel 7, 2 postet die Ankündigung eine Woche vorher und eine Erinnerung zwei Tage vorher.",
+      "pictures": "Bilder und Items ({count} Items, {missing} ohne Bild)",
+      "picturesIntro": "Lade für jedes Drop-Item einmal ein Bild hoch; der Bot nutzt es jedes Mal wieder, wenn das Item vorkommt. Items erscheinen hier von selbst, sobald ein Event sie auflistet. Die Bilder erscheinen auf den gezeichneten Karten, die eine Regel an ihre Posts hängen kann.",
+      "uploadBackground": "Hintergrund hochladen",
+      "replaceBackground": "Hintergrund ersetzen",
+      "backgroundRemoved": "Hintergrund entfernt.",
+      "previewMonthCurrent": "Bild dieses Monats ansehen",
+      "previewMonthNext": "Bild des nächsten Monats ansehen",
+      "previewCard": "Karte",
+      "previewIntro": "Vom Bot aus deinen gespeicherten Einstellungen gezeichnet. Es wird nichts gepostet.",
+      "previewFailed": "Der Bot konnte dieses Bild nicht zeichnen. Ist er erreichbar, und gibt es etwas anzuzeigen?",
+      "previewLoading": "Wird gezeichnet...",
+      "noItems": "Noch keine Items. Sie erscheinen hier, sobald ein Event Drop-Items auflistet.",
+      "itemMissing": "Braucht ein Bild",
+      "uploadPicture": "Hochladen",
+      "replacePicture": "Ersetzen",
+      "removePicture": "Bild entfernen",
+      "deleteItem": "Item entfernen",
+      "pictureSaved": "Bild gespeichert.",
+      "pictureRemoved": "Bild entfernt.",
+      "itemRemoved": "Item entfernt.",
+      "accent": "Farbe der Bilder",
+      "accentHelp": "Die Akzentfarbe der gezeichneten Karten und des Monatsbilds dieses Spiels.",
+      "summaryImage": "Ein Bild für die Monatsübersicht zeichnen",
+      "summaryImageHelp": "Setzt eine gezeichnete Übersicht des Monats über die Monatsübersicht."
     },
     "posted": {
       "title": "Geposte Events",
@@ -3085,7 +3109,9 @@
         "other": "Sonstiges"
       },
       "leadDays": "So viele Tage vor dem Start posten",
-      "leadDaysHelp": "Eine bis {max} Zahlen von 0 bis {limit}, zum Beispiel 7, 2. Der erste Post ist die Ankündigung, die späteren sind Erinnerungen. 0 = am Tag selbst."
+      "leadDaysHelp": "Eine bis {max} Zahlen von 0 bis {limit}, zum Beispiel 7, 2. Der erste Post ist die Ankündigung, die späteren sind Erinnerungen. 0 = am Tag selbst.",
+      "useCard": "Gezeichnetes Bild anhängen",
+      "useCardHelp": "Zeichnet eine Karte für das Event (die Drop-Items mit ihren Bildern, in der Farbe des Spiels) und zeigt sie im Post."
     },
     "errors": {
       "forbidden": "Darauf hast du keinen Zugriff.",
@@ -3106,7 +3132,11 @@
       "badVideo": "Gib die Adresse eines YouTube-, Twitch- oder Vimeo-Videos ein.",
       "badRange": "Das Ende darf nicht vor dem Beginn liegen.",
       "needsSource": "Wähle ein Spiel.",
-      "badLeadDays": "Gib eine bis {max} Zahlen von 0 bis {limit} ein, zum Beispiel 7, 2."
+      "badLeadDays": "Gib eine bis {max} Zahlen von 0 bis {limit} ein, zum Beispiel 7, 2.",
+      "pictureNoFile": "Wähle zuerst ein Bild.",
+      "pictureType": "Nutze ein PNG-, JPEG- oder WebP-Bild.",
+      "pictureSize": "Das Bild darf höchstens 3 MB groß sein.",
+      "pictureDimensions": "Das Bild muss auf jeder Seite 64 bis 4096 Pixel haben."
     }
   },
   "Verification": {

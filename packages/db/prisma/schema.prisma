@@ -1397,6 +1397,8 @@ model EventRule {
   source     EventSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   /// Also matches events of these kinds (drop, event, update, sale, other).
   kinds      String[]    @default([])
+  /// Attach a drawn picture (drop card / event card) to the posts.
+  useCard    Boolean     @default(false)
   /// Days before the start at which the event is posted: the first is the announcement, the later ones are reminders (for example 7 and 2).
   leadDays   Int[]       @default([7])
 }
@@ -1470,6 +1472,11 @@ model EventSource {
   syncStartedAt     DateTime?
   /// Post the monthly summary by itself when a new month has events.
   summaryAuto       Boolean   @default(false)
+  /// The look of the drawn pictures of this game, and whether the monthly summary comes with a picture.
+  accentColor       String    @default("#00ffa8") @db.VarChar(7)
+  summaryImage      Boolean   @default(false)
+  background        EventSourceImage?
+  items             EventItem[]
   rules             EventRule[]
   articles          EventArticle[]
   events            GameEvent[]
@@ -1536,3 +1543,35 @@ model EventSummary {
 
   @@index([createdAt])
 }
+
+/// An item (a drop reward such as a cosmetic) of a game, with the picture an admin uploaded for it. Rows are created by themselves from the extracted events.
+model EventItem {
+  id             String      @id @default(cuid())
+  sourceId       String
+  source         EventSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  /// The name normalised (lower case, one space), so "Gilded Phoenix Wheel" always finds the same row.
+  key            String      @db.VarChar(80)
+  name           String      @db.VarChar(80)
+  imageData      Bytes?
+  imageType      String?     @db.VarChar(20)
+  imageWidth     Int?
+  imageHeight    Int?
+  imageUpdatedAt DateTime?
+  uploadedByName String?     @db.VarChar(100)
+  createdAt      DateTime    @default(now())
+
+  @@unique([sourceId, key])
+}
+
+/// The background picture of a game's drawn cards (one per game).
+model EventSourceImage {
+  sourceId       String      @id
+  source         EventSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  data           Bytes
+  contentType    String      @db.VarChar(20)
+  width          Int
+  height         Int
+  uploadedByName String      @db.VarChar(100)
+  uploadedAt     DateTime    @default(now())
+}
+

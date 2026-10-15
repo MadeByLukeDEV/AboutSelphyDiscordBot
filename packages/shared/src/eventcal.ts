@@ -25,6 +25,10 @@ const sampleUrl = (v: string): string => v.replaceAll("{month}", "october").repl
 
 export const FETCH_MODES = ["auto", "plain", "crawl4ai"] as const;
 export const MAX_LEAD_TIMES = 4;
+export const DEFAULT_ACCENT = "#00ffa8";
+
+/** The key under which an item is stored: NFKC, lower case, one space, at most 80 characters. "Gilded Phoenix Wheel" always finds the same row. */
+export const itemKey = (name: string): string => name.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 80);
 
 /** Days before the start: whole numbers 0-60, no duplicates, largest first, at most four. */
 const leadDaysField = (min: number) =>
@@ -54,6 +58,10 @@ export const eventSourceSchema = z.object({
   summaryChannelId: z.union([z.literal(""), snowflake]),
   /** Post the monthly summary by itself when a new month has events. */
   summaryAuto: z.boolean().default(false),
+  /** The colour of this game's drawn pictures. */
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default(DEFAULT_ACCENT),
+  /** Put a drawn picture on the monthly summary. */
+  summaryImage: z.boolean().default(false),
 });
 export type EventSourceInput = z.infer<typeof eventSourceSchema>;
 
@@ -94,6 +102,8 @@ export const eventRuleSchema = z
     pingRoleId: z.union([z.literal(""), snowflake]),
     /** Post an event this many days before it starts (0 = on the day). The first (largest) is the announcement, the others are reminders: for example 7 and 2. */
     leadDays: leadDaysField(1),
+    /** Attach a drawn picture (drop card with the item pictures, or an event card) to the posts. */
+    useCard: z.boolean().default(false),
     /** Use an AI-written summary (rewards, who can take part) when the bot has an AI provider configured. */
     useAi: z.boolean().default(true),
     /** The source (game) whose events this rule looks at. */
@@ -123,4 +133,8 @@ export const eventCheckBody = z.object({ sourceId: z.string().max(64).default(""
 
 /** POST /internal/eventcal/overview: which source's overview message to post. "" = the main calendar. */
 export const eventOverviewBody = z.object({ sourceId: z.string().max(64).default("") });
+
+/** POST /internal/eventcal/preview: draw a sample picture from the saved settings (an event's card, or a month's overview picture). */
+export const eventPreviewBody = z.object({ sourceId: z.string().min(1).max(64), eventId: z.string().max(64).default(""), month: z.enum(["none", "current", "next"]).default("none") });
+export const eventPreviewResponse = z.object({ png: z.string().min(1) });
 

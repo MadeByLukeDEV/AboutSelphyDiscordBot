@@ -2,20 +2,22 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
+import { cardImageProblem, readImageInfo } from "@aboutselphy/shared/image-info";
 import { MAX_EVENT_RULES, MAX_EVENT_SOURCES, type EventRuleInput, type EventSourceInput, type GameEventInput } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
-import { checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
-import { countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
-import type { ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
+import { getEventPreviewCard, checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
+import type { PictureData } from "./repository";
+import { clearItemImage, deleteBackground, deleteItem, ensureItems, findItem, listBackgrounds, listItems, readBackground, readItemImage, saveBackground, setItemImage, countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
+import type { ImageResult, ItemRow, ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
 
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useCard: r.useCard, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
 
 type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
 type EventModel = Awaited<ReturnType<typeof listEvents>>[number];
 
 const toEventRow = (e: EventModel): EventRow => ({ id: e.id, title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, description: e.description, summary: e.summary, items: e.items, imageUrl: e.imageUrl ?? "", videoUrl: e.videoUrl ?? "", origin: e.origin, locked: e.locked, removed: e.removedAt !== null, reminderDays: e.reminderDays });
 
-const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[]): SourceRow => ({
+const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[], items: ItemRow[], hasBackground: boolean): SourceRow => ({
   id: s.id,
   name: s.name,
   enabled: s.enabled,
@@ -27,6 +29,10 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[])
   overviewDays: s.overviewDays,
   summaryChannelId: s.summaryChannelId ?? "",
   summaryAuto: s.summaryAuto,
+  accentColor: s.accentColor,
+  summaryImage: s.summaryImage,
+  hasBackground,
+  items,
   hasOverview: s.overviewMessageId !== null,
   lastCheckedAt: s.lastCheckedAt?.toISOString() ?? null,
   lastStatus: s.lastStatus,
@@ -40,13 +46,15 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[])
 
 /** The sources with their articles and events, the rules, and the channels and roles to pick from (null = bot unreachable). */
 export async function getEventsPage() {
-  const [sourceRows, rules, channels, roles, articleRows, postedRows, eventRows] = await Promise.all([listSources(), listRules(), listChannels(["text"]), listRoles(), listArticles(), listPostedEvents(), listEvents()]);
+  const [sourceRows, rules, channels, roles, articleRows, postedRows, eventRows, itemRows, backgroundRows] = await Promise.all([listSources(), listRules(), listChannels(["text"]), listRoles(), listArticles(), listPostedEvents(), listEvents(), listItems(), listBackgrounds()]);
   const posted: PostedEventRow[] = postedRows.map((p) => ({ id: p.id, title: p.title || p.eventKey.split("|")[0] || "event", rule: p.rule.name, startsAt: p.startsAt.toISOString() }));
   const sources: SourceRow[] = sourceRows.map((s) =>
     toSourceRow(
       s,
       articleRows.filter((a) => a.sourceId === s.id).map((a): ArticleRow => ({ id: a.id, title: a.title, monthKey: a.monthKey, events: parseArticle(a.text).length, createdAt: a.createdAt.toISOString() })),
       eventRows.filter((e) => e.sourceId === s.id).slice(0, 80).map(toEventRow),
+      itemRows.filter((i) => i.sourceId === s.id).map((i): ItemRow => ({ id: i.id, name: i.name, hasImage: i.imageType !== null })),
+      backgroundRows.some((b) => b.sourceId === s.id),
     ),
   );
   return { sources, rules: rules.map(toRow), channels, roles, posted };
@@ -75,6 +83,8 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
       overviewDays: input.overviewDays,
       summaryChannelId: input.summaryChannelId || null,
       summaryAuto: input.summaryAuto,
+      accentColor: input.accentColor.toLowerCase(),
+      summaryImage: input.summaryImage,
     };
     if (existing) {
       // Another calendar or page address starts over: the first check of it only remembers what is there.
@@ -120,9 +130,9 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
+    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useCard: input.useCard, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
     if (existing) {
-      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.leadDays.join(",") !== data.leadDays.join(",") || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
+      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.leadDays.join(",") !== data.leadDays.join(",") || (!existing.useCard && data.useCard) || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);
     } else {
       await createRule(data);
@@ -227,6 +237,7 @@ export async function saveEvent(input: GameEventInput): Promise<SimpleEventResul
     } else {
       await createManualEvent(input.sourceId, `manual|${randomUUID()}`, data);
     }
+    await ensureItems(input.sourceId, input.items).catch(() => undefined);
     await reloadBotModule("eventcal");
     return { ok: true };
   } catch (error) {
@@ -261,3 +272,92 @@ export async function bringBackEvent(id: string): Promise<SimpleEventResult> {
     return { ok: false, error: "failed" };
   }
 }
+
+// ---- pictures: item pictures and a game's background
+
+/** Checks the bytes by their own header (the type comes from there, never from the upload's name) and returns what to store. */
+type Checked = { ok: false; problem: "type" | "size" | "dimensions" } | { ok: true; picture: PictureData };
+
+function checkedPicture(file: Uint8Array, by: string): Checked {
+  const problem = cardImageProblem(file);
+  if (problem) return { ok: false, problem };
+  const info = readImageInfo(file)!;
+  return { ok: true, picture: { data: new Uint8Array(file), contentType: info.type, width: info.width, height: info.height, uploadedByName: by.slice(0, 100) } };
+}
+
+export async function setItemPicture(itemId: string, file: Uint8Array, by: string): Promise<ImageResult> {
+  try {
+    const checked = checkedPicture(file, by);
+    if (!checked.ok) return { ok: false, error: checked.problem };
+    const item = await findItem(itemId);
+    if (!item) return { ok: false, error: "notFound" };
+    await setItemImage(itemId, checked.picture);
+    await reloadBotModule("eventcal");
+    return { ok: true };
+  } catch (error) {
+    console.error("[eventcal] storing an item picture failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+export async function clearItemPicture(itemId: string): Promise<ImageResult> {
+  try {
+    if (!(await findItem(itemId))) return { ok: false, error: "notFound" };
+    await clearItemImage(itemId);
+    await reloadBotModule("eventcal");
+    return { ok: true };
+  } catch (error) {
+    console.error("[eventcal] removing an item picture failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** Removes an item from the library (it comes back by itself, without a picture, if an event still lists it). */
+export async function removeItem(itemId: string): Promise<SimpleEventResult> {
+  try {
+    return (await deleteItem(itemId)) > 0 ? { ok: true } : { ok: false, error: "notFound" };
+  } catch (error) {
+    console.error("[eventcal] removing an item failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+export async function setBackgroundPicture(sourceId: string, file: Uint8Array, by: string): Promise<ImageResult> {
+  try {
+    const checked = checkedPicture(file, by);
+    if (!checked.ok) return { ok: false, error: checked.problem };
+    if (!(await findSource(sourceId))) return { ok: false, error: "notFound" };
+    await saveBackground(sourceId, checked.picture);
+    await reloadBotModule("eventcal");
+    return { ok: true };
+  } catch (error) {
+    console.error("[eventcal] storing a background failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+export async function clearBackgroundPicture(sourceId: string): Promise<ImageResult> {
+  try {
+    await deleteBackground(sourceId);
+    await reloadBotModule("eventcal");
+    return { ok: true };
+  } catch (error) {
+    console.error("[eventcal] removing a background failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
+/** The stored bytes for the admin-only routes that show the pictures. */
+export async function getItemPictureFile(id: string): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  const row = await readItemImage(id);
+  return row?.imageData && row.imageType ? { bytes: new Uint8Array(row.imageData), contentType: row.imageType } : null;
+}
+
+export async function getBackgroundFile(sourceId: string): Promise<{ bytes: Uint8Array; contentType: string } | null> {
+  const row = await readBackground(sourceId);
+  return row ? { bytes: new Uint8Array(row.data), contentType: row.contentType } : null;
+}
+
+/** A sample picture drawn by the bot from the saved settings (an event's card, or a month's overview picture). */
+export const previewPicture = (sourceId: string, eventId: string, month: "none" | "current" | "next") => getEventPreviewCard({ sourceId, eventId, month });
+

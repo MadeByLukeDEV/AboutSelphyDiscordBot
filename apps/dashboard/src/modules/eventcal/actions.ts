@@ -3,10 +3,11 @@
 import { z } from "zod";
 import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
+import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import { audited } from "@/modules/audit";
-import type { CheckEventsResult, ImportArticleResult, OverviewResult, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult } from "./schema";
-import { bringBackEvent, checkNow, importArticle, postMonthlySummary, postOverview, removeArticle, removeEvent, removeRule, removeSource, repostEvent, saveEvent, saveRule, saveSource } from "./service";
+import type { CheckEventsResult, ImageResult, ImportArticleResult, OverviewResult, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult } from "./schema";
+import { bringBackEvent, checkNow, clearBackgroundPicture, clearItemPicture, removeItem, setBackgroundPicture, setItemPicture, importArticle, postMonthlySummary, postOverview, removeArticle, removeEvent, removeRule, removeSource, repostEvent, saveEvent, saveRule, saveSource } from "./service";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
 
@@ -167,3 +168,80 @@ export async function checkEventCalendarAction(input: unknown = {}): Promise<Che
   if (!parsed.success) return { ok: false, error: "invalid" };
   return checkNow(parsed.data.sourceId);
 }
+
+// ---- pictures (item pictures and a game's background)
+
+async function adminSession() {
+  try {
+    return await requireAdmin();
+  } catch (error) {
+    if (error instanceof AuthorizationError) return null;
+    throw error;
+  }
+}
+
+async function readUpload(formData: FormData): Promise<Uint8Array | ImageResult> {
+  const file = formData.get("image");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "noFile" };
+  if (file.size > MAX_CARD_IMAGE_BYTES) return { ok: false, error: "size" };
+  return new Uint8Array(await file.arrayBuffer());
+}
+
+async function uploadEventItemImageActionRun(itemId: unknown, formData: FormData): Promise<ImageResult> {
+  const session = await adminSession();
+  if (!session) return { ok: false, error: "forbidden" };
+  const id = idBody.safeParse({ id: itemId });
+  if (!id.success) return { ok: false, error: "invalid" };
+  const bytes = await readUpload(formData);
+  if (!(bytes instanceof Uint8Array)) return bytes;
+  return setItemPicture(id.data.id, bytes, session.user.name);
+}
+
+async function removeEventItemImageActionRun(itemId: unknown): Promise<ImageResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const id = idBody.safeParse({ id: itemId });
+  return id.success ? clearItemPicture(id.data.id) : { ok: false, error: "invalid" };
+}
+
+async function deleteEventItemActionRun(input: unknown): Promise<SimpleEventResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const id = idBody.safeParse(input);
+  return id.success ? removeItem(id.data.id) : { ok: false, error: "invalid" };
+}
+
+async function uploadEventBackgroundActionRun(sourceId: unknown, formData: FormData): Promise<ImageResult> {
+  const session = await adminSession();
+  if (!session) return { ok: false, error: "forbidden" };
+  const id = idBody.safeParse({ id: sourceId });
+  if (!id.success) return { ok: false, error: "invalid" };
+  const bytes = await readUpload(formData);
+  if (!(bytes instanceof Uint8Array)) return bytes;
+  return setBackgroundPicture(id.data.id, bytes, session.user.name);
+}
+
+async function removeEventBackgroundActionRun(sourceId: unknown): Promise<ImageResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const id = idBody.safeParse({ id: sourceId });
+  return id.success ? clearBackgroundPicture(id.data.id) : { ok: false, error: "invalid" };
+}
+
+export async function uploadEventItemImageAction(...args: Parameters<typeof uploadEventItemImageActionRun>): ReturnType<typeof uploadEventItemImageActionRun> {
+  return audited("eventcal.uploadEventItemImage", uploadEventItemImageActionRun, args);
+}
+
+export async function removeEventItemImageAction(...args: Parameters<typeof removeEventItemImageActionRun>): ReturnType<typeof removeEventItemImageActionRun> {
+  return audited("eventcal.removeEventItemImage", removeEventItemImageActionRun, args);
+}
+
+export async function deleteEventItemAction(...args: Parameters<typeof deleteEventItemActionRun>): ReturnType<typeof deleteEventItemActionRun> {
+  return audited("eventcal.deleteEventItem", deleteEventItemActionRun, args);
+}
+
+export async function uploadEventBackgroundAction(...args: Parameters<typeof uploadEventBackgroundActionRun>): ReturnType<typeof uploadEventBackgroundActionRun> {
+  return audited("eventcal.uploadEventBackground", uploadEventBackgroundActionRun, args);
+}
+
+export async function removeEventBackgroundAction(...args: Parameters<typeof removeEventBackgroundActionRun>): ReturnType<typeof removeEventBackgroundActionRun> {
+  return audited("eventcal.removeEventBackground", removeEventBackgroundActionRun, args);
+}
+

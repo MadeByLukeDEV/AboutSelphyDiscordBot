@@ -188,7 +188,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
   );
 }
 
-type RuleValues = { sourceId: string; name: string; kinds: string[]; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; leadDaysText: string; useAi: boolean; enabled: boolean };
+type RuleValues = { sourceId: string; name: string; kinds: string[]; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; leadDaysText: string; useCard: boolean; useAi: boolean; enabled: boolean };
 
 function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; sources: SourceRow[]; roles: GuildRole[] | null; onDone: () => void }) {
   const t = useTranslations("Events.ruleForm");
@@ -196,8 +196,8 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
   const [pending, startTransition] = useTransition();
   const form = useForm<RuleValues>({
     defaultValues: rule
-      ? { sourceId: rule.sourceId, name: rule.name, kinds: rule.kinds, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, leadDaysText: rule.leadDays.join(", "), useAi: rule.useAi, enabled: rule.enabled }
-      : { sourceId: sources[0]?.id ?? "", name: "", kinds: [], wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", leadDaysText: "7", useAi: true, enabled: true },
+      ? { sourceId: rule.sourceId, name: rule.name, kinds: rule.kinds, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, leadDaysText: rule.leadDays.join(", "), useCard: rule.useCard, useAi: rule.useAi, enabled: rule.enabled }
+      : { sourceId: sources[0]?.id ?? "", name: "", kinds: [], wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", leadDaysText: "7", useCard: false, useAi: true, enabled: true },
   });
   const { errors } = form.formState;
   const sourceOptions: SelectOption[] = sources.map((s) => ({ value: s.id, label: s.name }));
@@ -216,6 +216,7 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
       channelId: values.channelId,
       pingRoleId: values.pingRoleId,
       leadDays: parseDays(values.leadDaysText),
+      useCard: values.useCard,
       useAi: values.useAi,
       enabled: values.enabled,
     });
@@ -299,6 +300,13 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
           <Input id="er-days" inputMode="numeric" autoComplete="off" placeholder="7, 2" className="max-w-[12rem]" aria-invalid={Boolean(errors.leadDaysText) || undefined} {...form.register("leadDaysText")} />
           <FieldDescription>{t("leadDaysHelp", { max: MAX_LEAD_TIMES, limit: MAX_DAYS_AHEAD })}</FieldDescription>
           {errors.leadDaysText && <FieldError>{te("badLeadDays", { max: MAX_LEAD_TIMES, limit: MAX_DAYS_AHEAD })}</FieldError>}
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="useCard" render={({ field }) => <Switch id="er-card" checked={field.value} onCheckedChange={field.onChange} aria-describedby="er-card-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="er-card">{t("useCard")}</FieldLabel>
+            <FieldDescription id="er-card-help">{t("useCardHelp")}</FieldDescription>
+          </div>
         </Field>
         <Field orientation="horizontal">
           <Controller control={form.control} name="useAi" render={({ field }) => <Switch id="er-ai" checked={field.value} onCheckedChange={field.onChange} aria-describedby="er-ai-help" />} />

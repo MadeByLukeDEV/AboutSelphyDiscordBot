@@ -48,6 +48,11 @@ export type SourceRow = {
   summaryChannelId: string;
   /** Post the monthly summary by itself when a new month has events. */
   summaryAuto: boolean;
+  /** The colour of this game's drawn pictures, and whether the monthly summary gets one. */
+  accentColor: string;
+  summaryImage: boolean;
+  hasBackground: boolean;
+  items: ItemRow[];
   hasOverview: boolean;
   lastCheckedAt: string | null;
   lastStatus: string | null;
@@ -58,5 +63,9 @@ export type SourceRow = {
   articles: ArticleRow[];
   events: EventRow[];
 };
+
+/** An item of a game's library: its name, and whether a picture was uploaded for it. */
+export type ItemRow = { id: string; name: string; hasImage: boolean };
+export type ImageResult = { ok: true } | { ok: false; error: EventError | "noFile" | "type" | "size" | "dimensions" };
 
 export type EventRuleRow = Required<Pick<EventRuleInput, "id">> & Omit<EventRuleInput, "id">;

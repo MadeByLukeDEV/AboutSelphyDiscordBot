@@ -40,6 +40,8 @@ export type {
   EventArticle,
   EventSummary,
   GameEvent,
+  EventItem,
+  EventSourceImage,
   EventFetch,
   TempVoiceRoleRule,
   ScreeningEntry,

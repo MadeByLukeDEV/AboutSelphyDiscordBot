@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { CalendarRange, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarRange, Eye, ImageIcon, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { EVENT_KINDS, eventSourceSchema, FETCH_MODES, gameEventSchema, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS } from "@aboutselphy/shared/eventcal";
+import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
+import { ColorPicker } from "@/components/form/color-picker";
 import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +18,8 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { checkEventCalendarAction, deleteEventArticleAction, deleteEventSourceAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction, saveGameEventAction } from "../actions";
-import type { EventRow, SourceRow } from "../schema";
+import { checkEventCalendarAction, deleteEventArticleAction, deleteEventItemAction, deleteEventSourceAction, removeEventBackgroundAction, removeEventItemImageAction, uploadEventBackgroundAction, uploadEventItemImageAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction, saveGameEventAction } from "../actions";
+import type { EventRow, ImageResult, ItemRow, SourceRow } from "../schema";
 
 /** One item per line -> clean list, no duplicates. */
 const parseLines = (text: string): string[] => {
@@ -49,6 +51,9 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   const [eventEdit, setEventEdit] = useState<{ source: SourceRow; event: EventRow | null } | null>(null);
   const [texts, setTexts] = useState<Record<string, string>>({});
   const [fetchingId, setFetchingId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ query: string; title: string } | null>(null);
+  const [previewSeq, setPreviewSeq] = useState(0);
+  const [imgVersion, setImgVersion] = useState(0);
   const anySyncing = sources.some((s) => s.syncing);
 
   // While the bot is reading a source (started here, by a timer or by a change) the page refreshes itself, so the result shows up on its own.
@@ -80,6 +85,32 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
       router.refresh();
     });
   }
+
+  const pictureError = (error: string) => (error === "noFile" || error === "type" || error === "size" || error === "dimensions" ? te(`picture${error[0]!.toUpperCase()}${error.slice(1)}` as never) : te(error as never));
+
+  /** Uploads a picture (an item's or a game's background) and refreshes the thumbnails. */
+  function uploadPicture(file: File | undefined, send: (body: FormData) => Promise<ImageResult>, done: string) {
+    if (!file) return;
+    if (file.size > MAX_CARD_IMAGE_BYTES) return void toast.error(te("pictureSize"));
+    const body = new FormData();
+    body.set("image", file);
+    startTransition(async () => {
+      const result = await send(body);
+      if (result.ok) {
+        toast.success(done);
+        setImgVersion((v) => v + 1);
+        router.refresh();
+      } else {
+        toast.error(pictureError(result.error));
+      }
+    });
+  }
+
+  // Each opening asks for a fresh picture (the sequence number keeps the browser from showing a cached one).
+  const openPreview = (query: string, title: string) => {
+    setPreviewSeq((n) => n + 1);
+    setPreview({ query, title });
+  };
 
   function importText(source: SourceRow) {
     startTransition(async () => {
@@ -193,6 +224,10 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
                             </p>
                           </div>
                           <div className="flex gap-2">
+                            <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => openPreview(`source=${s.id}&event=${e.id}`, e.title)}>
+                              <Eye aria-hidden />
+                              {t("previewCard")}
+                            </Button>
                             <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => setEventEdit({ source: s, event: e })}>
                               <Pencil aria-hidden />
                               {t("edit")}
@@ -210,6 +245,50 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
                             )}
                           </div>
                         </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </details>
+
+              <details className="rounded-xl border px-4 py-3">
+                <summary className="cursor-pointer text-sm font-semibold">{t("pictures", { count: s.items.length, missing: s.items.filter((i) => !i.hasImage).length })}</summary>
+                <div className="mt-3 flex flex-col gap-4">
+                  <p className="max-w-prose text-sm text-muted-foreground">{t("picturesIntro")}</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {s.hasBackground && (
+                      // eslint-disable-next-line @next/next/no-img-element -- the admin's own picture, served by this site (admin only)
+                      <img src={`/api/events/source-image?id=${s.id}&v=${imgVersion}`} alt="" className="h-16 w-28 rounded-lg border object-cover" />
+                    )}
+                    <UploadButton label={s.hasBackground ? t("replaceBackground") : t("uploadBackground")} disabled={pending} onFile={(f) => uploadPicture(f, (body) => uploadEventBackgroundAction(s.id, body), t("pictureSaved"))} />
+                    {s.hasBackground && (
+                      <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => run(() => removeEventBackgroundAction(s.id), t("backgroundRemoved"))}>
+                        {t("remove")}
+                      </Button>
+                    )}
+                    <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => openPreview(`source=${s.id}&month=current`, t("monthCurrent"))}>
+                      <Eye aria-hidden />
+                      {t("previewMonthCurrent")}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => openPreview(`source=${s.id}&month=next`, t("monthNext"))}>
+                      <Eye aria-hidden />
+                      {t("previewMonthNext")}
+                    </Button>
+                  </div>
+                  {s.items.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{t("noItems")}</p>
+                  ) : (
+                    <ul className="grid gap-2 sm:grid-cols-2">
+                      {s.items.map((item) => (
+                        <ItemTile
+                          key={item.id}
+                          item={item}
+                          version={imgVersion}
+                          pending={pending}
+                          onUpload={(f) => uploadPicture(f, (body) => uploadEventItemImageAction(item.id, body), t("pictureSaved"))}
+                          onRemovePicture={() => run(() => removeEventItemImageAction(item.id), t("pictureRemoved"))}
+                          onDelete={() => run(() => deleteEventItemAction({ id: item.id }), t("itemRemoved"))}
+                        />
                       ))}
                     </ul>
                   )}
@@ -292,6 +371,16 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
         </DialogContent>
       </Dialog>
 
+      <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
+        <DialogContent className="max-h-[92dvh] max-w-[min(70rem,95vw)] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{preview?.title ?? ""}</DialogTitle>
+            <DialogDescription>{t("previewIntro")}</DialogDescription>
+          </DialogHeader>
+          {preview && <PreviewImage key={`${preview.query}-${previewSeq}`} url={`/api/events/card-preview?${preview.query}&t=${previewSeq}`} failed={t("previewFailed")} loading={t("previewLoading")} />}
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={removing !== null} onOpenChange={(open) => !open && setRemoving(null)}>
         <DialogContent>
           <DialogHeader>
@@ -319,7 +408,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   );
 }
 
-type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean };
+type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; accentColor: string; summaryImage: boolean };
 
 function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; onDone: () => void }) {
   const t = useTranslations("Events.games");
@@ -327,8 +416,8 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
   const [pending, startTransition] = useTransition();
   const form = useForm<SourceValues>({
     defaultValues: source
-      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto }
-      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false },
+      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, accentColor: source.accentColor, summaryImage: source.summaryImage }
+      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, accentColor: "#00ffa8", summaryImage: false },
   });
   const { errors } = form.formState;
   const none: SelectOption[] = [{ value: "", label: t("none") }, ...channelOptions];
@@ -395,6 +484,18 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
         <Field>
           <FieldLabel htmlFor="gs-summary">{t("summaryChannel")}</FieldLabel>
           <FormSelect control={form.control} name="summaryChannelId" id="gs-summary" options={none} placeholder={t("none")} />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="gs-accent">{t("accent")}</FieldLabel>
+          <Controller control={form.control} name="accentColor" render={({ field }) => <ColorPicker id="gs-accent" value={field.value} onChange={field.onChange} />} />
+          <FieldDescription>{t("accentHelp")}</FieldDescription>
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="summaryImage" render={({ field }) => <Switch id="gs-summary-image" checked={field.value} onCheckedChange={field.onChange} aria-describedby="gs-summary-image-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="gs-summary-image">{t("summaryImage")}</FieldLabel>
+            <FieldDescription id="gs-summary-image-help">{t("summaryImageHelp")}</FieldDescription>
+          </div>
         </Field>
         <Field orientation="horizontal">
           <Controller control={form.control} name="summaryAuto" render={({ field }) => <Switch id="gs-auto" checked={field.value} onCheckedChange={field.onChange} aria-describedby="gs-auto-help" />} />
@@ -533,3 +634,75 @@ function EventForm({ source, event, onDone }: { source: SourceRow; event: EventR
     </form>
   );
 }
+
+/** A button that opens the file picker; the chosen file is handed to `onFile` (and the input reset, so the same file can be chosen again). */
+function UploadButton({ label, disabled, onFile }: { label: string; disabled: boolean; onFile: (file: File | undefined) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <input
+        ref={input}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => {
+          onFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={() => input.current?.click()}>
+        <Upload aria-hidden />
+        {label}
+      </Button>
+    </>
+  );
+}
+
+/** One item of the library: its picture (or a placeholder), its name, and the actions. */
+function ItemTile({ item, version, pending, onUpload, onRemovePicture, onDelete }: { item: ItemRow; version: number; pending: boolean; onUpload: (file: File | undefined) => void; onRemovePicture: () => void; onDelete: () => void }) {
+  const t = useTranslations("Events.games");
+  return (
+    <li className="flex items-center gap-3 rounded-xl border px-3 py-2">
+      {item.hasImage ? (
+        // eslint-disable-next-line @next/next/no-img-element -- the admin's own picture, served by this site (admin only)
+        <img src={`/api/events/item-image?id=${item.id}&v=${version}`} alt="" className="size-12 shrink-0 rounded-lg border bg-muted object-contain" />
+      ) : (
+        <span className="grid size-12 shrink-0 place-items-center rounded-lg border border-dashed text-muted-foreground">
+          <ImageIcon className="size-5" aria-hidden />
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{item.name}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-1">
+          {!item.hasImage && <Badge variant="secondary">{t("itemMissing")}</Badge>}
+          <UploadButton label={item.hasImage ? t("replacePicture") : t("uploadPicture")} disabled={pending} onFile={onUpload} />
+          {item.hasImage && (
+            <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={onRemovePicture}>
+              {t("removePicture")}
+            </Button>
+          )}
+          <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={onDelete}>
+            <Trash2 aria-hidden />
+            <span className="sr-only">{t("deleteItem")}</span>
+          </Button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** The sample picture drawn by the bot; shows a note while it is drawn and when it can't be. */
+function PreviewImage({ url, failed, loading }: { url: string; failed: string; loading: string }) {
+  const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
+  return (
+    <div className="flex flex-col gap-2">
+      {state === "loading" && <p className="text-sm text-muted-foreground">{loading}</p>}
+      {state === "failed" && <p className="text-sm text-destructive">{failed}</p>}
+      {/* eslint-disable-next-line @next/next/no-img-element -- drawn by the bot for this admin, served by this site */}
+      <img src={url} alt="" className={state === "ready" ? "w-full rounded-xl border" : "hidden"} onLoad={() => setState("ready")} onError={() => setState("failed")} />
+    </div>
+  );
+}
+

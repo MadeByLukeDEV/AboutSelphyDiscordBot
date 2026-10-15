@@ -47,8 +47,8 @@ import { decideEntry } from "../modules/screening";
 import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
-import { checkCalendar, postMonthly, postOverview, repostEvent } from "../modules/eventcal";
-import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventRepostBody } from "@aboutselphy/shared/eventcal";
+import { checkCalendar, postMonthly, postOverview, previewCard, repostEvent } from "../modules/eventcal";
+import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventPreviewBody, eventRepostBody } from "@aboutselphy/shared/eventcal";
 import { copyPermissions, deleteRoles, listManagedRoles, mergeRoles, moveRole, updateRole } from "../modules/roles";
 import { decideSuggestion, mergeSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
@@ -202,6 +202,13 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await postMonthly(guild, body.data.month, body.data.sourceId || null) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/eventcal/preview") {
+    const body = eventPreviewBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const png = await previewCard(body.data.sourceId, body.data.eventId, body.data.month);
+    return png ? json(res, 200, { png: png.toString("base64") }) : json(res, 404, { error: "not found" });
   }
 
   if (req.method === "POST" && url.pathname === "/internal/eventcal/overview") {

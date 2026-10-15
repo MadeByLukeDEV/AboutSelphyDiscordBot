@@ -5,10 +5,13 @@ import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { aiConfigured } from "../../lib/ai";
+import { createHash } from "node:crypto";
+import { itemKey } from "@aboutselphy/shared/eventcal";
+import { dateRangeText, renderEventCard, renderMonthlyCard, tryDraw, weeklyText, type CardTheme, type MonthlyCardRow } from "./cards";
 import type { CalEvent } from "./ics";
 import { syncSource } from "./sync";
-import { toCalEvent } from "./store";
-import { claimMonth, clearSyncFlags, releaseMonth, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
+import { inferKind, toCalEvent } from "./store";
+import { claimMonth, clearSyncFlags, readBackground, readGameEvent, readItems, releaseMonth, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
 import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, planStages, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
@@ -48,6 +51,38 @@ async function summaryFor(event: CalEvent, budget: { left: number }, game: strin
 async function textChannel(guild: Guild, id: string) {
   const channel = await guild.channels.fetch(id).catch(() => null);
   return channel && !channel.isDMBased() && channel.guildId === env().DISCORD_GUILD_ID && channel.isTextBased() && "send" in channel ? channel : null;
+}
+
+type CardContext = { theme: CardTheme; themeStamp: string; items: Map<string, { name: string; image: Buffer | null; stamp: string }> };
+
+const sha1 = (text: string): string => createHash("sha1").update(text).digest("hex");
+
+/** The game's look (accent colour, background) and the pictures of the items the events mention, loaded once per round. */
+async function cardContext(src: SourceState, events: readonly CalEvent[]): Promise<CardContext> {
+  const background = await readBackground(src.id);
+  const keys = [...new Set(events.flatMap((e) => (e.items ?? []).map(itemKey)))];
+  const rows = keys.length > 0 ? await readItems(src.id, keys) : [];
+  return {
+    theme: { accent: src.accentColor, background: background ? Buffer.from(background.data) : null },
+    themeStamp: `${src.accentColor}|${background?.uploadedAt.toISOString() ?? ""}`,
+    items: new Map(rows.map((r) => [r.key, { name: r.name, image: r.imageData ? Buffer.from(r.imageData) : null, stamp: r.imageUpdatedAt?.toISOString() ?? "" }])),
+  };
+}
+
+/** Changes when the look of an event's card would change (its items' pictures, the colour, the background), so its message is edited then. */
+const cardStamp = (ctx: CardContext, e: CalEvent): string => sha1(ctx.themeStamp + (e.items ?? []).map((n) => ctx.items.get(itemKey(n))?.stamp ?? "").join("|"));
+
+async function drawEventCard(e: CalEvent, ctx: CardContext, ai: EventSummaryData | null): Promise<Buffer | null> {
+  return tryDraw(`event ${e.summary}`, () =>
+    renderEventCard({
+      title: e.summary,
+      kind: e.kind ?? "event",
+      dateText: dateRangeText(e.start, e.end, e.allDay),
+      summary: ai?.summary ?? e.extra?.summary ?? "",
+      items: (e.items ?? []).map((n) => ({ name: ctx.items.get(itemKey(n))?.name ?? n, image: ctx.items.get(itemKey(n))?.image ?? null })),
+      theme: ctx.theme,
+    }),
+  );
 }
 
 /** The game a source is about, for the AI. */
@@ -107,13 +142,15 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
       result.events = loaded.length;
       const rules = await listRules(config.id);
       const budget = { left: MAX_AI_CALLS_PER_CHECK };
+      const cardCtx = rules.some((r) => r.useCard) ? await cardContext(config, loaded) : null;
 
       for (const rule of rules) {
         for (const event of loaded.filter((e) => matchesRule(e, rule))) {
           // The event's own lead times (set in the dashboard) win over the rule's. Stage 0 is the announcement, later stages are reminders.
           const steps = planStages(event, now, event.reminderDays && event.reminderDays.length > 0 ? event.reminderDays : rule.leadDays);
           if (steps.length === 0) continue;
-          const hash = eventHash(event);
+          // A rule with pictures also edits its posts when the picture would change (a new item picture, another colour).
+          const hash = rule.useCard && cardCtx ? sha1(eventHash(event) + cardStamp(cardCtx, event)) : eventHash(event);
           for (const step of steps) {
             const existing = await findPost(rule.id, event.key.slice(0, 160), step.stage);
             const claim = { ruleId: rule.id, eventKey: event.key, stage: step.stage, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary };
@@ -136,7 +173,9 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
             if (!existing) {
               if (!(await claimPost(claim))) continue;
               try {
-                const message = await channel.send(eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null, { reminder }));
+                const ai = rule.useAi ? await summaryFor(event, budget, game) : null;
+                const card = rule.useCard && cardCtx ? await drawEventCard(event, cardCtx, ai) : null;
+                const message = await channel.send({ ...eventMessage(event, rule.pingRoleId, ai, { reminder, ...(card ? { cardName: "event.png" } : {}) }), ...(card ? { files: [{ attachment: card, name: "event.png" }] } : {}) });
                 await setPostMessage(rule.id, event.key, step.stage, message.id);
                 result.posted++;
                 log.info({ rule: rule.id, event: event.summary, stage: step.stage, daysBefore: step.offset }, "eventcal: posted");
@@ -147,7 +186,9 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
             } else if (existing.hash !== hash && existing.messageId) {
               const message = await channel.messages.fetch(existing.messageId).catch(() => null);
               if (message) {
-                await message.edit({ ...eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null, { reminder }), content: message.content }).then(async () => {
+                const ai = rule.useAi ? await summaryFor(event, budget, game) : null;
+                const card = rule.useCard && cardCtx ? await drawEventCard(event, cardCtx, ai) : null;
+                await message.edit({ ...eventMessage(event, rule.pingRoleId, ai, { reminder, ...(card ? { cardName: "event.png" } : {}) }), content: message.content, attachments: [], ...(card ? { files: [{ attachment: card, name: "event.png" }] } : {}) }).then(async () => {
                   await setPostHash(rule.id, event.key, step.stage, hash);
                   result.edited++;
                   log.info({ rule: rule.id, event: event.summary, stage: step.stage }, "eventcal: edited (the event changed)");
@@ -229,30 +270,43 @@ export function repostEvent(guild: Guild, postId: string): Promise<EventRepostSt
 }
 
 /** The lines of the monthly summary for a month: one per event or weekly series, with an AI blurb when there is one, else the first sentence of the text. */
-async function monthlyLines(loaded: CalEvent[], year: number, month: number, budget: { left: number }, game: string | null): Promise<string[]> {
+async function monthlyLines(loaded: CalEvent[], year: number, month: number, budget: { left: number }, game: string | null): Promise<{ lines: string[]; rows: MonthlyCardRow[] }> {
   const entries = monthlyEntries(monthEvents(loaded, year, month));
   const lines: string[] = [];
+  const rows: MonthlyCardRow[] = [];
   for (const entry of entries) {
     const ai = await summaryFor(entry.event, budget, game);
     const blurb = ai?.blurb || firstSentence(entry.event.description, 280);
     lines.push(monthlyLine(entry, blurb));
+    rows.push({ title: entry.event.summary, when: entry.weekly !== null ? weeklyText(entry.weekly) : dateRangeText(entry.event.start, entry.event.end, entry.event.allDay), kind: inferKind(entry.event), blurb: ai?.blurb || firstSentence(entry.event.description, 90) });
   }
-  return lines;
+  return { lines, rows };
+}
+
+/** The monthly overview picture, when the game has it switched on. Null when off or when drawing fails (the text summary still goes out). */
+async function monthlyImage(src: SourceState, rows: MonthlyCardRow[], label: string): Promise<{ png: Buffer | null; stamp: string }> {
+  if (!src.summaryImage) return { png: null, stamp: "" };
+  const ctx = await cardContext(src, []);
+  const png = await tryDraw("monthly", () => renderMonthlyCard({ title: label, subtitle: src.name, rows, theme: ctx.theme }));
+  return { png, stamp: ctx.themeStamp };
 }
 
 /** Posts or edits the monthly summary's messages in place; extra old ones are deleted. Returns the message ids. */
-async function writeMonthly(guild: Guild, channelId: string, lines: string[], label: string, existing: string[]): Promise<string[] | null> {
+async function writeMonthly(guild: Guild, channelId: string, lines: string[], label: string, existing: string[], image: Buffer | null = null): Promise<string[] | null> {
   const channel = await textChannel(guild, channelId);
   if (!channel) return null;
   const messages = monthlyMessages(lines, label);
+  // The overview picture goes on top of the first message.
+  if (image) messages[0]!.embeds[0]!.setImage("attachment://month.png");
   const ids: string[] = [];
   for (let i = 0; i < messages.length; i++) {
+    const files = i === 0 && image ? { files: [{ attachment: image, name: "month.png" }] } : {};
     const old = existing[i] ? await channel.messages.fetch(existing[i]!).catch(() => null) : null;
     if (old) {
-      await old.edit(messages[i]!);
+      await old.edit({ ...messages[i]!, attachments: [], ...files });
       ids.push(old.id);
     } else {
-      ids.push((await channel.send(messages[i]!)).id);
+      ids.push((await channel.send({ ...messages[i]!, ...files })).id);
     }
   }
   for (const extra of existing.slice(messages.length)) await channel.messages.delete(extra).catch(() => undefined);
@@ -265,10 +319,13 @@ async function refreshMonthly(guild: Guild, sourceId: string, loaded: CalEvent[]
   if (!config) return;
   const key = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   if (!config.summaryChannelId || config.summaryMonth !== key || config.summaryMessageIds.length === 0) return;
-  const lines = await monthlyLines(loaded, now.getUTCFullYear(), now.getUTCMonth() + 1, { left: 3 }, gameOf(config));
-  const hash = monthlyHash(lines);
+  const { lines, rows } = await monthlyLines(loaded, now.getUTCFullYear(), now.getUTCMonth() + 1, { left: 3 }, gameOf(config));
+  const label = monthLabel(now.getUTCFullYear(), now.getUTCMonth() + 1);
+  const image = await monthlyImage(config, rows, label);
+  // The fingerprint covers the picture's look too, so a new colour or background redraws it.
+  const hash = image.png ? sha1(monthlyHash(lines) + image.stamp + rows.map((r) => r.title + r.when).join("|")) : monthlyHash(lines);
   if (hash === config.summaryHash) return;
-  const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(now.getUTCFullYear(), now.getUTCMonth() + 1), config.summaryMessageIds);
+  const ids = await writeMonthly(guild, config.summaryChannelId, lines, label, config.summaryMessageIds, image.png);
   if (ids) {
     await setMonthly(sourceId, { summaryMonth: key, summaryMessageIds: ids, summaryHash: hash });
     log.info({ messages: ids.length }, "eventcal: monthly summary updated");
@@ -308,11 +365,13 @@ export async function postMonthly(guild: Guild, which: "current" | "next", sourc
     const month = target.getUTCMonth() + 1;
     const key = `${year}-${String(month).padStart(2, "0")}`;
     const loaded = await storedEvents(config, now);
-    const lines = await monthlyLines(loaded, year, month, { left: 15 }, gameOf(config));
+    const { lines, rows } = await monthlyLines(loaded, year, month, { left: 15 }, gameOf(config));
     const existing = config.summaryMonth === key ? config.summaryMessageIds : [];
-    const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(year, month), existing);
+    const image = await monthlyImage(config, rows, monthLabel(year, month));
+    const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(year, month), existing, image.png);
     if (!ids) return "channel";
-    await setMonthly(config.id, { summaryMonth: key, summaryMessageIds: ids, summaryHash: monthlyHash(lines) });
+    const hash = image.png ? sha1(monthlyHash(lines) + image.stamp + rows.map((r) => r.title + r.when).join("|")) : monthlyHash(lines);
+    await setMonthly(config.id, { summaryMonth: key, summaryMessageIds: ids, summaryHash: hash });
     log.info({ month: key, messages: ids.length }, "eventcal: monthly summary posted");
     return existing.length > 0 ? "updated" : "posted";
   } catch (err) {
@@ -346,6 +405,28 @@ export async function postOverview(guild: Guild, sourceId: string | null = null)
     log.error({ err }, "eventcal: posting the overview failed");
     return "failed";
   }
+}
+
+/**
+ * A sample picture drawn from the saved settings for the dashboard: an event's card, or a month's overview picture. Never posts anything.
+ * Null when the source or event doesn't exist or drawing fails.
+ */
+export async function previewCard(sourceId: string, eventId: string, month: "none" | "current" | "next"): Promise<Buffer | null> {
+  const src = await readSource(sourceId);
+  if (!src) return null;
+  const now = new Date();
+  const loaded = await storedEvents(src, now);
+  if (month !== "none") {
+    const target = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + (month === "next" ? 1 : 0), 1));
+    const { rows } = await monthlyLines(loaded, target.getUTCFullYear(), target.getUTCMonth() + 1, { left: 0 }, gameOf(src));
+    const ctx = await cardContext(src, []);
+    return tryDraw("monthly preview", () => renderMonthlyCard({ title: monthLabel(target.getUTCFullYear(), target.getUTCMonth() + 1), subtitle: src.name, rows, theme: ctx.theme }));
+  }
+  const row = await readGameEvent(sourceId, eventId);
+  if (!row) return null;
+  const event = toCalEvent(row);
+  const ctx = await cardContext(src, [event]);
+  return drawEventCard(event, ctx, null);
 }
 
 /** Starts the checks with the bot. Off in a local run unless BOT_INTEGRATIONS_IN_DEV=true (it posts in real channels). */

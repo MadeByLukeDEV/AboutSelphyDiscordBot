@@ -1533,7 +1533,15 @@ Decided 2026-10-08:
     posted, earlier ones that were missed are claimed silently, so a late event never gets two posts at once; a changed `leadDays` re-seeds the rule (silent first check). A single
     event can override the rules' lead times (`GameEvent.reminderDays`, set in the event form; editing locks the event). **Automatic monthly summary**: `EventSource.summaryAuto`
     (switch on the game): once a source has had its first look, the first check of a month that has events posts that month's summary by itself (`autoMonthly`: `claimMonth` is a
-    compare-and-set on `summaryMonth`, released if the post fails so the next round retries). Slices still to do: images per game theme (item library, cards), patch notes, public widget + JSON.
+    compare-and-set on `summaryMonth`, released if the post fails so the next round retries). **Pictures and the item library** (2026-10-15, `feature_event-images`, migration `20261115140000_event_images`; **not tried live yet**): every item name an extracted event lists becomes an
+    `EventItem` row of its game (`itemKey`: NFKC, lower case, one space; created by the sync and by saving an event) that an admin gives a picture in the dashboard
+    (`/events` -> game -> "Pictures and items": PNG/JPEG/WebP 64-4096 px, <= 3 MB, checked by header with `cardImageProblem` in the dashboard AND again before drawing; stored as
+    bytea, shown through admin-only routes `/api/events/item-image|source-image`). A game also has an accent colour (`EventSource.accentColor`) and an optional background picture
+    (`EventSourceImage`). `eventcal/cards.ts` (`@napi-rs/canvas`, the bundled font) draws the **drop/event card** (kind chip, title, dates, summary, a grid of up to 12 item tiles; missing
+    pictures become initials) and the **monthly overview picture**; `wrapLines` and `eventCardLayout` are pure and tested. A rule with `useCard` attaches the card to its posts
+    (embed image `attachment://event.png`) and its stage hash includes a stamp of the card's look, so a new item picture or colour edits the post (`attachments: []` + the new file);
+    a game with `summaryImage` puts a drawn month picture on top of the first monthly message (also stamped in `summaryHash`). A drawing failure only logs (`tryDraw`) and the post goes out
+    without the picture. Previews: `POST /internal/eventcal/preview` -> `GET /api/events/card-preview?source=&event=|month=` (admin only, nothing is posted). Slices still to do: patch notes, public widget + JSON.
     **Crawl4AI setup (verified live 2026-10-15)**: Crawl4AI 0.9.5 binds the container's loopback only unless `CRAWL4AI_API_TOKEN` is set, so a Dokploy
     compose service needs `CRAWL4AI_API_TOKEN` (+ `SECRET_KEY`), `shm_size: 1g`, no domain, and `dokploy-network`; the bot gets `CRAWL4AI_URL=http://crawl4ai:11235`
     and `CRAWL4AI_TOKEN` (the same value, sent as a bearer header). `POST /crawl {urls}` answers `{success, results:[{url, html, ...}]}` and got the real Sea of
