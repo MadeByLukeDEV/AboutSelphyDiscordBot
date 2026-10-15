@@ -43,6 +43,22 @@ describe("page text", () => {
   });
 });
 
+describe("page text fallbacks", () => {
+  const long = "A paragraph of the article with enough words to count as real content. ".repeat(6);
+  it("reads an article that sits inside a form and a header", () => {
+    const text = htmlToText(`<html><body><form><header><h1>This Month</h1><p>${long}</p></header></form></body></html>`);
+    expect(text).toContain("This Month");
+    expect(text.length).toBeGreaterThan(200);
+  });
+  it("prefers a bigger scope when <main> is nearly empty", () => {
+    const text = htmlToText(`<html><body><main><p>Loading</p></main><div id="app"><p>${long}</p></div></body></html>`);
+    expect(text.length).toBeGreaterThan(200);
+  });
+  it("gives back whatever there is when nothing is long enough", () => {
+    expect(htmlToText("<body><p>Short</p></body>")).toBe("Short");
+  });
+});
+
 describe("the extraction check", () => {
   const article = "Twitch Drops – Friday, October 23rd – Monday, October 26th. There's a tasty new selection of Drops. Stalwart Sea Dog Bucket and Gilded Phoenix Wheel.";
   const good = {

@@ -54,8 +54,17 @@ async function articleEvents(src: SourceState, url: string, text: string, now: D
 
 export type SyncResult = { status: string; events: number };
 
-/** Reads every input of the source and updates its stored events. */
+/** Reads every input of the source and updates its stored events. The source is marked as "fetching" meanwhile, so the dashboard can say so. */
 export async function syncSource(src: SourceState, now = new Date()): Promise<SyncResult> {
+  await saveState(src.id, { syncStartedAt: new Date() }).catch(() => undefined);
+  try {
+    return await syncInner(src, now);
+  } finally {
+    await saveState(src.id, { syncStartedAt: null }).catch(() => undefined);
+  }
+}
+
+async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
   const from = new Date(now.getTime() - 2 * DAY);
   const to = new Date(now.getTime() + 120 * DAY);
   let status = "ok";
@@ -88,7 +97,10 @@ export async function syncSource(src: SourceState, now = new Date()): Promise<Sy
         continue;
       }
       const text = htmlToText(page.html, src.contentSelector);
+      log.info({ source: src.name, url, via: page.via, htmlChars: page.html.length, textChars: text.length }, "eventcal: page read");
       if (text.length < 200) {
+        // Shows what the page text looked like, so a selector can be chosen (the page is public).
+        log.warn({ source: src.name, url, head: text.slice(0, 300), htmlHead: page.html.replace(/<head[\s\S]*?<\/head>/i, "").slice(0, 400) }, "eventcal: the page had too little readable text");
         fail("emptyPage");
         continue;
       }

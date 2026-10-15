@@ -3012,7 +3012,9 @@
       "imageUrl": "Adresse des Bildes (https)",
       "videoUrl": "Adresse des Videos (YouTube, Twitch, Vimeo)",
       "videoHelp": "Discord zeigt den Player unter dem Post.",
-      "eventSaved": "Event gespeichert."
+      "eventSaved": "Event gespeichert.",
+      "fetching": "Wird abgerufen...",
+      "fetchingNow": "Die Quellen werden gerade gelesen..."
     },
     "posted": {
       "title": "Geposte Events",

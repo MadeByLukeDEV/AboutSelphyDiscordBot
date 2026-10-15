@@ -49,6 +49,8 @@ export type SourceRow = {
   lastStatus: string | null;
   lastFetchedAt: string | null;
   lastFetchStatus: string | null;
+  /** The bot is reading this source's calendar and pages right now. */
+  syncing: boolean;
   articles: ArticleRow[];
   events: EventRow[];
 };

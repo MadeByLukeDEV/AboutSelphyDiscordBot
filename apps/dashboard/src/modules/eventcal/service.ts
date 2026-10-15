@@ -31,6 +31,8 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[])
   lastStatus: s.lastStatus,
   lastFetchedAt: s.lastFetchedAt?.toISOString() ?? null,
   lastFetchStatus: s.lastFetchStatus,
+  // A flag older than five minutes is a crashed read, not a running one.
+  syncing: s.syncStartedAt !== null && Date.now() - s.syncStartedAt.getTime() < 5 * 60_000,
   articles,
   events,
 });

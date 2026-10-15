@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { CalendarRange, LayoutList, Pencil, Plus, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import { CalendarRange, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { EVENT_KINDS, eventSourceSchema, FETCH_MODES, gameEventSchema, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS } from "@aboutselphy/shared/eventcal";
 import { FormDateTime } from "@/components/form/date-time-picker";
@@ -48,6 +48,15 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   const [removing, setRemoving] = useState<SourceRow | null>(null);
   const [eventEdit, setEventEdit] = useState<{ source: SourceRow; event: EventRow | null } | null>(null);
   const [texts, setTexts] = useState<Record<string, string>>({});
+  const [fetchingId, setFetchingId] = useState<string | null>(null);
+  const anySyncing = sources.some((s) => s.syncing);
+
+  // While the bot is reading a source (started here, by a timer or by a change) the page refreshes itself, so the result shows up on its own.
+  useEffect(() => {
+    if (!anySyncing && fetchingId === null) return;
+    const timer = setInterval(() => router.refresh(), 3000);
+    return () => clearInterval(timer);
+  }, [anySyncing, fetchingId, router]);
 
   const when = (iso: string | null) => (iso ? format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" }) : t("never"));
   const eventDate = (e: EventRow) => format.dateTime(new Date(e.startsAt), e.allDay ? { dateStyle: "medium", timeZone: "UTC" } : { dateStyle: "medium", timeStyle: "short" });
@@ -62,10 +71,12 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   }
 
   function fetchNow(source: SourceRow) {
+    setFetchingId(source.id);
     startTransition(async () => {
       const result = await checkEventCalendarAction({ sourceId: source.id });
       if (result.ok) toast.success(t("fetched", { status: result.status, events: result.events, posted: result.posted, edited: result.edited }));
       else toast.error(te(result.error));
+      setFetchingId(null);
       router.refresh();
     });
   }
@@ -112,7 +123,14 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
                     {s.icsUrl && <Badge variant="outline">{t("hasCalendar")}</Badge>}
                     {s.pageUrlTemplate && <Badge variant="outline">{t("hasPage")}</Badge>}
                   </div>
-                  <p className="text-sm text-muted-foreground">{t("syncStatus", { time: when(s.lastFetchedAt), status: s.lastFetchStatus ?? "-" })}</p>
+                  {s.syncing || fetchingId === s.id ? (
+                    <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-primary">
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
+                      {t("fetchingNow")}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{t("syncStatus", { time: when(s.lastFetchedAt), status: s.lastFetchStatus ?? "-" })}</p>
+                  )}
                   <p className="text-sm text-muted-foreground">{t("status", { time: when(s.lastCheckedAt), status: s.lastStatus ?? "-" })}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -126,9 +144,9 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" disabled={pending} onClick={() => fetchNow(s)}>
-                  <RefreshCw aria-hidden />
-                  {t("fetchNow")}
+                <Button type="button" size="sm" disabled={pending || s.syncing} onClick={() => fetchNow(s)}>
+                  {s.syncing || fetchingId === s.id ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : <RefreshCw aria-hidden />}
+                  {s.syncing || fetchingId === s.id ? t("fetching") : t("fetchNow")}
                 </Button>
                 <Button type="button" variant="outline" size="sm" disabled={pending || !s.overviewChannelId} onClick={() => run(() => postEventOverviewAction({ sourceId: s.id }), t("overviewDone"))}>
                   <LayoutList aria-hidden />

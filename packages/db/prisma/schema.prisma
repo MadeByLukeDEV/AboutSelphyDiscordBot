@@ -1460,6 +1460,8 @@ model EventSource {
   fetchMode         String    @default("auto") @db.VarChar(10)
   lastFetchedAt     DateTime?
   lastFetchStatus   String?   @db.VarChar(40)
+  /// Set while the bot is reading this source's calendar and pages (the dashboard shows "fetching now").
+  syncStartedAt     DateTime?
   rules             EventRule[]
   articles          EventArticle[]
   events            GameEvent[]

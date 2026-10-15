@@ -8,7 +8,7 @@ import { aiConfigured } from "../../lib/ai";
 import type { CalEvent } from "./ics";
 import { syncSource } from "./sync";
 import { toCalEvent } from "./store";
-import { setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
+import { clearSyncFlags, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
 import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, isPostable, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
@@ -331,6 +331,7 @@ export function startEventCalendar(client: Client): void {
   // A dashboard change (settings, a pasted article, a rule) reads the sources again at once; the timer only does so every six hours.
   onReload("eventcal", () => void run(true).catch((err) => log.error({ err }, "eventcal: run failed")));
   client.once(Events.ClientReady, () => {
+    void clearSyncFlags().catch(() => undefined);
     void run(false).catch((err) => log.error({ err }, "eventcal: run failed"));
     timer = setInterval(() => void run(false).catch((err) => log.error({ err }, "eventcal: run failed")), INTERVAL_MS);
   });

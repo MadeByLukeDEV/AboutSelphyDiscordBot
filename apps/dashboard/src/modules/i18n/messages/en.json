@@ -3012,7 +3012,9 @@
       "imageUrl": "Picture address (https)",
       "videoUrl": "Video address (YouTube, Twitch, Vimeo)",
       "videoHelp": "Discord shows the player under the post.",
-      "eventSaved": "Event saved."
+      "eventSaved": "Event saved.",
+      "fetching": "Fetching...",
+      "fetchingNow": "Reading the sources right now..."
     },
     "posted": {
       "title": "Posted events",

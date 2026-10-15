@@ -1526,6 +1526,13 @@ Decided 2026-10-08:
     monthly, pasted articles as the fallback) with an events list per game (edit locks an event so a sync never overwrites it, "add event" makes a manual one, remove hides
     it, restore), and the rule form picks the game. Item **images** are not stored yet (items are plain names; the item library comes in slice 3).
     Slices still to do: reminders (several offsets such as 7 d and 2 d, per-event timers, automatic monthly post), images per game theme, patch notes, public widget + JSON.
+    **Crawl4AI setup (verified live 2026-10-15)**: Crawl4AI 0.9.5 binds the container's loopback only unless `CRAWL4AI_API_TOKEN` is set, so a Dokploy
+    compose service needs `CRAWL4AI_API_TOKEN` (+ `SECRET_KEY`), `shm_size: 1g`, no domain, and `dokploy-network`; the bot gets `CRAWL4AI_URL=http://crawl4ai:11235`
+    and `CRAWL4AI_TOKEN` (the same value, sent as a bearer header). `POST /crawl {urls}` answers `{success, results:[{url, html, ...}]}` and got the real Sea of
+    Thieves page past the Azure WAF. **Fetching feedback**: `EventSource.syncStartedAt` (migration `20261115110000_event_sync_flag`) is set while `syncSource` runs
+    (cleared in `finally` and at bot start); the dashboard shows "Reading the sources right now..." with a spinner, disables "Fetch now" and refreshes itself every 3 s
+    while any source is syncing (also for the 6-hourly and dashboard-triggered reads). `htmlToText` tries selector -> main -> article -> body, then a looser second
+    pass (keeps forms/headers) when the first has under 200 characters; an explicit selector is used as it is; `emptyPage` logs a head of the text and HTML.
   - [ ] A reminder at the start time, one rule posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
       endpoint was tested end to end against a temporary row, **not tried with a real sender yet**)

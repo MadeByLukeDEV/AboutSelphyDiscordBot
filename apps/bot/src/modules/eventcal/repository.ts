@@ -47,6 +47,7 @@ type StateChange = Partial<{
   lastStatus: string;
   lastFetchedAt: Date;
   lastFetchStatus: string;
+  syncStartedAt: Date | null;
 }>;
 
 export const saveState = (id: string, data: StateChange) => prisma.eventSource.updateMany({ where: { id }, data });
@@ -116,3 +117,6 @@ export const markVanished = (sourceId: string, seenKeys: string[], from: Date, t
 export const readFetch = (sourceId: string, url: string) => prisma.eventFetch.findUnique({ where: { sourceId_url: { sourceId, url } } });
 export const saveFetch = (sourceId: string, url: string, data: { contentHash: string; extractedJson: string; status: string }) =>
   prisma.eventFetch.upsert({ where: { sourceId_url: { sourceId, url } }, update: { ...data, fetchedAt: new Date() }, create: { sourceId, url, ...data } });
+
+/** After a restart no read is running any more: forget the flags a crashed run left behind. */
+export const clearSyncFlags = () => prisma.eventSource.updateMany({ where: { syncStartedAt: { not: null } }, data: { syncStartedAt: null } });
