@@ -531,6 +531,7 @@ Decided 2026-10-08:
   data separation, a processor agreement, retention tools). Known gaps the policy words carefully: there is
   **no automatic retention** for moderation cases, ticket transcripts, suggestions, levels and starboard
   posts (deleted on request by hand), and no self-service "delete my data" command yet.
+- **Start order** (2026-10-15, `chore_compose-start-order`, **not deployed yet**): the compose file now starts `migrate` (one-shot, the dashboard image's Prisma CLI: `prisma migrate deploy`, then exits) -> `bot` (`service_completed_successfully`) -> `dashboard` (`service_started`, deliberately not healthy so a Discord outage can't keep the settings page from starting). The dashboard's own command is overridden to just `next start` (the image default still migrates first, for a standalone run). The dashboard image is tagged `aboutselphy-dashboard:compose` and the migrate service uses it with `pull_policy: never`. Why: the bot's internal API is up before the dashboard serves pages (no "bot unreachable" gap at deploy), and the bot never runs against an old schema. If a deploy fails on this, revert this commit.
 - **Docker / Dokploy** (2026-10-26, `chore_dockerfiles-v2`): `docker-compose.yml` at the repo root starts
   both services: `dashboard` (applies migrations on start, healthcheck `/api/health`, `expose 3000`, the
   Dokploy domain goes on this service) and `bot` (waits for a healthy dashboard, no ports, internal API on
