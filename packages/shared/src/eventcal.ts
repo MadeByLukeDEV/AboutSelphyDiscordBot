@@ -24,6 +24,15 @@ const term = z.string().trim().min(1).max(MAX_TERM);
 const sampleUrl = (v: string): string => v.replaceAll("{month}", "october").replaceAll("{mm}", "10").replaceAll("{year}", "2026");
 
 export const FETCH_MODES = ["auto", "plain", "crawl4ai"] as const;
+export const MAX_LEAD_TIMES = 4;
+
+/** Days before the start: whole numbers 0-60, no duplicates, largest first, at most four. */
+const leadDaysField = (min: number) =>
+  z
+    .array(z.number().int().min(0).max(MAX_DAYS_AHEAD))
+    .min(min)
+    .max(MAX_LEAD_TIMES)
+    .transform((a) => [...new Set(a)].sort((x, y) => y - x));
 
 /** A game (or any source of events): its calendar feed and/or its article page, and where its overview and monthly summary go. */
 export const eventSourceSchema = z.object({
@@ -43,6 +52,8 @@ export const eventSourceSchema = z.object({
   overviewDays: z.number().int().min(MIN_OVERVIEW_DAYS).max(MAX_OVERVIEW_DAYS),
   /** "" = no monthly summary. */
   summaryChannelId: z.union([z.literal(""), snowflake]),
+  /** Post the monthly summary by itself when a new month has events. */
+  summaryAuto: z.boolean().default(false),
 });
 export type EventSourceInput = z.infer<typeof eventSourceSchema>;
 
@@ -63,6 +74,8 @@ export const gameEventSchema = z.object({
   items: z.array(z.string().trim().min(1).max(80)).max(30),
   imageUrl: z.union([z.literal(""), z.string().trim().max(500).refine(isAllowedImageUrl, "image")]),
   videoUrl: z.union([z.literal(""), z.string().trim().max(500).refine((v) => classifyMedia(v) === "video", "video")]),
+  /** Overrides the rules' lead times for this event (days before the start). Empty = use the rules'. */
+  reminderDays: leadDaysField(0).default([]),
 });
 export type GameEventInput = z.infer<typeof gameEventSchema>;
 
@@ -79,8 +92,8 @@ export const eventRuleSchema = z
     channelId: snowflake,
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
-    /** Post an event this many days before it starts (0 = on the day). */
-    daysAhead: z.number().int().min(0).max(MAX_DAYS_AHEAD),
+    /** Post an event this many days before it starts (0 = on the day). The first (largest) is the announcement, the others are reminders: for example 7 and 2. */
+    leadDays: leadDaysField(1),
     /** Use an AI-written summary (rewards, who can take part) when the bot has an AI provider configured. */
     useAi: z.boolean().default(true),
     /** The source (game) whose events this rule looks at. */

@@ -319,7 +319,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   );
 }
 
-type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string };
+type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean };
 
 function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; onDone: () => void }) {
   const t = useTranslations("Events.games");
@@ -327,8 +327,8 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
   const [pending, startTransition] = useTransition();
   const form = useForm<SourceValues>({
     defaultValues: source
-      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId }
-      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "" },
+      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto }
+      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false },
   });
   const { errors } = form.formState;
   const none: SelectOption[] = [{ value: "", label: t("none") }, ...channelOptions];
@@ -397,6 +397,13 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
           <FormSelect control={form.control} name="summaryChannelId" id="gs-summary" options={none} placeholder={t("none")} />
         </Field>
         <Field orientation="horizontal">
+          <Controller control={form.control} name="summaryAuto" render={({ field }) => <Switch id="gs-auto" checked={field.value} onCheckedChange={field.onChange} aria-describedby="gs-auto-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="gs-auto">{t("summaryAuto")}</FieldLabel>
+            <FieldDescription id="gs-auto-help">{t("summaryAutoHelp")}</FieldDescription>
+          </div>
+        </Field>
+        <Field orientation="horizontal">
           <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="gs-enabled" checked={field.value} onCheckedChange={field.onChange} />} />
           <FieldLabel htmlFor="gs-enabled">{t("enabled")}</FieldLabel>
         </Field>
@@ -411,7 +418,7 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
   );
 }
 
-type EventValues = { title: string; kind: string; allDay: boolean; start: string; end: string; description: string; summary: string; itemsText: string; imageUrl: string; videoUrl: string };
+type EventValues = { title: string; kind: string; allDay: boolean; start: string; end: string; description: string; summary: string; itemsText: string; imageUrl: string; videoUrl: string; reminderText: string };
 
 function EventForm({ source, event, onDone }: { source: SourceRow; event: EventRow | null; onDone: () => void }) {
   const t = useTranslations("Events.games");
@@ -419,8 +426,8 @@ function EventForm({ source, event, onDone }: { source: SourceRow; event: EventR
   const [pending, startTransition] = useTransition();
   const form = useForm<EventValues>({
     defaultValues: event
-      ? { title: event.title, kind: event.kind, allDay: event.allDay, start: toLocalValue(event.startsAt), end: toLocalValue(event.endsAt), description: event.description, summary: event.summary, itemsText: event.items.join("\n"), imageUrl: event.imageUrl, videoUrl: event.videoUrl }
-      : { title: "", kind: "event", allDay: true, start: "", end: "", description: "", summary: "", itemsText: "", imageUrl: "", videoUrl: "" },
+      ? { title: event.title, kind: event.kind, allDay: event.allDay, start: toLocalValue(event.startsAt), end: toLocalValue(event.endsAt), description: event.description, summary: event.summary, itemsText: event.items.join("\n"), imageUrl: event.imageUrl, videoUrl: event.videoUrl, reminderText: event.reminderDays.join(", ") }
+      : { title: "", kind: "event", allDay: true, start: "", end: "", description: "", summary: "", itemsText: "", imageUrl: "", videoUrl: "", reminderText: "" },
   });
   const { errors } = form.formState;
   const kindOptions: SelectOption[] = EVENT_KINDS.map((k) => ({ value: k, label: t(`kind.${k}` as never) }));
@@ -439,12 +446,14 @@ function EventForm({ source, event, onDone }: { source: SourceRow; event: EventR
       items: parseLines(values.itemsText),
       imageUrl: values.imageUrl,
       videoUrl: values.videoUrl,
+      reminderDays: values.reminderText.split(/[\s,;+]+/).filter(Boolean).map(Number),
     });
     if (!checked.success) {
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const k = issue.path[0];
         if (k === "title" || k === "start" || k === "end" || k === "imageUrl" || k === "videoUrl") form.setError(k, { type: "custom", message: issue.message });
+        else if (k === "reminderDays") form.setError("reminderText", { type: "custom", message: issue.message });
       }
       return;
     }
@@ -507,6 +516,12 @@ function EventForm({ source, event, onDone }: { source: SourceRow; event: EventR
           <Input id="ge-video" type="url" maxLength={500} autoComplete="off" aria-invalid={Boolean(errors.videoUrl) || undefined} {...form.register("videoUrl")} />
           <FieldDescription>{t("videoHelp")}</FieldDescription>
           {errors.videoUrl && <FieldError>{te("badVideo")}</FieldError>}
+        </Field>
+        <Field data-invalid={Boolean(errors.reminderText) || undefined}>
+          <FieldLabel htmlFor="ge-reminders">{t("reminders")}</FieldLabel>
+          <Input id="ge-reminders" inputMode="numeric" autoComplete="off" placeholder="7, 2" className="max-w-[12rem]" aria-invalid={Boolean(errors.reminderText) || undefined} {...form.register("reminderText")} />
+          <FieldDescription>{t("remindersHelp")}</FieldDescription>
+          {errors.reminderText && <FieldError>{te("badLeadDays", { max: 4, limit: 60 })}</FieldError>}
         </Field>
       </FieldGroup>
       <DialogFooter>

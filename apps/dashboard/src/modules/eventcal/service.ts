@@ -8,12 +8,12 @@ import { checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, li
 import { countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
 import type { ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
 
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", daysAhead: r.daysAhead, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
 
 type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
 type EventModel = Awaited<ReturnType<typeof listEvents>>[number];
 
-const toEventRow = (e: EventModel): EventRow => ({ id: e.id, title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, description: e.description, summary: e.summary, items: e.items, imageUrl: e.imageUrl ?? "", videoUrl: e.videoUrl ?? "", origin: e.origin, locked: e.locked, removed: e.removedAt !== null });
+const toEventRow = (e: EventModel): EventRow => ({ id: e.id, title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, description: e.description, summary: e.summary, items: e.items, imageUrl: e.imageUrl ?? "", videoUrl: e.videoUrl ?? "", origin: e.origin, locked: e.locked, removed: e.removedAt !== null, reminderDays: e.reminderDays });
 
 const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[]): SourceRow => ({
   id: s.id,
@@ -26,6 +26,7 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[])
   overviewChannelId: s.overviewChannelId ?? "",
   overviewDays: s.overviewDays,
   summaryChannelId: s.summaryChannelId ?? "",
+  summaryAuto: s.summaryAuto,
   hasOverview: s.overviewMessageId !== null,
   lastCheckedAt: s.lastCheckedAt?.toISOString() ?? null,
   lastStatus: s.lastStatus,
@@ -73,6 +74,7 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
       overviewChannelId: input.overviewChannelId || null,
       overviewDays: input.overviewDays,
       summaryChannelId: input.summaryChannelId || null,
+      summaryAuto: input.summaryAuto,
     };
     if (existing) {
       // Another calendar or page address starts over: the first check of it only remembers what is there.
@@ -118,9 +120,9 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.daysAhead, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
+    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
     if (existing) {
-      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
+      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.leadDays.join(",") !== data.leadDays.join(",") || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);
     } else {
       await createRule(data);
@@ -217,7 +219,7 @@ export async function saveEvent(input: GameEventInput): Promise<SimpleEventResul
     const start = parseWhen(input.start, input.allDay);
     const end = input.end ? parseWhen(input.end, input.allDay) : null;
     if (Number.isNaN(start.getTime()) || (end && (Number.isNaN(end.getTime()) || end.getTime() < start.getTime()))) return { ok: false, error: "badRange" };
-    const data = { title: input.title, kind: input.kind, startsAt: start, endsAt: end, allDay: input.allDay, description: input.description, summary: input.summary, items: input.items, imageUrl: input.imageUrl || null, videoUrl: input.videoUrl || null };
+    const data = { title: input.title, kind: input.kind, startsAt: start, endsAt: end, allDay: input.allDay, description: input.description, summary: input.summary, items: input.items, imageUrl: input.imageUrl || null, videoUrl: input.videoUrl || null, reminderDays: input.reminderDays };
     if (input.id) {
       const existing = await findEvent(input.id);
       if (!existing || existing.sourceId !== input.sourceId) return { ok: false, error: "notFound" };

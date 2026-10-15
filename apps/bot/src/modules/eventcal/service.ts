@@ -8,9 +8,9 @@ import { aiConfigured } from "../../lib/ai";
 import type { CalEvent } from "./ics";
 import { syncSource } from "./sync";
 import { toCalEvent } from "./store";
-import { clearSyncFlags, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
+import { claimMonth, clearSyncFlags, releaseMonth, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
-import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, isPostable, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
+import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, planStages, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
 // matching event that starts within the rule's lead time, one message per event. An occurrence is claimed in the database BEFORE it is
@@ -109,42 +109,53 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
       const budget = { left: MAX_AI_CALLS_PER_CHECK };
 
       for (const rule of rules) {
-        const matching = loaded.filter((e) => matchesRule(e, rule) && isPostable(e, now, rule.daysAhead));
-        for (const event of matching) {
+        for (const event of loaded.filter((e) => matchesRule(e, rule))) {
+          // The event's own lead times (set in the dashboard) win over the rule's. Stage 0 is the announcement, later stages are reminders.
+          const steps = planStages(event, now, event.reminderDays && event.reminderDays.length > 0 ? event.reminderDays : rule.leadDays);
+          if (steps.length === 0) continue;
           const hash = eventHash(event);
-          const existing = await findPost(rule.id, event.key.slice(0, 160));
-          if (!config.baselined || !rule.seeded) {
-            // First look at the calendar or at this rule: remember everything, announce nothing.
-            await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary });
-            continue;
-          }
-          const channel = await textChannel(guild, rule.channelId);
-          if (!channel) {
-            log.warn({ rule: rule.id, channelId: rule.channelId }, "eventcal: the channel is missing or the bot can't post in it");
-            continue;
-          }
-          if (!existing) {
-            if (!(await claimPost({ ruleId: rule.id, eventKey: event.key, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary }))) continue;
-            try {
-              const message = await channel.send(eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null));
-              await setPostMessage(rule.id, event.key, message.id);
-              result.posted++;
-              log.info({ rule: rule.id, event: event.summary }, "eventcal: posted");
-            } catch (err) {
-              log.warn({ err, rule: rule.id }, "eventcal: could not post, will retry");
-              await unclaimPost(rule.id, event.key).catch(() => undefined);
+          for (const step of steps) {
+            const existing = await findPost(rule.id, event.key.slice(0, 160), step.stage);
+            const claim = { ruleId: rule.id, eventKey: event.key, stage: step.stage, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary };
+            if (!config.baselined || !rule.seeded) {
+              // First look at the calendar or at this rule: remember everything, announce nothing.
+              await claimPost(claim);
+              continue;
             }
-          } else if (existing.hash !== hash && existing.messageId) {
-            const message = await channel.messages.fetch(existing.messageId).catch(() => null);
-            if (message) {
-              await message.edit({ ...eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null), content: message.content }).then(async () => {
-                await setPostHash(rule.id, event.key, hash);
-                result.edited++;
-                log.info({ rule: rule.id, event: event.summary }, "eventcal: edited (the event changed)");
-              }).catch((err) => log.warn({ err }, "eventcal: could not edit"));
+            if (!existing && !step.post) {
+              // A lead time that was missed and has been overtaken by a nearer one: done, without a message.
+              await claimPost(claim);
+              continue;
             }
-          } else if (existing.hash !== hash) {
-            await setPostHash(rule.id, event.key, hash); // a silently remembered event changed: nothing to edit
+            const channel = await textChannel(guild, rule.channelId);
+            if (!channel) {
+              log.warn({ rule: rule.id, channelId: rule.channelId }, "eventcal: the channel is missing or the bot can't post in it");
+              continue;
+            }
+            const reminder = step.stage > 0;
+            if (!existing) {
+              if (!(await claimPost(claim))) continue;
+              try {
+                const message = await channel.send(eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null, { reminder }));
+                await setPostMessage(rule.id, event.key, step.stage, message.id);
+                result.posted++;
+                log.info({ rule: rule.id, event: event.summary, stage: step.stage, daysBefore: step.offset }, "eventcal: posted");
+              } catch (err) {
+                log.warn({ err, rule: rule.id }, "eventcal: could not post, will retry");
+                await unclaimPost(rule.id, event.key, step.stage).catch(() => undefined);
+              }
+            } else if (existing.hash !== hash && existing.messageId) {
+              const message = await channel.messages.fetch(existing.messageId).catch(() => null);
+              if (message) {
+                await message.edit({ ...eventMessage(event, rule.pingRoleId, rule.useAi ? await summaryFor(event, budget, game) : null, { reminder }), content: message.content }).then(async () => {
+                  await setPostHash(rule.id, event.key, step.stage, hash);
+                  result.edited++;
+                  log.info({ rule: rule.id, event: event.summary, stage: step.stage }, "eventcal: edited (the event changed)");
+                }).catch((err) => log.warn({ err }, "eventcal: could not edit"));
+              }
+            } else if (existing.hash !== hash) {
+              await setPostHash(rule.id, event.key, step.stage, hash); // a silently remembered event changed: nothing to edit
+            }
           }
         }
       }
@@ -153,6 +164,7 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
 
       await refreshOverview(guild, config.id, loaded, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the overview"));
       await refreshMonthly(guild, config.id, loaded, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the monthly summary"));
+      await autoMonthly(guild, config, loaded, now).catch((err) => log.warn({ err }, "eventcal: the automatic monthly summary failed"));
       if (Math.random() < 0.05) {
         await prunePosts(new Date(now.getTime() - 120 * DAY));
         await pruneSummaries(new Date(now.getTime() - 120 * DAY));
@@ -261,6 +273,27 @@ async function refreshMonthly(guild: Guild, sourceId: string, loaded: CalEvent[]
     await setMonthly(sourceId, { summaryMonth: key, summaryMessageIds: ids, summaryHash: hash });
     log.info({ messages: ids.length }, "eventcal: monthly summary updated");
   }
+}
+
+/**
+ * When a game has the automatic monthly summary on, posts it once as soon as the current month has events (so a new month's summary appears by
+ * itself when its article is published). Never on a source's first look, and the month is claimed before posting, so two rounds can't both post.
+ */
+async function autoMonthly(guild: Guild, config: SourceState, loaded: CalEvent[], now: Date): Promise<void> {
+  if (!config.summaryAuto || !config.summaryChannelId || !config.baselined) return;
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth() + 1;
+  const key = `${year}-${String(month).padStart(2, "0")}`;
+  if (config.summaryMonth === key) return;
+  if (monthEvents(loaded, year, month).length === 0) return;
+  if (!(await claimMonth(config.id, key, config.summaryMonth))) return;
+  const status = await postMonthly(guild, "current", config.id);
+  if (status === "posted" || status === "updated") {
+    log.info({ source: config.name, month: key }, "eventcal: the monthly summary was posted automatically");
+    return;
+  }
+  await releaseMonth(config.id, key, config.summaryMonth).catch(() => undefined);
+  log.warn({ source: config.name, month: key, status }, "eventcal: the automatic monthly summary could not be posted, will retry");
 }
 
 /** The dashboard's "Post monthly summary" for this month or the next. Every event of the month is listed, not only those a rule matches. */

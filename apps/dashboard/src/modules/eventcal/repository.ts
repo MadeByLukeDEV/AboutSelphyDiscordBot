@@ -19,7 +19,7 @@ export const listRules = (): Promise<EventRule[]> => prisma.eventRule.findMany({
 export const countRules = () => prisma.eventRule.count();
 export const findRule = (id: string) => prisma.eventRule.findUnique({ where: { id } });
 
-type RuleData = { name: string; words: string[]; categories: string[]; kinds: string[]; channelId: string; pingRoleId: string | null; daysAhead: number; useAi: boolean; enabled: boolean; sourceId: string };
+type RuleData = { name: string; words: string[]; categories: string[]; kinds: string[]; channelId: string; pingRoleId: string | null; daysAhead: number; leadDays: number[]; useAi: boolean; enabled: boolean; sourceId: string };
 export const createRule = (data: RuleData) => prisma.eventRule.create({ data });
 /** A changed match or channel starts over for the rule: its next check only remembers what matches. */
 export const updateRule = (id: string, data: RuleData, reseed: boolean) => prisma.eventRule.update({ where: { id }, data: { ...data, ...(reseed ? { seeded: false } : {}) } });
@@ -28,7 +28,7 @@ export const deleteRule = async (id: string) => (await prisma.eventRule.deleteMa
 export const listSources = () => prisma.eventSource.findMany({ orderBy: { createdAt: "asc" } });
 export const countSources = () => prisma.eventSource.count();
 export const findSource = (id: string) => prisma.eventSource.findUnique({ where: { id } });
-type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null };
+type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean };
 export const createSource = (data: SourceData) => prisma.eventSource.create({ data });
 export const updateSource = (id: string, data: SourceData & { baselined?: false }) => prisma.eventSource.update({ where: { id }, data });
 export const deleteSource = async (id: string) => (await prisma.eventSource.deleteMany({ where: { id } })).count;
@@ -36,7 +36,7 @@ export const deleteSource = async (id: string) => (await prisma.eventSource.dele
 /** Events from a month ago on, up to 80 per source (the page shows them per source). */
 export const listEvents = () => prisma.gameEvent.findMany({ where: { startsAt: { gte: new Date(Date.now() - 30 * 86_400_000) } }, orderBy: { startsAt: "asc" }, take: 600 });
 export const findEvent = (id: string) => prisma.gameEvent.findUnique({ where: { id } });
-type EventData = { title: string; kind: string; startsAt: Date; endsAt: Date | null; allDay: boolean; description: string; summary: string; items: string[]; imageUrl: string | null; videoUrl: string | null };
+type EventData = { title: string; kind: string; startsAt: Date; endsAt: Date | null; allDay: boolean; description: string; summary: string; items: string[]; imageUrl: string | null; videoUrl: string | null; reminderDays: number[] };
 export const createManualEvent = (sourceId: string, key: string, data: EventData) => prisma.gameEvent.create({ data: { ...data, sourceId, key, origin: "manual", locked: true } });
 /** Editing locks the event: a sync never overwrites it again. */
 export const updateEvent = (id: string, data: EventData) => prisma.gameEvent.update({ where: { id }, data: { ...data, locked: true } });

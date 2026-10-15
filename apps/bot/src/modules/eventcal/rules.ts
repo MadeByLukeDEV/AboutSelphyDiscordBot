@@ -29,6 +29,27 @@ export function isPostable(event: Pick<CalEvent, "start" | "allDay">, now: Date,
   return event.start.getTime() >= from && event.start.getTime() <= now.getTime() + (daysAhead + 1) * DAY - 1;
 }
 
+/** Lead times in days: whole numbers 0-60, no duplicates, largest first. Falls back to one week when there are none. */
+export function normalizeOffsets(days: readonly number[]): number[] {
+  const clean = [...new Set(days.filter((d) => Number.isInteger(d) && d >= 0 && d <= 60))].sort((a, b) => b - a);
+  return clean.length > 0 ? clean : [7];
+}
+
+export type StagePlan = { stage: number; offset: number; post: boolean };
+
+/**
+ * Which of an event's lead times are due now. Stage 0 is the largest lead time. Only the nearest due one is posted; earlier ones that were missed
+ * (the rule was made late, the bot was down) are marked as done silently, so a late event never gets two posts at once.
+ */
+export function planStages(event: Pick<CalEvent, "start" | "allDay">, now: Date, offsets: readonly number[]): StagePlan[] {
+  const due = normalizeOffsets(offsets)
+    .map((offset, stage) => ({ stage, offset }))
+    .filter((s) => isPostable(event, now, s.offset));
+  if (due.length === 0) return [];
+  const nearest = Math.min(...due.map((s) => s.offset));
+  return due.map((s) => ({ ...s, post: s.offset === nearest }));
+}
+
 /** A fingerprint of what a message shows, so a changed event (moved, renamed, new text) edits its message once. */
 export function eventHash(e: CalEvent): string {
   return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.video ?? "", e.color ?? "", e.extra?.summary ?? "", (e.items ?? []).join("|")].join("\u0000")).digest("hex");
@@ -42,8 +63,11 @@ export function whenText(e: Pick<CalEvent, "start" | "end" | "allDay">): { start
   return { starts: fmt(e.start), ends: e.end ? fmt(e.end) : null };
 }
 
-/** The message for one event. The calendar's text is escaped (it comes from outside), nothing can ping but the rule's role. */
-export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null) {
+/**
+ * The message for one event. The calendar's text is escaped (it comes from outside), nothing can ping but the rule's role. A reminder (a later lead
+ * time of the same rule) gets a line saying when the event starts.
+ */
+export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null, opts: { reminder?: boolean } = {}) {
   const { starts, ends } = whenText(e);
   const embed = new EmbedBuilder().setColor(e.color ?? 0x00ffa8).setTitle(truncate(escapeText(e.summary), 256)).addFields({ name: "Starts", value: starts, inline: false });
   if (ends) embed.addFields({ name: "Ends", value: ends, inline: false });
@@ -60,7 +84,8 @@ export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSu
   if (e.image) embed.setImage(e.image);
   embed.setFooter({ text: ai ? "Event calendar · summary by AI" : "Event calendar" });
   // A video link goes in the text so Discord shows its player under the embed.
-  const content = [pingRoleId ? `<@&${pingRoleId}>` : "", e.video ?? ""].filter(Boolean).join("\n");
+  const lead = [pingRoleId ? `<@&${pingRoleId}>` : "", opts.reminder ? `⏰ **Reminder:** starts <t:${unix(e.start)}:R>` : ""].filter(Boolean).join(" ");
+  const content = [lead, e.video ?? ""].filter(Boolean).join("\n");
   return {
     content,
     embeds: [embed],

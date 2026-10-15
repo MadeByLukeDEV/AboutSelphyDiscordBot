@@ -30,6 +30,8 @@ export type EventRow = {
   origin: string;
   locked: boolean;
   removed: boolean;
+  /** Overrides the rules' lead times for this event (days before the start). */
+  reminderDays: number[];
 };
 
 /** A source (game) with its settings, status, pasted articles and stored events. */
@@ -44,6 +46,8 @@ export type SourceRow = {
   overviewChannelId: string;
   overviewDays: number;
   summaryChannelId: string;
+  /** Post the monthly summary by itself when a new month has events. */
+  summaryAuto: boolean;
   hasOverview: boolean;
   lastCheckedAt: string | null;
   lastStatus: string | null;

@@ -18,6 +18,7 @@ export type StoredLike = {
   imageUrl: string | null;
   videoUrl: string | null;
   color: number | null;
+  reminderDays?: number[];
 };
 
 const AUDIENCES = ["everyone", "partners", "unknown"] as const;
@@ -37,6 +38,7 @@ export function toCalEvent(r: StoredLike): CalEvent {
     color: r.color,
     kind: r.kind,
     items: r.items,
+    ...(r.reminderDays && r.reminderDays.length > 0 ? { reminderDays: r.reminderDays } : {}),
     ...(r.summary ? { extra: { summary: r.summary, blurb: r.blurb, audience } } : {}),
   };
 }

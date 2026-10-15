@@ -3014,7 +3014,11 @@
       "videoHelp": "Discord zeigt den Player unter dem Post.",
       "eventSaved": "Event gespeichert.",
       "fetching": "Wird abgerufen...",
-      "fetchingNow": "Die Quellen werden gerade gelesen..."
+      "fetchingNow": "Die Quellen werden gerade gelesen...",
+      "summaryAuto": "Monatsübersicht automatisch posten",
+      "summaryAutoHelp": "Sobald ein neuer Monat Events hat, postet der Bot die Übersicht von selbst (einmal). Braucht den Kanal für die Monatsübersicht.",
+      "reminders": "Erinnerungen für dieses Event (Tage vorher)",
+      "remindersHelp": "Leer lassen, um die Vorlaufzeiten der Regeln zu nutzen. Zum Beispiel 7, 2 postet die Ankündigung eine Woche vorher und eine Erinnerung zwei Tage vorher."
     },
     "posted": {
       "title": "Geposte Events",
@@ -3041,13 +3045,13 @@
       "intro": "Ein Event wird gepostet, wenn sein Name eines der Wörter enthält oder es eines der Tags des Kalenders trägt. Events ohne passende Regel werden übersprungen. Jede Regel hat ihren eigenen Kanal, ihre Rolle und Vorlaufzeit. Eine neue oder geänderte Regel merkt sich nur die jetzt vorhandenen Events, alte Events werden also nie gepostet.",
       "add": "Regel hinzufügen",
       "empty": "Noch keine Regeln. Lege eine an, zum Beispiel das Wort \"Twitch Drops\" für deinen Drops-Kanal.",
-      "ahead": "{days, plural, =0 {am Tag selbst} one {1 Tag vorher} other {# Tage vorher}}",
       "removed": "Regel entfernt.",
       "editTitle": "Regel bearbeiten",
       "newTitle": "Neue Regel",
       "formIntro": "Welche Events in welchen Kanal kommen.",
       "removeTitle": "Diese Regel entfernen?",
-      "removeBody": "Die Regel \"{name}\" postet nicht mehr. Bereits gepostete Nachrichten bleiben in Discord."
+      "removeBody": "Die Regel \"{name}\" postet nicht mehr. Bereits gepostete Nachrichten bleiben in Discord.",
+      "aheadList": "{list} Tage vorher"
     },
     "ruleForm": {
       "source": "Spiel",
@@ -3065,8 +3069,6 @@
       "role": "Ping-Rolle",
       "noRole": "Niemand",
       "roleHelp": "Die einzige Rolle, die erwähnt wird.",
-      "daysAhead": "So viele Tage vor dem Start posten",
-      "daysAheadHelp": "0 = am Starttag, bis zu {max}. Ein Event wird einmal gepostet; ändert der Kalender es später, wird die Nachricht bearbeitet.",
       "enabled": "Diese Regel ist an",
       "save": "Regel speichern",
       "saving": "Speichert …",
@@ -3081,7 +3083,9 @@
         "update": "Updates",
         "sale": "Sales",
         "other": "Sonstiges"
-      }
+      },
+      "leadDays": "So viele Tage vor dem Start posten",
+      "leadDaysHelp": "Eine bis {max} Zahlen von 0 bis {limit}, zum Beispiel 7, 2. Der erste Post ist die Ankündigung, die späteren sind Erinnerungen. 0 = am Tag selbst."
     },
     "errors": {
       "forbidden": "Darauf hast du keinen Zugriff.",
@@ -3095,14 +3099,14 @@
       "failed": "Das hat nicht geklappt. Versuche es erneut.",
       "badUrl": "Gib eine https-Adresse eines öffentlichen Kalenders ein.",
       "badDays": "Gib eine Zahl von {min} bis {max} ein.",
-      "badDaysAhead": "Gib eine Zahl von 0 bis {max} ein.",
       "needsName": "Gib der Regel einen Namen.",
       "needsMatch": "Wähle mindestens eine Art, ein Wort oder einen Tag.",
       "badDate": "Wähle Datum und Uhrzeit.",
       "badImage": "Gib eine https-Adresse eines Bildes ein.",
       "badVideo": "Gib die Adresse eines YouTube-, Twitch- oder Vimeo-Videos ein.",
       "badRange": "Das Ende darf nicht vor dem Beginn liegen.",
-      "needsSource": "Wähle ein Spiel."
+      "needsSource": "Wähle ein Spiel.",
+      "badLeadDays": "Gib eine bis {max} Zahlen von 0 bis {limit} ein, zum Beispiel 7, 2."
     }
   },
   "Verification": {

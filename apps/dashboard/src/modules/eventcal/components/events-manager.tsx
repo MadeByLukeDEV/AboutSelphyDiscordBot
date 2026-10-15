@@ -7,7 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { EVENT_KINDS, eventRuleSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
+import { EVENT_KINDS, eventRuleSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_LEAD_TIMES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,9 @@ const parseTerms = (text: string): string[] => {
   }
   return out;
 };
+
+/** "7, 2" -> [7, 2]. A word that isn't a number becomes NaN, which the schema refuses. */
+const parseDays = (text: string): number[] => text.split(/[\s,;+]+/).filter(Boolean).map(Number);
 
 /** The games (sources) with their events, the posting rules, and the list of posted events. State flows in as props; changes call router.refresh(). */
 export function EventsManager({ sources, rules, channels, roles, posted }: { sources: SourceRow[]; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; posted: PostedEventRow[] }) {
@@ -128,7 +131,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
                     {r.sourceId && <Badge variant="outline">{sources.find((s) => s.id === r.sourceId)?.name ?? "?"}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {[...r.kinds.map((k) => t(`games.kind.${k}` as never)), ...r.words, ...r.categories.map((c) => `#${c}`)].join(", ")} → #{channelName(r.channelId)} · {t("rules.ahead", { days: r.daysAhead })}
+                    {[...r.kinds.map((k) => t(`games.kind.${k}` as never)), ...r.words, ...r.categories.map((c) => `#${c}`)].join(", ")} → #{channelName(r.channelId)} · {t("rules.aheadList", { list: r.leadDays.join(" + ") })}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -185,7 +188,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
   );
 }
 
-type RuleValues = { sourceId: string; name: string; kinds: string[]; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
+type RuleValues = { sourceId: string; name: string; kinds: string[]; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; leadDaysText: string; useAi: boolean; enabled: boolean };
 
 function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; sources: SourceRow[]; roles: GuildRole[] | null; onDone: () => void }) {
   const t = useTranslations("Events.ruleForm");
@@ -193,8 +196,8 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
   const [pending, startTransition] = useTransition();
   const form = useForm<RuleValues>({
     defaultValues: rule
-      ? { sourceId: rule.sourceId, name: rule.name, kinds: rule.kinds, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
-      : { sourceId: sources[0]?.id ?? "", name: "", kinds: [], wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
+      ? { sourceId: rule.sourceId, name: rule.name, kinds: rule.kinds, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, leadDaysText: rule.leadDays.join(", "), useAi: rule.useAi, enabled: rule.enabled }
+      : { sourceId: sources[0]?.id ?? "", name: "", kinds: [], wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", leadDaysText: "7", useAi: true, enabled: true },
   });
   const { errors } = form.formState;
   const sourceOptions: SelectOption[] = sources.map((s) => ({ value: s.id, label: s.name }));
@@ -212,7 +215,7 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
       categories: parseTerms(values.categoriesText),
       channelId: values.channelId,
       pingRoleId: values.pingRoleId,
-      daysAhead: Number(values.daysAhead),
+      leadDays: parseDays(values.leadDaysText),
       useAi: values.useAi,
       enabled: values.enabled,
     });
@@ -220,7 +223,8 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const k = issue.path[0];
-        if (k === "name" || k === "channelId" || k === "daysAhead" || k === "sourceId") form.setError(k, { type: "custom", message: issue.message });
+        if (k === "name" || k === "channelId" || k === "sourceId") form.setError(k, { type: "custom", message: issue.message });
+        else if (k === "leadDays") form.setError("leadDaysText", { type: "custom", message: issue.message });
         else if (k === "words" || k === "categories") form.setError("wordsText", { type: "custom", message: issue.message });
       }
       return;
@@ -290,11 +294,11 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
           <FormSelect control={form.control} name="pingRoleId" id="er-role" options={roleOptions} placeholder={t("noRole")} disabled={roles === null} />
           <FieldDescription>{t("roleHelp")}</FieldDescription>
         </Field>
-        <Field data-invalid={Boolean(errors.daysAhead) || undefined}>
-          <FieldLabel htmlFor="er-days">{t("daysAhead")}</FieldLabel>
-          <Input id="er-days" type="number" inputMode="numeric" min={0} max={MAX_DAYS_AHEAD} className="max-w-[8rem]" {...form.register("daysAhead", { valueAsNumber: true })} />
-          <FieldDescription>{t("daysAheadHelp", { max: MAX_DAYS_AHEAD })}</FieldDescription>
-          {errors.daysAhead && <FieldError>{te("badDaysAhead", { max: MAX_DAYS_AHEAD })}</FieldError>}
+        <Field data-invalid={Boolean(errors.leadDaysText) || undefined}>
+          <FieldLabel htmlFor="er-days">{t("leadDays")}</FieldLabel>
+          <Input id="er-days" inputMode="numeric" autoComplete="off" placeholder="7, 2" className="max-w-[12rem]" aria-invalid={Boolean(errors.leadDaysText) || undefined} {...form.register("leadDaysText")} />
+          <FieldDescription>{t("leadDaysHelp", { max: MAX_LEAD_TIMES, limit: MAX_DAYS_AHEAD })}</FieldDescription>
+          {errors.leadDaysText && <FieldError>{te("badLeadDays", { max: MAX_LEAD_TIMES, limit: MAX_DAYS_AHEAD })}</FieldError>}
         </Field>
         <Field orientation="horizontal">
           <Controller control={form.control} name="useAi" render={({ field }) => <Switch id="er-ai" checked={field.value} onCheckedChange={field.onChange} aria-describedby="er-ai-help" />} />

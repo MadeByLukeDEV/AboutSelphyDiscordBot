@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
-import { eventHash, eventMessage, firstSentence, isPostable, matchesRule, mergeArticle, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
+import { eventHash, eventMessage, firstSentence, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
 
 const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   key: "u|2026-09-18T10:00:00.000Z",
@@ -104,7 +104,7 @@ describe("overview", () => {
 });
 
 describe("settings", () => {
-  const rule = { name: "Drops", words: ["Twitch Drops"], categories: [], channelId: "123456789012345678", pingRoleId: "", daysAhead: 7, enabled: true, sourceId: "src_1" };
+  const rule = { name: "Drops", words: ["Twitch Drops"], categories: [], channelId: "123456789012345678", pingRoleId: "", leadDays: [7], enabled: true, sourceId: "src_1" };
   it("needs a word or a tag in a rule", () => {
     expect(eventRuleSchema.safeParse(rule).success).toBe(true);
     expect(eventRuleSchema.safeParse({ ...rule, words: [] }).success).toBe(false);
@@ -241,5 +241,50 @@ describe("the monthly summary", () => {
     expect(monthlyHash(["a"])).toBe(monthlyHash(["a"]));
     expect(monthlyHash(["a"])).not.toBe(monthlyHash(["b"]));
     expect(monthLabel(2026, 10)).toBe("October 2026");
+  });
+});
+
+describe("reminders", () => {
+  const start = new Date("2026-10-23T00:00:00Z");
+  const at = (iso: string) => new Date(iso);
+
+  it("cleans lead times: whole days, no duplicates, largest first, one week when empty", () => {
+    expect(normalizeOffsets([2, 7, 7, -1, 99, 1.5])).toEqual([7, 2]);
+    expect(normalizeOffsets([])).toEqual([7]);
+  });
+  it("posts the announcement when the first lead time is reached", () => {
+    expect(planStages({ start, allDay: true }, at("2026-10-16T12:00:00Z"), [7, 2])).toEqual([{ stage: 0, offset: 7, post: true }]);
+  });
+  it("posts nothing before the first lead time and nothing after the event started", () => {
+    expect(planStages({ start, allDay: true }, at("2026-10-10T12:00:00Z"), [7, 2])).toEqual([]);
+    expect(planStages({ start, allDay: true }, at("2026-10-24T12:00:00Z"), [7, 2])).toEqual([]);
+  });
+  it("posts the reminder when the second lead time is reached, and only that one", () => {
+    const steps = planStages({ start, allDay: true }, at("2026-10-21T12:00:00Z"), [7, 2]);
+    expect(steps).toEqual([
+      { stage: 0, offset: 7, post: false },
+      { stage: 1, offset: 2, post: true },
+    ]);
+  });
+  it("marks a missed announcement as overtaken instead of posting twice", () => {
+    const steps = planStages({ start, allDay: true }, at("2026-10-21T18:00:00Z"), [14, 7, 2]);
+    expect(steps.filter((s) => s.post).map((s) => s.offset)).toEqual([2]);
+  });
+  it("labels a reminder with the start time and keeps the role ping", () => {
+    const e = ev({ start });
+    const m = eventMessage(e, "123456789012345678", null, { reminder: true });
+    expect(m.content).toMatch(/^<@&123456789012345678> ⏰ \*\*Reminder:\*\* starts <t:\d+:R>$/);
+    expect(eventMessage(e, "123456789012345678", null).content).toBe("<@&123456789012345678>");
+    expect(eventMessage(e, null, null, { reminder: true }).content).toMatch(/^⏰ /);
+  });
+  it("accepts one to four lead times on a rule, and an event override", () => {
+    const rule = { name: "Drops", words: ["x"], categories: [], channelId: "123456789012345678", pingRoleId: "", enabled: true, sourceId: "s" };
+    expect(eventRuleSchema.parse({ ...rule, leadDays: [2, 7] }).leadDays).toEqual([7, 2]);
+    expect(eventRuleSchema.safeParse({ ...rule, leadDays: [] }).success).toBe(false);
+    expect(eventRuleSchema.safeParse({ ...rule, leadDays: [1, 2, 3, 4, 5] }).success).toBe(false);
+    expect(eventRuleSchema.safeParse({ ...rule, leadDays: [61] }).success).toBe(false);
+    const ge = { sourceId: "s", title: "t", kind: "event", allDay: true, start: "2026-10-23T00:00", end: "", description: "", summary: "", items: [], imageUrl: "", videoUrl: "" };
+    expect(gameEventSchema.parse(ge).reminderDays).toEqual([]);
+    expect(gameEventSchema.parse({ ...ge, reminderDays: [1, 5] }).reminderDays).toEqual([5, 1]);
   });
 });

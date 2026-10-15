@@ -1527,7 +1527,13 @@ Decided 2026-10-08:
     monthly, pasted articles as the fallback) with an events list per game (edit locks an event so a sync never overwrites it, "add event" makes a manual one, remove hides
     it, restore), and the rule form picks the game. Item **images** are not stored yet (items are plain names; the item library comes in slice 3).
     **Rule kinds and the overview** (2026-10-15, `feature_rule-kinds`, migration `20261115120000_event_rule_kinds`; **not tried live yet**): `EventRule.kinds` (drop/event/update/sale/other, DB CHECK) lets a rule match every event of a kind in addition to its words and tags (`matchesRule`: any of the three matches; a rule needs at least one); the rule form has toggle buttons for it. The **overview now lists every event of the game** (running now or starting within N days), not only those a rule posts, like the monthly summary does.
-    Slices still to do: reminders (several offsets such as 7 d and 2 d, per-event timers, automatic monthly post), images per game theme, patch notes, public widget + JSON.
+    **Reminders** (2026-10-15, `feature_event-reminders`, migration `20261115130000_event_reminders`; **not tried live yet**): a rule has `leadDays` (1-4 numbers, 0-60, largest
+    first, e.g. `7, 2`; the old `daysAhead` column stays and mirrors the first) and every post is per **stage** (`EventPost.stage`, unique per rule + occurrence + stage; stage 0 =
+    announcement, later stages = reminders with a `⏰ Reminder: starts <t:..:R>` line). `planStages` (pure, tested) says which lead times are due: only the **nearest** due one is
+    posted, earlier ones that were missed are claimed silently, so a late event never gets two posts at once; a changed `leadDays` re-seeds the rule (silent first check). A single
+    event can override the rules' lead times (`GameEvent.reminderDays`, set in the event form; editing locks the event). **Automatic monthly summary**: `EventSource.summaryAuto`
+    (switch on the game): once a source has had its first look, the first check of a month that has events posts that month's summary by itself (`autoMonthly`: `claimMonth` is a
+    compare-and-set on `summaryMonth`, released if the post fails so the next round retries). Slices still to do: images per game theme (item library, cards), patch notes, public widget + JSON.
     **Crawl4AI setup (verified live 2026-10-15)**: Crawl4AI 0.9.5 binds the container's loopback only unless `CRAWL4AI_API_TOKEN` is set, so a Dokploy
     compose service needs `CRAWL4AI_API_TOKEN` (+ `SECRET_KEY`), `shm_size: 1g`, no domain, and `dokploy-network`; the bot gets `CRAWL4AI_URL=http://crawl4ai:11235`
     and `CRAWL4AI_TOKEN` (the same value, sent as a bearer header). `POST /crawl {urls}` answers `{success, results:[{url, html, ...}]}` and got the real Sea of

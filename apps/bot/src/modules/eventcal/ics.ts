@@ -22,6 +22,8 @@ export type CalEvent = {
   /** From the stored event / AI extraction (absent for plain calendar entries). */
   kind?: string;
   items?: string[];
+  /** Overrides the rules' lead times for this event (days before the start). */
+  reminderDays?: number[];
   extra?: { summary: string; blurb: string; audience: "everyone" | "partners" | "unknown" };
 };
 

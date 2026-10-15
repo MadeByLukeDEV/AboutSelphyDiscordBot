@@ -19,6 +19,7 @@ export type SourceState = {
   summaryMonth: string | null;
   summaryMessageIds: string[];
   summaryHash: string;
+  summaryAuto: boolean;
   baselined: boolean;
 };
 
@@ -58,16 +59,16 @@ export const markSeeded = (ruleId: string) => prisma.eventRule.update({ where: {
 
 export const recordCheck = (id: string, status: string, baselined?: boolean) => saveState(id, { lastCheckedAt: new Date(), lastStatus: status.slice(0, 40), ...(baselined ? { baselined: true } : {}) });
 
-export const findPost = (ruleId: string, eventKey: string) => prisma.eventPost.findUnique({ where: { ruleId_eventKey: { ruleId, eventKey } } });
+export const findPost = (ruleId: string, eventKey: string, stage: number) => prisma.eventPost.findUnique({ where: { ruleId_eventKey_stage: { ruleId, eventKey, stage } } });
 
 /** Claims an occurrence for a rule. False when it was already there, so only one caller posts it. */
-export async function claimPost(data: { ruleId: string; eventKey: string; startsAt: Date; channelId: string; hash: string; messageId: string | null; title?: string }): Promise<boolean> {
+export async function claimPost(data: { ruleId: string; eventKey: string; stage: number; startsAt: Date; channelId: string; hash: string; messageId: string | null; title?: string }): Promise<boolean> {
   return (await prisma.eventPost.createMany({ data: [{ ...data, eventKey: data.eventKey.slice(0, 160), title: (data.title ?? "").slice(0, 120) }], skipDuplicates: true })).count === 1;
 }
 
-export const setPostMessage = (ruleId: string, eventKey: string, messageId: string) => prisma.eventPost.update({ where: { ruleId_eventKey: { ruleId, eventKey: eventKey.slice(0, 160) } }, data: { messageId } });
-export const setPostHash = (ruleId: string, eventKey: string, hash: string) => prisma.eventPost.update({ where: { ruleId_eventKey: { ruleId, eventKey: eventKey.slice(0, 160) } }, data: { hash } });
-export const unclaimPost = (ruleId: string, eventKey: string) => prisma.eventPost.deleteMany({ where: { ruleId, eventKey: eventKey.slice(0, 160) } });
+export const setPostMessage = (ruleId: string, eventKey: string, stage: number, messageId: string) => prisma.eventPost.update({ where: { ruleId_eventKey_stage: { ruleId, eventKey: eventKey.slice(0, 160), stage } }, data: { messageId } });
+export const setPostHash = (ruleId: string, eventKey: string, stage: number, hash: string) => prisma.eventPost.update({ where: { ruleId_eventKey_stage: { ruleId, eventKey: eventKey.slice(0, 160), stage } }, data: { hash } });
+export const unclaimPost = (ruleId: string, eventKey: string, stage: number) => prisma.eventPost.deleteMany({ where: { ruleId, eventKey: eventKey.slice(0, 160), stage } });
 export const prunePosts = (before: Date) => prisma.eventPost.deleteMany({ where: { startsAt: { lt: before } } });
 
 export const setOverview = (id: string, channelId: string, messageId: string, hash: string) => saveState(id, { overviewChannelId: channelId, overviewMessageId: messageId, overviewHash: hash });
@@ -95,7 +96,7 @@ export const listStoredEvents = (sourceId: string, from: Date): Promise<GameEven
 export const listEventRows = (sourceId: string, from: Date, to: Date) =>
   prisma.gameEvent.findMany({ where: { sourceId, startsAt: { gte: from, lte: to } }, select: { key: true, locked: true, origin: true, removedAt: true }, take: 5000 });
 
-type EventData = Omit<GameEvent, "id" | "sourceId" | "createdAt" | "lastSeenAt" | "removedAt" | "locked" | "origin">;
+type EventData = Omit<GameEvent, "id" | "sourceId" | "createdAt" | "lastSeenAt" | "removedAt" | "locked" | "origin" | "reminderDays">;
 
 /** Inserts an event, or refreshes the one with that key. A locked event (an admin edited it) only gets its "still seen" mark. */
 export async function upsertEvent(sourceId: string, origin: "calendar" | "article", data: EventData): Promise<void> {
@@ -120,3 +121,16 @@ export const saveFetch = (sourceId: string, url: string, data: { contentHash: st
 
 /** After a restart no read is running any more: forget the flags a crashed run left behind. */
 export const clearSyncFlags = () => prisma.eventSource.updateMany({ where: { syncStartedAt: { not: null } }, data: { syncStartedAt: null } });
+
+/**
+ * Claims the right to post a source's monthly summary for `key`: only succeeds while the stored month is still the one that was read, so two rounds
+ * can't both post it. The old month's message ids are forgotten (that summary stays in Discord as history).
+ */
+export async function claimMonth(id: string, key: string, previous: string | null): Promise<boolean> {
+  const res = await prisma.eventSource.updateMany({ where: { id, summaryMonth: previous }, data: { summaryMonth: key, summaryMessageIds: [], summaryHash: "" } });
+  return res.count === 1;
+}
+
+/** Gives the month back (the post failed), so the next round tries again. */
+export const releaseMonth = (id: string, key: string, previous: string | null) => prisma.eventSource.updateMany({ where: { id, summaryMonth: key }, data: { summaryMonth: previous } });
+

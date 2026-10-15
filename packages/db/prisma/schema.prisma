@@ -1397,6 +1397,8 @@ model EventRule {
   source     EventSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   /// Also matches events of these kinds (drop, event, update, sale, other).
   kinds      String[]    @default([])
+  /// Days before the start at which the event is posted: the first is the announcement, the later ones are reminders (for example 7 and 2).
+  leadDays   Int[]       @default([7])
 }
 
 /// An occurrence that was posted (or silently remembered) for a rule. Unique per rule and occurrence, so nothing is posted twice.
@@ -1412,9 +1414,11 @@ model EventPost {
   hash      String    @db.VarChar(40)
   /// The event's name, for the dashboard list.
   title     String    @default("") @db.VarChar(120)
+  /// Which of the rule's lead times this post is for (0 = the first / announcement).
+  stage     Int       @default(0)
   createdAt DateTime  @default(now())
 
-  @@unique([ruleId, eventKey])
+  @@unique([ruleId, eventKey, stage])
   @@index([startsAt])
 }
 
@@ -1464,6 +1468,8 @@ model EventSource {
   lastFetchStatus   String?   @db.VarChar(40)
   /// Set while the bot is reading this source's calendar and pages (the dashboard shows "fetching now").
   syncStartedAt     DateTime?
+  /// Post the monthly summary by itself when a new month has events.
+  summaryAuto       Boolean   @default(false)
   rules             EventRule[]
   articles          EventArticle[]
   events            GameEvent[]
@@ -1500,6 +1506,8 @@ model GameEvent {
   lastSeenAt  DateTime    @default(now())
   removedAt   DateTime?
   createdAt   DateTime    @default(now())
+  /// Overrides the rules' lead times for this one event (days before the start); empty = use the rules'.
+  reminderDays Int[]      @default([])
 
   @@unique([sourceId, key])
   @@index([sourceId, startsAt])

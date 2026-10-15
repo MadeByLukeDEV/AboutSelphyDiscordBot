@@ -3014,7 +3014,11 @@
       "videoHelp": "Discord shows the player under the post.",
       "eventSaved": "Event saved.",
       "fetching": "Fetching...",
-      "fetchingNow": "Reading the sources right now..."
+      "fetchingNow": "Reading the sources right now...",
+      "summaryAuto": "Post the monthly summary automatically",
+      "summaryAutoHelp": "When a new month has events, the bot posts its summary by itself (once). Needs the monthly summary channel.",
+      "reminders": "Reminders for this event (days before)",
+      "remindersHelp": "Leave empty to use the rules' lead times. For example 7, 2 posts the announcement a week before and a reminder two days before."
     },
     "posted": {
       "title": "Posted events",
@@ -3041,13 +3045,13 @@
       "intro": "An event is posted when its name contains one of the words, or it carries one of the calendar's tags. Events matching no rule are skipped. Each rule has its own channel, role and lead time. A new or changed rule only remembers the events that exist now, so old events are never posted.",
       "add": "Add rule",
       "empty": "No rules yet. Add one, for example the word \"Twitch Drops\" for your drops channel.",
-      "ahead": "{days, plural, =0 {on the day} one {1 day ahead} other {# days ahead}}",
       "removed": "Rule removed.",
       "editTitle": "Edit rule",
       "newTitle": "New rule",
       "formIntro": "Which events go to which channel.",
       "removeTitle": "Remove this rule?",
-      "removeBody": "Rule \"{name}\" stops posting. Messages already posted stay in Discord."
+      "removeBody": "Rule \"{name}\" stops posting. Messages already posted stay in Discord.",
+      "aheadList": "{list} days ahead"
     },
     "ruleForm": {
       "source": "Game",
@@ -3065,8 +3069,6 @@
       "role": "Ping role",
       "noRole": "Nobody",
       "roleHelp": "The only role that is mentioned.",
-      "daysAhead": "Post this many days before it starts",
-      "daysAheadHelp": "0 = on the day it starts, up to {max}. An event is posted once; if the calendar changes it later, the message is edited.",
       "enabled": "This rule is on",
       "save": "Save rule",
       "saving": "Saving…",
@@ -3081,7 +3083,9 @@
         "update": "Updates",
         "sale": "Sales",
         "other": "Other"
-      }
+      },
+      "leadDays": "Post this many days before it starts",
+      "leadDaysHelp": "One to {max} numbers from 0 to {limit}, for example 7, 2. The first post is the announcement, the later ones are reminders. 0 = on the day."
     },
     "errors": {
       "forbidden": "You don't have access to this.",
@@ -3095,14 +3099,14 @@
       "failed": "That didn't work. Try again.",
       "badUrl": "Enter an https address of a public calendar.",
       "badDays": "Enter a number from {min} to {max}.",
-      "badDaysAhead": "Enter a number from 0 to {max}.",
       "needsName": "Give the rule a name.",
       "needsMatch": "Add at least one kind, word or tag.",
       "badDate": "Pick a date and time.",
       "badImage": "Enter an https address of a picture.",
       "badVideo": "Enter a YouTube, Twitch or Vimeo video address.",
       "badRange": "The end can't be before the start.",
-      "needsSource": "Pick a game."
+      "needsSource": "Pick a game.",
+      "badLeadDays": "Enter one to {max} numbers from 0 to {limit}, for example 7, 2."
     }
   },
   "Verification": {
