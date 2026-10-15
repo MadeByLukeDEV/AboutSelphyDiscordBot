@@ -30,10 +30,13 @@ export type PageResult = { ok: true; html: string; via: "plain" | "crawl4ai" } |
 /** Does the answer look like a bot wall or an error page instead of the article? */
 export const looksBlocked = (status: number, body: string): boolean => status === 401 || status === 403 || status === 429 || status === 503 || /just a moment|attention required|access denied|enable javascript and cookies|verify you are human/i.test(body.slice(0, 4000)) && body.length < 20_000;
 
-type CrawlResult = { html?: unknown; cleaned_html?: unknown; fit_html?: unknown };
+type CrawlResult = { html?: unknown; cleaned_html?: unknown; fit_html?: unknown; status_code?: unknown };
+
+/** Is this the site's own "page not found" page (some sites answer 200, or the browser service hides the status)? */
+export const looksNotFound = (html: string): boolean => /<title[^>]*>[^<]{0,120}(404|page not found|not found)[^<]{0,120}<\/title>/i.test(html.slice(0, 20_000));
 
 /** One page through the Crawl4AI service. Null when it isn't configured or can't deliver. The API answer is read defensively (versions differ). */
-async function viaCrawl4ai(url: string): Promise<string | null> {
+async function viaCrawl4ai(url: string): Promise<{ html: string; status: number | null } | null> {
   const { CRAWL4AI_URL, CRAWL4AI_TOKEN } = env();
   if (!CRAWL4AI_URL) return null;
   const base = CRAWL4AI_URL.replace(/\/+$/, "");
@@ -47,7 +50,8 @@ async function viaCrawl4ai(url: string): Promise<string | null> {
     const body = (await res.json().catch(() => null)) as { results?: CrawlResult[]; html?: unknown } | null;
     const first = body?.results?.[0];
     const html = first?.html ?? first?.cleaned_html ?? first?.fit_html ?? body?.html;
-    return typeof html === "string" && html.length > 200 && html.length <= 6_000_000 ? html : null;
+    if (typeof html !== "string" || html.length <= 200 || html.length > 6_000_000) return null;
+    return { html, status: typeof first?.status_code === "number" ? first.status_code : null };
   } catch (err) {
     log.warn({ err: err instanceof Error ? err.name : "error" }, "eventcal: the browser service could not be reached");
     return null;
@@ -63,6 +67,9 @@ export async function fetchPage(url: string, mode: string): Promise<PageResult> 
     const blocked = !res.ok ? false : looksBlocked(res.status, res.body);
     if (!blocked || mode === "plain") return { ok: false, status: blocked ? "blocked" : "failed" };
   }
-  const html = await viaCrawl4ai(url);
+  const page = await viaCrawl4ai(url);
+  // An article that isn't published yet answers 404 (or shows the site's not-found page): that is "not yet", not an error.
+  if (page && (page.status === 404 || page.status === 410 || looksNotFound(page.html))) return { ok: false, status: "notPublished" };
+  const html = page?.html;
   return html ? { ok: true, html, via: "crawl4ai" } : { ok: false, status: mode === "crawl4ai" || env().CRAWL4AI_URL ? "crawl4ai" : "blocked" };
 }

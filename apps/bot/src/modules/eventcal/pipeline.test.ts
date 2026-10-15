@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contentHash, parseExtraction, SYSTEM_PROMPT, userPrompt } from "./extract";
-import { expandTemplate, looksBlocked, pageUrlsFor } from "./fetcher";
+import { expandTemplate, looksBlocked, looksNotFound, pageUrlsFor } from "./fetcher";
+import { retryDelayMs, shouldRetry } from "../../lib/ai";
 import { htmlToText } from "./html-text";
 import { inferKind, toCalEvent, toRow } from "./store";
 import { mergeArticle } from "./rules";
@@ -142,5 +143,27 @@ describe("stored events", () => {
     const merged = mergeArticle([cal], [{ title: "Twitch Drops", start: new Date("2026-10-23T00:00:00Z"), end: null, everyWeekday: null, text: "Article text.", categories: [], image: null, video: null, kind: "drop", items: ["Bucket"], summary: "Sum", blurb: "Bl", audience: "everyone" }], new Date("2026-10-01T00:00:00Z"), new Date("2026-12-01T00:00:00Z"));
     expect(merged[0]!.items).toEqual(["Bucket"]);
     expect(merged[0]!.extra?.audience).toBe("everyone");
+  });
+});
+
+describe("pages that are not there yet", () => {
+  it("recognises a site's not-found page by its title", () => {
+    expect(looksNotFound("<html><head><title>404 - Sea of Thieves</title></head></html>")).toBe(true);
+    expect(looksNotFound("<html><head><title>Page Not Found | Site</title></head></html>")).toBe(true);
+    expect(looksNotFound("<html><head><title>This Month in Sea of Thieves: October 2026</title></head></html>")).toBe(false);
+  });
+});
+
+describe("retrying a busy AI provider", () => {
+  it("retries overload answers only", () => {
+    for (const s of [429, 500, 502, 503, 504]) expect(shouldRetry(s)).toBe(true);
+    for (const s of [200, 400, 401, 403, 404]) expect(shouldRetry(s)).toBe(false);
+  });
+  it("waits longer each time, and honours Retry-After up to 30 s", () => {
+    expect(retryDelayMs(1, null)).toBe(4000);
+    expect(retryDelayMs(2, null)).toBe(12_000);
+    expect(retryDelayMs(1, "7")).toBe(7000);
+    expect(retryDelayMs(1, "9999")).toBe(30_000);
+    expect(retryDelayMs(1, "soon")).toBe(4000);
   });
 });

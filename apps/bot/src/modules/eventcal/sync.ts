@@ -36,18 +36,21 @@ const storedSchema = z.array(
 );
 
 /** The article events of a text: from the cache when the text is unchanged, else extracted (one AI call) and cached. */
-async function articleEvents(src: SourceState, url: string, text: string, now: Date): Promise<ArticleEvent[]> {
+async function articleEvents(src: SourceState, url: string, text: string, now: Date, used: { plain: boolean }): Promise<ArticleEvent[]> {
   const hash = contentHash(text, src.name);
   const cached = await readFetch(src.id, url);
   // A plain-parser result is only final while there is no AI to try again with.
   if (cached && cached.contentHash === hash && (cached.status === "ai" || !aiConfigured())) {
     try {
-      return storedSchema.parse(JSON.parse(cached.extractedJson)) as ArticleEvent[];
+      const events = storedSchema.parse(JSON.parse(cached.extractedJson)) as ArticleEvent[];
+      if (cached.status !== "ai" && aiConfigured()) used.plain = true;
+      return events;
     } catch {
       // a damaged cache row: extract again
     }
   }
   const { events, via } = await extractEvents(text, src.name, now);
+  if (via === "heuristic" && aiConfigured()) used.plain = true;
   await saveFetch(src.id, url, { contentHash: hash, extractedJson: JSON.stringify(events), status: via }).catch((err) => log.warn({ err }, "eventcal: could not cache the extraction"));
   return events;
 }
@@ -89,6 +92,8 @@ async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
   }
 
   const articles: ArticleEvent[] = [];
+  // Set when the AI is configured but its answer wasn't usable, so the dashboard can say the plain parser was used.
+  const used = { plain: false };
   if (src.pageUrlTemplate) {
     for (const url of pageUrlsFor(src.pageUrlTemplate, now)) {
       const page = await fetchPage(url, src.fetchMode);
@@ -104,10 +109,10 @@ async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
         fail("emptyPage");
         continue;
       }
-      articles.push(...(await articleEvents(src, url, text, now)));
+      articles.push(...(await articleEvents(src, url, text, now, used)));
     }
   }
-  for (const pasted of await listArticles(src.id)) articles.push(...(await articleEvents(src, `paste:${pasted.id}`, pasted.text, now)));
+  for (const pasted of await listArticles(src.id)) articles.push(...(await articleEvents(src, `paste:${pasted.id}`, pasted.text, now, used)));
 
   const merged = mergeArticle(calendar, articles, from, to);
   const hasInputs = Boolean(src.icsUrl || src.pageUrlTemplate) || articles.length > 0;
@@ -128,6 +133,7 @@ async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
     const gone = await markVanished(src.id, seen, from, to);
     if (gone.count > 0) log.info({ source: src.name, removed: gone.count }, "eventcal: events no longer in the sources were marked removed");
   }
+  if (status === "ok" && used.plain) status = "ok (no AI)";
   await saveState(src.id, { lastFetchedAt: now, lastFetchStatus: status.slice(0, 40) });
   log.info({ source: src.name, events: merged.length, status }, "eventcal: synced");
   return { status, events: merged.length };
