@@ -37,6 +37,7 @@ export async function chatJson(system: string, user: string, opts: { maxTokens?:
       { role: "user", content: user },
     ],
   });
+  const started = Date.now();
   try {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const res = await fetch(`${AI_BASE_URL.replace(/\/+$/, "")}/chat/completions`, {
@@ -57,11 +58,12 @@ export async function chatJson(system: string, user: string, opts: { maxTokens?:
       if (typeof content !== "string") return null;
       // Some models wrap JSON in a code fence even when asked not to.
       const text = content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      log.info({ ms: Date.now() - started, chars: content.length }, "ai: answered");
       return JSON.parse(text) as unknown;
     }
     return null;
   } catch (err) {
-    log.warn({ err: err instanceof Error ? err.name : "error" }, "ai: the request failed");
+    log.warn({ err: err instanceof Error ? err.name : "error", ms: Date.now() - started }, "ai: the request failed");
     return null;
   }
 }

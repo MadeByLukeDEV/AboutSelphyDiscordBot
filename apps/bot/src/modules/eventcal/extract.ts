@@ -9,7 +9,7 @@ import { log } from "../../lib/log";
 // as the fallback when the AI is off, over its daily limit or answers nonsense. Everything the model says is data: it is validated, capped and a
 // title that isn't in the article is thrown away.
 
-export const EXTRACT_VERSION = 1;
+export const EXTRACT_VERSION = 2;
 const DAY = 86_400_000;
 const MAX_EVENTS = 60;
 const KINDS = ["drop", "event", "update", "sale", "other"] as const;
@@ -36,7 +36,7 @@ export const SYSTEM_PROMPT = [
   "title: the event's name exactly as the article's heading writes it, without the dates.",
   'kind: "drop" for Twitch Drops or other watch-to-earn rewards, "update" for a game update or patch, "sale" for a store sale, "event" for any other event, else "other".',
   'start and end: dates as YYYY-MM-DD in the article\'s year. A date range gives both; one day gives only start (end null); "Until X" gives start = the "Today" date you were given and end = X. Repeating entries ("Every Tuesday") give start and end null and weekday 0-6 (0 = Sunday).',
-  "description: the article's text about this event condensed to at most 1500 characters, plain text, no markdown.",
+  "description: the article's text about this event condensed to at most 400 characters, plain text, no markdown. Keep every answer short.",
   "summary: at most 2 short sentences about what it is and what to do. No markdown, no emoji, no dates. blurb: one line, at most 140 characters, for a monthly overview.",
   'items: the individual rewards or items named for this event (cosmetics, emotes, gold ...), one per entry, empty if none are named.',
   'audience: "everyone" if anyone can take part (for example streamers of all sizes), "partners" if only partnered streamers or creators qualify, else "unknown".',
@@ -98,7 +98,7 @@ export function aiCallsLeft(now = new Date()): number {
 export async function extractEvents(text: string, game: string, now: Date): Promise<{ events: ArticleEvent[]; via: "ai" | "heuristic" }> {
   if (aiConfigured() && aiCallsLeft(now) > 0) {
     counter.n++;
-    const raw = await chatJson(SYSTEM_PROMPT, userPrompt(text.slice(0, 30_000), game, now), { maxTokens: 8000, timeoutMs: 90_000 });
+    const raw = await chatJson(SYSTEM_PROMPT, userPrompt(text.slice(0, 30_000), game, now), { maxTokens: 6000, timeoutMs: 180_000 });
     const events = raw ? parseExtraction(raw, text, now) : [];
     if (events.length > 0) return { events, via: "ai" };
     log.warn({ game }, "eventcal: the AI gave nothing usable, using the plain article parser");
