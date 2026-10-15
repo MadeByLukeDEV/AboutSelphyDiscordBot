@@ -21,6 +21,18 @@ const bool = z
   .default("false")
   .transform((v) => v === "true");
 
+/** https anywhere, or plain http to a single-word host (a service on the private Docker network such as http://freellmapi:3001/v1, or localhost). */
+export const isAiBaseUrl = (u: string): boolean => {
+  if (u.startsWith("https://")) return true;
+  if (!u.startsWith("http://")) return false;
+  try {
+    const host = new URL(u).hostname;
+    return host === "localhost" || /^[a-z0-9_-]+$/i.test(host);
+  } catch {
+    return false;
+  }
+};
+
 // An empty value in .env (KEY="") means "not set", not "invalid".
 const optional = <T extends z.ZodType>(type: T) => z.preprocess((v) => (v === "" ? undefined : v), type.optional());
 
@@ -52,7 +64,7 @@ export const envSchema = z.object({
   DISCORD_MESSAGE_CONTENT: bool,
   // Optional AI summaries for the event calendar: any OpenAI-compatible chat API (for example Groq or Gemini's compatibility endpoint).
   AI_API_KEY: optional(z.string().min(1)),
-  AI_BASE_URL: optional(z.url().refine((u) => u.startsWith("https://"), "must be https")),
+  AI_BASE_URL: optional(z.url().refine(isAiBaseUrl, "must be https, or http to a service name on the private network")),
   AI_MODEL: optional(z.string().min(1)),
   // A second model on the same provider and key, tried when the main one is overloaded or rate-limited. Optional.
   AI_FALLBACK_MODEL: optional(z.string().min(1)),

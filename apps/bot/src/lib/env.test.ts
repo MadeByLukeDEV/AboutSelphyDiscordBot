@@ -23,6 +23,9 @@ describe("optional AI settings", () => {
   });
   it("refuses a plain http address and an unknown effort", () => {
     expect(envSchema.safeParse({ ...base, AI_BASE_URL: "http://example.com/v1" }).success).toBe(false);
+    expect(envSchema.safeParse({ ...base, AI_BASE_URL: "http://10.0.0.5/v1" }).success).toBe(false);
+    expect(envSchema.safeParse({ ...base, AI_BASE_URL: "http://freellmapi:3001/v1" }).success).toBe(true);
+    expect(envSchema.safeParse({ ...base, AI_BASE_URL: "http://localhost:4000/v1" }).success).toBe(true);
     expect(envSchema.safeParse({ ...base, AI_REASONING_EFFORT: "extreme" }).success).toBe(false);
   });
 });
