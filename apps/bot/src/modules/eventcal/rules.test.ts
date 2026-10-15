@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eventSettingsSchema, eventRuleSchema } from "@aboutselphy/shared/eventcal";
+import { eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
 import { eventHash, eventMessage, firstSentence, isPostable, matchesRule, mergeArticle, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
@@ -96,18 +96,30 @@ describe("overview", () => {
 });
 
 describe("settings", () => {
-  const rule = { name: "Drops", words: ["Twitch Drops"], categories: [], channelId: "123456789012345678", pingRoleId: "", daysAhead: 7, enabled: true };
+  const rule = { name: "Drops", words: ["Twitch Drops"], categories: [], channelId: "123456789012345678", pingRoleId: "", daysAhead: 7, enabled: true, sourceId: "src_1" };
   it("needs a word or a tag in a rule", () => {
     expect(eventRuleSchema.safeParse(rule).success).toBe(true);
     expect(eventRuleSchema.safeParse({ ...rule, words: [] }).success).toBe(false);
     expect(eventRuleSchema.safeParse({ ...rule, words: [], categories: ["twitch_drop"] }).success).toBe(true);
+    expect(eventRuleSchema.safeParse({ ...rule, sourceId: "" }).success).toBe(false);
   });
-  it("takes only public https calendars", () => {
-    const base = { enabled: true, icsUrl: "https://calendar.google.com/calendar/ical/x/public/basic.ics", overviewChannelId: "", overviewDays: 30 };
-    expect(eventSettingsSchema.safeParse(base).success).toBe(true);
-    expect(eventSettingsSchema.safeParse({ ...base, icsUrl: "http://calendar.google.com/x.ics" }).success).toBe(false);
-    expect(eventSettingsSchema.safeParse({ ...base, icsUrl: "https://localhost/x.ics" }).success).toBe(false);
-    expect(eventSettingsSchema.safeParse({ ...base, overviewDays: 3 }).success).toBe(false);
+  it("takes only public https calendars and page templates", () => {
+    const base = { name: "SoT", enabled: true, icsUrl: "https://calendar.google.com/calendar/ical/x/public/basic.ics", pageUrlTemplate: "https://www.seaofthieves.com/news/this-month-{month}{year}", overviewChannelId: "", overviewDays: 30, summaryChannelId: "" };
+    expect(eventSourceSchema.safeParse(base).success).toBe(true);
+    expect(eventSourceSchema.safeParse({ ...base, icsUrl: "", pageUrlTemplate: "" }).success).toBe(true);
+    expect(eventSourceSchema.safeParse({ ...base, icsUrl: "http://calendar.google.com/x.ics" }).success).toBe(false);
+    expect(eventSourceSchema.safeParse({ ...base, icsUrl: "https://localhost/x.ics" }).success).toBe(false);
+    expect(eventSourceSchema.safeParse({ ...base, pageUrlTemplate: "https://localhost/{month}" }).success).toBe(false);
+    expect(eventSourceSchema.safeParse({ ...base, overviewDays: 3 }).success).toBe(false);
+  });
+  it("checks an event edited by hand", () => {
+    const ev = { sourceId: "src_1", title: "Drops", kind: "drop", allDay: true, start: "2026-10-23T00:00", end: "", description: "", summary: "", items: ["Bucket"], imageUrl: "", videoUrl: "" };
+    expect(gameEventSchema.safeParse(ev).success).toBe(true);
+    expect(gameEventSchema.safeParse({ ...ev, kind: "weird" }).success).toBe(false);
+    expect(gameEventSchema.safeParse({ ...ev, start: "tomorrow" }).success).toBe(false);
+    expect(gameEventSchema.safeParse({ ...ev, videoUrl: "https://example.com/x.png" }).success).toBe(false);
+    expect(gameEventSchema.safeParse({ ...ev, videoUrl: "https://youtu.be/abc" }).success).toBe(true);
+    expect(gameEventSchema.safeParse({ ...ev, imageUrl: "http://example.com/a.png" }).success).toBe(false);
   });
 });
 

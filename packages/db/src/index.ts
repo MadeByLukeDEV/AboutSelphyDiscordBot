@@ -39,6 +39,8 @@ export type {
   EventPost,
   EventArticle,
   EventSummary,
+  GameEvent,
+  EventFetch,
   TempVoiceRoleRule,
   ScreeningEntry,
   AutoPublishChannel,

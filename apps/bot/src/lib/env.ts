@@ -56,6 +56,11 @@ export const envSchema = z.object({
   AI_MODEL: optional(z.string().min(1)),
   // Thinking models (Gemini 3) spend output tokens on reasoning: "low" or "minimal" keeps that small. Leave empty for providers that don't know the field.
   AI_REASONING_EFFORT: optional(z.enum(["none", "minimal", "low", "medium", "high"])),
+  // Max AI calls per day for the event pages (one per changed page, so this is only a safety net).
+  AI_MAX_CALLS_PER_DAY: optional(z.coerce.number().int().min(1).max(1000)),
+  // An optional Crawl4AI service (headless browser) used for pages a plain request can't get. Internal address, e.g. http://crawl4ai:11235.
+  CRAWL4AI_URL: optional(z.url()),
+  CRAWL4AI_TOKEN: optional(z.string().min(1)),
   // Hosts the feed announcer may reach even though they are on the internal network, comma separated
   // (a feed bridge such as RSSHub, e.g. "rsshub"). Everything else must be a public https host.
   RSS_INTERNAL_HOSTS: z

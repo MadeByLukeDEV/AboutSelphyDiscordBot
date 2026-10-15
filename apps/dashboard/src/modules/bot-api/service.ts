@@ -341,8 +341,8 @@ export async function updateRoleViaBot(input: { id: string; name?: string; color
 }
 
 /** Asks the bot to read the event calendar now. Null if the bot can't be reached. */
-export async function checkEventCalendarViaBot(): Promise<EventCheckResponse | null> {
-  const res = await botFetch("/internal/eventcal/check", { method: "POST", timeoutMs: 60_000 });
+export async function checkEventCalendarViaBot(sourceId = ""): Promise<EventCheckResponse | null> {
+  const res = await botFetch("/internal/eventcal/check", { method: "POST", body: { sourceId }, timeoutMs: 180_000 });
   if (!res?.ok) return null;
   const parsed = eventCheckResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;

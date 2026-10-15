@@ -19,6 +19,10 @@ export type CalEvent = {
   /** A video link added from an article; shown as a player under the post. */
   video: string | null;
   color: number | null;
+  /** From the stored event / AI extraction (absent for plain calendar entries). */
+  kind?: string;
+  items?: string[];
+  extra?: { summary: string; blurb: string; audience: "everyone" | "partners" | "unknown" };
 };
 
 type Prop = { name: string; params: Record<string, string>; value: string };

@@ -123,7 +123,7 @@ export type GetResult = { ok: true; status: number; body: string } | { ok: false
  * https and passes the same connect-time address check as postJson. Redirects are not followed (the
  * status is returned) and at most `maxBytes` of the body are read.
  */
-export function getText(url: string, opts: { internalHosts?: readonly string[]; maxBytes?: number; timeoutMs?: number; lookup?: typeof dnsLookup } = {}): Promise<GetResult> {
+export function getText(url: string, opts: { internalHosts?: readonly string[]; maxBytes?: number; timeoutMs?: number; headers?: Record<string, string>; lookup?: typeof dnsLookup } = {}): Promise<GetResult> {
   return new Promise((resolve) => {
     let target: URL;
     try {
@@ -144,7 +144,7 @@ export function getText(url: string, opts: { internalHosts?: readonly string[]; 
       target,
       {
         method: "GET",
-        headers: { accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5", "user-agent": "AboutSelphy-Bot-Feeds/1" },
+        headers: { accept: "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5", "user-agent": "AboutSelphy-Bot-Feeds/1", ...(opts.headers ?? {}) },
         timeout: opts.timeoutMs ?? 10_000,
         ...(internal
           ? {}

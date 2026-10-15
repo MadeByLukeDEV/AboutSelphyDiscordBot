@@ -4,10 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { CalendarRange, LayoutList, Plus, RefreshCw, RotateCcw } from "lucide-react";
+import { Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { eventRuleSchema, eventSettingsSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_OVERVIEW_DAYS, MAX_RULE_TERMS, MIN_OVERVIEW_DAYS, type EventSettings } from "@aboutselphy/shared/eventcal";
+import { eventRuleSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +16,9 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { GameSources } from "./game-sources";
-import { postEventMonthlyAction, checkEventCalendarAction, deleteEventArticleAction, deleteEventRuleAction, importEventArticleAction, repostEventAction, postEventOverviewAction, saveEventRuleAction, saveEventSettingsAction } from "../actions";
-import type { ArticleRow, EventOverview, EventRuleRow, PostedEventRow, SourceRow } from "../schema";
+import { deleteEventRuleAction, repostEventAction, saveEventRuleAction } from "../actions";
+import type { EventRuleRow, PostedEventRow, SourceRow } from "../schema";
+import { SourcesManager } from "./sources-manager";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
 const parseTerms = (text: string): string[] => {
@@ -34,8 +34,8 @@ const parseTerms = (text: string): string[] => {
   return out;
 };
 
-/** The calendar settings, the posting rules, and the overview message. State flows in as props; changes call router.refresh(). */
-export function EventsManager({ overview, rules, channels, roles, articles, posted, sources }: { overview: EventOverview; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; articles: ArticleRow[]; posted: PostedEventRow[]; sources: SourceRow[] }) {
+/** The games (sources) with their events, the posting rules, and the list of posted events. State flows in as props; changes call router.refresh(). */
+export function EventsManager({ sources, rules, channels, roles, posted }: { sources: SourceRow[]; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; posted: PostedEventRow[] }) {
   const t = useTranslations("Events");
   const te = useTranslations("Events.errors");
   const format = useFormatter();
@@ -43,77 +43,9 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<{ rule: EventRuleRow | null } | null>(null);
   const [removing, setRemoving] = useState<EventRuleRow | null>(null);
-  const [articleText, setArticleText] = useState("");
 
   const channelOptions: SelectOption[] = (channels ?? []).map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined }));
   const channelName = (id: string) => channels?.find((c) => c.id === id)?.name ?? id;
-
-  const form = useForm<EventSettings>({ defaultValues: overview.settings });
-  const { errors, isDirty } = form.formState;
-  const overviewChannelOptions: SelectOption[] = [{ value: "", label: t("settings.noOverview") }, ...channelOptions];
-  if (overview.settings.overviewChannelId && !overviewChannelOptions.some((o) => o.value === overview.settings.overviewChannelId)) overviewChannelOptions.push({ value: overview.settings.overviewChannelId, label: overview.settings.overviewChannelId });
-
-  const save = form.handleSubmit((raw) => {
-    const checked = eventSettingsSchema.safeParse({ ...raw, overviewDays: Number(raw.overviewDays) });
-    if (!checked.success) {
-      form.clearErrors();
-      for (const issue of checked.error.issues) {
-        const k = issue.path[0];
-        if (k === "icsUrl" || k === "overviewDays") form.setError(k, { type: "custom", message: issue.message });
-      }
-      return;
-    }
-    startTransition(async () => {
-      const result = await saveEventSettingsAction(checked.data);
-      if (result.ok) {
-        toast.success(result.botNotified ? t("settings.saved") : t("settings.savedBotLater"));
-        form.reset(result.settings);
-        router.refresh();
-      } else {
-        toast.error(te(result.error));
-      }
-    });
-  });
-
-  function monthly(month: "current" | "next") {
-    startTransition(async () => {
-      const result = await postEventMonthlyAction({ month, sourceId: "" });
-      if (result.ok) toast.success(result.status === "posted" ? t("monthly.posted") : t("monthly.updated"));
-      else toast.error(te(result.error));
-      router.refresh();
-    });
-  }
-
-  function check() {
-    startTransition(async () => {
-      const result = await checkEventCalendarAction();
-      if (result.ok) toast.success(t("checked", { status: result.status, events: result.events, posted: result.posted, edited: result.edited }));
-      else toast.error(te(result.error));
-      router.refresh();
-    });
-  }
-
-  function overviewNow() {
-    startTransition(async () => {
-      const result = await postEventOverviewAction({ sourceId: "" });
-      if (result.ok) toast.success(result.status === "posted" ? t("overview.posted") : t("overview.updated"));
-      else toast.error(te(result.error));
-      router.refresh();
-    });
-  }
-
-  function importArticle() {
-    startTransition(async () => {
-      const result = await importEventArticleAction({ text: articleText, sourceId: "" });
-      if (result.ok) {
-        toast.success(t("article.done", { dated: result.dated, repeating: result.repeating, month: result.month }));
-        setArticleText("");
-        router.refresh();
-      } else {
-        toast.error(result.error === "unreadable" ? t("article.unreadable") : result.error === "tooLong" ? t("article.tooLong") : te(result.error));
-      }
-    });
-  }
 
   function repost(id: string) {
     startTransition(async () => {
@@ -121,14 +53,6 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
       if (result.ok) toast.success(t("posted.done"));
       else toast.error(result.error === "gone" ? t("posted.gone") : te(result.error));
       router.refresh();
-    });
-  }
-
-  function removeArticle(id: string) {
-    startTransition(async () => {
-      const result = await deleteEventArticleAction({ id });
-      if (result.ok) router.refresh();
-      else toast.error(te(result.error));
     });
   }
 
@@ -151,60 +75,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
 
   return (
     <div className="flex flex-col gap-fluid">
-      <form onSubmit={(e) => void save(e)} className="surface flex flex-col gap-5 p-5" noValidate>
-        <h2 className="text-fluid-lg font-bold">{t("settings.title")}</h2>
-        <FieldGroup>
-          <Field orientation="horizontal">
-            <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="ev-enabled" checked={field.value} onCheckedChange={field.onChange} />} />
-            <FieldLabel htmlFor="ev-enabled">{t("settings.enabled")}</FieldLabel>
-          </Field>
-          <Field data-invalid={Boolean(errors.icsUrl) || undefined}>
-            <FieldLabel htmlFor="ev-url">{t("settings.url")}</FieldLabel>
-            <Input id="ev-url" type="url" autoComplete="off" maxLength={500} aria-invalid={Boolean(errors.icsUrl) || undefined} {...form.register("icsUrl")} />
-            <FieldDescription>{t("settings.urlHelp")}</FieldDescription>
-            {errors.icsUrl && <FieldError>{te("badUrl")}</FieldError>}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="ev-overview-channel">{t("settings.overviewChannel")}</FieldLabel>
-            <FormSelect control={form.control} name="overviewChannelId" id="ev-overview-channel" options={overviewChannelOptions} placeholder={t("settings.noOverview")} disabled={channels === null} />
-            <FieldDescription>{t("settings.overviewHelp")}</FieldDescription>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="ev-summary-channel">{t("settings.summaryChannel")}</FieldLabel>
-            <FormSelect control={form.control} name="summaryChannelId" id="ev-summary-channel" options={overviewChannelOptions.map((o) => (o.value === "" ? { ...o, label: t("settings.noSummary") } : o))} placeholder={t("settings.noSummary")} disabled={channels === null} />
-            <FieldDescription>{t("settings.summaryHelp")}</FieldDescription>
-          </Field>
-          <Field data-invalid={Boolean(errors.overviewDays) || undefined}>
-            <FieldLabel htmlFor="ev-days">{t("settings.overviewDays")}</FieldLabel>
-            <Input id="ev-days" type="number" inputMode="numeric" min={MIN_OVERVIEW_DAYS} max={MAX_OVERVIEW_DAYS} className="max-w-[8rem]" {...form.register("overviewDays", { valueAsNumber: true })} />
-            {errors.overviewDays && <FieldError>{te("badDays", { min: MIN_OVERVIEW_DAYS, max: MAX_OVERVIEW_DAYS })}</FieldError>}
-          </Field>
-        </FieldGroup>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("settings.saving") : t("settings.save")}
-          </Button>
-          <Button type="button" variant="outline" disabled={pending || isDirty} onClick={check}>
-            <RefreshCw aria-hidden />
-            {t("checkNow")}
-          </Button>
-          <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.summaryChannelId} onClick={() => monthly("current")}>
-            <CalendarRange aria-hidden />
-            {t("monthly.current")}
-          </Button>
-          <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.summaryChannelId} onClick={() => monthly("next")}>
-            <CalendarRange aria-hidden />
-            {t("monthly.next")}
-          </Button>
-          <Button type="button" variant="outline" disabled={pending || isDirty || !overview.settings.overviewChannelId} onClick={overviewNow}>
-            <LayoutList aria-hidden />
-            {overview.hasOverview ? t("overview.update") : t("overview.post")}
-          </Button>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {t("status", { time: when(overview.lastCheckedAt), status: overview.lastStatus ?? "-" })} {!overview.baselined && overview.lastCheckedAt === null ? t("firstCheck") : ""}
-        </p>
-      </form>
+      <SourcesManager sources={sources} channelOptions={channelOptions} channelsReady={channels !== null} />
 
       {posted.length > 0 && (
         <section aria-labelledby="ev-posted" className="surface flex flex-col gap-3 p-5">
@@ -231,42 +102,6 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
         </section>
       )}
 
-      <section aria-labelledby="ev-article" className="surface flex flex-col gap-4 p-5">
-        <div className="flex flex-col gap-1">
-          <h2 id="ev-article" className="text-fluid-lg font-bold">
-            {t("article.title")}
-          </h2>
-          <p className="max-w-prose text-sm text-muted-foreground">{t("article.intro")}</p>
-        </div>
-        <Field>
-          <FieldLabel htmlFor="ev-article-text">{t("article.label")}</FieldLabel>
-          <Textarea id="ev-article-text" rows={8} className="font-mono text-xs" value={articleText} onChange={(e) => setArticleText(e.target.value)} placeholder={t("article.placeholder")} />
-          <FieldDescription>{t("article.help")}</FieldDescription>
-        </Field>
-        <div>
-          <Button type="button" disabled={pending || articleText.trim() === ""} onClick={importArticle}>
-            {t("article.import")}
-          </Button>
-        </div>
-        {articles.length > 0 && (
-          <ul className="flex flex-col divide-y text-sm">
-            {articles.map((a) => (
-              <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span className="min-w-0 truncate font-medium">{a.title}</span>
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  {t("article.row", { month: a.monthKey, events: a.events })}
-                  <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => removeArticle(a.id)}>
-                    {t("remove")}
-                  </Button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <GameSources sources={sources} channelOptions={channelOptions} channelsReady={channels !== null} />
-
       <section aria-labelledby="ev-rules" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
@@ -275,7 +110,7 @@ export function EventsManager({ overview, rules, channels, roles, articles, post
             </h2>
             <p className="max-w-prose text-sm text-muted-foreground">{t("rules.intro")}</p>
           </div>
-          <Button size="sm" disabled={rules.length >= MAX_EVENT_RULES || channels === null} onClick={() => setEditing({ rule: null })}>
+          <Button size="sm" disabled={rules.length >= MAX_EVENT_RULES || channels === null || sources.length === 0} onClick={() => setEditing({ rule: null })}>
             <Plus aria-hidden />
             {t("rules.add")}
           </Button>
@@ -359,10 +194,10 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
   const form = useForm<RuleValues>({
     defaultValues: rule
       ? { sourceId: rule.sourceId, name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
-      : { sourceId: "", name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
+      : { sourceId: sources[0]?.id ?? "", name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
   });
   const { errors } = form.formState;
-  const sourceOptions: SelectOption[] = [{ value: "", label: t("mainSource") }, ...sources.map((s) => ({ value: s.id, label: s.name }))];
+  const sourceOptions: SelectOption[] = sources.map((s) => ({ value: s.id, label: s.name }));
   const roleOptions: SelectOption[] = [{ value: "", label: t("noRole") }, ...(roles ?? []).map((r) => ({ value: r.id, label: r.name }))];
   if (rule?.pingRoleId && !roleOptions.some((o) => o.value === rule.pingRoleId)) roleOptions.push({ value: rule.pingRoleId, label: rule.pingRoleId });
   if (rule && !channelOptions.some((o) => o.value === rule.channelId)) channelOptions = [...channelOptions, { value: rule.channelId, label: rule.channelId }];
@@ -384,7 +219,7 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const k = issue.path[0];
-        if (k === "name" || k === "channelId" || k === "daysAhead") form.setError(k, { type: "custom", message: issue.message });
+        if (k === "name" || k === "channelId" || k === "daysAhead" || k === "sourceId") form.setError(k, { type: "custom", message: issue.message });
         else if (k === "words" || k === "categories") form.setError("wordsText", { type: "custom", message: issue.message });
       }
       return;
@@ -400,11 +235,12 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
   return (
     <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-5" noValidate>
       <FieldGroup>
-        {sources.length > 0 && (
-          <Field>
+        {(
+          <Field data-invalid={Boolean(errors.sourceId) || undefined}>
             <FieldLabel htmlFor="er-source">{t("source")}</FieldLabel>
-            <FormSelect control={form.control} name="sourceId" id="er-source" options={sourceOptions} placeholder={t("mainSource")} />
+            <FormSelect control={form.control} name="sourceId" id="er-source" options={sourceOptions} placeholder={t("sourcePlaceholder")} invalid={Boolean(errors.sourceId)} />
             <FieldDescription>{t("sourceHelp")}</FieldDescription>
+            {errors.sourceId && <FieldError>{te("needsSource")}</FieldError>}
           </Field>
         )}
         <Field data-invalid={Boolean(errors.name) || undefined}>

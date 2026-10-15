@@ -21,7 +21,15 @@ export type ArticleEvent = {
   image: string | null;
   /** A video link (YouTube, Twitch, Vimeo ...) that stood alone on a line in the section. */
   video: string | null;
+  /** Only set by the AI extraction: what kind of event it is, its drop items, a short summary, a one-line blurb and who can take part. */
+  kind?: EventKind;
+  items?: string[];
+  summary?: string;
+  blurb?: string;
+  audience?: "everyone" | "partners" | "unknown";
 };
+
+export type EventKind = "drop" | "event" | "update" | "sale" | "other";
 
 const MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
 const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];

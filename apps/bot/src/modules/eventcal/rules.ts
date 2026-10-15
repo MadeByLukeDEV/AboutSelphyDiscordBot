@@ -30,7 +30,7 @@ export function isPostable(event: Pick<CalEvent, "start" | "allDay">, now: Date,
 
 /** A fingerprint of what a message shows, so a changed event (moved, renamed, new text) edits its message once. */
 export function eventHash(e: CalEvent): string {
-  return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.video ?? "", e.color ?? ""].join("\u0000")).digest("hex");
+  return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.video ?? "", e.color ?? "", e.extra?.summary ?? "", (e.items ?? []).join("|")].join("\u0000")).digest("hex");
 }
 
 const unix = (d: Date) => Math.floor(d.getTime() / 1000);
@@ -107,6 +107,16 @@ const sameName = (a: string, b: string): boolean => {
 };
 const dayMs = (d: Date): number => Math.floor(d.getTime() / DAY) * DAY;
 
+/** Copies what an article section knows onto an event: its text, picture, video and (from the AI extraction) kind, items, summary and audience. */
+function applyArticle(e: CalEvent, a: ArticleEvent): void {
+  if (a.text) e.description = a.text;
+  if (a.image) e.image = a.image;
+  if (a.video) e.video = a.video;
+  if (a.kind) e.kind = a.kind;
+  if (a.items && a.items.length > 0) e.items = a.items;
+  if (a.summary) e.extra = { summary: a.summary, blurb: a.blurb ?? "", audience: a.audience ?? "unknown" };
+}
+
 /**
  * Combines the calendar with a monthly news article. The article has the dates and the details of everything planned (the calendar often lacks
  * entries, and its texts are short): a calendar event with the same name on those days keeps its exact times but gets the article's text; an
@@ -118,9 +128,7 @@ export function mergeArticle(calendar: readonly CalEvent[], articleEvents: reado
     if (a.everyWeekday !== null) {
       for (const e of out) {
         if (!sameName(e.summary, a.title)) continue;
-        if (a.text) e.description = a.text;
-        if (a.image) e.image = a.image;
-        if (a.video) e.video = a.video;
+        applyArticle(e, a);
       }
       continue;
     }
@@ -128,15 +136,11 @@ export function mergeArticle(calendar: readonly CalEvent[], articleEvents: reado
     const last = a.end ?? a.start;
     const matches = out.filter((e) => sameName(e.summary, a.title) && dayMs(e.start) >= a.start!.getTime() - DAY && dayMs(e.start) <= last.getTime() + DAY);
     if (matches.length > 0) {
-      for (const e of matches) {
-        if (a.text) e.description = a.text;
-        if (a.image) e.image = a.image;
-        if (a.video) e.video = a.video;
-      }
+      for (const e of matches) applyArticle(e, a);
       continue;
     }
     if (last.getTime() + DAY < windowStart.getTime() || a.start.getTime() > windowEnd.getTime()) continue;
-    out.push({
+    const added: CalEvent = {
       key: `article|${norm(a.title)}|${a.start.toISOString().slice(0, 10)}`,
       summary: a.title.slice(0, 120),
       start: a.start,
@@ -147,7 +151,9 @@ export function mergeArticle(calendar: readonly CalEvent[], articleEvents: reado
       image: a.image,
       video: a.video,
       color: null,
-    });
+    };
+    applyArticle(added, a);
+    out.push(added);
   }
   return out.sort((x, y) => x.start.getTime() - y.start.getTime());
 }

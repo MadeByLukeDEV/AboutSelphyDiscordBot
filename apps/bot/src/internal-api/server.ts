@@ -48,7 +48,7 @@ import { screeningDecideBody } from "@aboutselphy/shared/screening";
 import { postVerificationPanel } from "../modules/verification";
 import { relayMessage, sendTest } from "../modules/webhooks";
 import { checkCalendar, postMonthly, postOverview, repostEvent } from "../modules/eventcal";
-import { eventMonthlyBody, eventOverviewBody, eventRepostBody } from "@aboutselphy/shared/eventcal";
+import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventRepostBody } from "@aboutselphy/shared/eventcal";
 import { copyPermissions, deleteRoles, listManagedRoles, mergeRoles, moveRole, updateRole } from "../modules/roles";
 import { decideSuggestion, mergeSuggestion } from "../modules/suggestions";
 import { postPanel } from "../modules/tickets";
@@ -183,7 +183,9 @@ async function route(req: IncomingMessage, res: ServerResponse) {
   if (req.method === "POST" && url.pathname === "/internal/eventcal/check") {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
-    return json(res, 200, await checkCalendar(guild));
+    const body = eventCheckBody.safeParse((await readJsonBody(req).catch(() => ({}))) ?? {});
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    return json(res, 200, await checkCalendar(guild, { force: true, sourceId: body.data.sourceId || undefined }));
   }
 
   if (req.method === "POST" && url.pathname === "/internal/eventcal/repost") {

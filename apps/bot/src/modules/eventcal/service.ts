@@ -4,13 +4,13 @@ import { onReload } from "../../internal-api/reload";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
-import { getText } from "../../lib/safe-http";
-import { parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { aiConfigured } from "../../lib/ai";
-import { parseCalendar, type CalEvent } from "./ics";
-import { setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listArticles, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
+import type { CalEvent } from "./ics";
+import { syncSource } from "./sync";
+import { toCalEvent } from "./store";
+import { setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
-import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, isPostable, matchesRule, mergeArticle, overviewEvents, overviewHash, overviewMessage } from "./rules";
+import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, isPostable, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
 // matching event that starts within the rule's lead time, one message per event. An occurrence is claimed in the database BEFORE it is
@@ -19,13 +19,15 @@ import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthl
 
 const INTERVAL_MS = 30 * 60_000;
 const DAY = 86_400_000;
-const MAX_BYTES = 4_000_000;
+const SYNC_EVERY_MS = 6 * 3_600_000;
 const mutex = new KeyedMutex();
 let timer: ReturnType<typeof setInterval> | undefined;
 const MAX_AI_CALLS_PER_CHECK = 6;
 
 /** The cached AI summary of an event, or a fresh one (at most a few new calls per check). Null when AI isn't set up or fails: the post then shows the event's own text. */
 async function summaryFor(event: CalEvent, budget: { left: number }, game: string | null): Promise<EventSummaryData | null> {
+  // Events that came through the article extraction already carry their summary, items and audience: no extra call.
+  if (event.extra) return { summary: event.extra.summary, rewards: event.items ?? [], audience: event.extra.audience, blurb: event.extra.blurb };
   if (!aiConfigured()) return null;
   const key = summaryKey(event, game);
   const cached = await readSummary(key);
@@ -48,42 +50,34 @@ async function textChannel(guild: Guild, id: string) {
   return channel && !channel.isDMBased() && channel.guildId === env().DISCORD_GUILD_ID && channel.isTextBased() && "send" in channel ? channel : null;
 }
 
-/** The game a source is about, for the AI. The main calendar needs no hint. */
-const gameOf = (src: SourceState): string | null => (src.id ? src.name : null);
+/** The game a source is about, for the AI. */
+const gameOf = (src: SourceState): string => src.name;
 
-async function loadEvents(src: SourceState, now: Date): Promise<CalEvent[] | string> {
-  const from = new Date(now.getTime() - 2 * DAY);
-  const to = new Date(now.getTime() + 120 * DAY);
-  if (!src.icsUrl) {
-    // A game without a calendar feed: its events are the sections of its pasted articles.
-    try {
-      const articles = (await listArticles(src.id)).flatMap((a) => parseArticle(a.text));
-      return mergeArticle([], articles, from, to);
-    } catch {
-      return "parse";
-    }
-  }
-  const res = await getText(src.icsUrl, { maxBytes: MAX_BYTES, timeoutMs: 20_000 });
-  if (!res.ok) return res.detail ? `${res.reason}: ${res.detail}`.slice(0, 40) : res.reason;
-  if (res.status < 200 || res.status >= 300) return `http ${res.status}`;
-  try {
-    const events = parseCalendar(res.body, from, to);
-    // Imported news articles add the dates and details the calendar lacks.
-    const articles = (await listArticles(src.id)).flatMap((a) => parseArticle(a.text));
-    return articles.length > 0 ? mergeArticle(events, articles, from, to) : events;
-  } catch {
-    return "parse";
-  }
+/** The stored events of a source as the posting code wants them. */
+async function storedEvents(src: SourceState, now: Date): Promise<CalEvent[]> {
+  return (await listStoredEvents(src.id, new Date(now.getTime() - 2 * DAY))).map(toCalEvent);
 }
 
-/** One check of every source (the main calendar if switched on, and each enabled game). Never throws; the outcome is stored for the dashboard as a short code. */
-export function checkCalendar(guild: Guild): Promise<EventCheckResponse> {
+/**
+ * One round for every enabled source (or just `sourceId`): bring its stored events up to date when they are older than six hours or `force` is set
+ * (a dashboard change), then post from the stored events. Never throws; the outcome is stored for the dashboard as a short code.
+ */
+export function checkCalendar(guild: Guild, opts: { force?: boolean; sourceId?: string } = {}): Promise<EventCheckResponse> {
   return mutex.run("calendar", async () => {
     const total: EventCheckResponse = { status: "ok", events: 0, posted: 0, edited: 0 };
-    const main = await readSource(null);
     for (const src of await listSources()) {
-      if (src.id === null && !main?.enabled) continue;
-      const r = await checkSource(guild, src).catch((err) => {
+      if (opts.sourceId && src.id !== opts.sourceId) continue;
+      const r = await (async () => {
+        const stale = !src.lastFetchedAt || Date.now() - src.lastFetchedAt.getTime() > SYNC_EVERY_MS;
+        if (opts.force || stale) {
+          const synced = await syncSource(src).catch((err) => {
+            log.error({ err, source: src.name }, "eventcal: syncing a source failed");
+            return null;
+          });
+          if (synced && synced.status !== "ok") log.warn({ source: src.name, status: synced.status }, "eventcal: the sync did not fully succeed");
+        }
+        return checkSource(guild, src);
+      })().catch((err) => {
         log.error({ err }, "eventcal: a source failed");
         return { status: "error", events: 0, posted: 0, edited: 0 };
       });
@@ -108,8 +102,7 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
     try {
       const now = new Date();
       const game = gameOf(config);
-      const loaded = await loadEvents(config, now);
-      if (typeof loaded === "string") return await finish(loaded);
+      const loaded = await storedEvents(config, now);
       if (loaded.length === 0) return await finish("empty");
       result.events = loaded.length;
       const rules = await listRules(config.id);
@@ -180,7 +173,7 @@ async function overviewFor(loaded: CalEvent[], rules: Rules, days: number, now: 
 }
 
 /** Edits the overview message when its content changed (only if one was posted from the dashboard). */
-async function refreshOverview(guild: Guild, sourceId: string | null, loaded: CalEvent[], rules: Rules, now: Date): Promise<void> {
+async function refreshOverview(guild: Guild, sourceId: string, loaded: CalEvent[], rules: Rules, now: Date): Promise<void> {
   const config = await readSource(sourceId);
   if (!config) return;
   if (!config.overviewChannelId || !config.overviewMessageId) return;
@@ -203,10 +196,9 @@ export function repostEvent(guild: Guild, postId: string): Promise<EventRepostSt
     try {
       const post = await findPostById(postId);
       if (!post) return "not-found";
-      const config = await readSource(post.rule.sourceId);
+      const config = post.rule.sourceId ? await readSource(post.rule.sourceId) : null;
       if (!config) return "gone";
-      const loaded = await loadEvents(config, new Date());
-      if (typeof loaded === "string") return "failed";
+      const loaded = await storedEvents(config, new Date());
       const event = loaded.find((e) => e.key.slice(0, 160) === post.eventKey);
       if (!event) return "gone"; // the calendar no longer has this occurrence
       const channel = await textChannel(guild, post.rule.channelId);
@@ -257,7 +249,7 @@ async function writeMonthly(guild: Guild, channelId: string, lines: string[], la
 }
 
 /** Keeps a posted summary of the current month up to date (only when its content changed). */
-async function refreshMonthly(guild: Guild, sourceId: string | null, loaded: CalEvent[], now: Date): Promise<void> {
+async function refreshMonthly(guild: Guild, sourceId: string, loaded: CalEvent[], now: Date): Promise<void> {
   const config = await readSource(sourceId);
   if (!config) return;
   const key = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -275,7 +267,7 @@ async function refreshMonthly(guild: Guild, sourceId: string | null, loaded: Cal
 /** The dashboard's "Post monthly summary" for this month or the next. Every event of the month is listed, not only those a rule matches. */
 export async function postMonthly(guild: Guild, which: "current" | "next", sourceId: string | null = null): Promise<EventOverviewStatus> {
   try {
-    const config = await readSource(sourceId);
+    const config = sourceId ? await readSource(sourceId) : null;
     if (!config) return "needsSetup";
     if (!config.summaryChannelId) return "needsSetup";
     const now = new Date();
@@ -283,13 +275,12 @@ export async function postMonthly(guild: Guild, which: "current" | "next", sourc
     const year = target.getUTCFullYear();
     const month = target.getUTCMonth() + 1;
     const key = `${year}-${String(month).padStart(2, "0")}`;
-    const loaded = await loadEvents(config, now);
-    if (typeof loaded === "string") return "failed";
+    const loaded = await storedEvents(config, now);
     const lines = await monthlyLines(loaded, year, month, { left: 15 }, gameOf(config));
     const existing = config.summaryMonth === key ? config.summaryMessageIds : [];
     const ids = await writeMonthly(guild, config.summaryChannelId, lines, monthLabel(year, month), existing);
     if (!ids) return "channel";
-    await setMonthly(sourceId, { summaryMonth: key, summaryMessageIds: ids, summaryHash: monthlyHash(lines) });
+    await setMonthly(config.id, { summaryMonth: key, summaryMessageIds: ids, summaryHash: monthlyHash(lines) });
     log.info({ month: key, messages: ids.length }, "eventcal: monthly summary posted");
     return existing.length > 0 ? "updated" : "posted";
   } catch (err) {
@@ -301,24 +292,23 @@ export async function postMonthly(guild: Guild, which: "current" | "next", sourc
 /** The dashboard's "Post / update overview": posts the message, or edits the existing one. */
 export async function postOverview(guild: Guild, sourceId: string | null = null): Promise<EventOverviewStatus> {
   try {
-    const config = await readSource(sourceId);
+    const config = sourceId ? await readSource(sourceId) : null;
     if (!config) return "needsSetup";
     if (!config.overviewChannelId) return "needsSetup";
     const channel = await textChannel(guild, config.overviewChannelId);
     if (!channel) return "channel";
-    const loaded = await loadEvents(config, new Date());
-    if (typeof loaded === "string") return "failed";
-    const rules = await listRules(sourceId);
+    const loaded = await storedEvents(config, new Date());
+    const rules = await listRules(config.id);
     const { shown, hash } = await overviewFor(loaded, rules, config.overviewDays, new Date());
     const payload = overviewMessage(shown, config.overviewDays);
     const existing = config.overviewMessageId ? await channel.messages.fetch(config.overviewMessageId).catch(() => null) : null;
     if (existing) {
       await existing.edit(payload);
-      await setOverview(sourceId, channel.id, existing.id, hash);
+      await setOverview(config.id, channel.id, existing.id, hash);
       return "updated";
     }
     const message = await channel.send(payload);
-    await setOverview(sourceId, channel.id, message.id, hash);
+    await setOverview(config.id, channel.id, message.id, hash);
     log.info({ channelId: channel.id }, "eventcal: overview posted");
     return "posted";
   } catch (err) {
@@ -333,15 +323,16 @@ export function startEventCalendar(client: Client): void {
     log.info({}, "eventcal: not starting (local run without BOT_INTEGRATIONS_IN_DEV)");
     return;
   }
-  const run = async () => {
+  const run = async (force: boolean) => {
     const guild = client.guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return;
-    await checkCalendar(guild);
+    await checkCalendar(guild, { force });
   };
-  onReload("eventcal", () => void run().catch((err) => log.error({ err }, "eventcal: run failed")));
+  // A dashboard change (settings, a pasted article, a rule) reads the sources again at once; the timer only does so every six hours.
+  onReload("eventcal", () => void run(true).catch((err) => log.error({ err }, "eventcal: run failed")));
   client.once(Events.ClientReady, () => {
-    void run().catch((err) => log.error({ err }, "eventcal: run failed"));
-    timer = setInterval(() => void run().catch((err) => log.error({ err }, "eventcal: run failed")), INTERVAL_MS);
+    void run(false).catch((err) => log.error({ err }, "eventcal: run failed"));
+    timer = setInterval(() => void run(false).catch((err) => log.error({ err }, "eventcal: run failed")), INTERVAL_MS);
   });
 }
 

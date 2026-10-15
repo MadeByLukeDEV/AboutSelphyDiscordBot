@@ -1450,8 +1450,70 @@ model EventSource {
   lastCheckedAt     DateTime?
   lastStatus        String?   @db.VarChar(40)
   createdAt         DateTime  @default(now())
+  /// A public iCalendar feed (optional).
+  icsUrl            String?   @db.VarChar(500)
+  /// A page address with {month} {mm} {year} tokens, fetched for this and next month (optional).
+  pageUrlTemplate   String?   @db.VarChar(300)
+  /// CSS selector that narrows the fetched page to the article (optional).
+  contentSelector   String?   @db.VarChar(200)
+  /// auto = plain request, then the browser service when blocked; plain; crawl4ai.
+  fetchMode         String    @default("auto") @db.VarChar(10)
+  lastFetchedAt     DateTime?
+  lastFetchStatus   String?   @db.VarChar(40)
   rules             EventRule[]
   articles          EventArticle[]
+  events            GameEvent[]
+  fetches           EventFetch[]
+}
+
+/// An event the bot knows about, stored so it can be edited, posted, summarised and shown. Synced from the calendar and the articles; manual ones are never touched by a sync.
+model GameEvent {
+  id          String      @id @default(cuid())
+  sourceId    String
+  source      EventSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  /// Stable per occurrence (calendar uid + start, or article|name|date).
+  key         String      @db.VarChar(160)
+  title       String      @db.VarChar(120)
+  /// drop | event | update | sale | other
+  kind        String      @default("event") @db.VarChar(8)
+  startsAt    DateTime
+  endsAt      DateTime?
+  allDay      Boolean     @default(false)
+  description String      @default("") @db.VarChar(4000)
+  summary     String      @default("") @db.VarChar(600)
+  blurb       String      @default("") @db.VarChar(200)
+  /// everyone | partners | unknown
+  audience    String      @default("unknown") @db.VarChar(10)
+  items       String[]    @default([])
+  categories  String[]    @default([])
+  imageUrl    String?     @db.VarChar(500)
+  videoUrl    String?     @db.VarChar(500)
+  color       Int?
+  /// calendar | article | manual
+  origin      String      @db.VarChar(10)
+  /// An admin edited it: a sync never overwrites its fields.
+  locked      Boolean     @default(false)
+  lastSeenAt  DateTime    @default(now())
+  removedAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@unique([sourceId, key])
+  @@index([sourceId, startsAt])
+}
+
+/// The last text seen at an address (a fetched page or a pasted article) and what the AI extracted from it, so an unchanged text costs no new AI call.
+model EventFetch {
+  id            String      @id @default(cuid())
+  sourceId      String
+  source        EventSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  /// The page address, or "paste:<article id>".
+  url           String      @db.VarChar(300)
+  contentHash   String      @db.VarChar(40)
+  extractedJson String      @db.Text
+  status        String      @db.VarChar(30)
+  fetchedAt     DateTime    @default(now())
+
+  @@unique([sourceId, url])
 }
 
 /// A cached AI summary, keyed by a hash of the event text it came from (so one event costs one call).
