@@ -3111,7 +3111,9 @@
       "leadDays": "So viele Tage vor dem Start posten",
       "leadDaysHelp": "Eine bis {max} Zahlen von 0 bis {limit}, zum Beispiel 7, 2. Der erste Post ist die Ankündigung, die späteren sind Erinnerungen. 0 = am Tag selbst.",
       "useCard": "Gezeichnetes Bild anhängen",
-      "useCardHelp": "Zeichnet eine Karte für das Event (die Drop-Items mit ihren Bildern, in der Farbe des Spiels) und zeigt sie im Post."
+      "useCardHelp": "Zeichnet eine Karte für das Event (die Drop-Items mit ihren Bildern, in der Farbe des Spiels) und zeigt sie im Post.",
+      "postSeries": "Auch wiederkehrende Events ankündigen",
+      "postSeriesHelp": "Bei einem Eintrag, der sich wiederholt (Jeden Dienstag), postet diese Regel jedes Mal, zum Beispiel als wöchentliche Erinnerung. Nutze eine kurze Vorlaufzeit wie 1, damit nicht schon direkt nach dem letzten Termin angekündigt wird."
     },
     "errors": {
       "forbidden": "Darauf hast du keinen Zugriff.",

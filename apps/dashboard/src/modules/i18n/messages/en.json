@@ -3111,7 +3111,9 @@
       "leadDays": "Post this many days before it starts",
       "leadDaysHelp": "One to {max} numbers from 0 to {limit}, for example 7, 2. The first post is the announcement, the later ones are reminders. 0 = on the day.",
       "useCard": "Attach a drawn picture",
-      "useCardHelp": "Draws a card for the event (the drop items with their pictures, in the game's colour) and shows it in the post."
+      "useCardHelp": "Draws a card for the event (the drop items with their pictures, in the game's colour) and shows it in the post.",
+      "postSeries": "Also announce repeating events",
+      "postSeriesHelp": "For an entry that repeats (Every Tuesday) this rule posts every occurrence, for example a weekly reminder. Use a short lead time such as 1 so it isn't announced the moment the last one ends."
     },
     "errors": {
       "forbidden": "You don't have access to this.",

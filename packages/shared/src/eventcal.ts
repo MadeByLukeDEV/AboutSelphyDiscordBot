@@ -104,6 +104,8 @@ export const eventRuleSchema = z
     leadDays: leadDaysField(1),
     /** Attach a drawn picture (drop card with the item pictures, or an event card) to the posts. */
     useCard: z.boolean().default(false),
+    /** Also announce every occurrence of a repeating series ("Every Tuesday"), for example a weekly reminder. */
+    postSeries: z.boolean().default(false),
     /** Use an AI-written summary (rewards, who can take part) when the bot has an AI provider configured. */
     useAi: z.boolean().default(true),
     /** The source (game) whose events this rule looks at. */

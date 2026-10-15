@@ -329,3 +329,22 @@ describe("repeating series", () => {
     expect(monthlyLine({ event: series!, weekly: null }, "")).toBe("**Fight Nights** · Every Tuesday");
   });
 });
+
+describe("posting an occurrence of a series", () => {
+  const series = ev({ summary: "Fight Nights", start: new Date("2026-10-20T18:00:00Z"), end: new Date("2026-12-22T19:00:00Z"), recurrence: "Every Tuesday", categories: [] });
+
+  it("does not change the fingerprint when the series' last occurrence moves on", () => {
+    const later = { ...series, end: new Date("2027-01-05T19:00:00Z") };
+    expect(eventHash(later)).toBe(eventHash(series));
+    expect(eventHash({ ...series, start: new Date("2026-10-27T18:00:00Z") })).not.toBe(eventHash(series));
+  });
+  it("shows the next time and how it repeats, without an end", () => {
+    const fields = eventMessage(series, null).embeds[0]!.toJSON().fields!;
+    expect(fields.map((f) => f.name)).toEqual(["Next", "Repeats"]);
+    expect(fields[1]!.value).toBe("Every Tuesday");
+  });
+  it("keeps the usual Starts and Ends for a normal event", () => {
+    expect(eventMessage(ev(), null).embeds[0]!.toJSON().fields!.map((f) => f.name)).toEqual(["Starts", "Ends"]);
+  });
+});
+

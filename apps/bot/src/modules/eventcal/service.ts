@@ -145,16 +145,18 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
       const cardCtx = rules.some((r) => r.useCard) ? await cardContext(config, loaded) : null;
 
       for (const rule of rules) {
-        // A whole repeating series ("Every Tuesday") is shown in the lists but not announced occurrence by occurrence.
-        for (const event of loaded.filter((e) => !e.recurrence && matchesRule(e, rule))) {
+        // A repeating series ("Every Tuesday") is listed as one entry; a rule that has "post series" on announces each occurrence of it (its next one is the entry's start).
+        for (const event of loaded.filter((e) => (!e.recurrence || rule.postSeries) && matchesRule(e, rule))) {
+          // Every occurrence of a series is its own post: its key carries the occurrence's start.
+          const postKey = (event.recurrence ? `${event.key}|${event.start.toISOString().slice(0, 16)}` : event.key).slice(0, 160);
           // The event's own lead times (set in the dashboard) win over the rule's. Stage 0 is the announcement, later stages are reminders.
           const steps = planStages(event, now, event.reminderDays && event.reminderDays.length > 0 ? event.reminderDays : rule.leadDays);
           if (steps.length === 0) continue;
           // A rule with pictures also edits its posts when the picture would change (a new item picture, another colour).
           const hash = rule.useCard && cardCtx ? sha1(eventHash(event) + cardStamp(cardCtx, event)) : eventHash(event);
           for (const step of steps) {
-            const existing = await findPost(rule.id, event.key.slice(0, 160), step.stage);
-            const claim = { ruleId: rule.id, eventKey: event.key, stage: step.stage, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary };
+            const existing = await findPost(rule.id, postKey, step.stage);
+            const claim = { ruleId: rule.id, eventKey: postKey, stage: step.stage, startsAt: event.start, channelId: rule.channelId, hash, messageId: null, title: event.summary };
             if (!config.baselined || !rule.seeded) {
               // First look at the calendar or at this rule: remember everything, announce nothing.
               await claimPost(claim);
@@ -177,12 +179,12 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
                 const ai = rule.useAi ? await summaryFor(event, budget, game) : null;
                 const card = rule.useCard && cardCtx ? await drawEventCard(event, cardCtx, ai) : null;
                 const message = await channel.send({ ...eventMessage(event, rule.pingRoleId, ai, { reminder, ...(card ? { cardName: "event.png" } : {}) }), ...(card ? { files: [{ attachment: card, name: "event.png" }] } : {}) });
-                await setPostMessage(rule.id, event.key, step.stage, message.id);
+                await setPostMessage(rule.id, postKey, step.stage, message.id);
                 result.posted++;
                 log.info({ rule: rule.id, event: event.summary, stage: step.stage, daysBefore: step.offset }, "eventcal: posted");
               } catch (err) {
                 log.warn({ err, rule: rule.id }, "eventcal: could not post, will retry");
-                await unclaimPost(rule.id, event.key, step.stage).catch(() => undefined);
+                await unclaimPost(rule.id, postKey, step.stage).catch(() => undefined);
               }
             } else if (existing.hash !== hash && existing.messageId) {
               const message = await channel.messages.fetch(existing.messageId).catch(() => null);
@@ -190,13 +192,13 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
                 const ai = rule.useAi ? await summaryFor(event, budget, game) : null;
                 const card = rule.useCard && cardCtx ? await drawEventCard(event, cardCtx, ai) : null;
                 await message.edit({ ...eventMessage(event, rule.pingRoleId, ai, { reminder, ...(card ? { cardName: "event.png" } : {}) }), content: message.content, attachments: [], ...(card ? { files: [{ attachment: card, name: "event.png" }] } : {}) }).then(async () => {
-                  await setPostHash(rule.id, event.key, step.stage, hash);
+                  await setPostHash(rule.id, postKey, step.stage, hash);
                   result.edited++;
                   log.info({ rule: rule.id, event: event.summary, stage: step.stage }, "eventcal: edited (the event changed)");
                 }).catch((err) => log.warn({ err }, "eventcal: could not edit"));
               }
             } else if (existing.hash !== hash) {
-              await setPostHash(rule.id, event.key, step.stage, hash); // a silently remembered event changed: nothing to edit
+              await setPostHash(rule.id, postKey, step.stage, hash); // a silently remembered event changed: nothing to edit
             }
           }
         }
@@ -252,7 +254,9 @@ export function repostEvent(guild: Guild, postId: string): Promise<EventRepostSt
       const config = post.rule.sourceId ? await readSource(post.rule.sourceId) : null;
       if (!config) return "gone";
       const loaded = await storedEvents(config, new Date());
-      const event = loaded.find((e) => e.key.slice(0, 160) === post.eventKey);
+      // A post of a series occurrence has the occurrence's start after the series key; the series entry itself is what is found (and re-posted as its next occurrence).
+      const baseKey = post.eventKey.startsWith("series|") ? post.eventKey.split("|").slice(0, 2).join("|") : post.eventKey;
+      const event = loaded.find((e) => e.key.slice(0, 160) === baseKey);
       if (!event) return "gone"; // the calendar no longer has this occurrence
       const channel = await textChannel(guild, post.rule.channelId);
       if (!channel) return "channel";

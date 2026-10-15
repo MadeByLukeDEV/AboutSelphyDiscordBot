@@ -10,7 +10,7 @@ import type { PictureData } from "./repository";
 import { clearItemImage, deleteBackground, deleteItem, ensureItems, findItem, listBackgrounds, listItems, readBackground, readItemImage, saveBackground, setItemImage, countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
 import type { ImageResult, ItemRow, ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
 
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useCard: r.useCard, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useCard: r.useCard, postSeries: r.postSeries, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
 
 type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
 type EventModel = Awaited<ReturnType<typeof listEvents>>[number];
@@ -130,7 +130,7 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useCard: input.useCard, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
+    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useCard: input.useCard, postSeries: input.postSeries, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
     if (existing) {
       const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.leadDays.join(",") !== data.leadDays.join(",") || (!existing.useCard && data.useCard) || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);

@@ -1399,6 +1399,8 @@ model EventRule {
   kinds      String[]    @default([])
   /// Attach a drawn picture (drop card / event card) to the posts.
   useCard    Boolean     @default(false)
+  /// Also announce every occurrence of a repeating series ("Every Tuesday"), not just list it.
+  postSeries Boolean     @default(false)
   /// Days before the start at which the event is posted: the first is the announcement, the later ones are reminders (for example 7 and 2).
   leadDays   Int[]       @default([7])
 }

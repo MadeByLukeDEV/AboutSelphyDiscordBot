@@ -52,7 +52,7 @@ export function planStages(event: Pick<CalEvent, "start" | "allDay">, now: Date,
 
 /** A fingerprint of what a message shows, so a changed event (moved, renamed, new text) edits its message once. */
 export function eventHash(e: CalEvent): string {
-  return createHash("sha1").update([e.summary, e.start.toISOString(), e.end?.toISOString() ?? "", e.description, e.image ?? "", e.video ?? "", e.color ?? "", e.extra?.summary ?? "", (e.items ?? []).join("|")].join("\u0000")).digest("hex");
+  return createHash("sha1").update([e.summary, e.start.toISOString(), e.recurrence ? "" : (e.end?.toISOString() ?? ""), e.description, e.image ?? "", e.video ?? "", e.color ?? "", e.extra?.summary ?? "", (e.items ?? []).join("|")].join("\u0000")).digest("hex");
 }
 
 const unix = (d: Date) => Math.floor(d.getTime() / 1000);
@@ -69,8 +69,10 @@ export function whenText(e: Pick<CalEvent, "start" | "end" | "allDay">): { start
  */
 export function eventMessage(e: CalEvent, pingRoleId: string | null, ai: EventSummaryData | null = null, opts: { reminder?: boolean; cardName?: string } = {}) {
   const { starts, ends } = whenText(e);
-  const embed = new EmbedBuilder().setColor(e.color ?? 0x00ffa8).setTitle(truncate(escapeText(e.summary), 256)).addFields({ name: "Starts", value: starts, inline: false });
-  if (ends) embed.addFields({ name: "Ends", value: ends, inline: false });
+  // An occurrence of a repeating series: the next time, and how it repeats (its end is the last occurrence's, which isn't this one's).
+  const embed = new EmbedBuilder().setColor(e.color ?? 0x00ffa8).setTitle(truncate(escapeText(e.summary), 256)).addFields({ name: e.recurrence ? "Next" : "Starts", value: starts, inline: false });
+  if (e.recurrence) embed.addFields({ name: "Repeats", value: escapeText(e.recurrence), inline: false });
+  else if (ends) embed.addFields({ name: "Ends", value: ends, inline: false });
   // With an AI summary the post shows it, the rewards and who can take part; otherwise the event's own text.
   const text = (ai ? ai.summary : e.description)
     .split("\n")
