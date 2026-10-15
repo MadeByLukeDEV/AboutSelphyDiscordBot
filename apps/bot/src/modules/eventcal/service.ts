@@ -151,7 +151,7 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
 
       for (const rule of rules.filter((r) => !r.seeded)) await markSeeded(rule.id);
 
-      await refreshOverview(guild, config.id, loaded, rules, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the overview"));
+      await refreshOverview(guild, config.id, loaded, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the overview"));
       await refreshMonthly(guild, config.id, loaded, now).catch((err) => log.warn({ err }, "eventcal: could not refresh the monthly summary"));
       if (Math.random() < 0.05) {
         await prunePosts(new Date(now.getTime() - 120 * DAY));
@@ -165,19 +165,18 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
   }
 }
 
-type Rules = Awaited<ReturnType<typeof listRules>>;
-
-async function overviewFor(loaded: CalEvent[], rules: Rules, days: number, now: Date) {
-  const shown = overviewEvents(loaded.filter((e) => rules.some((r) => matchesRule(e, r))), now, days);
+/** The overview shows every event of the game that runs now or starts within the window, not only those a rule posts. */
+async function overviewFor(loaded: CalEvent[], days: number, now: Date) {
+  const shown = overviewEvents(loaded, now, days);
   return { shown, hash: overviewHash(shown) };
 }
 
 /** Edits the overview message when its content changed (only if one was posted from the dashboard). */
-async function refreshOverview(guild: Guild, sourceId: string, loaded: CalEvent[], rules: Rules, now: Date): Promise<void> {
+async function refreshOverview(guild: Guild, sourceId: string, loaded: CalEvent[], now: Date): Promise<void> {
   const config = await readSource(sourceId);
   if (!config) return;
   if (!config.overviewChannelId || !config.overviewMessageId) return;
-  const { shown, hash } = await overviewFor(loaded, rules, config.overviewDays, now);
+  const { shown, hash } = await overviewFor(loaded, config.overviewDays, now);
   if (hash === config.overviewHash) return;
   const channel = await textChannel(guild, config.overviewChannelId);
   const message = channel ? await channel.messages.fetch(config.overviewMessageId).catch(() => null) : null;
@@ -298,8 +297,7 @@ export async function postOverview(guild: Guild, sourceId: string | null = null)
     const channel = await textChannel(guild, config.overviewChannelId);
     if (!channel) return "channel";
     const loaded = await storedEvents(config, new Date());
-    const rules = await listRules(config.id);
-    const { shown, hash } = await overviewFor(loaded, rules, config.overviewDays, new Date());
+    const { shown, hash } = await overviewFor(loaded, config.overviewDays, new Date());
     const payload = overviewMessage(shown, config.overviewDays);
     const existing = config.overviewMessageId ? await channel.messages.fetch(config.overviewMessageId).catch(() => null) : null;
     if (existing) {

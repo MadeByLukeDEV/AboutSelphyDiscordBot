@@ -3072,7 +3072,16 @@
       "saving": "Saving…",
       "saved": "Rule saved.",
       "cancel": "Cancel",
-      "sourcePlaceholder": "Pick a game"
+      "sourcePlaceholder": "Pick a game",
+      "kinds": "Kinds of event",
+      "kindsHelp": "Match every event of these kinds, as well as the words and tags below. Leave all off to use only words and tags.",
+      "kindName": {
+        "drop": "Drops",
+        "event": "Events",
+        "update": "Updates",
+        "sale": "Sales",
+        "other": "Other"
+      }
     },
     "errors": {
       "forbidden": "You don't have access to this.",
@@ -3088,7 +3097,7 @@
       "badDays": "Enter a number from {min} to {max}.",
       "badDaysAhead": "Enter a number from 0 to {max}.",
       "needsName": "Give the rule a name.",
-      "needsMatch": "Add at least one word or tag.",
+      "needsMatch": "Add at least one kind, word or tag.",
       "badDate": "Pick a date and time.",
       "badImage": "Enter an https address of a picture.",
       "badVideo": "Enter a YouTube, Twitch or Vimeo video address.",

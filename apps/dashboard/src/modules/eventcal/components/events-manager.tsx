@@ -7,7 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Plus, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { eventRuleSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
+import { EVENT_KINDS, eventRuleSchema, MAX_DAYS_AHEAD, MAX_EVENT_RULES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -128,7 +128,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
                     {r.sourceId && <Badge variant="outline">{sources.find((s) => s.id === r.sourceId)?.name ?? "?"}</Badge>}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {[...r.words, ...r.categories.map((c) => `#${c}`)].join(", ")} → #{channelName(r.channelId)} · {t("rules.ahead", { days: r.daysAhead })}
+                    {[...r.kinds.map((k) => t(`games.kind.${k}` as never)), ...r.words, ...r.categories.map((c) => `#${c}`)].join(", ")} → #{channelName(r.channelId)} · {t("rules.ahead", { days: r.daysAhead })}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -185,7 +185,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
   );
 }
 
-type RuleValues = { sourceId: string; name: string; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
+type RuleValues = { sourceId: string; name: string; kinds: string[]; wordsText: string; categoriesText: string; channelId: string; pingRoleId: string; daysAhead: number; useAi: boolean; enabled: boolean };
 
 function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: EventRuleRow | null; channelOptions: SelectOption[]; sources: SourceRow[]; roles: GuildRole[] | null; onDone: () => void }) {
   const t = useTranslations("Events.ruleForm");
@@ -193,8 +193,8 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
   const [pending, startTransition] = useTransition();
   const form = useForm<RuleValues>({
     defaultValues: rule
-      ? { sourceId: rule.sourceId, name: rule.name, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
-      : { sourceId: sources[0]?.id ?? "", name: "", wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
+      ? { sourceId: rule.sourceId, name: rule.name, kinds: rule.kinds, wordsText: rule.words.join("\n"), categoriesText: rule.categories.join("\n"), channelId: rule.channelId, pingRoleId: rule.pingRoleId, daysAhead: rule.daysAhead, useAi: rule.useAi, enabled: rule.enabled }
+      : { sourceId: sources[0]?.id ?? "", name: "", kinds: [], wordsText: "", categoriesText: "", channelId: "", pingRoleId: "", daysAhead: 7, useAi: true, enabled: true },
   });
   const { errors } = form.formState;
   const sourceOptions: SelectOption[] = sources.map((s) => ({ value: s.id, label: s.name }));
@@ -207,6 +207,7 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
       ...(rule ? { id: rule.id } : {}),
       sourceId: values.sourceId,
       name: values.name,
+      kinds: values.kinds,
       words: parseTerms(values.wordsText),
       categories: parseTerms(values.categoriesText),
       channelId: values.channelId,
@@ -247,6 +248,26 @@ function RuleForm({ rule, channelOptions, sources, roles, onDone }: { rule: Even
           <FieldLabel htmlFor="er-name">{t("name")}</FieldLabel>
           <Input id="er-name" maxLength={60} aria-invalid={Boolean(errors.name) || undefined} {...form.register("name")} />
           {errors.name && <FieldError>{te("needsName")}</FieldError>}
+        </Field>
+        <Field>
+          <FieldLabel id="er-kinds-label">{t("kinds")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="kinds"
+            render={({ field }) => (
+              <div role="group" aria-labelledby="er-kinds-label" className="flex flex-wrap gap-2">
+                {EVENT_KINDS.map((k) => {
+                  const on = field.value.includes(k);
+                  return (
+                    <Button key={k} type="button" size="sm" variant={on ? "default" : "outline"} aria-pressed={on} onClick={() => field.onChange(on ? field.value.filter((x) => x !== k) : [...field.value, k])}>
+                      {t(`kindName.${k}` as never)}
+                    </Button>
+                  );
+                })}
+              </div>
+            )}
+          />
+          <FieldDescription>{t("kindsHelp")}</FieldDescription>
         </Field>
         <Field data-invalid={Boolean(errors.wordsText) || undefined}>
           <FieldLabel htmlFor="er-words">{t("words")}</FieldLabel>

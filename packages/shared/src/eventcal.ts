@@ -74,6 +74,8 @@ export const eventRuleSchema = z
     words: z.array(term).max(MAX_RULE_TERMS),
     /** The calendar's own tags (for example twitch_drop). */
     categories: z.array(term).max(MAX_RULE_TERMS),
+    /** Also matches every event of these kinds. */
+    kinds: z.array(z.enum(EVENT_KINDS)).max(EVENT_KINDS.length).default([]),
     channelId: snowflake,
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
@@ -86,7 +88,7 @@ export const eventRuleSchema = z
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {
-    if (v.words.length + v.categories.length === 0) ctx.addIssue({ code: "custom", path: ["words"], message: "needsMatch" });
+    if (v.words.length + v.categories.length + v.kinds.length === 0) ctx.addIssue({ code: "custom", path: ["words"], message: "needsMatch" });
   });
 export type EventRuleInput = z.infer<typeof eventRuleSchema>;
 

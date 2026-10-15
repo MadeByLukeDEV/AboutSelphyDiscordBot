@@ -3072,7 +3072,16 @@
       "saving": "Speichert …",
       "saved": "Regel gespeichert.",
       "cancel": "Abbrechen",
-      "sourcePlaceholder": "Wähle ein Spiel"
+      "sourcePlaceholder": "Wähle ein Spiel",
+      "kinds": "Arten von Events",
+      "kindsHelp": "Passt auf jedes Event dieser Arten, zusätzlich zu den Wörtern und Tags unten. Alles aus lassen, um nur Wörter und Tags zu nutzen.",
+      "kindName": {
+        "drop": "Drops",
+        "event": "Events",
+        "update": "Updates",
+        "sale": "Sales",
+        "other": "Sonstiges"
+      }
     },
     "errors": {
       "forbidden": "Darauf hast du keinen Zugriff.",
@@ -3088,7 +3097,7 @@
       "badDays": "Gib eine Zahl von {min} bis {max} ein.",
       "badDaysAhead": "Gib eine Zahl von 0 bis {max} ein.",
       "needsName": "Gib der Regel einen Namen.",
-      "needsMatch": "Füge mindestens ein Wort oder Tag hinzu.",
+      "needsMatch": "Wähle mindestens eine Art, ein Wort oder einen Tag.",
       "badDate": "Wähle Datum und Uhrzeit.",
       "badImage": "Gib eine https-Adresse eines Bildes ein.",
       "badVideo": "Gib die Adresse eines YouTube-, Twitch- oder Vimeo-Videos ein.",

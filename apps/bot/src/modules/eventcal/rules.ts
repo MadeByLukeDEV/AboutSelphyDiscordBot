@@ -7,12 +7,13 @@ import type { EventSummaryData } from "./summary";
 
 // Which events a rule posts, when, and what the messages look like. Pure, so the rules are testable.
 
-export type RuleFacts = { words: readonly string[]; categories: readonly string[] };
+export type RuleFacts = { words: readonly string[]; categories: readonly string[]; kinds?: readonly string[] };
 
 const fold = (t: string): string => t.normalize("NFKC").toLowerCase();
 
-/** An event matches a rule when its name contains one of the rule's words, or it carries one of the rule's tags. Words are plain text, never patterns. */
-export function matchesRule(event: Pick<CalEvent, "summary" | "categories">, rule: RuleFacts): boolean {
+/** An event matches a rule when its name contains one of the rule's words, it carries one of the rule's tags, or it is of one of the rule's kinds. Words are plain text, never patterns. */
+export function matchesRule(event: Pick<CalEvent, "summary" | "categories" | "kind">, rule: RuleFacts): boolean {
+  if (event.kind && (rule.kinds ?? []).includes(event.kind)) return true;
   const name = fold(event.summary);
   if (rule.words.some((w) => w.trim() !== "" && name.includes(fold(w)))) return true;
   const tags = new Set(event.categories.map(fold));

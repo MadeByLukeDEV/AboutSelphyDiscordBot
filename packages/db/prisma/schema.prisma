@@ -1395,6 +1395,8 @@ model EventRule {
   /// null = the main calendar; otherwise an article-only source (one game).
   sourceId   String?
   source     EventSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  /// Also matches events of these kinds (drop, event, update, sale, other).
+  kinds      String[]    @default([])
 }
 
 /// An occurrence that was posted (or silently remembered) for a rule. Unique per rule and occurrence, so nothing is posted twice.

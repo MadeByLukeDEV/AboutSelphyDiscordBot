@@ -1526,6 +1526,7 @@ Decided 2026-10-08:
     and items, so their posts need no per-event AI call (`CalEvent.extra`, items shown as the bold rewards). Dashboard `/events`: games (add/edit/remove, fetch now, overview,
     monthly, pasted articles as the fallback) with an events list per game (edit locks an event so a sync never overwrites it, "add event" makes a manual one, remove hides
     it, restore), and the rule form picks the game. Item **images** are not stored yet (items are plain names; the item library comes in slice 3).
+    **Rule kinds and the overview** (2026-10-15, `feature_rule-kinds`, migration `20261115120000_event_rule_kinds`; **not tried live yet**): `EventRule.kinds` (drop/event/update/sale/other, DB CHECK) lets a rule match every event of a kind in addition to its words and tags (`matchesRule`: any of the three matches; a rule needs at least one); the rule form has toggle buttons for it. The **overview now lists every event of the game** (running now or starting within N days), not only those a rule posts, like the monthly summary does.
     Slices still to do: reminders (several offsets such as 7 d and 2 d, per-event timers, automatic monthly post), images per game theme, patch notes, public widget + JSON.
     **Crawl4AI setup (verified live 2026-10-15)**: Crawl4AI 0.9.5 binds the container's loopback only unless `CRAWL4AI_API_TOKEN` is set, so a Dokploy
     compose service needs `CRAWL4AI_API_TOKEN` (+ `SECRET_KEY`), `shm_size: 1g`, no domain, and `dokploy-network`; the bot gets `CRAWL4AI_URL=http://crawl4ai:11235`

@@ -19,6 +19,14 @@ const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
 });
 
 describe("matchesRule", () => {
+  it("matches by kind, together with words and tags", () => {
+    const upd = ev({ summary: "October Game Update", categories: [], kind: "update" });
+    expect(matchesRule(upd, { words: [], categories: [], kinds: ["update"] })).toBe(true);
+    expect(matchesRule(upd, { words: [], categories: [], kinds: ["sale"] })).toBe(false);
+    expect(matchesRule(upd, { words: ["nope"], categories: [], kinds: ["sale"] })).toBe(false);
+    expect(matchesRule(upd, { words: ["game update"], categories: [], kinds: ["sale"] })).toBe(true);
+    expect(matchesRule(ev({ kind: undefined }), { words: [], categories: [], kinds: ["update"] })).toBe(false);
+  });
   it("matches the name by any word, any case", () => {
     expect(matchesRule(ev(), { words: ["twitch"], categories: [] })).toBe(true);
     expect(matchesRule(ev(), { words: ["fight"], categories: [] })).toBe(false);
@@ -102,6 +110,8 @@ describe("settings", () => {
     expect(eventRuleSchema.safeParse({ ...rule, words: [] }).success).toBe(false);
     expect(eventRuleSchema.safeParse({ ...rule, words: [], categories: ["twitch_drop"] }).success).toBe(true);
     expect(eventRuleSchema.safeParse({ ...rule, sourceId: "" }).success).toBe(false);
+    expect(eventRuleSchema.safeParse({ ...rule, words: [], kinds: ["update"] }).success).toBe(true);
+    expect(eventRuleSchema.safeParse({ ...rule, words: [], kinds: ["weird"] }).success).toBe(false);
   });
   it("takes only public https calendars and page templates", () => {
     const base = { name: "SoT", enabled: true, icsUrl: "https://calendar.google.com/calendar/ical/x/public/basic.ics", pageUrlTemplate: "https://www.seaofthieves.com/news/this-month-{month}{year}", overviewChannelId: "", overviewDays: 30, summaryChannelId: "" };
