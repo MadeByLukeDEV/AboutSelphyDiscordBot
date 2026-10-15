@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { contentHash, parseExtraction, SYSTEM_PROMPT, userPrompt } from "./extract";
 import { expandTemplate, looksBlocked, looksNotFound, pageUrlsFor } from "./fetcher";
-import { retryDelayMs, shouldRetry } from "../../lib/ai";
+import { modelsToTry, retryDelayMs, shouldRetry } from "../../lib/ai";
 import { htmlToText } from "./html-text";
 import { inferKind, toCalEvent, toRow } from "./store";
 import { mergeArticle } from "./rules";
@@ -165,5 +165,13 @@ describe("retrying a busy AI provider", () => {
     expect(retryDelayMs(1, "7")).toBe(7000);
     expect(retryDelayMs(1, "9999")).toBe(30_000);
     expect(retryDelayMs(1, "soon")).toBe(4000);
+  });
+});
+
+describe("the fallback model", () => {
+  it("is tried after the main one, and only when it is set and different", () => {
+    expect(modelsToTry("a", "b")).toEqual(["a", "b"]);
+    expect(modelsToTry("a", undefined)).toEqual(["a"]);
+    expect(modelsToTry("a", "a")).toEqual(["a"]);
   });
 });

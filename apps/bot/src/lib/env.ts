@@ -54,6 +54,8 @@ export const envSchema = z.object({
   AI_API_KEY: optional(z.string().min(1)),
   AI_BASE_URL: optional(z.url().refine((u) => u.startsWith("https://"), "must be https")),
   AI_MODEL: optional(z.string().min(1)),
+  // A second model on the same provider and key, tried when the main one is overloaded or rate-limited. Optional.
+  AI_FALLBACK_MODEL: optional(z.string().min(1)),
   // Thinking models (Gemini 3) spend output tokens on reasoning: "low" or "minimal" keeps that small. Leave empty for providers that don't know the field.
   AI_REASONING_EFFORT: optional(z.enum(["none", "minimal", "low", "medium", "high"])),
   // Max AI calls per day for the event pages (one per changed page, so this is only a safety net).

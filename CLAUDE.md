@@ -1531,7 +1531,7 @@ Decided 2026-10-08:
     and `CRAWL4AI_TOKEN` (the same value, sent as a bearer header). `POST /crawl {urls}` answers `{success, results:[{url, html, ...}]}` and got the real Sea of
     Thieves page past the Azure WAF. **Fetching feedback**: `EventSource.syncStartedAt` (migration `20261115110000_event_sync_flag`) is set while `syncSource` runs
     (cleared in `finally` and at bot start); the dashboard shows "Reading the sources right now..." with a spinner, disables "Fetch now" and refreshes itself every 3 s
-    while any source is syncing (also for the 6-hourly and dashboard-triggered reads). `htmlToText` tries selector -> main -> article -> body, then a looser second
+    while any source is syncing (also for the 6-hourly and dashboard-triggered reads). **AI resilience**: `chatJson` tries the main model twice (503/429/5xx, `Retry-After` honoured, else 4 s then 12 s) and then the optional `AI_FALLBACK_MODEL` (same provider and key) twice; a timeout or refusal falls back to the plain parser and the source status reads `ok (no AI)`; a page the browser service reports as 404 (or whose title says not found) is "not published yet". Extraction asks for short answers (descriptions <= 400 chars, 180 s timeout). `htmlToText` tries selector -> main -> article -> body, then a looser second
     pass (keeps forms/headers) when the first has under 200 characters; an explicit selector is used as it is; `emptyPage` logs a head of the text and HTML.
   - [ ] A reminder at the start time, one rule posting to several channels, other calendar formats.
 - [~] Phase 7 — webhooks (2026-10-26, `feature_webhooks`, migration `20261026100000_webhooks`; the public
