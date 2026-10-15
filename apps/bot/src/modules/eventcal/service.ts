@@ -145,7 +145,8 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
       const cardCtx = rules.some((r) => r.useCard) ? await cardContext(config, loaded) : null;
 
       for (const rule of rules) {
-        for (const event of loaded.filter((e) => matchesRule(e, rule))) {
+        // A whole repeating series ("Every Tuesday") is shown in the lists but not announced occurrence by occurrence.
+        for (const event of loaded.filter((e) => !e.recurrence && matchesRule(e, rule))) {
           // The event's own lead times (set in the dashboard) win over the rule's. Stage 0 is the announcement, later stages are reminders.
           const steps = planStages(event, now, event.reminderDays && event.reminderDays.length > 0 ? event.reminderDays : rule.leadDays);
           if (steps.length === 0) continue;
@@ -278,7 +279,7 @@ async function monthlyLines(loaded: CalEvent[], year: number, month: number, bud
     const ai = await summaryFor(entry.event, budget, game);
     const blurb = ai?.blurb || firstSentence(entry.event.description, 280);
     lines.push(monthlyLine(entry, blurb));
-    rows.push({ title: entry.event.summary, when: entry.weekly !== null ? weeklyText(entry.weekly) : dateRangeText(entry.event.start, entry.event.end, entry.event.allDay), kind: inferKind(entry.event), blurb: ai?.blurb || firstSentence(entry.event.description, 90) });
+    rows.push({ title: entry.event.summary, when: entry.event.recurrence ?? (entry.weekly !== null ? weeklyText(entry.weekly) : dateRangeText(entry.event.start, entry.event.end, entry.event.allDay)), kind: inferKind(entry.event), blurb: ai?.blurb || firstSentence(entry.event.description, 90) });
   }
   return { lines, rows };
 }

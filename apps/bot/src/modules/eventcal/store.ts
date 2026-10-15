@@ -19,6 +19,7 @@ export type StoredLike = {
   videoUrl: string | null;
   color: number | null;
   reminderDays?: number[];
+  recurrence?: string | null;
 };
 
 const AUDIENCES = ["everyone", "partners", "unknown"] as const;
@@ -39,6 +40,7 @@ export function toCalEvent(r: StoredLike): CalEvent {
     kind: r.kind,
     items: r.items,
     ...(r.reminderDays && r.reminderDays.length > 0 ? { reminderDays: r.reminderDays } : {}),
+    ...(r.recurrence ? { recurrence: r.recurrence } : {}),
     ...(r.summary ? { extra: { summary: r.summary, blurb: r.blurb, audience } } : {}),
   };
 }
@@ -73,5 +75,6 @@ export function toRow(e: CalEvent) {
     imageUrl: e.image ? e.image.slice(0, 500) : null,
     videoUrl: e.video ? e.video.slice(0, 500) : null,
     color: e.color,
+    recurrence: e.recurrence ?? null,
   };
 }

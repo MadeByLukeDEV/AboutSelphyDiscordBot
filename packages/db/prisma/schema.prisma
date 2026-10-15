@@ -1515,6 +1515,8 @@ model GameEvent {
   createdAt   DateTime    @default(now())
   /// Overrides the rules' lead times for this one event (days before the start); empty = use the rules'.
   reminderDays Int[]      @default([])
+  /// Set when this one entry stands for a whole repeating series ("Every Tuesday"); such an entry is not posted per occurrence.
+  recurrence  String?     @db.VarChar(60)
 
   @@unique([sourceId, key])
   @@index([sourceId, startsAt])

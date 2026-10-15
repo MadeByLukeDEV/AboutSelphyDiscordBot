@@ -9,7 +9,7 @@ import { fetchPage, pageUrlsFor } from "./fetcher";
 import { htmlToText } from "./html-text";
 import { itemKey } from "@aboutselphy/shared/eventcal";
 import { ensureItems, listArticles, markVanished, readFetch, saveFetch, saveState, upsertEvent, type SourceState } from "./repository";
-import { mergeArticle } from "./rules";
+import { foldSeries, mergeArticle } from "./rules";
 import { toRow } from "./store";
 
 // Brings one source's stored events up to date: the calendar feed, the fetched pages and the pasted articles are read, merged, and written to
@@ -115,7 +115,8 @@ async function syncInner(src: SourceState, now: Date): Promise<SyncResult> {
   }
   for (const pasted of await listArticles(src.id)) articles.push(...(await articleEvents(src, `paste:${pasted.id}`, pasted.text, now, used)));
 
-  const merged = mergeArticle(calendar, articles, from, to);
+  // Calendar entries that repeat evenly (Fight Nights every Tuesday ...) become one entry each instead of dozens.
+  const merged = foldSeries(mergeArticle(calendar, articles, from, to), now);
   const hasInputs = Boolean(src.icsUrl || src.pageUrlTemplate) || articles.length > 0;
   if (merged.length === 0) {
     const result = { status: allOk ? (hasInputs ? "empty" : "noSource") : status, events: 0 };

@@ -35,7 +35,8 @@ export const updateSource = (id: string, data: SourceData & { baselined?: false 
 export const deleteSource = async (id: string) => (await prisma.eventSource.deleteMany({ where: { id } })).count;
 
 /** Events from a month ago on, up to 80 per source (the page shows them per source). */
-export const listEvents = () => prisma.gameEvent.findMany({ where: { startsAt: { gte: new Date(Date.now() - 30 * 86_400_000) } }, orderBy: { startsAt: "asc" }, take: 600 });
+// Events the sync removed by itself (an occurrence that became part of a series, an event gone from the page) are not listed; only ones an admin hid are.
+export const listEvents = () => prisma.gameEvent.findMany({ where: { startsAt: { gte: new Date(Date.now() - 30 * 86_400_000) }, OR: [{ removedAt: null }, { locked: true }] }, orderBy: { startsAt: "asc" }, take: 600 });
 export const findEvent = (id: string) => prisma.gameEvent.findUnique({ where: { id } });
 type EventData = { title: string; kind: string; startsAt: Date; endsAt: Date | null; allDay: boolean; description: string; summary: string; items: string[]; imageUrl: string | null; videoUrl: string | null; reminderDays: number[] };
 export const createManualEvent = (sourceId: string, key: string, data: EventData) => prisma.gameEvent.create({ data: { ...data, sourceId, key, origin: "manual", locked: true } });

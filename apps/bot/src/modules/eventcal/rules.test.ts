@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
-import { eventHash, eventMessage, firstSentence, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
+import { eventHash, eventMessage, firstSentence, foldSeries, recurrenceText, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEvents, overviewHash, overviewLines, overviewMessage, whenText } from "./rules";
 
 const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   key: "u|2026-09-18T10:00:00.000Z",
@@ -286,5 +286,46 @@ describe("reminders", () => {
     const ge = { sourceId: "s", title: "t", kind: "event", allDay: true, start: "2026-10-23T00:00", end: "", description: "", summary: "", items: [], imageUrl: "", videoUrl: "" };
     expect(gameEventSchema.parse(ge).reminderDays).toEqual([]);
     expect(gameEventSchema.parse({ ...ge, reminderDays: [1, 5] }).reminderDays).toEqual([5, 1]);
+  });
+});
+
+describe("repeating series", () => {
+  const DAY = 86_400_000;
+  const weekly = (name: string, firstIso: string, count: number, step = 7): CalEvent[] =>
+    Array.from({ length: count }, (_, i) => ev({ key: `${name}|${i}`, summary: name, start: new Date(new Date(firstIso).getTime() + i * step * DAY), end: new Date(new Date(firstIso).getTime() + i * step * DAY + 3_600_000), categories: [] }));
+  const now = new Date("2026-10-15T12:00:00Z");
+
+  it("names how it repeats", () => {
+    expect(recurrenceText(new Date("2026-10-20T18:00:00Z"), 7 * DAY)).toBe("Every Tuesday");
+    expect(recurrenceText(new Date("2026-10-20T18:00:00Z"), 14 * DAY)).toBe("Every other Tuesday");
+    expect(recurrenceText(new Date("2026-10-20T18:00:00Z"), DAY)).toBe("Every day");
+    expect(recurrenceText(new Date("2026-10-20T18:00:00Z"), 10 * DAY)).toBe("Every 10 days");
+  });
+  it("folds many weekly occurrences into one entry that starts at the next one and runs to the last", () => {
+    const folded = foldSeries(weekly("Fight Nights", "2026-10-06T18:00:00Z", 12), now);
+    expect(folded).toHaveLength(1);
+    expect(folded[0]!.recurrence).toBe("Every Tuesday");
+    expect(folded[0]!.key).toBe("series|fightnights");
+    expect(folded[0]!.start.toISOString()).toBe("2026-10-20T18:00:00.000Z");
+    expect(folded[0]!.end!.toISOString()).toBe("2026-12-22T19:00:00.000Z");
+  });
+  it("folds each series on its own and leaves single events alone", () => {
+    const single = ev({ key: "single", summary: "Community Weekend" });
+    const out = foldSeries([...weekly("Fight Nights", "2026-10-06T18:00:00Z", 6), ...weekly("Emissaries", "2026-10-07T10:00:00Z", 5, 1), single], now);
+    expect(out.map((e) => e.summary).sort()).toEqual(["Community Weekend", "Emissaries", "Fight Nights"]);
+    expect(out.find((e) => e.summary === "Emissaries")!.recurrence).toBe("Every day");
+    expect(out.find((e) => e.key === "single")!.recurrence).toBeUndefined();
+  });
+  it("keeps two occurrences, uneven ones and article entries as they are", () => {
+    expect(foldSeries(weekly("Pair", "2026-10-06T18:00:00Z", 2), now)).toHaveLength(2);
+    const uneven = [ev({ key: "a", summary: "Odd", start: new Date("2026-10-01T00:00:00Z") }), ev({ key: "b", summary: "Odd", start: new Date("2026-10-08T00:00:00Z") }), ev({ key: "c", summary: "Odd", start: new Date("2026-10-30T00:00:00Z") })];
+    expect(foldSeries(uneven, now)).toHaveLength(3);
+    const art = [1, 2, 3].map((i) => ev({ key: `article|odd|${i}`, summary: "Odd", start: new Date(`2026-10-0${i}T00:00:00Z`) }));
+    expect(foldSeries(art, now)).toHaveLength(3);
+  });
+  it("shows a series as one line in the overview and the monthly summary", () => {
+    const [series] = foldSeries(weekly("Fight Nights", "2026-10-06T18:00:00Z", 8), now);
+    expect(overviewLines([series!])[0]).toBe("**Fight Nights** · Every Tuesday");
+    expect(monthlyLine({ event: series!, weekly: null }, "")).toBe("**Fight Nights** · Every Tuesday");
   });
 });

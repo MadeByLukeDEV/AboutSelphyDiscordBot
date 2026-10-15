@@ -214,6 +214,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-medium">{e.title}</span>
                               <Badge variant="secondary">{t(`kind.${e.kind}` as never)}</Badge>
+                              {e.recurrence && <Badge variant="outline">{e.recurrence}</Badge>}
                               {e.origin === "manual" && <Badge variant="outline">{t("manual")}</Badge>}
                               {e.locked && e.origin !== "manual" && <Badge variant="outline">{t("edited")}</Badge>}
                               {e.removed && <Badge variant="destructive">{t("hidden")}</Badge>}

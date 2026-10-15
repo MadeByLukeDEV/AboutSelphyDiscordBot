@@ -24,6 +24,8 @@ export type CalEvent = {
   items?: string[];
   /** Overrides the rules' lead times for this event (days before the start). */
   reminderDays?: number[];
+  /** "Every Tuesday": this one entry stands for a whole repeating series of the calendar. Not posted per occurrence. */
+  recurrence?: string;
   extra?: { summary: string; blurb: string; audience: "everyone" | "partners" | "unknown" };
 };
 

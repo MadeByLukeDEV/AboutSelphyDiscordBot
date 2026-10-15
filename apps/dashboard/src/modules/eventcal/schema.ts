@@ -32,6 +32,8 @@ export type EventRow = {
   removed: boolean;
   /** Overrides the rules' lead times for this event (days before the start). */
   reminderDays: number[];
+  /** "Every Tuesday": this entry stands for a whole repeating series of the calendar. */
+  recurrence: string | null;
 };
 
 /** A source (game) with its settings, status, pasted articles and stored events. */

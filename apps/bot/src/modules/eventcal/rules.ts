@@ -106,6 +106,7 @@ export function overviewEvents(events: readonly CalEvent[], now: Date, days: num
 /** One line per event ("**Name** · <start> - <end>"), at most `max`, with a note for the rest. */
 export function overviewLines(events: readonly CalEvent[], max = 25): string[] {
   const lines = events.slice(0, max).map((e) => {
+    if (e.recurrence) return `**${escapeText(truncate(e.summary, 60))}** · ${escapeText(e.recurrence)}`;
     const end = e.end && !e.allDay ? ` – <t:${unix(e.end)}:d>` : "";
     return `**${escapeText(truncate(e.summary, 60))}** · <t:${unix(e.start)}:d>${end}`;
   });
@@ -233,7 +234,8 @@ export function firstSentence(text: string, max: number): string {
 export function monthlyLine(entry: MonthlyEntry, blurb: string): string {
   const { event: e } = entry;
   let when: string;
-  if (entry.weekly !== null) when = `every ${WEEKDAY_NAMES[entry.weekly]}`;
+  if (e.recurrence) when = escapeText(e.recurrence);
+  else if (entry.weekly !== null) when = `every ${WEEKDAY_NAMES[entry.weekly]}`;
   else {
     const endsLater = e.end && Math.floor(e.end.getTime() / DAY) > Math.floor(e.start.getTime() / DAY);
     // A date-only range ends on its last day itself; a timed range ends when the clock says (so the last day is the day before midnight).
@@ -289,3 +291,44 @@ export const monthlyHash = (lines: readonly string[]): string => createHash("sha
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 export const monthLabel = (year: number, month: number): string => `${MONTH_NAMES[month - 1]} ${year}`;
+
+// ---- repeating series: dozens of occurrences of the same calendar entry become one entry
+
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+/** "Every day", "Every Tuesday", "Every other Tuesday" or "Every N days", from the gap between two occurrences. */
+export function recurrenceText(first: Date, gapMs: number): string {
+  const days = Math.round(gapMs / DAY);
+  if (days === 1) return "Every day";
+  if (days === 7) return `Every ${WEEKDAYS[first.getUTCDay()]}`;
+  if (days === 14) return `Every other ${WEEKDAYS[first.getUTCDay()]}`;
+  return `Every ${days} days`;
+}
+
+/**
+ * Turns calendar entries that repeat at an even interval (at least three of the same name) into ONE entry that stands for the series: it starts at
+ * the next occurrence, runs to the last one, and says how it repeats. Article entries and everything that doesn't repeat evenly are left as they are.
+ */
+export function foldSeries(events: readonly CalEvent[], now: Date): CalEvent[] {
+  const groups = new Map<string, CalEvent[]>();
+  const rest: CalEvent[] = [];
+  for (const e of events) {
+    if (e.key.startsWith("article|") || e.recurrence) rest.push(e);
+    else (groups.get(norm(e.summary)) ?? groups.set(norm(e.summary), []).get(norm(e.summary))!).push(e);
+  }
+  const out = [...rest];
+  for (const group of groups.values()) {
+    const sorted = [...group].sort((a, b) => a.start.getTime() - b.start.getTime());
+    const gap = sorted.length >= 3 ? sorted[1]!.start.getTime() - sorted[0]!.start.getTime() : 0;
+    const even = gap >= DAY - 3_600_000 && sorted.every((e, i) => i === 0 || Math.abs(e.start.getTime() - sorted[i - 1]!.start.getTime() - gap) <= 3_600_000);
+    if (!even) {
+      out.push(...sorted);
+      continue;
+    }
+    const upcoming = sorted.find((e) => (e.end ?? e.start).getTime() >= now.getTime()) ?? sorted[sorted.length - 1]!;
+    const last = sorted[sorted.length - 1]!;
+    out.push({ ...upcoming, key: `series|${norm(upcoming.summary)}`.slice(0, 160), end: last.end ?? last.start, recurrence: recurrenceText(upcoming.start, gap) });
+  }
+  return out.sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+

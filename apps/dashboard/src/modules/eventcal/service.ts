@@ -15,7 +15,7 @@ const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: 
 type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
 type EventModel = Awaited<ReturnType<typeof listEvents>>[number];
 
-const toEventRow = (e: EventModel): EventRow => ({ id: e.id, title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, description: e.description, summary: e.summary, items: e.items, imageUrl: e.imageUrl ?? "", videoUrl: e.videoUrl ?? "", origin: e.origin, locked: e.locked, removed: e.removedAt !== null, reminderDays: e.reminderDays });
+const toEventRow = (e: EventModel): EventRow => ({ id: e.id, title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, description: e.description, summary: e.summary, items: e.items, imageUrl: e.imageUrl ?? "", videoUrl: e.videoUrl ?? "", origin: e.origin, locked: e.locked, removed: e.removedAt !== null, reminderDays: e.reminderDays, recurrence: e.recurrence });
 
 const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[], items: ItemRow[], hasBackground: boolean): SourceRow => ({
   id: s.id,
