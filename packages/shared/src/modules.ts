@@ -51,7 +51,7 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   counting: { group: "community", commands: [], prefixes: [] },
   giveaways: { group: "engagement", commands: ["giveaway"], prefixes: ["gw"] },
   polls: { group: "engagement", commands: ["poll"], prefixes: ["pl"] },
-  suggestions: { group: "engagement", commands: ["suggest", "suggestion"], prefixes: ["sg"] },
+  suggestions: { group: "engagement", commands: ["suggest", "suggestion", "ideas"], prefixes: ["sg"] },
   tickets: { group: "engagement", commands: ["ticket"], prefixes: ["tk"] },
   logs: { group: "tools", commands: [], prefixes: [] },
   sticky: { group: "tools", commands: [], prefixes: [] },

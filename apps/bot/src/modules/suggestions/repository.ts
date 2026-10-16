@@ -58,3 +58,18 @@ export async function copyVotes(fromId: string, toId: string): Promise<number> {
 }
 
 export const setMergedInto = (id: string, number: number) => prisma.suggestion.update({ where: { id }, data: { mergedIntoNumber: number } });
+
+export type TopIdea = { number: number; content: string; status: string; score: number; channelId: string; messageId: string };
+
+/** The best-liked suggestions by net score (up minus down), merged duplicates left out. `status` "all" lists every status. */
+export async function topIdeas(status: "open" | "approved" | "implemented" | "all", take = 10): Promise<TopIdea[]> {
+  const rows = await prisma.$queryRaw<Array<{ number: number; content: string; status: string; score: number; channelId: string; messageId: string }>>`
+    SELECT s."number", s."content", s."status"::text AS "status", COALESCE(SUM(v."value"), 0)::int AS "score", s."channelId", s."messageId"
+    FROM "Suggestion" s
+    LEFT JOIN "SuggestionVote" v ON v."suggestionId" = s."id"
+    WHERE s."mergedIntoNumber" IS NULL AND s."status"::text <> 'denied' AND (${status} = 'all' OR s."status"::text = ${status})
+    GROUP BY s."id"
+    ORDER BY "score" DESC, s."createdAt" ASC
+    LIMIT ${take}`;
+  return rows;
+}

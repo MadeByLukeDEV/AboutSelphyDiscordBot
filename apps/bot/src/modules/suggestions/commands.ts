@@ -1,7 +1,9 @@
-import { InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type SlashCommandSubcommandBuilder } from "discord.js";
+import { EmbedBuilder, InteractionContextType, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, type SlashCommandSubcommandBuilder } from "discord.js";
 import { MAX_DECISION_REASON, MAX_SUGGESTION } from "@aboutselphy/shared/suggestions";
 import type { Command } from "../../commands/types";
-import { findByNumber } from "./repository";
+import { escapeText } from "../../lib/escape";
+import { findByNumber, topIdeas } from "./repository";
+import { ideaLines } from "./rules";
 import { decideSuggestion, submitSuggestion } from "./service";
 
 const NO_MENTIONS = { parse: [] as never[] };
@@ -51,4 +53,28 @@ function decisionOptions(s: SlashCommandSubcommandBuilder): SlashCommandSubcomma
     .addStringOption((o) => o.setName("reason").setDescription("Why (the author is told)").setMaxLength(MAX_DECISION_REASON));
 }
 
-export const suggestionCommands: Command[] = [suggest, suggestion];
+// Open to every member: the best-liked ideas, so people can see what the community wants.
+const ideas: Command = {
+  data: new SlashCommandBuilder()
+    .setName("ideas")
+    .setDescription("See the best-liked suggestions")
+    .setContexts(InteractionContextType.Guild)
+    .addStringOption((o) =>
+      o
+        .setName("show")
+        .setDescription("Which suggestions (default: still open)")
+        .addChoices({ name: "Still open", value: "open" }, { name: "Approved", value: "approved" }, { name: "Implemented", value: "implemented" }, { name: "All", value: "all" }),
+    )
+    .toJSON(),
+  async execute(i) {
+    if (!i.inCachedGuild()) return;
+    await i.deferReply({ flags: MessageFlags.Ephemeral });
+    const show = (i.options.getString("show") ?? "open") as "open" | "approved" | "implemented" | "all";
+    const rows = await topIdeas(show);
+    if (rows.length === 0) return void (await i.editReply({ content: "There are no suggestions to show yet." }));
+    const embed = new EmbedBuilder().setColor(0x00ffa8).setTitle("Best-liked suggestions").setDescription(ideaLines(rows, i.guildId, escapeText).join("\n").slice(0, 4000));
+    await i.editReply({ embeds: [embed], allowedMentions: NO_MENTIONS });
+  },
+};
+
+export const suggestionCommands: Command[] = [suggest, suggestion, ideas];

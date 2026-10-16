@@ -1059,7 +1059,7 @@ Decided 2026-10-08:
     the normal denial (reason `Duplicate of #N`, post edited, author told), then its votes are copied to the target for
     members who hadn't voted there (`createMany skipDuplicates`), `Suggestion.mergedIntoNumber` is set and the target post
     refreshed. Both are on the `/suggestions` list per row (`suggestion-extras.tsx`), audited actions.
-  - [ ] A leaderboard of ideas.
+  - [x] **`/ideas`** (2026-11-10, `feature_suggestion-top`, no migration; **not tried live yet**): open to every member, a private list of the ten best-liked suggestions by net score (up minus down; `topIdeas`, one SQL query; merged duplicates and denied ones are left out), filter open (default) / approved / implemented / all; medals, signed score, escaped excerpt and a link to each post (`ideaLines`, tested). Under the `suggestions` module switch.
 - [~] Polls (2026-10-19, `feature_polls`, migration `20261019180000_polls` applied; **not tried
       live yet**; Tier B)
   - Bot (`modules/polls/`): `/poll question options duration multiple` (team; options split

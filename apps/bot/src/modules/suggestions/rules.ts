@@ -64,3 +64,16 @@ export function cooldownRemaining(lastAt: Date | null, now: Date, cooldownSecond
   if (!lastAt || cooldownSeconds <= 0) return 0;
   return Math.max(0, Math.ceil((lastAt.getTime() + cooldownSeconds * 1000 - now.getTime()) / 1000));
 }
+
+const MEDALS = ["🥇", "🥈", "🥉"];
+
+/** The lines of the "top ideas" list: rank, score, a short escaped excerpt and a link to the post. */
+export function ideaLines(ideas: ReadonlyArray<{ number: number; content: string; score: number; channelId: string; messageId: string }>, guildId: string, escape: (text: string) => string): string[] {
+  return ideas.map((idea, i) => {
+    const text = escape(idea.content.replace(/\s+/g, " ").trim());
+    const excerpt = [...text].length > 90 ? `${[...text].slice(0, 89).join("")}…` : text;
+    const rank = MEDALS[i] ?? `${i + 1}.`;
+    const score = idea.score > 0 ? `+${idea.score}` : String(idea.score);
+    return `${rank} **${score}** · [#${idea.number}](https://discord.com/channels/${guildId}/${idea.channelId}/${idea.messageId}) ${excerpt}`;
+  });
+}
