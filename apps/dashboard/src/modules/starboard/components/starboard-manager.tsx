@@ -13,6 +13,7 @@ import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { EmoteInsert } from "@/components/form/emote-insert";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { MultiPicker, type PickItem } from "@/components/form/multi-picker";
@@ -70,8 +71,9 @@ export function StarboardManager({ initial, posts, channels }: { initial: Starbo
           <div className="flex flex-wrap gap-4">
             <Field data-invalid={Boolean(errors.emoji) || undefined}>
               <FieldLabel htmlFor="sb-emoji">{t("form.emoji")}</FieldLabel>
-              <Input id="sb-emoji" className="max-w-[6rem] text-center text-lg" maxLength={16} aria-invalid={Boolean(errors.emoji) || undefined} {...form.register("emoji")} />
+              <Input id="sb-emoji" className="max-w-[14rem] text-center text-lg" maxLength={64} aria-invalid={Boolean(errors.emoji) || undefined} {...form.register("emoji")} />
               <FieldDescription>{t("form.emojiHelp")}</FieldDescription>
+              <EmoteInsert targetId="sb-emoji" />
               {errors.emoji && <FieldError>{te("badEmoji")}</FieldError>}
             </Field>
             <Field data-invalid={Boolean(errors.threshold) || undefined}>

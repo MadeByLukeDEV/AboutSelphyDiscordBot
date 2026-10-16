@@ -1676,7 +1676,7 @@
       "channelHelp": "Wohin die markierten Nachrichten gepostet werden. Der Bot braucht dort das Recht, Nachrichten und Embeds zu senden.",
       "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar. Der gespeicherte Kanal bleibt.",
       "emoji": "Reaktion",
-      "emojiHelp": "Ein Standard-Emoji.",
+      "emojiHelp": "Ein normales Emoji oder ein Emote dieses Servers (über den Emote-Knopf).",
       "threshold": "Benötigte Reaktionen",
       "thresholdHelp": "{min} bis {max}. Bots zählen nie.",
       "allowSelf": "Reaktion des Autors mitzählen",

@@ -1,12 +1,14 @@
 import { EmbedBuilder } from "discord.js";
-import { normalizeEmoji } from "@aboutselphy/shared/starboard";
+import { customEmoteId, normalizeEmoji } from "@aboutselphy/shared/starboard";
 import { escapeText, truncate } from "../../lib/escape";
 
 // What counts as a star and what the re-post looks like. Pure, so the rules are testable. The
 // message text is escaped (it can't ping or link) and the author is shown as a mention plus name.
 
-/** Does a reaction's emoji match the configured one? Only unicode emoji are supported. */
+/** Does a reaction's emoji match the configured one? A unicode emoji by its characters, a server emote by its id (its name may change). */
 export function isStarEmoji(configured: string, reaction: { id: string | null; name: string | null }): boolean {
+  const wanted = customEmoteId(configured);
+  if (wanted !== null) return reaction.id === wanted;
   return reaction.id === null && reaction.name !== null && normalizeEmoji(reaction.name) === normalizeEmoji(configured);
 }
 

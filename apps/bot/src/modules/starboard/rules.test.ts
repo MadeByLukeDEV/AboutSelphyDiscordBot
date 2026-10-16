@@ -29,6 +29,9 @@ describe("isStarEmoji", () => {
     expect(isStarEmoji("\u2B50", { id: null, name: "\u2B50" })).toBe(true);
     expect(isStarEmoji("\u2B50\uFE0F", { id: null, name: "\u2B50" })).toBe(true);
     expect(isStarEmoji("\u2B50", { id: null, name: "\u{1F525}" })).toBe(false);
+    expect(isStarEmoji("<:gg:123456789012345678>", { id: "123456789012345678", name: "renamed" })).toBe(true);
+    expect(isStarEmoji("<:gg:123456789012345678>", { id: "223456789012345678", name: "gg" })).toBe(false);
+    expect(isStarEmoji("<:gg:123456789012345678>", { id: null, name: "gg" })).toBe(false);
     expect(isStarEmoji("\u2B50", { id: "123456789012345678", name: "\u2B50" })).toBe(false);
     expect(isStarEmoji("\u2B50", { id: null, name: null })).toBe(false);
   });

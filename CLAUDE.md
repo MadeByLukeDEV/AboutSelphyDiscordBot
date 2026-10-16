@@ -1103,7 +1103,7 @@ Decided 2026-10-08:
     `isIgnoredChannel` (pure, tested) makes the reaction handler skip them. `/starboard random|stats|top` (every member, switched with the
     `starboard` module): a random post that is on the board (saved excerpt, escaped, link, nothing pings), a member's posts and total stars,
     and the top ten authors, all from `StarboardPost` rows that currently have a re-post.
-  - [ ] Custom server emoji.
+  - [x] **Custom server emote** (2026-11-11, `feature_starboard-custom-emoji`, migration `20261116280000_starboard_custom_emoji` widens the column to 64; **not tried live yet**): the starboard emoji may be one of the server's emotes written `<:name:id>` / `<a:name:id>` (the Emote button on `/starboard` inserts it; `isStarboardEmoji`, `customEmoteId` in shared). A reaction matches by **id** (`isStarEmoji`), so renaming the emote changes nothing; a unicode emoji still matches by its characters.
 - [~] Sticky messages (2026-10-23, `feature_sticky-publish`, migration `20261023180000_sticky_publish`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/sticky/`): up to 10 channels, each with a staff-written text kept at the bottom as

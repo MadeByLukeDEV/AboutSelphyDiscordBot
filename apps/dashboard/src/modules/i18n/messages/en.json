@@ -1676,7 +1676,7 @@
       "channelHelp": "Where starred messages are re-posted. The bot needs to send messages and embeds there.",
       "botOffline": "The bot is offline, so the channel list isn't available. The saved channel is kept.",
       "emoji": "Reaction",
-      "emojiHelp": "One standard emoji.",
+      "emojiHelp": "One standard emoji, or one of this server's emotes (use the Emote button).",
       "threshold": "Reactions needed",
       "thresholdHelp": "{min} to {max}. Bots never count.",
       "allowSelf": "Count the author's own reaction",

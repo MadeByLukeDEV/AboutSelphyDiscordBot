@@ -1,0 +1,1 @@
+ALTER TABLE "StarboardConfig" ALTER COLUMN "emoji" TYPE VARCHAR(64);

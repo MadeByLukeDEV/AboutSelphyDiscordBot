@@ -18,6 +18,17 @@ export function isSingleEmoji(value: string): boolean {
   return segments.length === 1;
 }
 
+/** A server emote as the dashboard's picker writes it: <:name:id> or <a:name:id>. */
+const CUSTOM_EMOTE = /^<(a?):([A-Za-z0-9_]{2,32}):(\d{17,20})>$/;
+
+/** The id of a server emote value, or null for a unicode emoji. */
+export function customEmoteId(value: string): string | null {
+  return CUSTOM_EMOTE.exec(value.trim())?.[3] ?? null;
+}
+
+/** A unicode emoji or one server emote. */
+export const isStarboardEmoji = (value: string): boolean => isSingleEmoji(value) || CUSTOM_EMOTE.test(value.trim());
+
 export const MAX_IGNORED = 30;
 
 const snowflake = z.string().regex(/^\d{17,20}$/);
@@ -27,7 +38,7 @@ export const starboardSettingsSchema = z
     enabled: z.boolean(),
     /** "" = none. */
     channelId: z.union([z.literal(""), snowflake]),
-    emoji: z.string().max(16).refine(isSingleEmoji, "emoji"),
+    emoji: z.string().max(64).refine(isStarboardEmoji, "emoji"),
     threshold: z.number().int().min(MIN_THRESHOLD).max(MAX_THRESHOLD),
     allowSelf: z.boolean(),
     /** Channels or categories that never reach the starboard. */

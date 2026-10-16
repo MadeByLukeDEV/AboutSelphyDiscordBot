@@ -822,8 +822,8 @@ model StarboardConfig {
   enabled   Boolean  @default(false)
   /// Where starred messages are re-posted.
   channelId String?  @db.VarChar(20)
-  /// One unicode emoji.
-  emoji     String   @default("⭐") @db.VarChar(16)
+  /// One unicode emoji, or one of the server's emotes as <:name:id> / <a:name:id>.
+  emoji     String   @default("⭐") @db.VarChar(64)
   /// Reactions needed (not counting the bot, nor the author unless allowSelf).
   threshold Int      @default(3)
   allowSelf Boolean  @default(false)
