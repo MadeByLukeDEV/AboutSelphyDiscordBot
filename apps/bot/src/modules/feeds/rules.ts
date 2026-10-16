@@ -46,11 +46,11 @@ export function isDue(feed: { lastCheckedAt: Date | null; intervalMinutes: numbe
 const fold = (text: string): string => text.normalize("NFKC").toLowerCase();
 
 /**
- * Does an item pass a feed's keyword filters? Words are plain text (never patterns), compared on the title after NFKC and lower case.
+ * Does an item pass a feed's keyword filters? Words are plain text (never patterns), compared on the title (and the description when the caller passes it) after NFKC and lower case.
  * Any exclude word rejects; with include words at least one must be present.
  */
-export function passesFilter(title: string, include: readonly string[], exclude: readonly string[]): boolean {
-  const t = fold(title);
+export function passesFilter(title: string, include: readonly string[], exclude: readonly string[], description = ""): boolean {
+  const t = fold(description ? `${title} ${description}` : title);
   if (exclude.some((w) => w.trim() !== "" && t.includes(fold(w)))) return false;
   const wanted = include.filter((w) => w.trim() !== "");
   return wanted.length === 0 || wanted.some((w) => t.includes(fold(w)));

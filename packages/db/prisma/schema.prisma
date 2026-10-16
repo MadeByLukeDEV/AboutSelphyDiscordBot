@@ -1099,6 +1099,8 @@ model FeedSource {
   excludeWords    String[]  @default([])
   /// Post a link embed (title, source, time) instead of the plain text message.
   useEmbed        Boolean   @default(false)
+  /// The keyword filters also look at the item's description, not only its title.
+  filterDescription Boolean @default(false)
   enabled         Boolean   @default(true)
   /// false until the first successful check, which only remembers what is there (nothing is announced).
   baselined       Boolean   @default(false)

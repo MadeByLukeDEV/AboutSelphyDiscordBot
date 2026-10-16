@@ -122,6 +122,9 @@ describe("feed input", () => {
 
 describe("keyword filters and embeds", () => {
   it("lets everything through without words", () => {
+    expect(passesFilter("Weekly news", ["minecraft"], [], "All about Minecraft this week")).toBe(true);
+    expect(passesFilter("Weekly news", ["minecraft"], [])).toBe(false);
+    expect(passesFilter("Weekly news", [], ["sponsored"], "A Sponsored post")).toBe(false);
     expect(passesFilter("Anything", [], [])).toBe(true);
   });
   it("needs an include word when there are some, any case", () => {

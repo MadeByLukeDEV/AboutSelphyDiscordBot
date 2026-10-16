@@ -20,7 +20,7 @@ import { checkFeedAction, removeFeedAction, saveFeedAction } from "../actions";
 import type { FeedRow } from "../schema";
 import { EmoteInsert } from "@/components/form/emote-insert";
 
-type FormValues = { name: string; url: string; channelId: string; pingRoleId: string; messageTemplate: string; intervalMinutes: number; includeText: string; excludeText: string; useEmbed: boolean; enabled: boolean };
+type FormValues = { name: string; url: string; channelId: string; pingRoleId: string; messageTemplate: string; intervalMinutes: number; includeText: string; excludeText: string; useEmbed: boolean; filterDescription: boolean; enabled: boolean };
 
 /** The feeds with add, edit, check now and remove. State flows in as props; changes call router.refresh(). */
 export function FeedsManager({ feeds, channels, roles, ready }: { feeds: FeedRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; ready: boolean }) {
@@ -134,8 +134,8 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
     defaultValues: row
-      ? { name: row.name, url: "", channelId: row.channelId, pingRoleId: row.pingRoleId ?? "", messageTemplate: row.messageTemplate, intervalMinutes: row.intervalMinutes, includeText: row.includeWords.join("\n"), excludeText: row.excludeWords.join("\n"), useEmbed: row.useEmbed, enabled: row.enabled }
-      : { name: "", url: "", channelId: "", pingRoleId: "", messageTemplate: DEFAULT_FEED_TEMPLATE, intervalMinutes: DEFAULT_INTERVAL_MINUTES, includeText: "", excludeText: "", useEmbed: false, enabled: true },
+      ? { name: row.name, url: "", channelId: row.channelId, pingRoleId: row.pingRoleId ?? "", messageTemplate: row.messageTemplate, intervalMinutes: row.intervalMinutes, includeText: row.includeWords.join("\n"), excludeText: row.excludeWords.join("\n"), useEmbed: row.useEmbed, filterDescription: row.filterDescription, enabled: row.enabled }
+      : { name: "", url: "", channelId: "", pingRoleId: "", messageTemplate: DEFAULT_FEED_TEMPLATE, intervalMinutes: DEFAULT_INTERVAL_MINUTES, includeText: "", excludeText: "", useEmbed: false, filterDescription: false, enabled: true },
   });
   const { errors } = form.formState;
 
@@ -204,6 +204,13 @@ function FeedForm({ row, channels, roles, onDone }: { row: FeedRow | null; chann
           <FieldLabel htmlFor="fd-exclude">{t("exclude")}</FieldLabel>
           <Textarea id="fd-exclude" rows={2} {...form.register("excludeText")} />
           <FieldDescription>{t("excludeHelp", { max: MAX_FILTER_WORDS })}</FieldDescription>
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="filterDescription" render={({ field }) => <Switch id="fd-filter-desc" checked={field.value} onCheckedChange={field.onChange} aria-describedby="fd-filter-desc-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="fd-filter-desc">{t("filterDescription")}</FieldLabel>
+            <FieldDescription id="fd-filter-desc-help">{t("filterDescriptionHelp")}</FieldDescription>
+          </div>
         </Field>
         <Field orientation="horizontal">
           <Controller control={form.control} name="useEmbed" render={({ field }) => <Switch id="fd-embed" checked={field.value} onCheckedChange={field.onChange} aria-describedby="fd-embed-help" />} />

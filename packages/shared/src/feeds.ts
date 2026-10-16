@@ -61,6 +61,8 @@ export const feedInput = z
     excludeWords: z.array(z.string().trim().min(1).max(MAX_FILTER_WORD)).max(MAX_FILTER_WORDS).default([]),
     /** A link embed instead of the plain message. */
     useEmbed: z.boolean().default(false),
+    /** The keyword filters also look at the item's description. */
+    filterDescription: z.boolean().default(false),
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {

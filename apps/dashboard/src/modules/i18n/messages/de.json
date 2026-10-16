@@ -2549,7 +2549,9 @@
       "cancel": "Abbrechen",
       "save": "Speichern",
       "saving": "Speichern…",
-      "saved": "Gespeichert"
+      "saved": "Gespeichert",
+      "filterDescription": "Filter lesen auch die Beschreibung",
+      "filterDescriptionHelp": "Die Wörter zum Einschließen und Ausschließen werden auch in der Beschreibung des Eintrags gesucht, nicht nur im Titel."
     },
     "errors": {
       "forbidden": "Du hast darauf keinen Zugriff.",

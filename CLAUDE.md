@@ -1469,7 +1469,8 @@ Decided 2026-10-08:
     compared after NFKC + lower case (`passesFilter`, pure, tested; never patterns); items that don't pass are **remembered silently**.
     `useEmbed` posts a link embed (`feedEmbedData`: escaped title as the link text, http(s)-only link, source name, time) with only the
     role ping as text. Words are typed one per line on `/feeds`.
-  - [ ] Several items in one message, filters on the description.
+  - [x] **Description filters** (2026-11-10, `feature_feed-description-filter`, migration `20261116220000_feed_description_filter`; **not tried live yet**): `FeedSource.filterDescription` (default off, so existing filters keep their meaning) makes the include/exclude words also match the item's description (`parseFeed` adds `description`: RSS description/content:encoded or Atom summary/content, tags removed, cut to 2000, only compared, never shown).
+  - [ ] Several items in one message.
 - [~] Event calendar (2026-11-13, `feature_event-calendar`, migrations `20261113100000_event_calendar` and `20261113110000_event_rule_seeded`; **not tried
       live yet**; asked for by the user: Sea of Thieves Twitch Drops and other events, filtered, one message per event plus an overview)
   - The source is a **public iCalendar feed**, not the news page (seaofthieves.com sits behind an Azure WAF challenge that blocks plain fetches). Default:

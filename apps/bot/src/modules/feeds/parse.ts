@@ -4,7 +4,7 @@ import { XMLParser } from "fast-xml-parser";
 // treated as untrusted text: sizes are capped, odd shapes are skipped, and nothing is ever executed.
 // The XML parser doesn't fetch external entities or resolve DTDs.
 
-export type FeedItemData = { guid: string; title: string; link: string; publishedAt: Date | null };
+export type FeedItemData = { guid: string; title: string; link: string; publishedAt: Date | null; /** Plain text of the item's description or content (tags removed, cut), used only by the keyword filters. */ description?: string };
 
 const MAX_ITEMS = 50;
 const cut = (value: string, max: number) => value.slice(0, max);
@@ -46,6 +46,11 @@ function atomLink(node: unknown): string {
   return "";
 }
 
+/** Description text without markup, cut: it is only ever compared, never shown. */
+function plain(value: string): string {
+  return cut(value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(), 2000);
+}
+
 function date(value: string): Date | null {
   if (!value) return null;
   const d = new Date(value);
@@ -64,14 +69,14 @@ export function parseFeed(xml: string): FeedItemData[] {
       const link = text(raw["link"]);
       const title = text(raw["title"]);
       const guid = text(raw["guid"]) || link || title;
-      if (guid) out.push({ guid: cut(guid, 300), title: cut(title, 300), link: cut(link, 500), publishedAt: date(text(raw["pubDate"]) || text(raw["dc:date"])) });
+      if (guid) out.push({ guid: cut(guid, 300), title: cut(title, 300), link: cut(link, 500), publishedAt: date(text(raw["pubDate"]) || text(raw["dc:date"])), description: plain(text(raw["description"]) || text(raw["content:encoded"])) });
     }
   } else if (atom) {
     for (const raw of arrayOf(atom.entry as Record<string, unknown> | Record<string, unknown>[])) {
       const link = atomLink(raw["link"]);
       const title = text(raw["title"]);
       const guid = text(raw["id"]) || link || title;
-      if (guid) out.push({ guid: cut(guid, 300), title: cut(title, 300), link: cut(link, 500), publishedAt: date(text(raw["published"]) || text(raw["updated"])) });
+      if (guid) out.push({ guid: cut(guid, 300), title: cut(title, 300), link: cut(link, 500), publishedAt: date(text(raw["published"]) || text(raw["updated"])), description: plain(text(raw["summary"]) || text(raw["content"])) });
     }
   } else {
     throw new Error("not a feed");

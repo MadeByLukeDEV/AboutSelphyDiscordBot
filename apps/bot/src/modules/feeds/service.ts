@@ -62,7 +62,7 @@ export function checkFeed(guild: Guild, feed: FeedSource): Promise<FeedCheckResp
 
       const selected = selectNew(items, seen, new Date());
       // Keyword filters: an item that doesn't pass is remembered silently, so it is never reconsidered.
-      const toPost = selected.toPost.filter((i) => passesFilter(i.title, feed.includeWords, feed.excludeWords));
+      const toPost = selected.toPost.filter((i) => passesFilter(i.title, feed.includeWords, feed.excludeWords, feed.filterDescription ? (i.description ?? "") : ""));
       const toRemember = [...selected.toRemember, ...selected.toPost.filter((i) => !toPost.includes(i))];
       if (toRemember.length > 0) await rememberMany(feed.id, toRemember.map((i) => i.guid));
       const channel = toPost.length > 0 ? await guild.channels.fetch(feed.channelId).catch(() => null) : null;

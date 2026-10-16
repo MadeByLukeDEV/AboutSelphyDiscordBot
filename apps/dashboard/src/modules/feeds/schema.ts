@@ -12,6 +12,7 @@ export type FeedRow = {
   includeWords: string[];
   excludeWords: string[];
   useEmbed: boolean;
+  filterDescription: boolean;
   enabled: boolean;
   baselined: boolean;
   lastCheckedAt: string | null;
