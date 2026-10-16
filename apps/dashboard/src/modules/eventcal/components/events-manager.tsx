@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { Plus, RotateCcw } from "lucide-react";
+import { Plus, RotateCcw, History } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { EVENT_KINDS, eventRuleSchema, MAX_EVENT_RULES, MAX_RULE_TERMS } from "@aboutselphy/shared/eventcal";
@@ -18,6 +18,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { deleteEventRuleAction, repostEventAction, saveEventRuleAction } from "../actions";
 import type { EventRuleRow, PostedEventRow, SourceRow } from "../schema";
+import { EmptyState } from "@/components/page/empty-state";
+import { PageTabs } from "@/components/page/page-tabs";
 import { SourcesManager } from "./sources-manager";
 
 /** One term per line (or separated by commas) -> clean list, no duplicates. */
@@ -35,7 +37,7 @@ const parseTerms = (text: string): string[] => {
 };
 
 /** The games (sources) with their events, the posting rules, and the list of posted events. State flows in as props; changes call router.refresh(). */
-export function EventsManager({ sources, rules, channels, roles, posted }: { sources: SourceRow[]; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; posted: PostedEventRow[] }) {
+export function EventsManager({ sources, rules, channels, roles, posted, initialTab }: { sources: SourceRow[]; rules: EventRuleRow[]; channels: GuildChannel[] | null; roles: GuildRole[] | null; posted: PostedEventRow[]; initialTab?: string }) {
   const t = useTranslations("Events");
   const te = useTranslations("Events.errors");
   const format = useFormatter();
@@ -75,33 +77,13 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
 
   return (
     <div className="flex flex-col gap-fluid">
+      <PageTabs
+        initial={initialTab}
+        tabs={[
+          { id: "games", label: t("tabs.games"), count: sources.length, content: (
       <SourcesManager sources={sources} rules={rules} channelOptions={channelOptions} roleOptions={(roles ?? []).map((r) => ({ value: r.id, label: r.name }))} channelsReady={channels !== null} />
-
-      {posted.length > 0 && (
-        <section aria-labelledby="ev-posted" className="surface flex flex-col gap-3 p-5">
-          <div className="flex flex-col gap-1">
-            <h2 id="ev-posted" className="text-fluid-lg font-bold">
-              {t("posted.title")}
-            </h2>
-            <p className="max-w-prose text-sm text-muted-foreground">{t("posted.intro")}</p>
-          </div>
-          <ul className="flex flex-col divide-y text-sm">
-            {posted.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span className="min-w-0 truncate font-medium">{p.title}</span>
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  {p.rule} · {when(p.startsAt)}
-                  <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => repost(p.id)}>
-                    <RotateCcw aria-hidden />
-                    {t("posted.repost")}
-                  </Button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
+          ) },
+          { id: "rules", label: t("tabs.rules"), count: rules.length, content: (
       <section aria-labelledby="ev-rules" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
@@ -144,6 +126,38 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
           </ul>
         )}
       </section>
+          ) },
+          { id: "posted", label: t("tabs.posted"), count: posted.length, content: (
+            posted.length > 0 ? (
+        <section aria-labelledby="ev-posted" className="surface flex flex-col gap-3 p-5">
+          <div className="flex flex-col gap-1">
+            <h2 id="ev-posted" className="text-fluid-lg font-bold">
+              {t("posted.title")}
+            </h2>
+            <p className="max-w-prose text-sm text-muted-foreground">{t("posted.intro")}</p>
+          </div>
+          <ul className="flex flex-col divide-y text-sm">
+            {posted.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <span className="min-w-0 truncate font-medium">{p.title}</span>
+                <span className="flex items-center gap-2 text-muted-foreground">
+                  {p.rule} · {when(p.startsAt)}
+                  <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => repost(p.id)}>
+                    <RotateCcw aria-hidden />
+                    {t("posted.repost")}
+                  </Button>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      
+          ) : (
+            <EmptyState icon={History} title={t("posted.emptyTitle")} description={t("posted.emptyBody")} />
+          )
+          ) },
+        ]}
+      />
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
         <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">

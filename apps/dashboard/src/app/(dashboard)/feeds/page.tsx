@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getFeedsPage } from "@/modules/feeds";
 import { FeedsManager } from "@/modules/feeds/components/feeds-manager";
+import { PageHeader } from "@/components/page/page-header";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("Feeds"))("title") };
@@ -18,10 +19,7 @@ export default async function FeedsPage() {
 
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
-      </header>
+      <PageHeader title={t("title")} description={t("intro")} />
       <FeedsManager feeds={feeds} channels={channels} roles={roles} ready={ready} />
     </>
   );

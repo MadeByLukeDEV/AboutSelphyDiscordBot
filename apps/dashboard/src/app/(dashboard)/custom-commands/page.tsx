@@ -4,6 +4,7 @@ import { MAX_CUSTOM_COMMANDS } from "@aboutselphy/shared/custom-commands";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getCustomCommandsPage } from "@/modules/custom-commands";
 import { CustomCommandsManager } from "@/modules/custom-commands/components/custom-commands-manager";
+import { PageHeader } from "@/components/page/page-header";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("CustomCommands"))("title") };
@@ -19,10 +20,7 @@ export default async function CustomCommandsPage() {
 
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
-      </header>
+      <PageHeader title={t("title")} description={t("intro")} />
       <CustomCommandsManager commands={commands} max={MAX_CUSTOM_COMMANDS} />
     </>
   );

@@ -56,7 +56,8 @@
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
-      "moreDescription": "Alle Seiten des Dashboards, gruppiert."
+      "moreDescription": "Alle Seiten des Dashboards, gruppiert.",
+      "breadcrumb": "Du bist hier"
     },
     "account": {
       "open": "Kontomenü öffnen",
@@ -69,7 +70,14 @@
       "admin": "Admin",
       "moderator": "Moderator"
     },
-    "skipToContent": "Zum Inhalt springen"
+    "skipToContent": "Zum Inhalt springen",
+    "palette": {
+      "title": "Zu einer Seite springen",
+      "description": "Tippe, um eine Seite zu finden, wähle mit den Pfeiltasten und öffne sie mit Enter.",
+      "placeholder": "Seiten suchen",
+      "empty": "Keine Seite passt dazu.",
+      "open": "Seiten suchen (Strg K)"
+    }
   },
   "ThemeToggle": {
     "label": "Design",
@@ -95,6 +103,37 @@
       "none": "Keine Fälle in den letzten 30 Tagen.",
       "automatic": "Automatisch (Bot)",
       "cases": "{count, plural, one {# Fall} other {# Fälle}}"
+    },
+    "quick": {
+      "title": "Schnellzugriff",
+      "member": {
+        "title": "Mitglied suchen",
+        "hint": "Verlauf und Aktionen"
+      },
+      "cases": {
+        "title": "Fälle",
+        "hint": "Verwarnungen, Banns, Notizen"
+      },
+      "announcement": {
+        "title": "Ankündigungen",
+        "hint": "Schreiben und planen"
+      },
+      "tickets": {
+        "title": "Tickets",
+        "hint": "Offene Anfragen"
+      }
+    },
+    "attention": {
+      "title": "Braucht dich",
+      "intro": "Was auf eine Entscheidung wartet und was gerade läuft.",
+      "allClear": "Nichts wartet auf dich.",
+      "items": {
+        "screening": "{count, plural, one {Mitglied wartet auf Prüfung} other {Mitglieder warten auf Prüfung}}",
+        "tickets": "{count, plural, one {Ticket nicht übernommen} other {Tickets nicht übernommen}}",
+        "suggestions": "{count, plural, one {offener Vorschlag} other {offene Vorschläge}}",
+        "giveaways": "{count, plural, one {Gewinnspiel läuft} other {Gewinnspiele laufen}}",
+        "polls": "{count, plural, one {Umfrage läuft} other {Umfragen laufen}}"
+      }
     }
   },
   "BotStatus": {
@@ -1145,7 +1184,9 @@
       "save": "Speichern",
       "saving": "Speichert…",
       "saved": "Gespeichert",
-      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+      "unsaved": "Du hast ungespeicherte Änderungen",
+      "discard": "Verwerfen"
     },
     "errors": {
       "forbidden": "Nur Admins können diese Einstellungen ändern.",
@@ -1207,6 +1248,11 @@
       "label": "Server-weiter XP-Boost (Prozent, bis)",
       "help": "Zum Beispiel 200 bis Sonntagabend = doppelte XP für alle. 100 = aus. Die Endzeit ist in UTC. Er addiert sich nicht zu Rollen-Boosts: Der höhere zählt.",
       "needsEnd": "Wähle, wann der Boost endet."
+    },
+    "tabs": {
+      "xp": "XP sammeln",
+      "levelups": "Level-Ups und Belohnungen",
+      "board": "Rangliste"
     }
   },
   "Tickets": {
@@ -3127,7 +3173,9 @@
       "intro": "Die letzten Events, die der Bot gepostet hat. Neu posten schreibt das Event mit dem aktuellen Text und der KI-Zusammenfassung noch einmal und löscht die alte Nachricht, zum Beispiel nachdem du den Artikel oder den KI-Schlüssel hinzugefügt hast.",
       "repost": "Neu posten",
       "done": "Neu gepostet.",
-      "gone": "Der Kalender kennt dieses Event nicht mehr."
+      "gone": "Der Kalender kennt dieses Event nicht mehr.",
+      "emptyTitle": "Noch nichts gepostet",
+      "emptyBody": "Ankündigungen, die der Bot für deine Regeln postet, erscheinen hier, mit einem Knopf zum erneuten Posten."
     },
     "article": {
       "title": "Monatlicher News-Artikel",
@@ -3214,6 +3262,11 @@
       "pictureType": "Nutze ein PNG-, JPEG- oder WebP-Bild.",
       "pictureSize": "Das Bild darf höchstens 3 MB groß sein.",
       "pictureDimensions": "Das Bild muss auf jeder Seite 64 bis 4096 Pixel haben."
+    },
+    "tabs": {
+      "games": "Spiele",
+      "rules": "Regeln",
+      "posted": "Gepostet"
     }
   },
   "Verification": {

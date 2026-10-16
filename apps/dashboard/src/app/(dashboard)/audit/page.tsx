@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { getAuditPage, splitAction } from "@/modules/audit";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page/page-header";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("Audit"))("title") };
@@ -28,10 +29,7 @@ export default async function AuditPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
-      </header>
+      <PageHeader title={t("title")} description={t("intro")} />
 
       <nav aria-label={t("filter")} className="flex flex-wrap gap-2">
         <Link href="/audit" className={cn(buttonVariants({ variant: area === null ? "default" : "outline", size: "sm" }))}>

@@ -56,7 +56,8 @@
       },
       "more": "More",
       "moreTitle": "All pages",
-      "moreDescription": "Every page of the dashboard, grouped."
+      "moreDescription": "Every page of the dashboard, grouped.",
+      "breadcrumb": "You are here"
     },
     "account": {
       "open": "Open account menu",
@@ -69,7 +70,14 @@
       "admin": "Admin",
       "moderator": "Moderator"
     },
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "palette": {
+      "title": "Jump to a page",
+      "description": "Type to find a page, use the arrow keys and press Enter to open it.",
+      "placeholder": "Search pages",
+      "empty": "No page matches that.",
+      "open": "Search pages (Ctrl K)"
+    }
   },
   "ThemeToggle": {
     "label": "Theme",
@@ -95,6 +103,37 @@
       "none": "No cases in the last 30 days.",
       "automatic": "Automatic (bot)",
       "cases": "{count, plural, one {# case} other {# cases}}"
+    },
+    "quick": {
+      "title": "Quick actions",
+      "member": {
+        "title": "Look up a member",
+        "hint": "History and actions"
+      },
+      "cases": {
+        "title": "Cases",
+        "hint": "Warnings, bans, notes"
+      },
+      "announcement": {
+        "title": "Announcements",
+        "hint": "Write and schedule"
+      },
+      "tickets": {
+        "title": "Tickets",
+        "hint": "Open requests"
+      }
+    },
+    "attention": {
+      "title": "Needs your attention",
+      "intro": "Things waiting for a decision, and what is running right now.",
+      "allClear": "Nothing is waiting for you.",
+      "items": {
+        "screening": "{count, plural, one {member waiting to be screened} other {members waiting to be screened}}",
+        "tickets": "{count, plural, one {unclaimed ticket} other {unclaimed tickets}}",
+        "suggestions": "{count, plural, one {open suggestion} other {open suggestions}}",
+        "giveaways": "{count, plural, one {giveaway running} other {giveaways running}}",
+        "polls": "{count, plural, one {poll running} other {polls running}}"
+      }
     }
   },
   "BotStatus": {
@@ -1145,7 +1184,9 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Saved",
-      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "unsaved": "You have unsaved changes",
+      "discard": "Discard"
     },
     "errors": {
       "forbidden": "Only admins can change these settings.",
@@ -1207,6 +1248,11 @@
       "label": "Server-wide XP boost (percent, until)",
       "help": "For example 200 until Sunday evening = double XP for everyone. 100 = off. The end time is in UTC. It does not stack with role boosts: the higher one counts.",
       "needsEnd": "Pick when the boost ends."
+    },
+    "tabs": {
+      "xp": "Earning XP",
+      "levelups": "Level-ups and rewards",
+      "board": "Leaderboard"
     }
   },
   "Tickets": {
@@ -3127,7 +3173,9 @@
       "intro": "The latest events the bot has posted. Repost writes the event again with the current text and AI summary and deletes the old message, for example after you added the article or the AI key.",
       "repost": "Repost",
       "done": "Reposted.",
-      "gone": "The calendar doesn't have this event any more."
+      "gone": "The calendar doesn't have this event any more.",
+      "emptyTitle": "Nothing posted yet",
+      "emptyBody": "Announcements the bot posts for your rules show up here, with a button to post one again."
     },
     "article": {
       "title": "Monthly news article",
@@ -3214,6 +3262,11 @@
       "pictureType": "Use a PNG, JPEG or WebP picture.",
       "pictureSize": "The picture must be 3 MB or less.",
       "pictureDimensions": "The picture must be 64 to 4096 pixels on each side."
+    },
+    "tabs": {
+      "games": "Games",
+      "rules": "Rules",
+      "posted": "Posted"
     }
   },
   "Verification": {

@@ -20,7 +20,7 @@ function Chip({ type }: { type: (typeof TILES)[number] }) {
   );
 }
 
-export async function OverviewStats() {
+export async function OverviewStats({ aside }: { aside?: React.ReactNode }) {
   const t = await getTranslations("Overview");
   const tm = await getTranslations("Moderation");
   const { byType, activeWarnings, recent, moderators } = await getOverview();
@@ -67,6 +67,23 @@ export async function OverviewStats() {
         {total === 0 && <p className="text-sm text-muted-foreground">{t("noActivity")}</p>}
       </section>
 
+
+      <div className="grid gap-fluid xl:grid-cols-3">
+        <div className="flex flex-col gap-fluid xl:col-span-2">
+      <section aria-labelledby="latest-heading" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 id="latest-heading" className="text-fluid-lg font-bold">
+            {t("latest")}
+          </h2>
+          <Link href="/cases" className="text-sm underline-offset-4 hover:underline">
+            {t("viewAll")}
+          </Link>
+        </div>
+        {recent.length > 0 ? <CasesList rows={recent} /> : <p className="text-sm text-muted-foreground">{t("noCases")}</p>}
+      </section>
+        </div>
+        <div className="flex flex-col gap-fluid">
+          {aside}
       <section aria-labelledby="mods-heading" className="flex flex-col gap-3">
         <h2 id="mods-heading" className="text-fluid-lg font-bold">
           {t("moderators.title")}
@@ -90,17 +107,8 @@ export async function OverviewStats() {
         )}
       </section>
 
-      <section aria-labelledby="latest-heading" className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 id="latest-heading" className="text-fluid-lg font-bold">
-            {t("latest")}
-          </h2>
-          <Link href="/cases" className="text-sm underline-offset-4 hover:underline">
-            {t("viewAll")}
-          </Link>
         </div>
-        {recent.length > 0 ? <CasesList rows={recent} /> : <p className="text-sm text-muted-foreground">{t("noCases")}</p>}
-      </section>
+      </div>
     </>
   );
 }

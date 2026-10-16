@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getScreeningPage } from "@/modules/screening";
 import { ScreeningManager } from "@/modules/screening/components/screening-manager";
+import { PageHeader } from "@/components/page/page-header";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("Screening"))("title") };
@@ -15,10 +16,7 @@ export default async function ScreeningPage() {
 
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
-      </header>
+      <PageHeader title={t("title")} description={t("intro")} />
       <ScreeningManager initial={settings} entries={entries} channels={channels} roles={roles} canEdit={isAdmin(session.user.role)} />
     </>
   );

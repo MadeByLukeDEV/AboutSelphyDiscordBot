@@ -1,6 +1,7 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import { requireStaffPage } from "@/modules/auth";
 import { getInvitesPage } from "@/modules/invites";
+import { PageHeader } from "@/components/page/page-header";
 
 export async function generateMetadata() {
   return { title: (await getTranslations("Invites"))("title") };
@@ -15,10 +16,7 @@ export default async function InvitesPage() {
 
   return (
     <>
-      <header className="flex flex-col gap-1">
-        <h1 className="text-fluid-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
-      </header>
+      <PageHeader title={t("title")} description={t("intro")} />
 
       {totals.total === 0 ? (
         <p className="rounded-2xl border border-dashed px-6 py-10 text-center text-sm text-muted-foreground">{t("empty")}</p>
