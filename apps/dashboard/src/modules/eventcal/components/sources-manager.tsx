@@ -393,7 +393,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   );
 }
 
-type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean };
+type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean };
 
 function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; onDone: () => void }) {
   const t = useTranslations("Events.games");
@@ -401,8 +401,8 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
   const [pending, startTransition] = useTransition();
   const form = useForm<SourceValues>({
     defaultValues: source
-      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, reminderDefaults: source.reminderDefaults, accentColor: source.accentColor, summaryImage: source.summaryImage }
-      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, reminderDefaults: {}, accentColor: "#00ffa8", summaryImage: false },
+      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, reminderDefaults: source.reminderDefaults, accentColor: source.accentColor, summaryImage: source.summaryImage, publicWidget: source.publicWidget }
+      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, reminderDefaults: {}, accentColor: "#00ffa8", summaryImage: false, publicWidget: false },
   });
   const { errors } = form.formState;
   const none: SelectOption[] = [{ value: "", label: t("none") }, ...channelOptions];
@@ -498,6 +498,14 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
           <div className="flex flex-col gap-1">
             <FieldLabel htmlFor="gs-summary-image">{t("summaryImage")}</FieldLabel>
             <FieldDescription id="gs-summary-image-help">{t("summaryImageHelp")}</FieldDescription>
+          </div>
+        </Field>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="publicWidget" render={({ field }) => <Switch id="gs-widget" checked={field.value} onCheckedChange={field.onChange} aria-describedby="gs-widget-help" />} />
+          <div className="flex flex-col gap-1">
+            <FieldLabel htmlFor="gs-widget">{t("publicWidget")}</FieldLabel>
+            <FieldDescription id="gs-widget-help">{t("publicWidgetHelp")}</FieldDescription>
+            {source && <code className="break-all text-xs text-muted-foreground">{`/widget/${source.id}  ·  /api/events/public/${source.id}`}</code>}
           </div>
         </Field>
         <Field orientation="horizontal">

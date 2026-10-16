@@ -68,7 +68,14 @@ const nextConfig: NextConfig = {
   // The workspace packages export TypeScript sources.
   transpilePackages: ["@aboutselphy/shared", "@aboutselphy/db"],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // The event widget (/widget/<id>) may be framed by other sites and OBS; everything else keeps DENY.
+    // The CSP frame-ancestors for it is set in src/proxy.ts.
+    return [
+      { source: "/:path((?!widget/|api/events/public/).*)", headers: securityHeaders },
+      // The public JSON may be read by other sites.
+      { source: "/api/events/public/:path*", headers: securityHeaders.filter((h) => h.key !== "Cross-Origin-Resource-Policy") },
+      { source: "/widget/:path*", headers: securityHeaders.filter((h) => h.key !== "X-Frame-Options" && h.key !== "Cross-Origin-Resource-Policy") },
+    ];
   },
 };
 

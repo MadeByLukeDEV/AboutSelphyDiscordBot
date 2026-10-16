@@ -55,6 +55,7 @@ export type SourceRow = {
   /** The colour of this game's drawn pictures, and whether the monthly summary gets one. */
   accentColor: string;
   summaryImage: boolean;
+  publicWidget: boolean;
   hasBackground: boolean;
   items: ItemRow[];
   hasOverview: boolean;

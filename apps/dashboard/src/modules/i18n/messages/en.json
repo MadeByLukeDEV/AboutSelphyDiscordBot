@@ -3060,7 +3060,9 @@
       "remindersByKind": "When to announce each kind",
       "remindersByKindHelp": "An event that a rule posts is announced at these times before it starts: the earliest is the announcement, the others are reminders. A kind left empty is announced one week before. An event can use its own times instead (set in the event).",
       "reminderDefaultEmpty": "Default: 7 days before",
-      "reminderDefaultClear": "Back to the default"
+      "reminderDefaultClear": "Back to the default",
+      "publicWidget": "Public widget and JSON",
+      "publicWidgetHelp": "Anyone with the link can see this game's upcoming events as a page (for OBS or an iframe) and as JSON. Shows titles, dates, items and the short summary only. Off by default."
     },
     "posted": {
       "title": "Posted events",

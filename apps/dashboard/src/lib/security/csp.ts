@@ -15,6 +15,8 @@ export function buildCsp(
   // Origin of the central auth service: the sign-out button is a form POST to
   // it (src/modules/auth/components/sign-out-button.tsx).
   authOrigin: string,
+  // Pages that may be shown inside someone else's page or an OBS browser source (the event widget).
+  embeddable = false,
 ): string {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
@@ -32,7 +34,7 @@ export function buildCsp(
     "object-src": ["'none'"],
     "base-uri": ["'self'"],
     "form-action": ["'self'", authOrigin],
-    "frame-ancestors": ["'none'"],
+    "frame-ancestors": embeddable ? ["*"] : ["'none'"],
     "manifest-src": ["'self'"],
     "worker-src": ["'self'", "blob:"],
   };

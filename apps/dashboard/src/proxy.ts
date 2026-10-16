@@ -18,7 +18,7 @@ const CSP_HEADER = "Content-Security-Policy";
 // Static security headers (HSTS, nosniff, ...) live in next.config.ts.
 export async function proxy(request: NextRequest) {
   const nonce = createNonce();
-  const csp = buildCsp(nonce, new URL(env().AUTH_URL).origin);
+  const csp = buildCsp(nonce, new URL(env().AUTH_URL).origin, request.nextUrl.pathname.startsWith("/widget/"));
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);

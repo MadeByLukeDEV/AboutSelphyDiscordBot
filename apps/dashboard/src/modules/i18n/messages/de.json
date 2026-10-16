@@ -3060,7 +3060,9 @@
       "remindersByKind": "Wann jede Art angekündigt wird",
       "remindersByKindHelp": "Ein Event, das eine Regel postet, wird zu diesen Zeitpunkten vor dem Start angekündigt: der früheste ist die Ankündigung, die anderen sind Erinnerungen. Eine leere Art wird eine Woche vorher angekündigt. Ein Event kann eigene Zeiten nutzen (im Event einstellen).",
       "reminderDefaultEmpty": "Standard: 7 Tage vorher",
-      "reminderDefaultClear": "Zurück zum Standard"
+      "reminderDefaultClear": "Zurück zum Standard",
+      "publicWidget": "Öffentliches Widget und JSON",
+      "publicWidgetHelp": "Jeder mit dem Link sieht die kommenden Events dieses Spiels als Seite (für OBS oder einen iframe) und als JSON. Gezeigt werden nur Titel, Daten, Items und die Kurzfassung. Standardmäßig aus."
     },
     "posted": {
       "title": "Geposte Events",

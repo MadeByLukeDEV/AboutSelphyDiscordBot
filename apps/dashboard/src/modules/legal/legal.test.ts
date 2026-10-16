@@ -12,6 +12,11 @@ const text = (doc: LegalDoc) => JSON.stringify(doc);
 
 describe("public paths", () => {
   it("only the terms and the privacy policy are readable without signing in", () => {
+    expect(isPublicPath("/widget/abc123")).toBe(true);
+    expect(isPublicPath("/widget/abc123/")).toBe(true);
+    expect(isPublicPath("/widget/")).toBe(false);
+    expect(isPublicPath("/widget/abc/extra")).toBe(false);
+    expect(isPublicPath("/widgets/abc")).toBe(false);
     expect(isPublicPath("/terms")).toBe(true);
     expect(isPublicPath("/privacy")).toBe(true);
     expect(isPublicPath("/privacy/")).toBe(true);

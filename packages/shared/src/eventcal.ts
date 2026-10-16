@@ -66,6 +66,7 @@ export const eventSourceSchema = z.object({
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default(DEFAULT_ACCENT),
   /** Put a drawn picture on the monthly summary. */
   summaryImage: z.boolean().default(false),
+  publicWidget: z.boolean().default(false),
   /** Announcement times per kind of event. */
   reminderDefaults: reminderDefaultsSchema.default({}),
 });

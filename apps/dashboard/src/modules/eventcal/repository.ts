@@ -29,7 +29,7 @@ export const deleteRule = async (id: string) => (await prisma.eventRule.deleteMa
 export const listSources = () => prisma.eventSource.findMany({ orderBy: { createdAt: "asc" } });
 export const countSources = () => prisma.eventSource.count();
 export const findSource = (id: string) => prisma.eventSource.findUnique({ where: { id } });
-type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean };
+type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean };
 export const createSource = (data: SourceData) => prisma.eventSource.create({ data });
 export const updateSource = (id: string, data: SourceData & { baselined?: false }) => prisma.eventSource.update({ where: { id }, data });
 export const deleteSource = async (id: string) => (await prisma.eventSource.deleteMany({ where: { id } })).count;
@@ -69,3 +69,16 @@ export const readBackground = (sourceId: string) => prisma.eventSourceImage.find
 export const saveBackground = (sourceId: string, p: PictureData) => prisma.eventSourceImage.upsert({ where: { sourceId }, update: { ...p, uploadedAt: new Date() }, create: { sourceId, ...p } });
 export const deleteBackground = async (sourceId: string) => void (await prisma.eventSourceImage.deleteMany({ where: { sourceId } }));
 
+
+// ---- public feed
+
+/** The source only when its owner switched the public widget on and the source itself is enabled. */
+export const findPublicSource = (id: string) => prisma.eventSource.findFirst({ where: { id, publicWidget: true, enabled: true }, select: { id: true, name: true, accentColor: true } });
+/** Events that run now or start within 90 days, not hidden, at most 60. */
+export const listPublicEvents = (sourceId: string, now: Date) =>
+  prisma.gameEvent.findMany({
+    where: { sourceId, removedAt: null, OR: [{ endsAt: { gte: now } }, { endsAt: null, startsAt: { gte: now } }], startsAt: { lte: new Date(now.getTime() + 90 * 86_400_000) } },
+    orderBy: { startsAt: "asc" },
+    take: 60,
+    select: { title: true, kind: true, startsAt: true, endsAt: true, allDay: true, summary: true, blurb: true, items: true, recurrence: true },
+  });

@@ -1,0 +1,1 @@
+ALTER TABLE "EventSource" ADD COLUMN "publicWidget" BOOLEAN NOT NULL DEFAULT false;

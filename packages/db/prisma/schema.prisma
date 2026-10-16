@@ -1479,6 +1479,8 @@ model EventSource {
   /// When events of a kind are announced (days before the start per kind, e.g. {"drop":[7,2]}); a kind not set falls back to the rule's own times.
   reminderDefaults  Json      @default("{}")
   summaryImage      Boolean   @default(false)
+  /// Anyone may read this game's upcoming events (public widget page and JSON); off by default.
+  publicWidget      Boolean   @default(false)
   background        EventSourceImage?
   items             EventItem[]
   rules             EventRule[]

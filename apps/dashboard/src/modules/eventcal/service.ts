@@ -8,7 +8,7 @@ import { MAX_EVENT_RULES, MAX_EVENT_SOURCES, type EventRuleInput, type EventSour
 import { errorInfo } from "@/lib/log";
 import { getEventPreviewCard, checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
 import type { PictureData } from "./repository";
-import { clearItemImage, deleteBackground, deleteItem, ensureItems, findItem, listBackgrounds, listItems, readBackground, readItemImage, saveBackground, setItemImage, countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
+import { findPublicSource, listPublicEvents, clearItemImage, deleteBackground, deleteItem, ensureItems, findItem, listBackgrounds, listItems, readBackground, readItemImage, saveBackground, setItemImage, countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
 import type { ImageResult, ItemRow, ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
 
 const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", useCard: r.useCard, postSeries: r.postSeries, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
@@ -33,6 +33,7 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[],
   reminderDefaults: reminderDefaultsSchema.safeParse(s.reminderDefaults).data ?? {},
   accentColor: s.accentColor,
   summaryImage: s.summaryImage,
+  publicWidget: s.publicWidget,
   hasBackground,
   items,
   hasOverview: s.overviewMessageId !== null,
@@ -88,6 +89,7 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
       reminderDefaults: input.reminderDefaults,
       accentColor: input.accentColor.toLowerCase(),
       summaryImage: input.summaryImage,
+      publicWidget: input.publicWidget,
     };
     if (existing) {
       // Another calendar or page address starts over: the first check of it only remembers what is there.
@@ -366,3 +368,21 @@ export async function getBackgroundFile(sourceId: string): Promise<{ bytes: Uint
 /** A sample picture drawn by the bot from the saved settings (an event's card, or a month's overview picture). */
 export const previewPicture = (sourceId: string, eventId: string, month: "none" | "current" | "next") => getEventPreviewCard({ sourceId, eventId, month });
 
+
+export type PublicEvent = { title: string; kind: string; startsAt: string; endsAt: string | null; allDay: boolean; summary: string; items: string[]; recurrence: string | null };
+export type PublicFeed = { game: string; accentColor: string; updatedAt: string; events: PublicEvent[] };
+
+/** What the public widget and JSON show: a game's upcoming events, only if an admin switched it on. Titles, dates, items and the short summary; never descriptions, links or staff data. */
+export async function getPublicFeed(id: string): Promise<PublicFeed | null> {
+  if (!/^[a-z0-9]{20,32}$/.test(id)) return null;
+  const source = await findPublicSource(id);
+  if (!source) return null;
+  const now = new Date();
+  const events = await listPublicEvents(source.id, now);
+  return {
+    game: source.name,
+    accentColor: source.accentColor,
+    updatedAt: now.toISOString(),
+    events: events.map((e) => ({ title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, summary: e.summary || e.blurb, items: e.items, recurrence: e.recurrence })),
+  };
+}
