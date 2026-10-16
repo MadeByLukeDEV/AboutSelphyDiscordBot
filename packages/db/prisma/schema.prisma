@@ -1370,32 +1370,6 @@ model AnnouncementTemplate {
 // ---- event calendar -------------------------------------------------------------------
 // Reads a public calendar (.ics), posts the events that match a rule (one message per event) and keeps one overview message up to date.
 
-/// Singleton (id 1).
-model EventCalendarConfig {
-  id                Int       @id @default(1)
-  enabled           Boolean   @default(false)
-  /// An https address of a public iCalendar feed.
-  icsUrl            String    @default("https://calendar.google.com/calendar/ical/c_10fomfvgafp5atjgb2t8i190i4%40group.calendar.google.com/public/basic.ics") @db.VarChar(500)
-  /// Where the overview message lives; null = no overview.
-  overviewChannelId String?   @db.VarChar(20)
-  overviewMessageId String?   @db.VarChar(20)
-  /// Fingerprint of what the overview shows, so it is only edited when something changed.
-  overviewHash      String    @default("") @db.VarChar(40)
-  overviewDays      Int       @default(30)
-  /// Where the detailed monthly summary is posted; null = none.
-  summaryChannelId  String?   @db.VarChar(20)
-  /// "YYYY-MM" of the posted summary, its messages (it can need several), and a fingerprint of what it shows.
-  summaryMonth      String?   @db.VarChar(7)
-  summaryMessageIds String[]  @default([])
-  summaryHash       String    @default("") @db.VarChar(40)
-  /// false until the first successful check, which only remembers what is there (nothing is announced).
-  baselined         Boolean   @default(false)
-  lastCheckedAt     DateTime?
-  /// "ok", "http 404", "blocked", "timeout", "parse", "empty" ... of the last check.
-  lastStatus        String?   @db.VarChar(40)
-  updatedAt         DateTime  @updatedAt
-}
-
 /// "Events whose name contains X (or that carry tag Y) go to channel Z."
 model EventRule {
   id         String      @id @default(cuid())
@@ -1404,7 +1378,6 @@ model EventRule {
   categories String[]    @default([])
   channelId  String      @db.VarChar(20)
   pingRoleId String?     @db.VarChar(20)
-  daysAhead  Int         @default(7)
   enabled    Boolean     @default(true)
   /// false until the rule's first check, which only remembers what matches (a new rule never posts old events).
   seeded     Boolean     @default(false)

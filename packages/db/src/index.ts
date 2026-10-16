@@ -34,7 +34,6 @@ export type {
   AuditEntry,
   MemberInvite,
   ScreeningConfig,
-  EventCalendarConfig,
   EventRule,
   EventPost,
   EventArticle,

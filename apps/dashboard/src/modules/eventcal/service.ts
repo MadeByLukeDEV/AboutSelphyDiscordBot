@@ -153,7 +153,7 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: leadDays[0] ?? 7, leadDays, useCard: input.useCard, postSeries: input.postSeries, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
+    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, leadDays, useCard: input.useCard, postSeries: input.postSeries, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
     if (existing) {
       const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || (!existing.useCard && data.useCard) || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);
