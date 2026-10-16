@@ -197,12 +197,12 @@ export function EventForm({ source, event, onDone }: { source: SourceRow; event:
 
         <Section title={t("sectionWhen")}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field data-invalid={Boolean(errors.start) || undefined}>
+            <Field className="min-w-0" data-invalid={Boolean(errors.start) || undefined}>
               <FieldLabel htmlFor="ge-start">{t("start")}</FieldLabel>
               <FormDateTime control={form.control} name="start" id="ge-start" invalid={Boolean(errors.start)} />
               {errors.start && <FieldError>{te("badDate")}</FieldError>}
             </Field>
-            <Field data-invalid={Boolean(errors.end) || undefined}>
+            <Field className="min-w-0" data-invalid={Boolean(errors.end) || undefined}>
               <FieldLabel htmlFor="ge-end">{t("end")}</FieldLabel>
               <FormDateTime control={form.control} name="end" id="ge-end" invalid={Boolean(errors.end)} />
               {errors.end && <FieldError>{te("badDate")}</FieldError>}
@@ -233,12 +233,12 @@ export function EventForm({ source, event, onDone }: { source: SourceRow; event:
 
         <Section title={t("sectionPictures")}>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
+            <Field className="min-w-0" data-invalid={Boolean(errors.imageUrl) || undefined}>
               <FieldLabel htmlFor="ge-image">{t("imageUrl")}</FieldLabel>
               <Input id="ge-image" type="url" maxLength={500} autoComplete="off" aria-invalid={Boolean(errors.imageUrl) || undefined} {...form.register("imageUrl")} />
               {errors.imageUrl && <FieldError>{te("badImage")}</FieldError>}
             </Field>
-            <Field data-invalid={Boolean(errors.videoUrl) || undefined}>
+            <Field className="min-w-0" data-invalid={Boolean(errors.videoUrl) || undefined}>
               <FieldLabel htmlFor="ge-video">{t("videoUrl")}</FieldLabel>
               <Input id="ge-video" type="url" maxLength={500} autoComplete="off" aria-invalid={Boolean(errors.videoUrl) || undefined} {...form.register("videoUrl")} />
               {errors.videoUrl && <FieldError>{te("badVideo")}</FieldError>}

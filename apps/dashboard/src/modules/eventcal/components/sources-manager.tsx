@@ -316,7 +316,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
       )}
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto">
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editing?.source ? t("editTitle") : t("newTitle")}</DialogTitle>
             <DialogDescription>{t("formIntro")}</DialogDescription>
@@ -336,7 +336,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
       </Dialog>
 
       <Dialog open={eventEdit !== null} onOpenChange={(open) => !open && setEventEdit(null)}>
-        <DialogContent className="max-h-[92dvh] max-w-[min(42rem,95vw)] overflow-y-auto">
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{eventEdit?.event ? t("eventEditTitle") : t("eventNewTitle")}</DialogTitle>
             <DialogDescription>{t("eventFormIntro")}</DialogDescription>
@@ -356,7 +356,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
       </Dialog>
 
       <Dialog open={preview !== null} onOpenChange={(open) => !open && setPreview(null)}>
-        <DialogContent className="max-h-[92dvh] max-w-[min(70rem,95vw)] overflow-y-auto">
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>{preview?.title ?? ""}</DialogTitle>
             <DialogDescription>{t("previewIntro")}</DialogDescription>

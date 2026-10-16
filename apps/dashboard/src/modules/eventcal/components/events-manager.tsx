@@ -149,7 +149,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
       </section>
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto">
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editing?.rule ? t("rules.editTitle") : t("rules.newTitle")}</DialogTitle>
             <DialogDescription>{t("rules.formIntro")}</DialogDescription>
