@@ -38,6 +38,10 @@ const leadDaysField = (min: number) =>
     .max(MAX_LEAD_TIMES)
     .transform((a) => [...new Set(a)].sort((x, y) => y - x));
 
+/** Per kind: how many days before the start an event is announced (first = announcement, others = reminders). A kind left out uses the rule's own times. */
+export const reminderDefaultsSchema = z.object({ drop: leadDaysField(1), event: leadDaysField(1), update: leadDaysField(1), sale: leadDaysField(1), other: leadDaysField(1) }).partial();
+export type ReminderDefaults = z.infer<typeof reminderDefaultsSchema>;
+
 /** A game (or any source of events): its calendar feed and/or its article page, and where its overview and monthly summary go. */
 export const eventSourceSchema = z.object({
   id: z.string().min(1).max(64).optional(),
@@ -62,10 +66,13 @@ export const eventSourceSchema = z.object({
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).default(DEFAULT_ACCENT),
   /** Put a drawn picture on the monthly summary. */
   summaryImage: z.boolean().default(false),
+  /** Announcement times per kind of event. */
+  reminderDefaults: reminderDefaultsSchema.default({}),
 });
 export type EventSourceInput = z.infer<typeof eventSourceSchema>;
 
 export const EVENT_KINDS = ["drop", "event", "update", "sale", "other"] as const;
+
 const dateTime = z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
 
 /** An event added or edited by hand. Editing locks it: a sync never overwrites it again. */
@@ -101,7 +108,8 @@ export const eventRuleSchema = z
     /** "" = nobody is pinged. */
     pingRoleId: z.union([z.literal(""), snowflake]),
     /** Post an event this many days before it starts (0 = on the day). The first (largest) is the announcement, the others are reminders: for example 7 and 2. */
-    leadDays: leadDaysField(1),
+    /** Optional: the times come from the event or from the game's defaults per kind. Kept as the last fallback. */
+    leadDays: leadDaysField(1).optional(),
     /** Attach a drawn picture (drop card with the item pictures, or an event card) to the posts. */
     useCard: z.boolean().default(false),
     /** Also announce every occurrence of a repeating series ("Every Tuesday"), for example a weekly reminder. */

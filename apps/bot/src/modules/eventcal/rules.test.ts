@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
 import type { ArticleEvent } from "@aboutselphy/shared/eventcal-article";
 import type { CalEvent } from "./ics";
-import { eventHash, eventMessage, firstSentence, foldSeries, recurrenceText, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEntry, overviewEvents, overviewHash, overviewMessage, overviewSections, overviewWhen, whenText } from "./rules";
+import { eventHash, eventMessage, firstSentence, foldSeries, leadTimesFor, recurrenceText, isPostable, matchesRule, mergeArticle, monthEvents, normalizeOffsets, planStages, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, overviewEntry, overviewEvents, overviewHash, overviewMessage, overviewSections, overviewWhen, whenText } from "./rules";
 
 const ev = (over: Partial<CalEvent> = {}): CalEvent => ({
   key: "u|2026-09-18T10:00:00.000Z",
@@ -380,3 +380,13 @@ describe("posting an occurrence of a series", () => {
   });
 });
 
+describe("which lead times an event uses", () => {
+  const defaults = { drop: [7, 2], sale: [2] };
+  it("prefers the event's own times, then the game's default for its kind, then the rule's", () => {
+    expect(leadTimesFor({ kind: "drop", reminderDays: [3] }, defaults, [1])).toEqual([3]);
+    expect(leadTimesFor({ kind: "drop", reminderDays: [] }, defaults, [1])).toEqual([7, 2]);
+    expect(leadTimesFor({ kind: "event" }, defaults, [1])).toEqual([1]);
+    expect(leadTimesFor({}, {}, [7])).toEqual([7]);
+    expect(leadTimesFor({ kind: "sale" }, { sale: [] }, [5])).toEqual([5]);
+  });
+});

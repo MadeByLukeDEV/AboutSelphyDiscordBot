@@ -1,6 +1,6 @@
 import "server-only";
 // Private to the eventcal module: only service.ts imports this.
-import { itemKey } from "@aboutselphy/shared/eventcal";
+import { itemKey, type ReminderDefaults } from "@aboutselphy/shared/eventcal";
 import { prisma, type EventRule } from "@aboutselphy/db";
 
 export const listPostedEvents = () => prisma.eventPost.findMany({ where: { messageId: { not: null } }, orderBy: { startsAt: "desc" }, take: 15, include: { rule: { select: { name: true } } } });
@@ -29,7 +29,7 @@ export const deleteRule = async (id: string) => (await prisma.eventRule.deleteMa
 export const listSources = () => prisma.eventSource.findMany({ orderBy: { createdAt: "asc" } });
 export const countSources = () => prisma.eventSource.count();
 export const findSource = (id: string) => prisma.eventSource.findUnique({ where: { id } });
-type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; accentColor: string; summaryImage: boolean };
+type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean };
 export const createSource = (data: SourceData) => prisma.eventSource.create({ data });
 export const updateSource = (id: string, data: SourceData & { baselined?: false }) => prisma.eventSource.update({ where: { id }, data });
 export const deleteSource = async (id: string) => (await prisma.eventSource.deleteMany({ where: { id } })).count;

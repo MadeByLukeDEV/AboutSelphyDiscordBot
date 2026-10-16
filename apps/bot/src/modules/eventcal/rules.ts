@@ -35,6 +35,17 @@ export function normalizeOffsets(days: readonly number[]): number[] {
   return clean.length > 0 ? clean : [7];
 }
 
+/**
+ * The lead times an event is announced at: its own (set on the event) first, then the game's default for its kind, then the rule's own.
+ * Each is only used when it names at least one time.
+ */
+export function leadTimesFor(event: Pick<CalEvent, "kind" | "reminderDays">, defaults: Partial<Record<string, readonly number[]>>, ruleLeadDays: readonly number[]): readonly number[] {
+  if (event.reminderDays && event.reminderDays.length > 0) return event.reminderDays;
+  const forKind = defaults[event.kind ?? "event"];
+  if (forKind && forKind.length > 0) return forKind;
+  return ruleLeadDays;
+}
+
 export type StagePlan = { stage: number; offset: number; post: boolean };
 
 /**

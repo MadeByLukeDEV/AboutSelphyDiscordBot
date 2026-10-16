@@ -3018,7 +3018,7 @@
       "summaryAuto": "Monatsübersicht automatisch posten",
       "summaryAutoHelp": "Sobald ein neuer Monat Events hat, postet der Bot die Übersicht von selbst (einmal). Braucht den Kanal für die Monatsübersicht.",
       "reminders": "Erinnerungen für dieses Event",
-      "remindersHelp": "Zu jedem gewählten Zeitpunkt vor dem Start kommt ein Post. Leer lassen, um die Vorlaufzeiten der passenden Regeln zu nutzen.",
+      "remindersHelp": "Zu jedem gewählten Zeitpunkt vor dem Start kommt ein Post. Leer lassen, um den Standard des Spiels für diese Art von Event zu nutzen.",
       "pictures": "Bilder und Items ({count} Items, {missing} ohne Bild)",
       "picturesIntro": "Lade für jedes Drop-Item einmal ein Bild hoch; der Bot nutzt es jedes Mal wieder, wenn das Item vorkommt. Items erscheinen hier von selbst, sobald ein Event sie auflistet. Die Bilder erscheinen auf den gezeichneten Karten, die eine Regel an ihre Posts hängen kann.",
       "uploadBackground": "Hintergrund hochladen",
@@ -3052,11 +3052,15 @@
       "addItem": "Item hinzufügen",
       "itemPlaceholder": "Item eingeben und Enter drücken",
       "removeItemChip": "{name} entfernen",
-      "remindersEmpty": "Vorlaufzeiten der Regeln nutzen",
+      "remindersEmpty": "Standard der Art nutzen",
       "reminderOnDay": "Am Tag selbst",
       "reminderDaysBefore": "{count, plural, one {1 Tag vorher} other {# Tage vorher}}",
       "reminderLimit": "Wähle bis zu {max} Erinnerungen",
-      "reminderClear": "Vorlaufzeiten der Regeln nutzen"
+      "reminderClear": "Standard der Art nutzen",
+      "remindersByKind": "Wann jede Art angekündigt wird",
+      "remindersByKindHelp": "Ein Event, das eine Regel postet, wird zu diesen Zeitpunkten vor dem Start angekündigt: der früheste ist die Ankündigung, die anderen sind Erinnerungen. Eine leere Art wird eine Woche vorher angekündigt. Ein Event kann eigene Zeiten nutzen (im Event einstellen).",
+      "reminderDefaultEmpty": "Standard: 7 Tage vorher",
+      "reminderDefaultClear": "Zurück zum Standard"
     },
     "posted": {
       "title": "Geposte Events",
@@ -3088,8 +3092,7 @@
       "newTitle": "Neue Regel",
       "formIntro": "Welche Events in welchen Kanal kommen.",
       "removeTitle": "Diese Regel entfernen?",
-      "removeBody": "Die Regel \"{name}\" postet nicht mehr. Bereits gepostete Nachrichten bleiben in Discord.",
-      "aheadList": "{list} Tage vorher"
+      "removeBody": "Die Regel \"{name}\" postet nicht mehr. Bereits gepostete Nachrichten bleiben in Discord."
     },
     "ruleForm": {
       "source": "Spiel",
@@ -3122,8 +3125,6 @@
         "sale": "Sales",
         "other": "Sonstiges"
       },
-      "leadDays": "So viele Tage vor dem Start posten",
-      "leadDaysHelp": "Eine bis {max} Zahlen von 0 bis {limit}, zum Beispiel 7, 2. Der erste Post ist die Ankündigung, die späteren sind Erinnerungen. 0 = am Tag selbst.",
       "useCard": "Gezeichnetes Bild anhängen",
       "useCardHelp": "Zeichnet eine Karte für das Event (die Drop-Items mit ihren Bildern, in der Farbe des Spiels) und zeigt sie im Post.",
       "postSeries": "Auch wiederkehrende Events ankündigen",

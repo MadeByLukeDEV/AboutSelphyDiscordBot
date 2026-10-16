@@ -3018,7 +3018,7 @@
       "summaryAuto": "Post the monthly summary automatically",
       "summaryAutoHelp": "When a new month has events, the bot posts its summary by itself (once). Needs the monthly summary channel.",
       "reminders": "Reminders for this event",
-      "remindersHelp": "A post goes out at each chosen time before the event starts. Leave it empty to use the lead times of the matching rules.",
+      "remindersHelp": "A post goes out at each chosen time before the event starts. Leave it empty to use the game's default for this kind of event.",
       "pictures": "Pictures and items ({count} items, {missing} without a picture)",
       "picturesIntro": "Upload a picture for each drop item once; the bot reuses it every time that item appears. Items are added here by themselves when an event lists them. Pictures show on the drawn cards, which a rule can attach to its posts.",
       "uploadBackground": "Upload background",
@@ -3052,11 +3052,15 @@
       "addItem": "Add item",
       "itemPlaceholder": "Add an item and press Enter",
       "removeItemChip": "Remove {name}",
-      "remindersEmpty": "Use the rules' lead times",
+      "remindersEmpty": "Use the default for its kind",
       "reminderOnDay": "On the day",
       "reminderDaysBefore": "{count, plural, one {1 day before} other {# days before}}",
       "reminderLimit": "Pick up to {max} reminders",
-      "reminderClear": "Use the rules' lead times"
+      "reminderClear": "Use the default for its kind",
+      "remindersByKind": "When to announce each kind",
+      "remindersByKindHelp": "An event that a rule posts is announced at these times before it starts: the earliest is the announcement, the others are reminders. A kind left empty is announced one week before. An event can use its own times instead (set in the event).",
+      "reminderDefaultEmpty": "Default: 7 days before",
+      "reminderDefaultClear": "Back to the default"
     },
     "posted": {
       "title": "Posted events",
@@ -3088,8 +3092,7 @@
       "newTitle": "New rule",
       "formIntro": "Which events go to which channel.",
       "removeTitle": "Remove this rule?",
-      "removeBody": "Rule \"{name}\" stops posting. Messages already posted stay in Discord.",
-      "aheadList": "{list} days ahead"
+      "removeBody": "Rule \"{name}\" stops posting. Messages already posted stay in Discord."
     },
     "ruleForm": {
       "source": "Game",
@@ -3122,8 +3125,6 @@
         "sale": "Sales",
         "other": "Other"
       },
-      "leadDays": "Post this many days before it starts",
-      "leadDaysHelp": "One to {max} numbers from 0 to {limit}, for example 7, 2. The first post is the announcement, the later ones are reminders. 0 = on the day.",
       "useCard": "Attach a drawn picture",
       "useCardHelp": "Draws a card for the event (the drop items with their pictures, in the game's colour) and shows it in the post.",
       "postSeries": "Also announce repeating events",

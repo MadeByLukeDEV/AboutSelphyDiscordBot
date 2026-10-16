@@ -1,4 +1,4 @@
-import type { EventRuleInput } from "@aboutselphy/shared/eventcal";
+import type { EventRuleInput, ReminderDefaults } from "@aboutselphy/shared/eventcal";
 
 // Types shared by the service, the actions and the client components. No server-only imports.
 
@@ -50,6 +50,8 @@ export type SourceRow = {
   summaryChannelId: string;
   /** Post the monthly summary by itself when a new month has events. */
   summaryAuto: boolean;
+  /** Announcement times per kind of event. */
+  reminderDefaults: ReminderDefaults;
   /** The colour of this game's drawn pictures, and whether the monthly summary gets one. */
   accentColor: string;
   summaryImage: boolean;
@@ -70,4 +72,4 @@ export type SourceRow = {
 export type ItemRow = { id: string; name: string; hasImage: boolean };
 export type ImageResult = { ok: true } | { ok: false; error: EventError | "noFile" | "type" | "size" | "dimensions" };
 
-export type EventRuleRow = Required<Pick<EventRuleInput, "id">> & Omit<EventRuleInput, "id">;
+export type EventRuleRow = Required<Pick<EventRuleInput, "id">> & Omit<EventRuleInput, "id" | "leadDays">;

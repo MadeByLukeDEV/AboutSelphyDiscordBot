@@ -1476,6 +1476,8 @@ model EventSource {
   summaryAuto       Boolean   @default(false)
   /// The look of the drawn pictures of this game, and whether the monthly summary comes with a picture.
   accentColor       String    @default("#00ffa8") @db.VarChar(7)
+  /// When events of a kind are announced (days before the start per kind, e.g. {"drop":[7,2]}); a kind not set falls back to the rule's own times.
+  reminderDefaults  Json      @default("{}")
   summaryImage      Boolean   @default(false)
   background        EventSourceImage?
   items             EventItem[]

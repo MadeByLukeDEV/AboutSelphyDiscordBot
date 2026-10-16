@@ -20,6 +20,7 @@ export type SourceState = {
   summaryMessageIds: string[];
   summaryHash: string;
   summaryAuto: boolean;
+  reminderDefaults: unknown;
   accentColor: string;
   summaryImage: boolean;
   baselined: boolean;

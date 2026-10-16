@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type { EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { cardImageProblem, readImageInfo } from "@aboutselphy/shared/image-info";
+import { reminderDefaultsSchema } from "@aboutselphy/shared/eventcal";
 import { MAX_EVENT_RULES, MAX_EVENT_SOURCES, type EventRuleInput, type EventSourceInput, type GameEventInput } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
 import { getEventPreviewCard, checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
@@ -10,7 +11,7 @@ import type { PictureData } from "./repository";
 import { clearItemImage, deleteBackground, deleteItem, ensureItems, findItem, listBackgrounds, listItems, readBackground, readItemImage, saveBackground, setItemImage, countRules, countSources, createManualEvent, createRule, createSource, deleteArticle, deleteEvent, deleteRule, deleteSource, findEvent, findRule, findSource, hideEvent, listArticles, listEvents, listPostedEvents, listRules, listSources, restoreEvent, saveArticle, updateEvent, updateRule, updateSource } from "./repository";
 import type { ImageResult, ItemRow, ArticleRow, CheckEventsResult, EventRow, EventRuleRow, ImportArticleResult, OverviewResult, PostedEventRow, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult, SourceRow } from "./schema";
 
-const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", leadDays: r.leadDays, useCard: r.useCard, postSeries: r.postSeries, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
+const toRow = (r: EventRule): EventRuleRow => ({ id: r.id, name: r.name, words: r.words, categories: r.categories, kinds: r.kinds as EventRuleRow["kinds"], channelId: r.channelId, pingRoleId: r.pingRoleId ?? "", useCard: r.useCard, postSeries: r.postSeries, useAi: r.useAi, sourceId: r.sourceId ?? "", enabled: r.enabled });
 
 type SourceModel = Awaited<ReturnType<typeof listSources>>[number];
 type EventModel = Awaited<ReturnType<typeof listEvents>>[number];
@@ -29,6 +30,7 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[],
   overviewDays: s.overviewDays,
   summaryChannelId: s.summaryChannelId ?? "",
   summaryAuto: s.summaryAuto,
+  reminderDefaults: reminderDefaultsSchema.safeParse(s.reminderDefaults).data ?? {},
   accentColor: s.accentColor,
   summaryImage: s.summaryImage,
   hasBackground,
@@ -83,6 +85,7 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
       overviewDays: input.overviewDays,
       summaryChannelId: input.summaryChannelId || null,
       summaryAuto: input.summaryAuto,
+      reminderDefaults: input.reminderDefaults,
       accentColor: input.accentColor.toLowerCase(),
       summaryImage: input.summaryImage,
     };
@@ -119,6 +122,8 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
     if (input.id && !existing) return { ok: false, error: "notFound" };
     if (!existing && (await countRules()) >= MAX_EVENT_RULES) return { ok: false, error: "tooMany" };
     if (!(await findSource(input.sourceId))) return { ok: false, error: "notFound" };
+    // Reminder times live on the events and the game's defaults; a rule keeps its stored times only as the last fallback.
+    const leadDays = input.leadDays ?? existing?.leadDays ?? [7];
     const roleId = input.pingRoleId || null;
     if (!existing || existing.channelId !== input.channelId) {
       const channels = await listChannels(["text"]);
@@ -130,9 +135,9 @@ export async function saveRule(input: EventRuleInput): Promise<SaveRuleResult> {
       if (!roles) return { ok: false, error: "botUnavailable" };
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
-    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: input.leadDays[0] ?? 7, leadDays: input.leadDays, useCard: input.useCard, postSeries: input.postSeries, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
+    const data = { name: input.name, words: input.words, categories: input.categories, kinds: input.kinds, channelId: input.channelId, pingRoleId: roleId, daysAhead: leadDays[0] ?? 7, leadDays, useCard: input.useCard, postSeries: input.postSeries, useAi: input.useAi, enabled: input.enabled, sourceId: input.sourceId };
     if (existing) {
-      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || existing.leadDays.join(",") !== data.leadDays.join(",") || (!existing.useCard && data.useCard) || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
+      const reseed = existing.channelId !== data.channelId || existing.words.join("\n") !== data.words.join("\n") || existing.categories.join("\n") !== data.categories.join("\n") || existing.kinds.join("\n") !== data.kinds.join("\n") || (!existing.useCard && data.useCard) || existing.sourceId !== data.sourceId || (!existing.enabled && data.enabled);
       await updateRule(existing.id, data, reseed);
     } else {
       await createRule(data);

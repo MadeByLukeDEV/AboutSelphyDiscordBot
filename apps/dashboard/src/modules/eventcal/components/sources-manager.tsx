@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 import { CalendarRange, Eye, ImageIcon, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { eventSourceSchema, FETCH_MODES, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS } from "@aboutselphy/shared/eventcal";
+import { EVENT_KINDS, eventSourceSchema, FETCH_MODES, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS, type ReminderDefaults } from "@aboutselphy/shared/eventcal";
 import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
 import { ColorPicker } from "@/components/form/color-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { checkEventCalendarAction, deleteEventArticleAction, deleteEventItemAction, deleteEventSourceAction, removeEventBackgroundAction, removeEventItemImageAction, uploadEventBackgroundAction, uploadEventItemImageAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction } from "../actions";
 import type { EventRow, ImageResult, ItemRow, SourceRow } from "../schema";
 import { EventForm } from "./event-form";
+import { ReminderPicker } from "./reminder-picker";
 
 /** The games (sources): their settings, status, stored events, pasted articles, and the overview and monthly buttons. */
 export function SourcesManager({ sources, channelOptions, channelsReady }: { sources: SourceRow[]; channelOptions: SelectOption[]; channelsReady: boolean }) {
@@ -392,7 +393,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   );
 }
 
-type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; accentColor: string; summaryImage: boolean };
+type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean };
 
 function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; onDone: () => void }) {
   const t = useTranslations("Events.games");
@@ -400,8 +401,8 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
   const [pending, startTransition] = useTransition();
   const form = useForm<SourceValues>({
     defaultValues: source
-      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, accentColor: source.accentColor, summaryImage: source.summaryImage }
-      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, accentColor: "#00ffa8", summaryImage: false },
+      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, reminderDefaults: source.reminderDefaults, accentColor: source.accentColor, summaryImage: source.summaryImage }
+      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, reminderDefaults: {}, accentColor: "#00ffa8", summaryImage: false },
   });
   const { errors } = form.formState;
   const none: SelectOption[] = [{ value: "", label: t("none") }, ...channelOptions];
@@ -468,6 +469,24 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
         <Field>
           <FieldLabel htmlFor="gs-summary">{t("summaryChannel")}</FieldLabel>
           <FormSelect control={form.control} name="summaryChannelId" id="gs-summary" options={none} placeholder={t("none")} />
+        </Field>
+        <Field>
+          <FieldLabel>{t("remindersByKind")}</FieldLabel>
+          <Controller
+            control={form.control}
+            name="reminderDefaults"
+            render={({ field }) => (
+              <ul className="flex flex-col gap-2">
+                {EVENT_KINDS.map((k) => (
+                  <li key={k} className="grid items-center gap-2 sm:grid-cols-[7rem_1fr]">
+                    <span className="text-sm font-medium">{t(`kind.${k}` as never)}</span>
+                    <ReminderPicker id={`gs-rem-${k}`} value={field.value[k] ?? []} onChange={(next) => field.onChange({ ...field.value, [k]: next })} invalid={false} emptyLabel={t("reminderDefaultEmpty")} clearLabel={t("reminderDefaultClear")} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          />
+          <FieldDescription>{t("remindersByKindHelp")}</FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="gs-accent">{t("accent")}</FieldLabel>

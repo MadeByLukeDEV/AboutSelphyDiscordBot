@@ -6,14 +6,14 @@ import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
 import { aiConfigured } from "../../lib/ai";
 import { createHash } from "node:crypto";
-import { itemKey } from "@aboutselphy/shared/eventcal";
+import { itemKey, reminderDefaultsSchema } from "@aboutselphy/shared/eventcal";
 import { dateRangeText, renderEventCard, renderMonthlyCard, tryDraw, weeklyText, type CardTheme, type MonthlyCardRow } from "./cards";
 import type { CalEvent } from "./ics";
 import { syncSource } from "./sync";
 import { inferKind, toCalEvent } from "./store";
 import { claimMonth, clearSyncFlags, readBackground, readGameEvent, readItems, releaseMonth, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
-import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, planStages, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
+import { eventHash, eventMessage, firstSentence, monthEvents, monthLabel, monthlyEntries, monthlyHash, monthlyLine, monthlyMessages, leadTimesFor, planStages, matchesRule, overviewEvents, overviewHash, overviewMessage } from "./rules";
 
 // The event calendar announcer. Every 30 minutes (and when the dashboard says so) it reads the calendar, then for every rule posts each
 // matching event that starts within the rule's lead time, one message per event. An occurrence is claimed in the database BEFORE it is
@@ -146,6 +146,8 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
       const rules = await listRules(config.id);
       const budget = { left: MAX_AI_CALLS_PER_CHECK };
       const cardCtx = rules.some((r) => r.useCard) ? await cardContext(config, loaded) : null;
+      // The game's announcement times per kind (anything unreadable counts as none set).
+      const reminderDefaults = reminderDefaultsSchema.safeParse(config.reminderDefaults).data ?? {};
 
       for (const rule of rules) {
         // A repeating series ("Every Tuesday") is listed as one entry; a rule that has "post series" on announces each occurrence of it (its next one is the entry's start).
@@ -153,7 +155,7 @@ async function checkSource(guild: Guild, config: SourceState): Promise<EventChec
           // Every occurrence of a series is its own post: its key carries the occurrence's start.
           const postKey = (event.recurrence ? `${event.key}|${event.start.toISOString().slice(0, 16)}` : event.key).slice(0, 160);
           // The event's own lead times (set in the dashboard) win over the rule's. Stage 0 is the announcement, later stages are reminders.
-          const steps = planStages(event, now, event.reminderDays && event.reminderDays.length > 0 ? event.reminderDays : rule.leadDays);
+          const steps = planStages(event, now, leadTimesFor(event, reminderDefaults, rule.leadDays));
           if (steps.length === 0) continue;
           // A rule with pictures also edits its posts when the picture would change (a new item picture, another colour).
           const hash = rule.useCard && cardCtx ? sha1(eventHash(event) + cardStamp(cardCtx, event)) : eventHash(event);
