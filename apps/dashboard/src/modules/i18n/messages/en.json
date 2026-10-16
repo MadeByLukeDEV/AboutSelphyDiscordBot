@@ -2796,12 +2796,34 @@
       "inactiveXpDays": {
         "label": "Inactive level records (days)",
         "help": "Members who earned no XP for this long lose their level record."
+      },
+      "pollDays": {
+        "label": "Ended polls (days)",
+        "help": "Ended polls are deleted with their votes. Running polls and drafts stay."
+      },
+      "giveawayDays": {
+        "label": "Ended giveaways (days)",
+        "help": "Ended and cancelled giveaways are deleted with their entries. Running ones and drafts stay."
+      },
+      "starboardDays": {
+        "label": "Starboard records (days)",
+        "help": "Old starboard records are deleted. The re-posts already in Discord stay."
       }
     },
     "errors": {
       "forbidden": "You don't have access to this.",
       "invalid": "Enter a whole number from 0 to 3650.",
       "failed": "Couldn't save the settings. Try again."
+    },
+    "erase": {
+      "eraseTitle": "Erase a member's data",
+      "eraseIntro": "Removes what a member could delete themselves with /mydata delete: birthday, reminders, level record, remembered roles and voice room, invite record, votes, giveaway entries, AFK status and Twitch link. Their name is removed from suggestions and starboard posts. Moderation cases and tickets are kept (see the privacy policy). Use this when someone asks you to erase their data.",
+      "eraseId": "Discord ID",
+      "eraseConfirm": "Type ERASE to confirm",
+      "eraseButton": "Erase data",
+      "eraseDone": "Erased: {summary}.",
+      "eraseNothing": "Nothing was stored about this member.",
+      "eraseBotDown": "The bot couldn't be reached, nothing was erased."
     }
   },
   "Members": {

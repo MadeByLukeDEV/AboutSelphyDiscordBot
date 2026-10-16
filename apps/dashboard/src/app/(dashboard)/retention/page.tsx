@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { isAdmin, requireStaffPage } from "@/modules/auth";
 import { getRetentionPage } from "@/modules/retention";
+import { EraseMember } from "@/modules/retention/components/erase-member";
 import { RetentionManager } from "@/modules/retention/components/retention-manager";
 
 export async function generateMetadata() {
@@ -23,6 +24,7 @@ export default async function RetentionPage() {
         <p className="max-w-prose text-muted-foreground">{t("intro")}</p>
       </header>
       <RetentionManager initial={settings} last={last} />
+      <EraseMember />
     </>
   );
 }

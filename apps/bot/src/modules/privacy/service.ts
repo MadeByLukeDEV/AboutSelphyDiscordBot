@@ -1,10 +1,19 @@
-import { Events, type Client } from "discord.js";
+import { Events, type Client, type Guild } from "discord.js";
 import { onReload } from "../../internal-api/reload";
 import { integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
 import { log } from "../../lib/log";
-import { prune, readRetention, recordRun } from "./repository";
+import { unlinkMember } from "../twitchvip";
+import { deleteMember, prune, readRetention, recordRun, type DeleteCounts } from "./repository";
 import { cutoff, describeRun } from "./rules";
+
+/** An admin erases one member's data on request: the same removal as the member's own /mydata delete (cases and tickets stay). The Twitch link goes first so the VIP role comes off. */
+export async function eraseMember(guild: Guild, userId: string): Promise<{ counts: DeleteCounts; twitchLinkRemoved: boolean }> {
+  const twitchLinkRemoved = await unlinkMember(guild, userId);
+  const counts = await deleteMember(userId);
+  log.info({ user: userId, ...counts, twitchLinkRemoved }, "privacy: erased on request");
+  return { counts, twitchLinkRemoved };
+}
 
 // Data retention. Once a day (and when the dashboard saves new settings) the bot removes personal data older than the
 // limits an admin set; every limit is 0 (keep) until they choose one. Nothing here runs in a local development run
@@ -19,10 +28,10 @@ export function pruneNow(): Promise<void> {
     try {
       const config = await readRetention();
       const now = new Date();
-      const cuts = { transcript: cutoff(config.ticketTranscriptDays, now), cases: cutoff(config.caseDays, now), suggestions: cutoff(config.suggestionDays, now), xp: cutoff(config.inactiveXpDays, now) };
+      const cuts = { transcript: cutoff(config.ticketTranscriptDays, now), cases: cutoff(config.caseDays, now), suggestions: cutoff(config.suggestionDays, now), xp: cutoff(config.inactiveXpDays, now), polls: cutoff(config.pollDays, now), giveaways: cutoff(config.giveawayDays, now), starboard: cutoff(config.starboardDays, now) };
       // prune() always clears the audit trail after a year, so it runs even when every limit is off.
       const result = await prune(cuts, now);
-      if (!cuts.transcript && !cuts.cases && !cuts.suggestions && !cuts.xp) return void log.info({}, "retention: every limit is off, only the audit trail was cleaned");
+      if (Object.values(cuts).every((c) => !c)) return void log.info({}, "retention: every limit is off, only the audit trail was cleaned");
       await recordRun(describeRun(result));
       log.info({ ...result }, "retention: removed old data");
     } catch (err) {

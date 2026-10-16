@@ -13,6 +13,7 @@ import {
   stickyClearBody,
   moderationActBody,
   twitchVipUnlinkBody,
+  eraseMemberBody,
   twitchVipLinkedBody,
   roleMergeBody,
   roleUpdateBody,
@@ -35,6 +36,7 @@ import { env } from "../lib/env";
 import { log } from "../lib/log";
 import { deleteSent, editSent } from "../modules/announcements";
 import { actFromDashboard, refreshCaseLog } from "../modules/moderation";
+import { eraseMember } from "../modules/privacy";
 import { createRole, deletePanelMessage, publishPanel } from "../modules/roles";
 import { cancelGiveaway, endGiveaway, startGiveaway } from "../modules/giveaways";
 import { deletePollMessage, endPoll, startPoll } from "../modules/polls";
@@ -361,6 +363,14 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, { status: await unlinkVip(guild, body.data.id) });
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/privacy/erase") {
+    const body = eraseMemberBody.safeParse(await readJsonBody(req));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await eraseMember(guild, body.data.userId));
   }
 
   if (req.method === "GET" && url.pathname === "/internal/modguide/preview") {

@@ -2796,12 +2796,34 @@
       "inactiveXpDays": {
         "label": "Inaktive Level-Einträge (Tage)",
         "help": "Mitglieder, die so lange keine XP bekommen haben, verlieren ihren Level-Eintrag."
+      },
+      "pollDays": {
+        "label": "Beendete Umfragen (Tage)",
+        "help": "Beendete Umfragen werden mit ihren Stimmen gelöscht. Laufende Umfragen und Entwürfe bleiben."
+      },
+      "giveawayDays": {
+        "label": "Beendete Gewinnspiele (Tage)",
+        "help": "Beendete und abgebrochene Gewinnspiele werden mit ihren Teilnahmen gelöscht. Laufende und Entwürfe bleiben."
+      },
+      "starboardDays": {
+        "label": "Starboard-Einträge (Tage)",
+        "help": "Alte Starboard-Einträge werden gelöscht. Die bereits in Discord geposteten Beiträge bleiben."
       }
     },
     "errors": {
       "forbidden": "Du hast hierauf keinen Zugriff.",
       "invalid": "Gib eine ganze Zahl von 0 bis 3650 ein.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    },
+    "erase": {
+      "eraseTitle": "Daten eines Mitglieds löschen",
+      "eraseIntro": "Entfernt, was ein Mitglied selbst mit /mydata delete löschen könnte: Geburtstag, Erinnerungen, Level-Eintrag, gemerkte Rollen und Sprachraum, Einladungs-Eintrag, Stimmen, Gewinnspiel-Teilnahmen, AFK-Status und Twitch-Verknüpfung. Der Name wird aus Vorschlägen und Starboard-Beiträgen entfernt. Moderationsfälle und Tickets bleiben (siehe Datenschutzerklärung). Nutze das, wenn jemand darum bittet, seine Daten zu löschen.",
+      "eraseId": "Discord-ID",
+      "eraseConfirm": "Tippe ERASE zur Bestätigung",
+      "eraseButton": "Daten löschen",
+      "eraseDone": "Gelöscht: {summary}.",
+      "eraseNothing": "Zu diesem Mitglied war nichts gespeichert.",
+      "eraseBotDown": "Der Bot war nicht erreichbar, es wurde nichts gelöscht."
     }
   },
   "Members": {

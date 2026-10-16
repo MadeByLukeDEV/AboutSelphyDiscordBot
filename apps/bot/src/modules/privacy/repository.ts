@@ -8,11 +8,11 @@ export const readRetention = () => prisma.retentionConfig.upsert({ where: { id: 
 
 export const recordRun = (lastResult: string) => prisma.retentionConfig.update({ where: { id: 1 }, data: { lastRunAt: new Date(), lastResult: lastResult.slice(0, 300) } });
 
-export type Cutoffs = { transcript: Date | null; cases: Date | null; suggestions: Date | null; xp: Date | null };
+export type Cutoffs = { transcript: Date | null; cases: Date | null; suggestions: Date | null; xp: Date | null; polls: Date | null; giveaways: Date | null; starboard: Date | null };
 
 /** Removes what is older than each cutoff (a null cutoff keeps everything of that kind). */
 export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
-  const result: PruneResult = { transcripts: 0, cases: 0, suggestions: 0, xp: 0 };
+  const result: PruneResult = { transcripts: 0, cases: 0, suggestions: 0, xp: 0, polls: 0, giveaways: 0, starboard: 0 };
   // The dashboard's audit trail keeps names of staff: it is always cleared after a year, even when every other limit is off.
   await prisma.auditEntry.deleteMany({ where: { at: { lt: new Date(now.getTime() - 365 * 86_400_000) } } });
   // Who joined through which invite is kept for a year, then removed, whatever the other limits say.
@@ -33,6 +33,15 @@ export async function prune(cut: Cutoffs, now: Date): Promise<PruneResult> {
   }
   if (cut.xp) {
     result.xp = (await prisma.memberXp.deleteMany({ where: { updatedAt: { lt: cut.xp } } })).count;
+  }
+  if (cut.polls) {
+    result.polls = (await prisma.poll.deleteMany({ where: { status: "ended", endsAt: { lt: cut.polls } } })).count; // votes go with them (cascade)
+  }
+  if (cut.giveaways) {
+    result.giveaways = (await prisma.giveaway.deleteMany({ where: { status: { in: ["ended", "cancelled"] }, endsAt: { lt: cut.giveaways } } })).count; // entries go with them (cascade)
+  }
+  if (cut.starboard) {
+    result.starboard = (await prisma.starboardPost.deleteMany({ where: { createdAt: { lt: cut.starboard } } })).count;
   }
   return result;
 }

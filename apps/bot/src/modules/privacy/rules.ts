@@ -7,11 +7,11 @@ export function cutoff(days: number, now: Date): Date | null {
   return Number.isInteger(days) && days > 0 ? new Date(now.getTime() - days * DAY_MS) : null;
 }
 
-export type PruneResult = { transcripts: number; cases: number; suggestions: number; xp: number };
+export type PruneResult = { transcripts: number; cases: number; suggestions: number; xp: number; polls: number; giveaways: number; starboard: number };
 
 /** One line for the dashboard: what the last run removed. */
 export function describeRun(result: PruneResult): string {
-  return `transcripts ${result.transcripts}, cases ${result.cases}, suggestions ${result.suggestions}, level records ${result.xp}`;
+  return `transcripts ${result.transcripts}, cases ${result.cases}, suggestions ${result.suggestions}, level records ${result.xp}, polls ${result.polls}, giveaways ${result.giveaways}, starboard ${result.starboard}`;
 }
 
 /** Strings in an export are cut so a huge row can't make the file or the reply too large. */

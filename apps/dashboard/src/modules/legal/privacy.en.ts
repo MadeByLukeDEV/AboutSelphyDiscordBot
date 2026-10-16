@@ -88,7 +88,7 @@ export function privacyEn(o: Operator): LegalDoc {
               "Birthdays, reminders and your Twitch VIP link: deleted when you remove them (/birthday remove, /remind cancel, /vip unlink) or when you leave the server. Delivered reminders are deleted after one day.",
               "Remembered roles after leaving: 90 days.",
               "Moderation cases and notes: kept while they are needed to keep the community safe and to answer appeals, and removed automatically after the period the operator has set (permanent bans excepted). You can ask for deletion (section 8).",
-              "Ticket transcripts, decided suggestions and inactive level records: removed automatically after the period the operator has set. Polls, giveaway entries and starboard posts: kept while the feature is in use and until you delete them with /mydata delete or the operator removes them.",
+              "Ticket transcripts, decided suggestions, inactive level records, ended polls, ended giveaways (with their entries) and starboard records: removed automatically after the period the operator has set. Until then they are kept while the feature is in use, and you can delete your part with /mydata delete or ask the operator to erase it.",
               "Which invite you joined through: one year. The dashboard's audit trail (which staff member changed which setting, and when): one year.",
               "Server logs in staff channels: kept as long as staff keep the messages in those Discord channels.",
               "Technical logs of the bot (user and channel IDs, errors) live on the server and are rotated by the hosting setup. They contain no message text.",

@@ -890,7 +890,7 @@ Decided 2026-10-08:
     asks for an "I understand" tick whenever a change removes data that exists now. Result of the last run is shown. Runs only
     in production or with `BOT_INTEGRATIONS_IN_DEV` (it deletes rows). The privacy policy now describes both
     (`LEGAL_LAST_UPDATED` 2026-10-31).
-  - [ ] Still open: retention for polls/giveaway entries/starboard posts, a dashboard tool to erase a member on request.
+  - [x] **More retention and erase on request** (2026-11-10, `feature_gdpr-erase`, migration `20261116160000_retention_more`; **not tried live yet**): `RetentionConfig.pollDays/giveawayDays/starboardDays` (0 = keep): ended polls (votes cascade), ended or cancelled giveaways (entries cascade) and starboard records (the re-posts in Discord stay) are removed by the daily job after that many days (`prune`, `PruneResult` grew three counts). `/retention` has an "Erase a member's data" card (admins, a typed ERASE guard, `eraseMemberDataAction` -> `POST /internal/privacy/erase` -> `eraseMember`): exactly the removal of the member's own `/mydata delete` (Twitch link first so the VIP role comes off; cases and tickets stay), audited without the id. Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-11-10).
 - [x] **Audit trail** (2026-11-04, `feature_audit-trail`, migration `20261104100000_audit_trail`; **not tried live yet**): admin page `/audit`
       (System group): who changed what in the dashboard and when, newest 200, filter by area. **Every mutating Server Action is
       wrapped** (72 of them, done by script: each `export async function xAction` became a private `xActionRun` plus an exported

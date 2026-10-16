@@ -1,4 +1,5 @@
 import { eventCheckResponse, eventOverviewStatus, eventRepostStatus, type EventCheckResponse, type EventOverviewStatus, type EventRepostStatus, eventPreviewResponse } from "@aboutselphy/shared/eventcal";
+import { eraseMemberResponse, type EraseMemberResponse } from "@aboutselphy/shared/retention";
 import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
@@ -443,5 +444,13 @@ export async function decideSuggestionViaBot(input: { id: string; status: "appro
   const res = await botFetch("/internal/suggestions/decide", { method: "POST", body: input });
   if (!res?.ok) return null;
   const parsed = suggestionDecideStatus.safeParse((await res.json().catch(() => null))?.status);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to erase a member's data on request. Null if the bot can't be reached. */
+export async function eraseMemberViaBot(userId: string): Promise<EraseMemberResponse | null> {
+  const res = await botFetch("/internal/privacy/erase", { method: "POST", body: { userId }, timeoutMs: 20_000 });
+  if (!res?.ok) return null;
+  const parsed = eraseMemberResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;
 }

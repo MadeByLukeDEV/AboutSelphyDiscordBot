@@ -1185,6 +1185,9 @@ model RetentionConfig {
   caseDays             Int       @default(0)
   suggestionDays       Int       @default(0)
   inactiveXpDays       Int       @default(0)
+  pollDays             Int       @default(0)
+  giveawayDays         Int       @default(0)
+  starboardDays        Int       @default(0)
   lastRunAt            DateTime?
   /// What the last run removed, in words (never personal data).
   lastResult           String    @default("") @db.VarChar(300)

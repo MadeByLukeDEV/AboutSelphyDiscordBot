@@ -17,7 +17,7 @@ describe("cutoff", () => {
 });
 
 describe("settings", () => {
-  const ok = { ticketTranscriptDays: 0, caseDays: 365, suggestionDays: 180, inactiveXpDays: 730 };
+  const ok = { ticketTranscriptDays: 0, caseDays: 365, suggestionDays: 180, inactiveXpDays: 730, pollDays: 0, giveawayDays: 90, starboardDays: 0 };
   it("accepts 0 (keep) up to ten years", () => {
     expect(retentionSettingsSchema.safeParse(ok).success).toBe(true);
     expect(retentionSettingsSchema.safeParse({ ...ok, caseDays: MAX_RETENTION_DAYS }).success).toBe(true);
@@ -31,7 +31,7 @@ describe("settings", () => {
 
 describe("helpers", () => {
   it("describes a run", () => {
-    expect(describeRun({ transcripts: 1, cases: 2, suggestions: 3, xp: 4 })).toBe("transcripts 1, cases 2, suggestions 3, level records 4");
+    expect(describeRun({ transcripts: 1, cases: 2, suggestions: 3, xp: 4, polls: 5, giveaways: 6, starboard: 7 })).toBe("transcripts 1, cases 2, suggestions 3, level records 4, polls 5, giveaways 6, starboard 7");
   });
   it("clips long text and survives missing text", () => {
     expect(clip("x".repeat(900))).toHaveLength(500);
