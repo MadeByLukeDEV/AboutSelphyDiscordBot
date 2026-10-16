@@ -31,7 +31,7 @@ export async function setSelection(pollId: string, userId: string, next: Set<num
   ]);
 }
 
-export const allVotes = (pollId: string) => prisma.pollVote.findMany({ where: { pollId }, select: { userId: true, optionIndex: true } });
+export const allVotes = (pollId: string) => prisma.pollVote.findMany({ where: { pollId }, select: { userId: true, optionIndex: true, createdAt: true } });
 
 /** Active polls that might need a reminder (the exact window is decided by `reminderDue`). */
 export const listReminderCandidates = () => prisma.poll.findMany({ where: { status: "active", remindBeforeMinutes: { gt: 0 }, reminderSentAt: null, endsAt: { not: null } }, take: 20 });

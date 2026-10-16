@@ -7,7 +7,7 @@ import { log } from "../../lib/log";
 import { escapeText, truncate } from "../../lib/escape";
 import { renderPollChart } from "./chart";
 import { activate, allVotes, claimEnd, claimReminder, find, listDue, listReminderCandidates } from "./repository";
-import { buildPollMessage, chartModel, reminderDue, tally } from "./rules";
+import { buildPollMessage, chartModel, reminderDue, tally, timelineModel } from "./rules";
 
 // Polls. A poll is created (a draft), then started: the bot posts it with one button per option. Votes
 // are anonymous (only counts are shown). Updating the post for every click would hit Discord's limits,
@@ -106,7 +106,8 @@ async function postChart(guild: Guild, id: string): Promise<void> {
   if (counts.every((c) => c === 0)) return;
   const channel = await channelOf(guild, p.channelId);
   if (!channel) return;
-  const png = await renderPollChart(p.question, chartModel(p.options, counts), new Set(votes.map((v) => v.userId)).size);
+  const timeline = p.startedAt ? timelineModel(votes, p.startedAt, p.endedAt ?? new Date()) : null;
+  const png = await renderPollChart(p.question, chartModel(p.options, counts), new Set(votes.map((v) => v.userId)).size, timeline);
   await channel.send({
     content: `📊 Results of **${escapeText(truncate(p.question, 200))}**`,
     files: [new AttachmentBuilder(png, { name: "results.png" })],

@@ -810,6 +810,8 @@ model PollVote {
   poll        Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
   userId      String @db.VarChar(20)
   optionIndex Int
+  /// When the vote was cast (the chart of votes over time at the end of a poll).
+  createdAt   DateTime @default(now())
 
   @@id([pollId, userId, optionIndex])
 }

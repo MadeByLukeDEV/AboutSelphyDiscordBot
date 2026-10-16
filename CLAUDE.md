@@ -1081,7 +1081,7 @@ Decided 2026-10-08:
     after the end, and only when the poll runs at least twice as long as the lead; one conditional UPDATE on `reminderSentAt` makes
     it once. When a poll ends and has votes, `polls/chart.ts` (canvas, bundled font) posts a results bar chart (`chartModel`: shares,
     leaders marked, ties mark all) as a reply with an escaped title; a drawing failure is only logged.
-  - [ ] A votes-over-time chart.
+  - [x] **Voters over time** (2026-11-11, `feature_poll-timeline`, migration `20261116260000_poll_vote_time`; **not tried live yet**): `PollVote.createdAt`; the results picture of an ended poll gets a second panel, a running total of voters over the poll's life in 24 slices (`timelineModel`, pure and tested: a voter counts from their first vote, votes are clamped into the window, null for fewer than 5 voters or a poll shorter than an hour). No names on it; the privacy policy mentions the vote time (`LEGAL_LAST_UPDATED` 2026-11-11). Changing a vote re-creates its rows, so it counts from the final vote.
   - **Picture** (2026-10-22, `feature_giveaway-poll-images`, migration `20261022180000_giveaway_poll_images`):
     `imageUrl` on polls and giveaways (https only, shared `isAllowedImageUrl`, a DB CHECK, re-checked by the
     bot), shown big in the post; the dashboard forms and `/poll image:` take the address.

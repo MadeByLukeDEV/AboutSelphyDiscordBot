@@ -120,3 +120,28 @@ export function chartModel(options: readonly string[], counts: readonly number[]
     return { label: label.length > 60 ? `${label.slice(0, 59)}…` : label, count, percent: total === 0 ? 0 : Math.round((count / total) * 100), winner: top > 0 && count === top };
   });
 }
+
+export type Timeline = { points: number[]; start: Date; end: Date };
+
+/**
+ * Voters over time: the running number of people who had voted at the end of each of `buckets` equal slices of the poll's life.
+ * A voter counts from their first vote. Null when the picture would say nothing (fewer than 5 voters, or a poll shorter than an hour).
+ */
+export function timelineModel(votes: ReadonlyArray<{ userId: string; createdAt: Date }>, start: Date, end: Date, buckets = 24): Timeline | null {
+  const span = end.getTime() - start.getTime();
+  if (span < 3_600_000) return null;
+  const first = new Map<string, number>();
+  for (const v of votes) {
+    const t = Math.min(Math.max(v.createdAt.getTime(), start.getTime()), end.getTime());
+    const known = first.get(v.userId);
+    if (known === undefined || t < known) first.set(v.userId, t);
+  }
+  if (first.size < 5) return null;
+  const points = new Array<number>(buckets).fill(0);
+  for (const t of first.values()) {
+    const slot = Math.min(buckets - 1, Math.floor(((t - start.getTime()) / span) * buckets));
+    points[slot]! += 1;
+  }
+  for (let i = 1; i < buckets; i++) points[i]! += points[i - 1]!;
+  return { points, start, end };
+}
