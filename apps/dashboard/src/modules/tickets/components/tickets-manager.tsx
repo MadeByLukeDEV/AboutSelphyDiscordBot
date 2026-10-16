@@ -1,5 +1,6 @@
 "use client";
 
+import { PageTabs } from "@/components/page/page-tabs";
 import Link from "next/link";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,7 @@ export function TicketsManager({
   categories,
   ratings,
   canEdit,
+  initialTab,
 }: {
   initial: TicketSettings;
   panelPosted: boolean;
@@ -44,6 +46,7 @@ export function TicketsManager({
   categories: TicketCategoryInput[];
   ratings: { average: number | null; count: number };
   canEdit: boolean;
+  initialTab?: string;
 }) {
   const t = useTranslations("Tickets");
   const te = useTranslations("Tickets.errors");
@@ -102,149 +105,171 @@ export function TicketsManager({
 
   return (
     <div className="flex flex-col gap-fluid">
-      {canEdit && (
-        <form onSubmit={onSubmit} className="surface flex flex-col gap-5 p-5" noValidate>
-          <div className="flex flex-col gap-1">
-            <h2 className="text-fluid-lg font-bold">{t("form.title")}</h2>
-            <p className="max-w-prose text-sm text-muted-foreground">{t("form.intro")}</p>
-          </div>
-          <FieldGroup>
-            <Field orientation="horizontal">
-              <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="tk-enabled" checked={field.value} onCheckedChange={field.onChange} aria-describedby="tk-enabled-help" />} />
-              <div className="flex flex-col gap-1">
-                <FieldLabel htmlFor="tk-enabled">{t("form.enabled")}</FieldLabel>
-                <FieldDescription id="tk-enabled-help">{t("form.enabledHelp")}</FieldDescription>
-              </div>
-            </Field>
-            {channelField("panelChannelId", t("form.panelChannel"), t("form.panelChannelHelp"), textOptions)}
-            {channelField("categoryId", t("form.category"), t("form.categoryHelp"), categoryOptions)}
-            <Field data-invalid={Boolean(errors.staffRoleIds) || undefined}>
-              <FieldLabel htmlFor="tk-staff">{t("form.staff", { max: MAX_STAFF_ROLES })}</FieldLabel>
-              <Controller
-                control={form.control}
-                name="staffRoleIds"
-                render={({ field }) => (
-                  <MultiPicker
-                    id="tk-staff"
-                    value={field.value}
-                    onChange={field.onChange}
-                    items={roleItems}
-                    max={MAX_STAFF_ROLES}
-                    labels={{ selected: t("form.staffSelected"), none: t("form.staffNone"), search: t("form.staffSearch"), noMatch: t("form.noMatch"), full: t("form.staffFull", { max: MAX_STAFF_ROLES }), offline: t("form.botOffline"), remove: (name) => t("form.remove", { name }) }}
-                  />
-                )}
-              />
-              <FieldDescription>{t("form.staffHelp")}</FieldDescription>
-              {errors.staffRoleIds && <FieldError>{te("needsStaff")}</FieldError>}
-            </Field>
-            {channelField("logChannelId", t("form.logChannel"), t("form.logChannelHelp"), textOptions)}
-            <Field>
-              <FieldLabel htmlFor="tk-max">{t("form.maxOpen")}</FieldLabel>
-              <Input id="tk-max" type="number" inputMode="numeric" min={1} max={MAX_OPEN_PER_USER} className="max-w-[8rem]" {...form.register("maxOpenPerUser", { valueAsNumber: true })} />
-              <FieldDescription>{t("form.maxOpenHelp")}</FieldDescription>
-            </Field>
-            <Field orientation="horizontal">
-              <Controller control={form.control} name="askReason" render={({ field }) => <Switch id="tk-ask" checked={field.value} onCheckedChange={field.onChange} />} />
-              <div className="flex flex-col gap-0.5">
-                <FieldLabel htmlFor="tk-ask">{t("form.askReason")}</FieldLabel>
-                <FieldDescription>{t("form.askReasonHelp")}</FieldDescription>
-              </div>
-            </Field>
-            <Field orientation="horizontal">
-              <Controller control={form.control} name="askRating" render={({ field }) => <Switch id="tk-rating" checked={field.value} onCheckedChange={field.onChange} />} />
-              <div className="flex flex-col gap-0.5">
-                <FieldLabel htmlFor="tk-rating">{t("form.askRating")}</FieldLabel>
-                <FieldDescription>{t("form.askRatingHelp")}</FieldDescription>
-              </div>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="tk-autoclose">{t("form.autoClose")}</FieldLabel>
-              <Input id="tk-autoclose" type="number" inputMode="numeric" min={0} max={MAX_AUTOCLOSE_HOURS} className="max-w-[8rem]" {...form.register("autoCloseHours", { valueAsNumber: true })} />
-              <FieldDescription>{t("form.autoCloseHelp", { max: MAX_AUTOCLOSE_HOURS })}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="tk-claims">{t("form.maxClaims")}</FieldLabel>
-              <Input id="tk-claims" type="number" inputMode="numeric" min={0} max={MAX_CLAIMS_PER_STAFF} className="max-w-[8rem]" {...form.register("maxClaimsPerStaff", { valueAsNumber: true })} />
-              <FieldDescription>{t("form.maxClaimsHelp", { max: MAX_CLAIMS_PER_STAFF })}</FieldDescription>
-            </Field>
-
-            <Field><FieldLabel htmlFor="tk-title">{t("form.panelTitle")}</FieldLabel><Input id="tk-title" maxLength={256} {...form.register("panelTitle")} /></Field>
-            <Field><FieldLabel htmlFor="tk-desc">{t("form.panelDescription")}</FieldLabel><Textarea id="tk-desc" rows={2} maxLength={2000} {...form.register("panelDescription")} />
-<EmoteInsert targetId="tk-desc" /></Field>
-            <Field><FieldLabel htmlFor="tk-button">{t("form.buttonLabel")}</FieldLabel><Input id="tk-button" maxLength={80} {...form.register("buttonLabel")} /></Field>
-            <Field>
-              <FieldLabel htmlFor="tk-welcome">{t("form.welcome")}</FieldLabel>
-              <Textarea id="tk-welcome" rows={3} maxLength={MAX_TICKET_TEXT} {...form.register("welcomeTemplate")} />
-<EmoteInsert targetId="tk-welcome" />
-              <FieldDescription>{t("form.welcomeHelp")}</FieldDescription>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="tk-color">{t("form.color")}</FieldLabel>
-              <div className="flex items-center gap-2">
-                <ColorPicker id="tk-color" value={colorToHex(color)} onChange={(hex) => {
-                    const next = hexToColor(hex);
-                    if (next !== undefined) form.setValue("panelColor", next, { shouldDirty: true });
-                  }} />
-                <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("panelColor", DEFAULT_TICKET_COLOR, { shouldDirty: true })}>
-                  {t("form.colorReset")}
-                </Button>
-              </div>
-            </Field>
-          </FieldGroup>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Button type="submit" disabled={pending || !isDirty}>
-              {pending ? t("form.saving") : t("form.save")}
-            </Button>
-            <Button type="button" variant="outline" disabled={pending || isDirty || !initial.enabled} onClick={post}>
-              {panelPosted ? t("panel.update") : t("panel.post")}
-            </Button>
-            <p className="text-xs text-muted-foreground">{isDirty ? t("panel.saveFirst") : panelPosted ? t("panel.updateHelp") : t("panel.postHelp")}</p>
-          </div>
-        </form>
-      )}
-
-      {canEdit && <TicketCategories initial={categories} channels={channels} roles={roles} />}
-
-      <section aria-labelledby="tk-list" className="flex flex-col gap-3">
-        <h2 id="tk-list" className="text-fluid-lg font-bold">
-          {t("list.title")}
-        </h2>
-        {ratings.count > 0 && ratings.average !== null && <p className="text-sm text-muted-foreground">{t("list.rating", { average: ratings.average.toFixed(1), count: ratings.count })}</p>}
-        {tickets.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-8 text-center">
-            <h3 className="font-semibold">{t("list.empty.title")}</h3>
-            <p className="max-w-md text-sm text-muted-foreground">{t("list.empty.body")}</p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {tickets.map((k) => (
-              <li key={k.id}>
-                <Link href={`/tickets/${k.number}`} className="surface surface-interactive flex overflow-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-                  <span className={cn("w-1.5 shrink-0", k.status === "open" ? "bg-primary" : "bg-muted-foreground/40")} aria-hidden />
-                  <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-                    <span className="w-14 shrink-0 text-fluid-lg font-semibold tabular-nums">#{k.number}</span>
-                    <div className="min-w-[10rem] flex-1">
-                      <p className="truncate font-medium">{k.openerName || k.openerId}</p>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {when(k.createdAt)}
-                        {k.claimedByName ? ` · ${t("list.claimed", { name: k.claimedByName })}` : ""}
-                        {k.closedByName ? ` · ${t("list.closedBy", { name: k.closedByName })}` : ""}
-                        {k.categoryLabel ? ` · ${k.categoryLabel}` : ""}
-                        {k.rating ? ` · ${"★".repeat(k.rating)}${"☆".repeat(5 - k.rating)}` : ""}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {k.status === "closed" && <span className="text-xs text-muted-foreground">{k.hasTranscript ? t("list.messages", { count: k.messageCount }) : t("list.noTranscript")}</span>}
-                      <Badge variant={k.status === "open" ? "default" : "secondary"}>{k.status === "open" ? t("list.open") : t("list.closed")}</Badge>
-                    </div>
+      <PageTabs
+        initial={initialTab}
+        tabs={[
+          {
+            id: "tickets",
+            label: t("tabs.tickets"),
+            content: (
+              <>
+              <section aria-labelledby="tk-list" className="flex flex-col gap-3">
+                <h2 id="tk-list" className="text-fluid-lg font-bold">
+                  {t("list.title")}
+                </h2>
+                {ratings.count > 0 && ratings.average !== null && <p className="text-sm text-muted-foreground">{t("list.rating", { average: ratings.average.toFixed(1), count: ratings.count })}</p>}
+                {tickets.length === 0 ? (
+                  <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-8 text-center">
+                    <h3 className="font-semibold">{t("list.empty.title")}</h3>
+                    <p className="max-w-md text-sm text-muted-foreground">{t("list.empty.body")}</p>
                   </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {tickets.map((k) => (
+                      <li key={k.id}>
+                        <Link href={`/tickets/${k.number}`} className="surface surface-interactive flex overflow-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                          <span className={cn("w-1.5 shrink-0", k.status === "open" ? "bg-primary" : "bg-muted-foreground/40")} aria-hidden />
+                          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
+                            <span className="w-14 shrink-0 text-fluid-lg font-semibold tabular-nums">#{k.number}</span>
+                            <div className="min-w-[10rem] flex-1">
+                              <p className="truncate font-medium">{k.openerName || k.openerId}</p>
+                              <p className="truncate text-sm text-muted-foreground">
+                                {when(k.createdAt)}
+                                {k.claimedByName ? ` · ${t("list.claimed", { name: k.claimedByName })}` : ""}
+                                {k.closedByName ? ` · ${t("list.closedBy", { name: k.closedByName })}` : ""}
+                                {k.categoryLabel ? ` · ${k.categoryLabel}` : ""}
+                                {k.rating ? ` · ${"★".repeat(k.rating)}${"☆".repeat(5 - k.rating)}` : ""}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {k.status === "closed" && <span className="text-xs text-muted-foreground">{k.hasTranscript ? t("list.messages", { count: k.messageCount }) : t("list.noTranscript")}</span>}
+                              <Badge variant={k.status === "open" ? "default" : "secondary"}>{k.status === "open" ? t("list.open") : t("list.closed")}</Badge>
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              </>
+            ),
+          },
+...(canEdit ? [
+          {
+            id: "settings",
+            label: t("tabs.settings"),
+            content: (
+              <>
+              {canEdit && (
+                <form onSubmit={onSubmit} className="surface flex flex-col gap-5 p-5" noValidate>
+                  <div className="flex flex-col gap-1">
+                    <h2 className="text-fluid-lg font-bold">{t("form.title")}</h2>
+                    <p className="max-w-prose text-sm text-muted-foreground">{t("form.intro")}</p>
+                  </div>
+                  <FieldGroup>
+                    <Field orientation="horizontal">
+                      <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="tk-enabled" checked={field.value} onCheckedChange={field.onChange} aria-describedby="tk-enabled-help" />} />
+                      <div className="flex flex-col gap-1">
+                        <FieldLabel htmlFor="tk-enabled">{t("form.enabled")}</FieldLabel>
+                        <FieldDescription id="tk-enabled-help">{t("form.enabledHelp")}</FieldDescription>
+                      </div>
+                    </Field>
+                    {channelField("panelChannelId", t("form.panelChannel"), t("form.panelChannelHelp"), textOptions)}
+                    {channelField("categoryId", t("form.category"), t("form.categoryHelp"), categoryOptions)}
+                    <Field data-invalid={Boolean(errors.staffRoleIds) || undefined}>
+                      <FieldLabel htmlFor="tk-staff">{t("form.staff", { max: MAX_STAFF_ROLES })}</FieldLabel>
+                      <Controller
+                        control={form.control}
+                        name="staffRoleIds"
+                        render={({ field }) => (
+                          <MultiPicker
+                            id="tk-staff"
+                            value={field.value}
+                            onChange={field.onChange}
+                            items={roleItems}
+                            max={MAX_STAFF_ROLES}
+                            labels={{ selected: t("form.staffSelected"), none: t("form.staffNone"), search: t("form.staffSearch"), noMatch: t("form.noMatch"), full: t("form.staffFull", { max: MAX_STAFF_ROLES }), offline: t("form.botOffline"), remove: (name) => t("form.remove", { name }) }}
+                          />
+                        )}
+                      />
+                      <FieldDescription>{t("form.staffHelp")}</FieldDescription>
+                      {errors.staffRoleIds && <FieldError>{te("needsStaff")}</FieldError>}
+                    </Field>
+                    {channelField("logChannelId", t("form.logChannel"), t("form.logChannelHelp"), textOptions)}
+                    <Field>
+                      <FieldLabel htmlFor="tk-max">{t("form.maxOpen")}</FieldLabel>
+                      <Input id="tk-max" type="number" inputMode="numeric" min={1} max={MAX_OPEN_PER_USER} className="max-w-[8rem]" {...form.register("maxOpenPerUser", { valueAsNumber: true })} />
+                      <FieldDescription>{t("form.maxOpenHelp")}</FieldDescription>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <Controller control={form.control} name="askReason" render={({ field }) => <Switch id="tk-ask" checked={field.value} onCheckedChange={field.onChange} />} />
+                      <div className="flex flex-col gap-0.5">
+                        <FieldLabel htmlFor="tk-ask">{t("form.askReason")}</FieldLabel>
+                        <FieldDescription>{t("form.askReasonHelp")}</FieldDescription>
+                      </div>
+                    </Field>
+                    <Field orientation="horizontal">
+                      <Controller control={form.control} name="askRating" render={({ field }) => <Switch id="tk-rating" checked={field.value} onCheckedChange={field.onChange} />} />
+                      <div className="flex flex-col gap-0.5">
+                        <FieldLabel htmlFor="tk-rating">{t("form.askRating")}</FieldLabel>
+                        <FieldDescription>{t("form.askRatingHelp")}</FieldDescription>
+                      </div>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="tk-autoclose">{t("form.autoClose")}</FieldLabel>
+                      <Input id="tk-autoclose" type="number" inputMode="numeric" min={0} max={MAX_AUTOCLOSE_HOURS} className="max-w-[8rem]" {...form.register("autoCloseHours", { valueAsNumber: true })} />
+                      <FieldDescription>{t("form.autoCloseHelp", { max: MAX_AUTOCLOSE_HOURS })}</FieldDescription>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="tk-claims">{t("form.maxClaims")}</FieldLabel>
+                      <Input id="tk-claims" type="number" inputMode="numeric" min={0} max={MAX_CLAIMS_PER_STAFF} className="max-w-[8rem]" {...form.register("maxClaimsPerStaff", { valueAsNumber: true })} />
+                      <FieldDescription>{t("form.maxClaimsHelp", { max: MAX_CLAIMS_PER_STAFF })}</FieldDescription>
+                    </Field>
+
+                    <Field><FieldLabel htmlFor="tk-title">{t("form.panelTitle")}</FieldLabel><Input id="tk-title" maxLength={256} {...form.register("panelTitle")} /></Field>
+                    <Field><FieldLabel htmlFor="tk-desc">{t("form.panelDescription")}</FieldLabel><Textarea id="tk-desc" rows={2} maxLength={2000} {...form.register("panelDescription")} />
+        <EmoteInsert targetId="tk-desc" /></Field>
+                    <Field><FieldLabel htmlFor="tk-button">{t("form.buttonLabel")}</FieldLabel><Input id="tk-button" maxLength={80} {...form.register("buttonLabel")} /></Field>
+                    <Field>
+                      <FieldLabel htmlFor="tk-welcome">{t("form.welcome")}</FieldLabel>
+                      <Textarea id="tk-welcome" rows={3} maxLength={MAX_TICKET_TEXT} {...form.register("welcomeTemplate")} />
+        <EmoteInsert targetId="tk-welcome" />
+                      <FieldDescription>{t("form.welcomeHelp")}</FieldDescription>
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="tk-color">{t("form.color")}</FieldLabel>
+                      <div className="flex items-center gap-2">
+                        <ColorPicker id="tk-color" value={colorToHex(color)} onChange={(hex) => {
+                            const next = hexToColor(hex);
+                            if (next !== undefined) form.setValue("panelColor", next, { shouldDirty: true });
+                          }} />
+                        <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("panelColor", DEFAULT_TICKET_COLOR, { shouldDirty: true })}>
+                          {t("form.colorReset")}
+                        </Button>
+                      </div>
+                    </Field>
+                  </FieldGroup>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button type="submit" disabled={pending || !isDirty}>
+                      {pending ? t("form.saving") : t("form.save")}
+                    </Button>
+                    <Button type="button" variant="outline" disabled={pending || isDirty || !initial.enabled} onClick={post}>
+                      {panelPosted ? t("panel.update") : t("panel.post")}
+                    </Button>
+                    <p className="text-xs text-muted-foreground">{isDirty ? t("panel.saveFirst") : panelPosted ? t("panel.updateHelp") : t("panel.postHelp")}</p>
+                  </div>
+                </form>
+              )}
+
+              {canEdit && <TicketCategories initial={categories} channels={channels} roles={roles} />}
+              </>
+            ),
+          },
+          ] : []),
+        ]}
+      />
     </div>
   );
 }

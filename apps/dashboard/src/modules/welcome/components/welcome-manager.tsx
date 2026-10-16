@@ -1,5 +1,7 @@
 "use client";
 
+import { PageTabs } from "@/components/page/page-tabs";
+import { SaveBar } from "@/components/page/save-bar";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -40,7 +42,9 @@ export function WelcomeManager({
   channels,
   roles,
   cardImage,
+  initialTab,
 }: {
+  initialTab?: string;
   initial: WelcomeSettings;
   channels: GuildChannel[] | null;
   roles: GuildRole[] | null;
@@ -77,6 +81,7 @@ export function WelcomeManager({
         toast.error(te(result.error));
       }
     }),
+    () => toast.error(te("invalid")),
   );
 
   /** Inserts {placeholder} where the cursor is in one of the message fields. */
@@ -150,123 +155,145 @@ export function WelcomeManager({
   );
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-fluid" noValidate>
-      {card(
-        "w-roles",
-        t("roles.title"),
-        t("roles.intro"),
-        <>
-          <Field>
-            <FieldLabel htmlFor="w-auto">{t("roles.members", { max: MAX_AUTO_ROLES })}</FieldLabel>
-            <Controller control={form.control} name="autoRoleIds" render={({ field }) => <RolePicker id="w-auto" value={field.value} onChange={field.onChange} roles={roles} max={MAX_AUTO_ROLES} />} />
-            {errors.autoRoleIds && <FieldError>{te("invalid")}</FieldError>}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="w-bots">{t("roles.bots", { max: MAX_AUTO_ROLES })}</FieldLabel>
-            <Controller control={form.control} name="botAutoRoleIds" render={({ field }) => <RolePicker id="w-bots" value={field.value} onChange={field.onChange} roles={roles} max={MAX_AUTO_ROLES} />} />
-          </Field>
-          {toggle("restoreRoles", t("roles.restore"), t("roles.restoreHelp"))}
-        </>,
-      )}
+    <div className="flex flex-col gap-fluid">
+      <PageTabs
+        initial={initialTab}
+        tabs={[
+          {
+            id: "roles",
+            label: t("tabs.roles"),
+            content: (
+              <>
+              {card(
+                "w-roles",
+                t("roles.title"),
+                t("roles.intro"),
+                <>
+                  <Field>
+                    <FieldLabel htmlFor="w-auto">{t("roles.members", { max: MAX_AUTO_ROLES })}</FieldLabel>
+                    <Controller control={form.control} name="autoRoleIds" render={({ field }) => <RolePicker id="w-auto" value={field.value} onChange={field.onChange} roles={roles} max={MAX_AUTO_ROLES} />} />
+                    {errors.autoRoleIds && <FieldError>{te("invalid")}</FieldError>}
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="w-bots">{t("roles.bots", { max: MAX_AUTO_ROLES })}</FieldLabel>
+                    <Controller control={form.control} name="botAutoRoleIds" render={({ field }) => <RolePicker id="w-bots" value={field.value} onChange={field.onChange} roles={roles} max={MAX_AUTO_ROLES} />} />
+                  </Field>
+                  {toggle("restoreRoles", t("roles.restore"), t("roles.restoreHelp"))}
+                </>,
+              )}
+              </>
+            ),
+          },
+          {
+            id: "welcome",
+            label: t("tabs.welcome"),
+            content: (
+              <>
+              {card(
+                "w-welcome",
+                t("welcome.title"),
+                t("welcome.intro"),
+                <>
+                  {toggle("welcomeEnabled", t("welcome.enabled"))}
+                  {channelField("welcomeChannelId", t("welcome.channel"))}
+                  <Controller
+                    control={form.control}
+                    name="welcomeTemplates"
+                    render={({ field }) => <TemplateList value={field.value} onChange={field.onChange} invalid={Boolean(errors.welcomeTemplates)} />}
+                  />
+                  {errors.welcomeTemplates && <FieldError>{te("needsText")}</FieldError>}
+                  {toggle("welcomeAsEmbed", t("welcome.embed"), t("welcome.embedHelp"))}
+                  {v.welcomeAsEmbed && (
+                    <>
+                      <Field data-invalid={Boolean(errors.welcomeImageUrl) || undefined}>
+                        <FieldLabel htmlFor="w-image">{t("welcome.image")}</FieldLabel>
+                        <Input id="w-image" type="url" inputMode="url" autoComplete="off" maxLength={MAX_IMAGE_URL} placeholder="https://" aria-invalid={Boolean(errors.welcomeImageUrl) || undefined} {...form.register("welcomeImageUrl")} />
+                        <FieldDescription>{t("welcome.imageHelp")}</FieldDescription>
+                        {errors.welcomeImageUrl && <FieldError>{te("imageInvalid")}</FieldError>}
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="w-color">{t("welcome.color")}</FieldLabel>
+                        <div className="flex items-center gap-2">
+                          <ColorPicker id="w-color" value={colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR)} onChange={(hex) => {
+                              const next = hexToColor(hex);
+                              if (next !== undefined) form.setValue("welcomeColor", next, { shouldDirty: true });
+                            }} />
+                          <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("welcomeColor", DEFAULT_WELCOME_COLOR, { shouldDirty: true })}>
+                            {t("welcome.colorReset")}
+                          </Button>
+                        </div>
+                      </Field>
+                    </>
+                  )}
 
-      {card(
-        "w-welcome",
-        t("welcome.title"),
-        t("welcome.intro"),
-        <>
-          {toggle("welcomeEnabled", t("welcome.enabled"))}
-          {channelField("welcomeChannelId", t("welcome.channel"))}
-          <Controller
-            control={form.control}
-            name="welcomeTemplates"
-            render={({ field }) => <TemplateList value={field.value} onChange={field.onChange} invalid={Boolean(errors.welcomeTemplates)} />}
-          />
-          {errors.welcomeTemplates && <FieldError>{te("needsText")}</FieldError>}
-          {toggle("welcomeAsEmbed", t("welcome.embed"), t("welcome.embedHelp"))}
-          {v.welcomeAsEmbed && (
-            <>
-              <Field data-invalid={Boolean(errors.welcomeImageUrl) || undefined}>
-                <FieldLabel htmlFor="w-image">{t("welcome.image")}</FieldLabel>
-                <Input id="w-image" type="url" inputMode="url" autoComplete="off" maxLength={MAX_IMAGE_URL} placeholder="https://" aria-invalid={Boolean(errors.welcomeImageUrl) || undefined} {...form.register("welcomeImageUrl")} />
-                <FieldDescription>{t("welcome.imageHelp")}</FieldDescription>
-                {errors.welcomeImageUrl && <FieldError>{te("imageInvalid")}</FieldError>}
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="w-color">{t("welcome.color")}</FieldLabel>
-                <div className="flex items-center gap-2">
-                  <ColorPicker id="w-color" value={colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR)} onChange={(hex) => {
-                      const next = hexToColor(hex);
-                      if (next !== undefined) form.setValue("welcomeColor", next, { shouldDirty: true });
-                    }} />
-                  <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue("welcomeColor", DEFAULT_WELCOME_COLOR, { shouldDirty: true })}>
-                    {t("welcome.colorReset")}
-                  </Button>
-                </div>
-              </Field>
-            </>
-          )}
+                  <CardSettings form={form} cardImage={cardImage} version={version} />
 
-          <CardSettings form={form} cardImage={cardImage} version={version} />
-
-          <figure aria-label={t("preview.label")} className="flex flex-col gap-2">
-            <figcaption className="text-xs font-medium text-muted-foreground">{t("preview.label")}</figcaption>
-            <div className="flex gap-3 rounded-xl bg-[#313338] p-3 text-[#dbdee1]">
-              <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                AS
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                <p className="text-sm font-semibold text-white">{t("preview.botName")}</p>
-                {v.welcomeAsEmbed ? (
-                  <>
-                    <p className="text-sm"><span className="rounded bg-[#5865f2]/30 px-1 font-medium text-[#c9cdfb]">@NewMember</span></p>
-                    <div className="flex max-w-[30rem] overflow-hidden rounded bg-[#2b2d31]">
-                      <span className="w-1 shrink-0" style={{ backgroundColor: colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR) }} aria-hidden />
-                      <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
-                        <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
-                        {(v.welcomeImageUrl ?? "").trim() !== "" && (
-                          <div aria-hidden className="mt-1 flex aspect-video w-full items-center justify-center rounded bg-[#1e1f22] text-xs text-[#949ba4]">
-                            {t("preview.picture")}
-                          </div>
+                  <figure aria-label={t("preview.label")} className="flex flex-col gap-2">
+                    <figcaption className="text-xs font-medium text-muted-foreground">{t("preview.label")}</figcaption>
+                    <div className="flex gap-3 rounded-xl bg-[#313338] p-3 text-[#dbdee1]">
+                      <span aria-hidden className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        AS
+                      </span>
+                      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <p className="text-sm font-semibold text-white">{t("preview.botName")}</p>
+                        {v.welcomeAsEmbed ? (
+                          <>
+                            <p className="text-sm"><span className="rounded bg-[#5865f2]/30 px-1 font-medium text-[#c9cdfb]">@NewMember</span></p>
+                            <div className="flex max-w-[30rem] overflow-hidden rounded bg-[#2b2d31]">
+                              <span className="w-1 shrink-0" style={{ backgroundColor: colorToHex(v.welcomeColor ?? DEFAULT_WELCOME_COLOR) }} aria-hidden />
+                              <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
+                                <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
+                                {(v.welcomeImageUrl ?? "").trim() !== "" && (
+                                  <div aria-hidden className="mt-1 flex aspect-video w-full items-center justify-center rounded bg-[#1e1f22] text-xs text-[#949ba4]">
+                                    {t("preview.picture")}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <p className="text-sm break-words whitespace-pre-wrap">{fill(v.welcomeTemplates?.[0])}</p>
-                )}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">{(v.welcomeTemplates?.length ?? 0) > 1 ? t("preview.variants", { count: v.welcomeTemplates?.length ?? 0 }) : t("preview.note")}</p>
-          </figure>
-        </>,
-      )}
+                    <p className="text-xs text-muted-foreground">{(v.welcomeTemplates?.length ?? 0) > 1 ? t("preview.variants", { count: v.welcomeTemplates?.length ?? 0 }) : t("preview.note")}</p>
+                  </figure>
+                </>,
+              )}
+              {card(
+                "w-dm",
+                t("dm.title"),
+                t("dm.intro"),
+                <>
+                  {toggle("dmEnabled", t("dm.enabled"))}
+                  {templateField("dmTemplate", t("dm.message"), t("dm.messageHelp"))}
+                </>,
+              )}
+              </>
+            ),
+          },
+          {
+            id: "goodbye",
+            label: t("tabs.goodbye"),
+            content: (
+              <>
+              {card(
+                "w-goodbye",
+                t("goodbye.title"),
+                t("goodbye.intro"),
+                <>
+                  {toggle("goodbyeEnabled", t("goodbye.enabled"))}
+                  {channelField("goodbyeChannelId", t("goodbye.channel"))}
+                  {templateField("goodbyeTemplate", t("goodbye.message"), t("goodbye.messageHelp"))}
+                </>,
+              )}
+              </>
+            ),
+          },
+        ]}
+      />
 
-      {card(
-        "w-dm",
-        t("dm.title"),
-        t("dm.intro"),
-        <>
-          {toggle("dmEnabled", t("dm.enabled"))}
-          {templateField("dmTemplate", t("dm.message"), t("dm.messageHelp"))}
-        </>,
-      )}
-
-      {card(
-        "w-goodbye",
-        t("goodbye.title"),
-        t("goodbye.intro"),
-        <>
-          {toggle("goodbyeEnabled", t("goodbye.enabled"))}
-          {channelField("goodbyeChannelId", t("goodbye.channel"))}
-          {templateField("goodbyeTemplate", t("goodbye.message"), t("goodbye.messageHelp"))}
-        </>,
-      )}
-
-      <div>
-        <Button type="submit" disabled={pending || !isDirty}>
-          {pending ? t("form.saving") : t("form.save")}
-        </Button>
-      </div>
-    </form>
+      <SaveBar dirty={isDirty} pending={pending} onSave={() => void onSubmit()} onDiscard={() => form.reset(initial)} label={t("form.save")} savingLabel={t("form.saving")} dirtyLabel={t("form.unsaved")} discardLabel={t("form.discard")} />
+    </div>
   );
 }

@@ -8,7 +8,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Screening"))("title") };
 }
 
-export default async function ScreeningPage() {
+export default async function ScreeningPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   // All staff can decide; only admins see the settings (the actions enforce it too).
   const session = await requireStaffPage("/screening");
   const t = await getTranslations("Screening");
@@ -17,7 +18,7 @@ export default async function ScreeningPage() {
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <ScreeningManager initial={settings} entries={entries} channels={channels} roles={roles} canEdit={isAdmin(session.user.role)} />
+      <ScreeningManager initial={settings} entries={entries} channels={channels} roles={roles} canEdit={isAdmin(session.user.role)} initialTab={tab} />
     </>
   );
 }

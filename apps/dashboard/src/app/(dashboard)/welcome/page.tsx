@@ -9,7 +9,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Welcome"))("title") };
 }
 
-export default async function WelcomePage() {
+export default async function WelcomePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const session = await requireStaffPage("/welcome");
   // Admins only (the nav hides it from moderators; this and the action enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
@@ -20,7 +21,7 @@ export default async function WelcomePage() {
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <WelcomeManager initial={settings} channels={channels} roles={roles} cardImage={cardImage} />
+      <WelcomeManager initial={settings} channels={channels} roles={roles} cardImage={cardImage} initialTab={tab} />
     </>
   );
 }

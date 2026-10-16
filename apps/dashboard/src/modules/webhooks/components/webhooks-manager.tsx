@@ -1,5 +1,6 @@
 "use client";
 
+import { PageTabs } from "@/components/page/page-tabs";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -25,7 +26,7 @@ const eventKey = (ev: OutboundEvent) => EVENT_KEYS[ev];
 type Reveal = { title: string; url?: string; secret: string } | null;
 
 /** Incoming endpoints and outgoing webhooks. A secret is shown once, in a dialog, right after it is made. State flows in as props; changes call router.refresh(). */
-export function WebhooksManager({ endpoints, outbound, channels, ready }: { endpoints: EndpointRow[]; outbound: OutboundRow[]; channels: GuildChannel[] | null; ready: boolean }) {
+export function WebhooksManager({ endpoints, outbound, channels, ready, initialTab }: { endpoints: EndpointRow[]; outbound: OutboundRow[]; channels: GuildChannel[] | null; ready: boolean; initialTab?: string }) {
   const t = useTranslations("Webhooks");
   const te = useTranslations("Webhooks.errors");
   const format = useFormatter();
@@ -78,105 +79,127 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
     <div className="flex flex-col gap-fluid">
       {!ready && <p className="surface p-4 text-sm text-destructive">{t("notReady")}</p>}
 
-      {/* Incoming */}
-      <section aria-labelledby="wh-in" className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 id="wh-in" className="text-fluid-lg font-bold">
-              {t("incoming.title")} <span className="text-sm font-normal text-muted-foreground">{t("count", { count: endpoints.length, max: MAX_ENDPOINTS })}</span>
-            </h2>
-            <p className="max-w-prose text-sm text-muted-foreground">{t("incoming.intro")}</p>
-          </div>
-          <Button size="sm" disabled={!ready || endpoints.length >= MAX_ENDPOINTS || channels === null} onClick={() => setEditEndpoint({ row: null })}>
-            <Plus aria-hidden />
-            {t("incoming.add")}
-          </Button>
-        </div>
-        {channels === null && <p className="text-sm text-muted-foreground">{t("botOffline")}</p>}
-        {endpoints.length === 0 ? (
-          <p className="rounded-2xl border border-dashed px-6 py-8 text-center text-sm text-muted-foreground">{t("incoming.empty")}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {endpoints.map((e) => (
-              <li key={e.id} className="surface flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3">
-                <div className="min-w-[12rem] flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">{e.name}</span>
-                    <Badge variant={e.enabled ? "default" : "secondary"}>{e.enabled ? t("on") : t("off")}</Badge>
-                    <Badge variant="outline">{t(`providers.${e.provider}`)}</Badge>
+      <PageTabs
+        initial={initialTab}
+        tabs={[
+          {
+            id: "incoming",
+            label: t("tabs.incoming"),
+            count: endpoints.length,
+            content: (
+              <>
+              {/* Incoming */}
+              <section aria-labelledby="wh-in" className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex flex-col gap-1">
+                    <h2 id="wh-in" className="text-fluid-lg font-bold">
+                      {t("incoming.title")} <span className="text-sm font-normal text-muted-foreground">{t("count", { count: endpoints.length, max: MAX_ENDPOINTS })}</span>
+                    </h2>
+                    <p className="max-w-prose text-sm text-muted-foreground">{t("incoming.intro")}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {t("incoming.posts", { channel: channelName(e.channelId) })} · {t("incoming.used", { uses: e.uses, time: when(e.lastUsedAt) })}
-                  </p>
-                  <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{e.url}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditEndpoint({ row: e })}>
-                    {t("edit")}
-                  </Button>
-                  {!pastesSecret(e.provider) && (
-                    <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "rotate", id: e.id, name: e.name })}>
-                      {t("incoming.rotate")}
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "endpoint", id: e.id, name: e.name })}>
-                    {t("remove")}
+                  <Button size="sm" disabled={!ready || endpoints.length >= MAX_ENDPOINTS || channels === null} onClick={() => setEditEndpoint({ row: null })}>
+                    <Plus aria-hidden />
+                    {t("incoming.add")}
                   </Button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {/* Outgoing */}
-      <section aria-labelledby="wh-out" className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 id="wh-out" className="text-fluid-lg font-bold">
-              {t("outgoing.title")} <span className="text-sm font-normal text-muted-foreground">{t("count", { count: outbound.length, max: MAX_OUTBOUND })}</span>
-            </h2>
-            <p className="max-w-prose text-sm text-muted-foreground">{t("outgoing.intro")}</p>
-          </div>
-          <Button size="sm" disabled={!ready || outbound.length >= MAX_OUTBOUND} onClick={() => setEditOutbound({ row: null })}>
-            <Plus aria-hidden />
-            {t("outgoing.add")}
-          </Button>
-        </div>
-        {outbound.length === 0 ? (
-          <p className="rounded-2xl border border-dashed px-6 py-8 text-center text-sm text-muted-foreground">{t("outgoing.empty")}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {outbound.map((o) => (
-              <li key={o.id} className="surface flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3">
-                <div className="min-w-[12rem] flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">{o.name}</span>
-                    <Badge variant="secondary">{t(`kinds.${o.kind}`)}</Badge>
-                    <Badge variant={o.enabled ? "default" : "secondary"}>{o.enabled ? t("on") : t("off")}</Badge>
-                    {o.autoDisabled && !o.enabled && <Badge variant="destructive">{t("outgoing.autoDisabled")}</Badge>}
+                {channels === null && <p className="text-sm text-muted-foreground">{t("botOffline")}</p>}
+                {endpoints.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed px-6 py-8 text-center text-sm text-muted-foreground">{t("incoming.empty")}</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {endpoints.map((e) => (
+                      <li key={e.id} className="surface flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3">
+                        <div className="min-w-[12rem] flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-semibold">{e.name}</span>
+                            <Badge variant={e.enabled ? "default" : "secondary"}>{e.enabled ? t("on") : t("off")}</Badge>
+                            <Badge variant="outline">{t(`providers.${e.provider}`)}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {t("incoming.posts", { channel: channelName(e.channelId) })} · {t("incoming.used", { uses: e.uses, time: when(e.lastUsedAt) })}
+                          </p>
+                          <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{e.url}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditEndpoint({ row: e })}>
+                            {t("edit")}
+                          </Button>
+                          {!pastesSecret(e.provider) && (
+                            <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "rotate", id: e.id, name: e.name })}>
+                              {t("incoming.rotate")}
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "endpoint", id: e.id, name: e.name })}>
+                            {t("remove")}
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              </>
+            ),
+          },
+          {
+            id: "outgoing",
+            label: t("tabs.outgoing"),
+            count: outbound.length,
+            content: (
+              <>
+              {/* Outgoing */}
+              <section aria-labelledby="wh-out" className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex flex-col gap-1">
+                    <h2 id="wh-out" className="text-fluid-lg font-bold">
+                      {t("outgoing.title")} <span className="text-sm font-normal text-muted-foreground">{t("count", { count: outbound.length, max: MAX_OUTBOUND })}</span>
+                    </h2>
+                    <p className="max-w-prose text-sm text-muted-foreground">{t("outgoing.intro")}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {o.host} · {o.events.map((ev) => t(`events.${eventKey(ev)}`)).join(", ")}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{o.lastStatus ? t("outgoing.last", { status: o.lastStatus, time: when(o.lastAt) }) : t("outgoing.neverSent")}</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm" disabled={pending} onClick={() => test(o)}>
-                    {t("outgoing.test")}
-                  </Button>
-                  <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditOutbound({ row: o })}>
-                    {t("edit")}
-                  </Button>
-                  <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "outbound", id: o.id, name: o.name })}>
-                    {t("remove")}
+                  <Button size="sm" disabled={!ready || outbound.length >= MAX_OUTBOUND} onClick={() => setEditOutbound({ row: null })}>
+                    <Plus aria-hidden />
+                    {t("outgoing.add")}
                   </Button>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                {outbound.length === 0 ? (
+                  <p className="rounded-2xl border border-dashed px-6 py-8 text-center text-sm text-muted-foreground">{t("outgoing.empty")}</p>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {outbound.map((o) => (
+                      <li key={o.id} className="surface flex flex-wrap items-start gap-x-4 gap-y-2 px-4 py-3">
+                        <div className="min-w-[12rem] flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-semibold">{o.name}</span>
+                            <Badge variant="secondary">{t(`kinds.${o.kind}`)}</Badge>
+                            <Badge variant={o.enabled ? "default" : "secondary"}>{o.enabled ? t("on") : t("off")}</Badge>
+                            {o.autoDisabled && !o.enabled && <Badge variant="destructive">{t("outgoing.autoDisabled")}</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {o.host} · {o.events.map((ev) => t(`events.${eventKey(ev)}`)).join(", ")}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{o.lastStatus ? t("outgoing.last", { status: o.lastStatus, time: when(o.lastAt) }) : t("outgoing.neverSent")}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" disabled={pending} onClick={() => test(o)}>
+                            {t("outgoing.test")}
+                          </Button>
+                          <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditOutbound({ row: o })}>
+                            {t("edit")}
+                          </Button>
+                          <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "outbound", id: o.id, name: o.name })}>
+                            {t("remove")}
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              </>
+            ),
+          },
+        ]}
+      />
 
       <Dialog open={editEndpoint !== null} onOpenChange={(open) => !open && setEditEndpoint(null)}>
         <DialogContent>

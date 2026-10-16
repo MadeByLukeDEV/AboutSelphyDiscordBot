@@ -599,6 +599,11 @@
       "help": "Wählbar sind nur Rollen ohne Sonderrechte, und die Rolle des Bots muss darüber stehen.",
       "botOffline": "Der Bot ist offline, daher ist die Rollenliste nicht verfügbar. Die gespeicherte Rolle bleibt.",
       "save": "Speichern"
+    },
+    "tabs": {
+      "channels": "Kanäle",
+      "settings": "Einstellungen",
+      "connection": "Verbindung"
     }
   },
   "Announcements": {
@@ -1009,7 +1014,9 @@
       "save": "Speichern",
       "saving": "Speichert…",
       "saved": "Gespeichert",
-      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt das innerhalb einer Minute.",
+      "unsaved": "Du hast ungespeicherte Änderungen",
+      "discard": "Verwerfen"
     },
     "errors": {
       "forbidden": "Nur Admins können diese Einstellungen ändern.",
@@ -1065,6 +1072,11 @@
         "failed": "Das Bild konnte nicht gespeichert werden. Versuche es erneut.",
         "invalid": "Das ist nicht gültig."
       }
+    },
+    "tabs": {
+      "roles": "Rollen",
+      "welcome": "Willkommen und DM",
+      "goodbye": "Abschied"
     }
   },
   "Logs": {
@@ -1399,6 +1411,10 @@
         "notFound": "Eine der Arten gibt es nicht mehr. Lade die Seite neu.",
         "failed": "Etwas ist schiefgelaufen. Versuche es erneut."
       }
+    },
+    "tabs": {
+      "tickets": "Tickets",
+      "settings": "Einstellungen"
     }
   },
   "Giveaways": {
@@ -1821,6 +1837,11 @@
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut.",
       "needsMessage": "Schreibe einen Glückwunsch.",
       "badTimeZone": "Gib eine gültige Zeitzone ein, z. B. Europe/Berlin."
+    },
+    "tabs": {
+      "list": "Anstehend",
+      "settings": "Einstellungen",
+      "staff": "Vom Team gesetzt"
     }
   },
   "Reminders": {
@@ -2549,6 +2570,10 @@
       "needsName": "Gib einen Namen an.",
       "badUrl": "Gib eine gültige Adresse ein: eine Discord-Webhook-Adresse oder eine https-Adresse eines öffentlichen Hosts.",
       "needsEvent": "Wähle mindestens ein Ereignis."
+    },
+    "tabs": {
+      "incoming": "Eingehend",
+      "outgoing": "Ausgehend"
     }
   },
   "Feeds": {
@@ -3002,6 +3027,11 @@
         "failed": "Etwas ist schiefgelaufen. Prüfe die Rechte und die Rollenposition des Bots."
       },
       "badDays": "Gib eine ganze Zahl von 0 bis {max} ein."
+    },
+    "tabs": {
+      "queue": "Wartend",
+      "history": "Entschieden",
+      "settings": "Einstellungen"
     }
   },
   "Events": {

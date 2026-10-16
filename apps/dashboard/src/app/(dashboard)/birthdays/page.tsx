@@ -9,7 +9,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Birthdays"))("title") };
 }
 
-export default async function BirthdaysPage() {
+export default async function BirthdaysPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const session = await requireStaffPage("/birthdays");
   // Admins only (the nav hides it from moderators; this and the action enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
@@ -20,7 +21,7 @@ export default async function BirthdaysPage() {
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <BirthdaysManager initial={settings} birthdays={birthdays} total={total} channels={channels} roles={roles} cardImage={cardImage} />
+      <BirthdaysManager initial={settings} birthdays={birthdays} total={total} channels={channels} roles={roles} cardImage={cardImage} initialTab={tab} />
     </>
   );
 }

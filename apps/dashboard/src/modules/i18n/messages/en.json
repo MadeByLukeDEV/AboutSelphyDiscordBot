@@ -599,6 +599,11 @@
       "help": "Only roles without special permissions can be chosen, and the bot's own role must sit above it.",
       "botOffline": "The bot is offline, so the role list isn't available. The saved role is kept.",
       "save": "Save"
+    },
+    "tabs": {
+      "channels": "Channels",
+      "settings": "Settings",
+      "connection": "Connection"
     }
   },
   "Announcements": {
@@ -1009,7 +1014,9 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Saved",
-      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute."
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "unsaved": "You have unsaved changes",
+      "discard": "Discard"
     },
     "errors": {
       "forbidden": "Only admins can change these settings.",
@@ -1065,6 +1072,11 @@
         "failed": "Couldn't save the image. Try again.",
         "invalid": "That isn't valid."
       }
+    },
+    "tabs": {
+      "roles": "Roles",
+      "welcome": "Welcome and DM",
+      "goodbye": "Goodbye"
     }
   },
   "Logs": {
@@ -1399,6 +1411,10 @@
         "notFound": "One of the types doesn't exist any more. Reload the page.",
         "failed": "Something went wrong. Try again."
       }
+    },
+    "tabs": {
+      "tickets": "Tickets",
+      "settings": "Settings"
     }
   },
   "Giveaways": {
@@ -1821,6 +1837,11 @@
       "failed": "Couldn't save the settings. Try again.",
       "needsMessage": "Write a greeting.",
       "badTimeZone": "Enter a valid time zone, e.g. Europe/Berlin."
+    },
+    "tabs": {
+      "list": "Upcoming",
+      "settings": "Settings",
+      "staff": "Set by staff"
     }
   },
   "Reminders": {
@@ -2549,6 +2570,10 @@
       "needsName": "Give it a name.",
       "badUrl": "Enter a valid address: a Discord webhook address, or an https address of a public host.",
       "needsEvent": "Pick at least one event."
+    },
+    "tabs": {
+      "incoming": "Incoming",
+      "outgoing": "Outgoing"
     }
   },
   "Feeds": {
@@ -3002,6 +3027,11 @@
         "failed": "Something went wrong. Check the bot's permissions and role position."
       },
       "badDays": "Enter a whole number from 0 to {max}."
+    },
+    "tabs": {
+      "queue": "Waiting",
+      "history": "Decided",
+      "settings": "Settings"
     }
   },
   "Events": {

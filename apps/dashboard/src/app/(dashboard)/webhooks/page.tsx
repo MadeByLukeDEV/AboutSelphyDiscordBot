@@ -9,7 +9,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Webhooks"))("title") };
 }
 
-export default async function WebhooksPage() {
+export default async function WebhooksPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const session = await requireStaffPage("/webhooks");
   // Admins only (the nav hides it from moderators; this and the actions enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
@@ -20,7 +21,7 @@ export default async function WebhooksPage() {
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <WebhooksManager endpoints={endpoints} outbound={outbound} channels={channels} ready={ready} />
+      <WebhooksManager endpoints={endpoints} outbound={outbound} channels={channels} ready={ready} initialTab={tab} />
     </>
   );
 }

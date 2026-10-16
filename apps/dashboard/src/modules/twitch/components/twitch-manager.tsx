@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PageTabs } from "@/components/page/page-tabs";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { disconnectTwitchAction, removeStreamerAction, saveTwitchSettingsAction, setStreamerEnabledAction } from "../actions";
@@ -28,6 +29,7 @@ export function TwitchManager({
   roles,
   maxStreamers,
   outcome,
+  initialTab,
 }: {
   overview: TwitchOverview;
   /** Text channels, for names. null = the bot couldn't be reached (IDs are shown). */
@@ -36,6 +38,7 @@ export function TwitchManager({
   maxStreamers: number;
   /** What happened on the way back from Twitch's login, if the page was opened from there. */
   outcome: ConnectOutcome | null;
+  initialTab?: string;
 }) {
   const t = useTranslations("Twitch");
   const te = useTranslations("Twitch.errors");
@@ -84,132 +87,160 @@ export function TwitchManager({
         </p>
       )}
 
-      {/* The connection */}
-      <section aria-labelledby="twitch-connection" className="surface flex flex-col gap-3 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="twitch-connection" className="text-fluid-lg font-bold">
-            {t("connection.title")}
-          </h2>
-          {connection && <Badge variant={connection.needsReconnect ? "destructive" : "default"}>{connection.needsReconnect ? t("connection.needsReconnect") : t("connection.connected")}</Badge>}
-        </div>
-        {!overview.ready ? (
-          <p className="text-sm text-muted-foreground">{t("connection.notConfigured")}</p>
-        ) : connection ? (
-          <>
-            <p className="text-sm text-muted-foreground">
-              {t("connection.as", { login: connection.login })}
-              {connection.connectedByName ? ` · ${t("connection.by", { name: connection.connectedByName, date: format.dateTime(new Date(connection.connectedAt), { dateStyle: "medium" }) })}` : ""}
-            </p>
-            <p className="text-sm text-muted-foreground">{t("connection.explain")}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" nativeButton={false} render={<a href="/api/twitch/connect" />}>
-                {connection.needsReconnect ? t("connection.reconnect") : t("connection.switchAccount")}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setConfirm({ kind: "disconnect" })}>
-                {t("connection.disconnect")}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">{t("connection.none")}</p>
-            <div>
-              <Button size="sm" nativeButton={false} render={<a href="/api/twitch/connect" />}>
-                {t("connection.connect")}
-              </Button>
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* The switches */}
-      <section aria-labelledby="twitch-settings" className="surface flex flex-col gap-4 p-5">
-        <h2 id="twitch-settings" className="text-fluid-lg font-bold">
-          {t("settings.title")}
-        </h2>
-        <Field orientation="horizontal">
-          <Switch id="tw-enabled" checked={settings.enabled} disabled={pending} onCheckedChange={(enabled) => saveSettings({ enabled })} aria-describedby="tw-enabled-help" />
-          <div className="flex flex-col gap-1">
-            <FieldLabel htmlFor="tw-enabled">{t("settings.enabled")}</FieldLabel>
-            <FieldDescription id="tw-enabled-help">{t("settings.enabledHelp")}</FieldDescription>
-          </div>
-        </Field>
-        <Field orientation="horizontal">
-          <Switch
-            id="tw-ended"
-            checked={settings.markEndedOnOffline}
-            disabled={pending}
-            onCheckedChange={(markEndedOnOffline) => saveSettings({ markEndedOnOffline })}
-            aria-describedby="tw-ended-help"
-          />
-          <div className="flex flex-col gap-1">
-            <FieldLabel htmlFor="tw-ended">{t("settings.markEnded")}</FieldLabel>
-            <FieldDescription id="tw-ended-help">{t("settings.markEndedHelp")}</FieldDescription>
-          </div>
-        </Field>
-      </section>
-
-      <LiveRoleForm key={settings.liveRoleId} settings={settings} roles={roles} pending={pending} onSave={saveSettings} />
-
-      <ClipsForm key={settings.clipsChannelId} settings={settings} channels={channels} pending={pending} onSave={saveSettings} />
-
-      {/* The channels */}
-      <section aria-labelledby="twitch-streamers" className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 id="twitch-streamers" className="text-fluid-lg font-bold">
-              {t("streamers.title")}
-            </h2>
-            <p className="max-w-prose text-sm text-muted-foreground">{t("streamers.intro")}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground tabular-nums">{t("streamers.count", { count: streamers.length, max: maxStreamers })}</span>
-            <Button size="sm" onClick={() => setEditing({ streamer: null })} disabled={atLimit || !connection}>
-              <Plus aria-hidden />
-              {t("streamers.add")}
-            </Button>
-          </div>
-        </div>
-        {!connection && <p className="text-sm text-muted-foreground">{t("streamers.needsConnection")}</p>}
-        {atLimit && <p className="text-sm text-muted-foreground">{t("streamers.limitReached", { max: maxStreamers })}</p>}
-        {streamers.length === 0 ? (
-          <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
-            <h3 className="font-semibold">{t("streamers.empty.title")}</h3>
-            <p className="max-w-md text-sm text-muted-foreground">{t("streamers.empty.body")}</p>
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {streamers.map((s) => (
-              <li key={s.id} className="surface flex overflow-hidden">
-                <span className={cn("w-1.5 shrink-0", !s.enabled && "bg-muted-foreground/40")} style={s.enabled ? { backgroundColor: `#${s.embedColor.toString(16).padStart(6, "0")}` } : undefined} aria-hidden />
-                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-                  <div className="min-w-[12rem] flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="min-w-0 truncate font-semibold">{s.displayName}</h3>
-                      {!s.enabled && <Badge variant="secondary">{t("streamers.paused")}</Badge>}
-                    </div>
-                    <p className="truncate text-sm text-muted-foreground">
-                      twitch.tv/{s.login} → {channelName(s.channelId)}
-                      {s.pingRoleId ? ` · ${t("streamers.pings", { role: roleName(s.pingRoleId) })}` : ""}
-                    </p>
+      <PageTabs
+        initial={initialTab ?? (connection ? "channels" : "connection")}
+        tabs={[
+          {
+            id: "channels",
+            label: t("tabs.channels"),
+            count: streamers.length,
+            content: (
+              <>
+              {/* The channels */}
+              <section aria-labelledby="twitch-streamers" className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-col gap-1">
+                    <h2 id="twitch-streamers" className="text-fluid-lg font-bold">
+                      {t("streamers.title")}
+                    </h2>
+                    <p className="max-w-prose text-sm text-muted-foreground">{t("streamers.intro")}</p>
                   </div>
-                  <div className="ml-auto flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditing({ streamer: s })}>
-                      {t("streamers.edit")}
-                    </Button>
-                    <Button variant="outline" size="sm" disabled={pending} onClick={() => run(() => setStreamerEnabledAction(s.id, !s.enabled), t("saved"))}>
-                      {s.enabled ? t("streamers.pause") : t("streamers.resume")}
-                    </Button>
-                    <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "remove", streamer: s })}>
-                      {t("streamers.remove")}
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-muted-foreground tabular-nums">{t("streamers.count", { count: streamers.length, max: maxStreamers })}</span>
+                    <Button size="sm" onClick={() => setEditing({ streamer: null })} disabled={atLimit || !connection}>
+                      <Plus aria-hidden />
+                      {t("streamers.add")}
                     </Button>
                   </div>
                 </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                {!connection && <p className="text-sm text-muted-foreground">{t("streamers.needsConnection")}</p>}
+                {atLimit && <p className="text-sm text-muted-foreground">{t("streamers.limitReached", { max: maxStreamers })}</p>}
+                {streamers.length === 0 ? (
+                  <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
+                    <h3 className="font-semibold">{t("streamers.empty.title")}</h3>
+                    <p className="max-w-md text-sm text-muted-foreground">{t("streamers.empty.body")}</p>
+                  </div>
+                ) : (
+                  <ul className="flex flex-col gap-2">
+                    {streamers.map((s) => (
+                      <li key={s.id} className="surface flex overflow-hidden">
+                        <span className={cn("w-1.5 shrink-0", !s.enabled && "bg-muted-foreground/40")} style={s.enabled ? { backgroundColor: `#${s.embedColor.toString(16).padStart(6, "0")}` } : undefined} aria-hidden />
+                        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+                          <div className="min-w-[12rem] flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="min-w-0 truncate font-semibold">{s.displayName}</h3>
+                              {!s.enabled && <Badge variant="secondary">{t("streamers.paused")}</Badge>}
+                            </div>
+                            <p className="truncate text-sm text-muted-foreground">
+                              twitch.tv/{s.login} → {channelName(s.channelId)}
+                              {s.pingRoleId ? ` · ${t("streamers.pings", { role: roleName(s.pingRoleId) })}` : ""}
+                            </p>
+                          </div>
+                          <div className="ml-auto flex items-center gap-2">
+                            <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditing({ streamer: s })}>
+                              {t("streamers.edit")}
+                            </Button>
+                            <Button variant="outline" size="sm" disabled={pending} onClick={() => run(() => setStreamerEnabledAction(s.id, !s.enabled), t("saved"))}>
+                              {s.enabled ? t("streamers.pause") : t("streamers.resume")}
+                            </Button>
+                            <Button variant="ghost" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "remove", streamer: s })}>
+                              {t("streamers.remove")}
+                            </Button>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              </>
+            ),
+          },
+          {
+            id: "settings",
+            label: t("tabs.settings"),
+            content: (
+              <>
+              {/* The switches */}
+              <section aria-labelledby="twitch-settings" className="surface flex flex-col gap-4 p-5">
+                <h2 id="twitch-settings" className="text-fluid-lg font-bold">
+                  {t("settings.title")}
+                </h2>
+                <Field orientation="horizontal">
+                  <Switch id="tw-enabled" checked={settings.enabled} disabled={pending} onCheckedChange={(enabled) => saveSettings({ enabled })} aria-describedby="tw-enabled-help" />
+                  <div className="flex flex-col gap-1">
+                    <FieldLabel htmlFor="tw-enabled">{t("settings.enabled")}</FieldLabel>
+                    <FieldDescription id="tw-enabled-help">{t("settings.enabledHelp")}</FieldDescription>
+                  </div>
+                </Field>
+                <Field orientation="horizontal">
+                  <Switch
+                    id="tw-ended"
+                    checked={settings.markEndedOnOffline}
+                    disabled={pending}
+                    onCheckedChange={(markEndedOnOffline) => saveSettings({ markEndedOnOffline })}
+                    aria-describedby="tw-ended-help"
+                  />
+                  <div className="flex flex-col gap-1">
+                    <FieldLabel htmlFor="tw-ended">{t("settings.markEnded")}</FieldLabel>
+                    <FieldDescription id="tw-ended-help">{t("settings.markEndedHelp")}</FieldDescription>
+                  </div>
+                </Field>
+              </section>
+
+              <LiveRoleForm key={settings.liveRoleId} settings={settings} roles={roles} pending={pending} onSave={saveSettings} />
+
+              <ClipsForm key={settings.clipsChannelId} settings={settings} channels={channels} pending={pending} onSave={saveSettings} />
+              </>
+            ),
+          },
+          {
+            id: "connection",
+            label: t("tabs.connection"),
+            content: (
+              <>
+              {/* The connection */}
+              <section aria-labelledby="twitch-connection" className="surface flex flex-col gap-3 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 id="twitch-connection" className="text-fluid-lg font-bold">
+                    {t("connection.title")}
+                  </h2>
+                  {connection && <Badge variant={connection.needsReconnect ? "destructive" : "default"}>{connection.needsReconnect ? t("connection.needsReconnect") : t("connection.connected")}</Badge>}
+                </div>
+                {!overview.ready ? (
+                  <p className="text-sm text-muted-foreground">{t("connection.notConfigured")}</p>
+                ) : connection ? (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      {t("connection.as", { login: connection.login })}
+                      {connection.connectedByName ? ` · ${t("connection.by", { name: connection.connectedByName, date: format.dateTime(new Date(connection.connectedAt), { dateStyle: "medium" }) })}` : ""}
+                    </p>
+                    <p className="text-sm text-muted-foreground">{t("connection.explain")}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" size="sm" nativeButton={false} render={<a href="/api/twitch/connect" />}>
+                        {connection.needsReconnect ? t("connection.reconnect") : t("connection.switchAccount")}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setConfirm({ kind: "disconnect" })}>
+                        {t("connection.disconnect")}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-muted-foreground">{t("connection.none")}</p>
+                    <div>
+                      <Button size="sm" nativeButton={false} render={<a href="/api/twitch/connect" />}>
+                        {t("connection.connect")}
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </section>
+              </>
+            ),
+          },
+        ]}
+      />
 
       {/* Add / edit. Mounted only while open and keyed by channel, so it always starts from fresh values. */}
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>

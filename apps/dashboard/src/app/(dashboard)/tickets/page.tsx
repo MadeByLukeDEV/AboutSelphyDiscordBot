@@ -8,7 +8,8 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Tickets"))("title") };
 }
 
-export default async function TicketsPage() {
+export default async function TicketsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   // Moderators can read the tickets; only admins see the settings (the action enforces it too).
   const session = await requireStaffPage("/tickets");
   const t = await getTranslations("Tickets");
@@ -17,7 +18,7 @@ export default async function TicketsPage() {
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <TicketsManager initial={settings} panelPosted={panelPosted} tickets={tickets} channels={channels} roles={roles} categories={categories} ratings={ratings} canEdit={isAdmin(session.user.role)} />
+      <TicketsManager initial={settings} panelPosted={panelPosted} tickets={tickets} channels={channels} roles={roles} categories={categories} ratings={ratings} canEdit={isAdmin(session.user.role)} initialTab={tab} />
     </>
   );
 }

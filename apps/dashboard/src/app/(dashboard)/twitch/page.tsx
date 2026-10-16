@@ -11,19 +11,19 @@ export async function generateMetadata() {
   return { title: (await getTranslations("Twitch"))("title") };
 }
 
-export default async function TwitchPage({ searchParams }: { searchParams: Promise<{ connect?: string | string[] }> }) {
+export default async function TwitchPage({ searchParams }: { searchParams: Promise<{ connect?: string | string[]; tab?: string }> }) {
   const session = await requireStaffPage("/twitch");
   // Admins only (the nav hides it from moderators; this and the actions enforce it).
   if (!isAdmin(session.user.role)) redirect("/");
 
   const t = await getTranslations("Twitch");
-  const { connect } = await searchParams;
+  const { connect, tab } = await searchParams;
   const [overview, channels, roles] = await Promise.all([getTwitchOverview(), listChannels(["text"]), listRoles()]);
 
   return (
     <>
       <PageHeader title={t("title")} description={t("intro")} />
-      <TwitchManager overview={overview} channels={channels} roles={roles} maxStreamers={MAX_TWITCH_STREAMERS} outcome={isConnectOutcome(connect) ? connect : null} />
+      <TwitchManager overview={overview} channels={channels} roles={roles} maxStreamers={MAX_TWITCH_STREAMERS} outcome={isConnectOutcome(connect) ? connect : null} initialTab={tab} />
     </>
   );
 }
