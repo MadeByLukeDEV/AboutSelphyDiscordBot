@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { PageTabs } from "@/components/page/page-tabs";
 import Link from "next/link";
 import { useTransition } from "react";
@@ -251,15 +252,12 @@ export function TicketsManager({
                     </Field>
                   </FieldGroup>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button type="submit" disabled={pending || !isDirty}>
-                      {pending ? t("form.saving") : t("form.save")}
-                    </Button>
+                  <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")}>
                     <Button type="button" variant="outline" disabled={pending || isDirty || !initial.enabled} onClick={post}>
                       {panelPosted ? t("panel.update") : t("panel.post")}
                     </Button>
                     <p className="text-xs text-muted-foreground">{isDirty ? t("panel.saveFirst") : panelPosted ? t("panel.updateHelp") : t("panel.postHelp")}</p>
-                  </div>
+                  </SaveRow>
                 </form>
               )}
 

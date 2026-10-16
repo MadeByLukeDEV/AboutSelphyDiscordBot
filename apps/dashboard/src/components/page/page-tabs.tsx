@@ -39,7 +39,7 @@ export function PageTabs({ tabs, initial }: { tabs: PageTab[]; initial?: string 
 
   return (
     <div className="flex flex-col gap-fluid">
-      <div role="tablist" className="-mx-1 flex gap-1 overflow-x-auto border-b px-1" aria-orientation="horizontal">
+      <div role="tablist" className="-mx-1 flex gap-1 overflow-x-auto overflow-y-hidden border-b px-1" aria-orientation="horizontal">
         {tabs.map((tab, i) => {
           const selected = tab.id === active;
           return (

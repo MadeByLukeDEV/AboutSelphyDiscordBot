@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -140,16 +141,13 @@ export function VerificationManager({ initial, panelPosted, channels, roles }: {
           {t("form.kickWarning", { hours: Number(kickAfterHours) })}
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" disabled={pending || !isDirty}>
-          {pending ? t("form.saving") : t("form.save")}
-        </Button>
+      <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")}>
         <Button type="button" variant="outline" disabled={pending || isDirty || !initial.channelId || !initial.verifiedRoleId} onClick={post}>
           <Send aria-hidden />
           {panelPosted ? t("panel.update") : t("panel.post")}
         </Button>
         {isDirty && <p className="text-sm text-muted-foreground">{t("panel.saveFirst")}</p>}
-      </div>
+      </SaveRow>
     </form>
   );
 }

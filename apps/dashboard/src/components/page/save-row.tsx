@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * The end of a plain settings form: a submit button that stays in view at the bottom of the screen while the form has unsaved changes,
  * so a long form never needs a scroll to the bottom to save. When nothing changed it is a quiet, disabled button in place.
  */
-export function SaveRow({ dirty, pending, label, savingLabel }: { dirty: boolean; pending: boolean; label: string; savingLabel: string }) {
+export function SaveRow({ dirty, pending, label, savingLabel, children }: { dirty: boolean; pending: boolean; label: string; savingLabel: string; /** Further buttons or a hint next to Save (for example "Post the panel"). */ children?: React.ReactNode }) {
   const t = useTranslations("Shell.save");
   const active = dirty || pending;
   return (
@@ -21,9 +21,12 @@ export function SaveRow({ dirty, pending, label, savingLabel }: { dirty: boolean
       ) : (
         <span />
       )}
-      <Button type="submit" size={active ? "sm" : "default"} disabled={pending || !dirty}>
-        {pending ? savingLabel : label}
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button type="submit" size={active ? "sm" : "default"} disabled={pending || !dirty}>
+          {pending ? savingLabel : label}
+        </Button>
+        {children}
+      </div>
     </div>
   );
 }

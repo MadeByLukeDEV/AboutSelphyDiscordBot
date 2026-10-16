@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
@@ -111,10 +112,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
             <FieldDescription>{t("form.notesHelp")}</FieldDescription>
           </Field>
         </FieldGroup>
-        <div className="flex flex-wrap items-center gap-3">
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")}>
           <Button type="button" variant="outline" disabled={pending || isDirty || !data.settings.channelId} onClick={post}>
             <Send aria-hidden />
             {data.postedAt ? t("update") : t("post")}
@@ -122,7 +120,7 @@ export function ModGuideManager({ data, channels }: { data: ModGuidePageData; ch
           <p className="text-sm text-muted-foreground">
             {isDirty ? t("saveFirst") : data.postedAt ? t("lastPosted", { when: format.relativeTime(new Date(data.postedAt)) }) : t("neverPosted")}
           </p>
-        </div>
+        </SaveRow>
       </form>
 
       <section aria-labelledby="mg-preview" className="surface flex flex-col gap-4 p-5">
