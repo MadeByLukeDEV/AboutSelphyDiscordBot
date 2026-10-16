@@ -4,7 +4,7 @@ import { prisma, type ScreeningConfig, type ScreeningEntry } from "@aboutselphy/
 
 export const readConfig = (): Promise<ScreeningConfig> => prisma.screeningConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 
-export type ConfigData = { enabled: boolean; channelId: string | null; approvedRoleId: string | null; pendingRoleId: string | null };
+export type ConfigData = { enabled: boolean; channelId: string | null; approvedRoleId: string | null; pendingRoleId: string | null; autoRejectDays: number };
 export const updateConfig = (data: ConfigData): Promise<ScreeningConfig> => prisma.screeningConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 
 /** Pending first (oldest waiting first), then the most recent decisions. */

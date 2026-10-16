@@ -1244,7 +1244,8 @@ Decided 2026-10-08:
   - Dashboard `/screening` (all staff decide; admins also get the settings). The staff name comes from the
     session. New nav group "Joining" (welcome, verification, screening, raid); "Members and roles" keeps the rest.
     Privacy policy updated (`LEGAL_LAST_UPDATED` 2026-11-07). No automatic retention for entries yet.
-  - [ ] Questions asked of the new member before the card, auto-reject after N days, a retention job.
+  - [x] **Auto-reject** (2026-11-10, `feature_screening-autoreject`, migration `20261116200000_screening_autoreject`; **not tried live yet**): `ScreeningConfig.autoRejectDays` (0 = never, CHECK 0-60, a number field on `/screening`): every 30 minutes the bot takes pending entries that joined longer ago than that (`listStalePending`, `waitedTooLong`, at most 25 a round) through the normal `decideEntry` as a reject (kick case from "system", reason "Automatic (waited too long)", the card is updated). Off by default because it kicks real people.
+  - [ ] Questions asked of the new member before the card, a retention job.
 - [~] Members search by name (2026-11-07, `feature_members-search`, no migration; **not tried live yet**): the
       `/members` lookup takes a Discord ID (opens directly) or 2-32 letters of a name. `GET /api/members/search?q=`
       (staff session checked in the route) combines the bot's `GET /internal/guild/members/search` (Discord's own

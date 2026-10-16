@@ -6,6 +6,8 @@ import { z } from "zod";
 const snowflake = z.string().regex(/^\d{17,20}$/);
 const optionalId = z.union([z.literal(""), snowflake]);
 
+export const MAX_AUTO_REJECT_DAYS = 60;
+
 export const screeningSettingsSchema = z
   .object({
     enabled: z.boolean(),
@@ -15,6 +17,8 @@ export const screeningSettingsSchema = z
     approvedRoleId: optionalId,
     /** Optional: given on join and taken away on approval, to keep the member out of channels meanwhile. */
     pendingRoleId: optionalId,
+    /** 0 = never. Otherwise a member nobody decided on within this many days is rejected (kicked) by the bot. */
+    autoRejectDays: z.number().int().min(0).max(MAX_AUTO_REJECT_DAYS),
   })
   .superRefine((v, ctx) => {
     const issue = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });

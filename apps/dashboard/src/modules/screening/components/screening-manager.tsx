@@ -7,10 +7,11 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
-import { screeningSettingsSchema, type ScreeningDecision, type ScreeningSettings } from "@aboutselphy/shared/screening";
+import { MAX_AUTO_REJECT_DAYS, screeningSettingsSchema, type ScreeningDecision, type ScreeningSettings } from "@aboutselphy/shared/screening";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { decideScreeningAction, saveScreeningAction } from "../actions";
 import type { ScreeningRow } from "../schema";
@@ -40,7 +41,7 @@ export function ScreeningManager({ initial, entries, channels, roles, canEdit }:
       form.clearErrors();
       for (const issue of checked.error.issues) {
         const key = issue.path[0];
-        if (key === "channelId" || key === "approvedRoleId" || key === "pendingRoleId") form.setError(key, { type: "custom", message: issue.message });
+        if (key === "channelId" || key === "approvedRoleId" || key === "pendingRoleId" || key === "autoRejectDays") form.setError(key, { type: "custom", message: issue.message });
       }
       return;
     }
@@ -151,6 +152,12 @@ export function ScreeningManager({ initial, entries, channels, roles, canEdit }:
               <FormSelect control={form.control} name="pendingRoleId" id="sc-pending" options={roleOptions} placeholder={t("noRole")} disabled={roles === null} invalid={Boolean(errors.pendingRoleId)} />
               <FieldDescription>{t("form.pendingRoleHelp")}</FieldDescription>
               {errors.pendingRoleId && <FieldError>{te("sameRole")}</FieldError>}
+            </Field>
+            <Field data-invalid={Boolean(errors.autoRejectDays) || undefined}>
+              <FieldLabel htmlFor="sc-auto">{t("form.autoReject")}</FieldLabel>
+              <Input id="sc-auto" type="number" inputMode="numeric" min={0} max={MAX_AUTO_REJECT_DAYS} className="max-w-[8rem]" {...form.register("autoRejectDays", { valueAsNumber: true })} />
+              <FieldDescription>{t("form.autoRejectHelp")}</FieldDescription>
+              {errors.autoRejectDays && <FieldError>{te("badDays", { max: MAX_AUTO_REJECT_DAYS })}</FieldError>}
             </Field>
           </FieldGroup>
           <div>

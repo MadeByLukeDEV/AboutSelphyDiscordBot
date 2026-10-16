@@ -2913,7 +2913,9 @@
       "save": "Speichern",
       "saving": "Speichert ...",
       "saved": "Gespeichert.",
-      "savedBotLater": "Gespeichert. Der Bot übernimmt es innerhalb einer Minute."
+      "savedBotLater": "Gespeichert. Der Bot übernimmt es innerhalb einer Minute.",
+      "autoReject": "Ablehnen nach Wartezeit (Tage)",
+      "autoRejectHelp": "0 = nie. Mitglieder, über die in dieser Zeit niemand entschieden hat, werden vom Bot abgelehnt und gekickt, wie bei einem Klick auf Ablehnen. Standardmäßig aus."
     },
     "errors": {
       "forbidden": "Dazu hast du keine Berechtigung.",
@@ -2933,7 +2935,8 @@
         "alreadyDecided": "Schon entschieden (oder das Mitglied ist gegangen).",
         "botUnavailable": "Der Bot ist gerade nicht erreichbar.",
         "failed": "Etwas ist schiefgelaufen. Prüfe die Rechte und die Rollenposition des Bots."
-      }
+      },
+      "badDays": "Gib eine ganze Zahl von 0 bis {max} ein."
     }
   },
   "Events": {

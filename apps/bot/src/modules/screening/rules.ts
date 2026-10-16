@@ -21,3 +21,8 @@ export const statusAfter = (decision: ScreeningDecision): EntryStatus => (decisi
 
 /** The reason that goes into the case and the audit log when a rejection kicks the member. */
 export const REJECT_REASON = "Rejected in the screening queue";
+
+/** Has a waiting member been waiting longer than the limit? 0 (or less) = never. */
+export function waitedTooLong(joinedAt: Date, days: number, now: Date): boolean {
+  return days > 0 && now.getTime() - joinedAt.getTime() > days * 86_400_000;
+}

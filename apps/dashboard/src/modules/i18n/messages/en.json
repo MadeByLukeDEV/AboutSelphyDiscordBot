@@ -2913,7 +2913,9 @@
       "save": "Save",
       "saving": "Saving...",
       "saved": "Saved.",
-      "savedBotLater": "Saved. The bot will pick it up within a minute."
+      "savedBotLater": "Saved. The bot will pick it up within a minute.",
+      "autoReject": "Reject after waiting (days)",
+      "autoRejectHelp": "0 = never. Members nobody decided on within this many days are rejected and kicked by the bot, like a Reject press. Off by default."
     },
     "errors": {
       "forbidden": "You are not allowed to do this.",
@@ -2933,7 +2935,8 @@
         "alreadyDecided": "Already decided (or the member left).",
         "botUnavailable": "The bot can't be reached right now.",
         "failed": "Something went wrong. Check the bot's permissions and role position."
-      }
+      },
+      "badDays": "Enter a whole number from 0 to {max}."
     }
   },
   "Events": {

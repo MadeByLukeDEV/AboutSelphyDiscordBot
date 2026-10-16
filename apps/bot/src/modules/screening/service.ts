@@ -20,8 +20,8 @@ import { staffLevel } from "../../lib/permissions";
 import { performAction } from "../moderation";
 import { checkRole } from "../roles";
 import { getScreeningConfig } from "./config";
-import { createEntry, decide, findEntry, markLeft, setCard } from "./repository";
-import { REJECT_REASON, SCREENING_PREFIX, canDecide, parseScreeningControl, screeningControlId, statusAfter } from "./rules";
+import { createEntry, decide, findEntry, listStalePending, markLeft, setCard } from "./repository";
+import { REJECT_REASON, SCREENING_PREFIX, canDecide, parseScreeningControl, waitedTooLong, screeningControlId, statusAfter } from "./rules";
 
 // The manual screening queue. A new member (not a bot) gets a card in the staff channel with Approve and Reject buttons;
 // optionally they wear a "pending" role meanwhile. Approve gives the approved role and takes the pending one away;
@@ -168,6 +168,23 @@ export function registerScreeningControls(): void {
   onComponent(SCREENING_PREFIX, handle);
 }
 
+const AUTO_REJECT_EVERY_MS = 30 * 60_000;
+let autoTimer: ReturnType<typeof setInterval> | undefined;
+
+/** Rejects (kicks) members nobody decided on within the configured days. Off unless the admin set a number of days. Each goes through the normal decision, so the card, the case and the log are the same as for a hand decision. */
+async function autoRejectRound(client: Client): Promise<void> {
+  const config = await getScreeningConfig();
+  if (!config.enabled || config.autoRejectDays <= 0) return;
+  const guild = client.guilds.cache.get(env().DISCORD_GUILD_ID);
+  if (!guild) return;
+  const now = new Date();
+  for (const entry of await listStalePending(new Date(now.getTime() - config.autoRejectDays * 86_400_000))) {
+    if (!waitedTooLong(entry.joinedAt, config.autoRejectDays, now)) continue;
+    const status = await decideEntry(guild, entry.id, "reject", "Automatic (waited too long)", null);
+    log.info({ entry: entry.id, status, days: config.autoRejectDays }, "screening: auto-reject");
+  }
+}
+
 /** Starts with the bot. Off in a local run unless BOT_INTEGRATIONS_IN_DEV=true (it gives roles and kicks real members). */
 export function startScreening(client: Client): void {
   if (!integrationsActive()) {
@@ -176,4 +193,10 @@ export function startScreening(client: Client): void {
   }
   client.on(Events.GuildMemberAdd, (member) => void onJoin(member).catch((err) => log.error({ err }, "screening join handler failed")));
   client.on(Events.GuildMemberRemove, (member) => void onLeave(member).catch((err) => log.error({ err }, "screening leave handler failed")));
+  autoTimer = setInterval(() => void autoRejectRound(client).catch((err) => log.error({ err }, "screening: auto-reject round failed")), AUTO_REJECT_EVERY_MS);
+}
+
+export function stopScreening(): void {
+  if (autoTimer) clearInterval(autoTimer);
+  autoTimer = undefined;
 }

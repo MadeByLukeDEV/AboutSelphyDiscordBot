@@ -6,7 +6,7 @@ import { decideScreeningViaBot, listChannels, listRoles, reloadBotModule } from 
 import { listEntries, readConfig, updateConfig } from "./repository";
 import type { DecideScreeningResult, SaveScreeningResult, ScreeningEntryStatus, ScreeningRow } from "./schema";
 
-const toSettings = (c: ScreeningConfig): ScreeningSettings => ({ enabled: c.enabled, channelId: c.channelId ?? "", approvedRoleId: c.approvedRoleId ?? "", pendingRoleId: c.pendingRoleId ?? "" });
+const toSettings = (c: ScreeningConfig): ScreeningSettings => ({ enabled: c.enabled, channelId: c.channelId ?? "", approvedRoleId: c.approvedRoleId ?? "", pendingRoleId: c.pendingRoleId ?? "", autoRejectDays: c.autoRejectDays });
 
 const toRow = (e: ScreeningEntry): ScreeningRow => ({
   id: e.id,
@@ -44,7 +44,7 @@ export async function saveScreening(input: ScreeningSettings): Promise<SaveScree
         if (!role.assignable) return { ok: false, error: "roleNotUsable" };
       }
     }
-    const saved = await updateConfig({ enabled: input.enabled, channelId: input.channelId || null, approvedRoleId: input.approvedRoleId || null, pendingRoleId: input.pendingRoleId || null });
+    const saved = await updateConfig({ enabled: input.enabled, channelId: input.channelId || null, approvedRoleId: input.approvedRoleId || null, pendingRoleId: input.pendingRoleId || null, autoRejectDays: input.autoRejectDays });
     return { ok: true, settings: toSettings(saved), botNotified: await reloadBotModule("screening") };
   } catch (error) {
     console.error("[screening] saving failed", errorInfo(error));

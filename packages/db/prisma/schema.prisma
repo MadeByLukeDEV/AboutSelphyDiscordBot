@@ -1313,6 +1313,8 @@ model ScreeningConfig {
   approvedRoleId String?  @db.VarChar(20)
   /// Given on join, taken away on approval (optional).
   pendingRoleId  String?  @db.VarChar(20)
+  /// Members still waiting after this many days are rejected (kicked) by the bot; 0 = never.
+  autoRejectDays Int      @default(0)
   updatedAt      DateTime @updatedAt
 }
 

@@ -24,7 +24,7 @@ describe("decisions", () => {
 });
 
 describe("settings", () => {
-  const ok = { enabled: true, channelId: "123456789012345678", approvedRoleId: "223456789012345678", pendingRoleId: "" };
+  const ok = { enabled: true, channelId: "123456789012345678", approvedRoleId: "223456789012345678", pendingRoleId: "", autoRejectDays: 0 };
   it("needs a channel and the approved role to be switched on", () => {
     expect(screeningSettingsSchema.safeParse(ok).success).toBe(true);
     expect(screeningSettingsSchema.safeParse({ ...ok, channelId: "" }).success).toBe(false);
@@ -34,5 +34,8 @@ describe("settings", () => {
   it("the pending role must be a different role", () => {
     expect(screeningSettingsSchema.safeParse({ ...ok, pendingRoleId: ok.approvedRoleId }).success).toBe(false);
     expect(screeningSettingsSchema.safeParse({ ...ok, pendingRoleId: "323456789012345678" }).success).toBe(true);
+    expect(screeningSettingsSchema.safeParse({ ...ok, autoRejectDays: 14 }).success).toBe(true);
+    expect(screeningSettingsSchema.safeParse({ ...ok, autoRejectDays: 61 }).success).toBe(false);
+    expect(screeningSettingsSchema.safeParse({ ...ok, autoRejectDays: -1 }).success).toBe(false);
   });
 });

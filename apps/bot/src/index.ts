@@ -22,7 +22,7 @@ import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
 import { startRetention, stopRetention } from "./modules/privacy";
 import { startInvites } from "./modules/invites";
 import { registerReminderControls } from "./modules/reminders";
-import { registerScreeningControls, startScreening } from "./modules/screening";
+import { registerScreeningControls, startScreening, stopScreening } from "./modules/screening";
 import { registerVerificationControls, startVerification, stopVerification } from "./modules/verification";
 import { startRaidProtection, stopRaidProtection } from "./modules/raid";
 import { registerStarboard } from "./modules/starboard";
@@ -116,6 +116,7 @@ async function main() {
     stopSticky();
     stopTwitchVip();
     stopRetention();
+    stopScreening();
     stopVerification();
     stopEventCalendar();
     stopRaidProtection();

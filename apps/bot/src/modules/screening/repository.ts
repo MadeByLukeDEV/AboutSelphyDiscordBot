@@ -25,3 +25,6 @@ export async function markLeft(userId: string): Promise<ScreeningEntry[]> {
 }
 
 export const hasPending = async (userId: string): Promise<boolean> => (await prisma.screeningEntry.count({ where: { userId, status: "pending" } })) > 0;
+
+/** Waiting entries that joined before the given moment (oldest first, at most 25 per round). */
+export const listStalePending = (before: Date): Promise<ScreeningEntry[]> => prisma.screeningEntry.findMany({ where: { status: "pending", joinedAt: { lt: before } }, orderBy: { joinedAt: "asc" }, take: 25 });
