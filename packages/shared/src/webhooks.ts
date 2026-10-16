@@ -9,8 +9,11 @@ export type OutboundEvent = (typeof OUTBOUND_EVENTS)[number];
 /** "test" is only ever sent by the "Send a test" button. */
 export type AnyWebhookEvent = OutboundEvent | "test";
 
-export const ENDPOINT_PROVIDERS = ["generic", "github", "kofi"] as const;
+export const ENDPOINT_PROVIDERS = ["generic", "github", "kofi", "stripe"] as const;
 export type EndpointProvider = (typeof ENDPOINT_PROVIDERS)[number];
+
+/** Ko-fi and Stripe decide their own secret (a token / a signing secret): the admin pastes it instead of getting one from us. */
+export const pastesSecret = (provider: EndpointProvider): boolean => provider === "kofi" || provider === "stripe";
 
 export const MAX_ENDPOINTS = 20;
 export const MAX_OUTBOUND = 10;
@@ -72,7 +75,7 @@ export const endpointInput = z
     secret: z.string().trim().max(200).optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.provider === "kofi" && !v.id && (!v.secret || v.secret.length < 8 || /\s/.test(v.secret))) ctx.addIssue({ code: "custom", path: ["secret"], message: "token" });
+    if (pastesSecret(v.provider) && !v.id && (!v.secret || v.secret.length < 8 || /\s/.test(v.secret))) ctx.addIssue({ code: "custom", path: ["secret"], message: "token" });
   });
 export type EndpointInput = z.infer<typeof endpointInput>;
 

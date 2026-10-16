@@ -11,7 +11,7 @@ const firstLine = (text: string, max: number): string => str(text.split("\n")[0]
 const githubUrl = (u: unknown): string | undefined => (typeof u === "string" && /^https:\/\/github\.com\/[^\s]+$/.test(u) && u.length <= 400 ? u : undefined);
 const kofiUrl = (u: unknown): string | undefined => (typeof u === "string" && /^https:\/\/ko-fi\.com\/[^\s]*$/.test(u) && u.length <= 400 ? u : undefined);
 
-const COLOR = { green: 0x2da44e, red: 0xcf222e, purple: 0x8250df, blue: 0x0969da, gold: 0xdbab09, kofi: 0x29abe0 } as const;
+const COLOR = { green: 0x2da44e, red: 0xcf222e, purple: 0x8250df, blue: 0x0969da, gold: 0xdbab09, kofi: 0x29abe0, stripe: 0x635bff } as const;
 
 const finish = (title: string, content: string, url: string | undefined, color: number): InboundPayload | null => {
   const parsed = inboundPayload.safeParse({ title: title.slice(0, 256), content: content.slice(0, 2000), ...(url ? { url } : {}), color });
@@ -89,3 +89,54 @@ export function kofiPayload(json: unknown): KofiMessage | null {
   const payload = finish(`☕ ${who} ${verb}${amount ? ` · ${amount} ${currency}`.trimEnd() : ""}`, isPublic ? str(k.message, 500) : "", kofiUrl(k.url), COLOR.kofi);
   return payload ? { payload, messageId, token } : null;
 }
+
+const ZERO_DECIMAL = new Set(["bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf"]);
+
+/** "12.50 EUR" from Stripe's minor units. Null when there is no usable amount. */
+function stripeAmount(amount: unknown, currency: unknown): string | null {
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount < 0 || amount > 1e12) return null;
+  const code = str(currency, 3).toLowerCase();
+  if (!/^[a-z]{3}$/.test(code)) return null;
+  const value = ZERO_DECIMAL.has(code) ? String(amount) : (amount / 100).toFixed(2);
+  return `${value} ${code.toUpperCase()}`;
+}
+
+export type StripeMessage = { payload: InboundPayload; eventId: string };
+
+/**
+ * A verified Stripe event as a message, or null for events we don't post. Only the amount, currency and a short plain description are shown:
+ * never names, e-mail addresses, card details or links (customer data stays in Stripe).
+ */
+export function stripePayload(json: unknown): StripeMessage | null {
+  const event = obj(json);
+  const eventId = str(event.id, 100);
+  const type = str(event.type, 80);
+  const object = obj(obj(event.data).object);
+  if (!/^evt_[A-Za-z0-9_]{6,90}$/.test(eventId)) return null;
+  const describe = (text: unknown) => firstLine(str(text, 200), 120);
+
+  switch (type) {
+    case "checkout.session.completed": {
+      const amount = stripeAmount(object.amount_total, object.currency);
+      return amount ? wrap(finish(`💳 New payment · ${amount}`, object.mode === "subscription" ? "A new subscription was started." : "A checkout was completed.", undefined, COLOR.stripe), eventId) : null;
+    }
+    case "payment_intent.succeeded": {
+      // A checkout also creates a payment intent: only post those that have no checkout session of their own (a plain payment link or API payment).
+      if (typeof object.invoice === "string" && object.invoice !== "") return null;
+      const amount = stripeAmount(object.amount_received ?? object.amount, object.currency);
+      return amount ? wrap(finish(`💳 Payment received · ${amount}`, describe(object.description), undefined, COLOR.green), eventId) : null;
+    }
+    case "charge.refunded": {
+      const amount = stripeAmount(object.amount_refunded, object.currency);
+      return amount ? wrap(finish(`↩️ Refund · ${amount}`, describe(object.description), undefined, COLOR.gold), eventId) : null;
+    }
+    case "customer.subscription.created":
+      return wrap(finish("🔁 New subscription", "", undefined, COLOR.stripe), eventId);
+    case "customer.subscription.deleted":
+      return wrap(finish("🛑 Subscription ended", "", undefined, COLOR.red), eventId);
+    default:
+      return null;
+  }
+}
+
+const wrap = (payload: InboundPayload | null, eventId: string): StripeMessage | null => (payload ? { payload, eventId } : null);

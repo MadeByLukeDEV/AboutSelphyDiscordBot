@@ -35,6 +35,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     githubSignature: request.headers.get("x-hub-signature-256"),
     githubEvent: request.headers.get("x-github-event"),
     deliveryId: request.headers.get("x-github-delivery"),
+    stripeSignature: request.headers.get("stripe-signature"),
     ip: request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown",
   });
   return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "no-store" } });

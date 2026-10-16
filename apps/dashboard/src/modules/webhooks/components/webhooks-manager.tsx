@@ -7,7 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Copy, Plus } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
-import { ENDPOINT_PROVIDERS, endpointInput, MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, outboundInput, type EndpointProvider, type OutboundEvent } from "@aboutselphy/shared/webhooks";
+import { ENDPOINT_PROVIDERS, endpointInput, MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, outboundInput, pastesSecret, type EndpointProvider, type OutboundEvent } from "@aboutselphy/shared/webhooks";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -114,7 +114,7 @@ export function WebhooksManager({ endpoints, outbound, channels, ready }: { endp
                   <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditEndpoint({ row: e })}>
                     {t("edit")}
                   </Button>
-                  {e.provider !== "kofi" && (
+                  {!pastesSecret(e.provider) && (
                     <Button variant="outline" size="sm" disabled={pending} onClick={() => setConfirm({ kind: "rotate", id: e.id, name: e.name })}>
                       {t("incoming.rotate")}
                     </Button>
@@ -319,11 +319,11 @@ function EndpointForm({ row, channels, onDone }: { row: EndpointRow | null; chan
           <FormSelect control={form.control} name="provider" id="wh-provider" options={providerOptions} placeholder={t("provider")} disabled={row !== null} />
           <FieldDescription>{t(`providerHelp.${provider}`)}</FieldDescription>
         </Field>
-        {provider === "kofi" && row === null && (
+        {pastesSecret(provider) && row === null && (
           <Field data-invalid={Boolean(errors.secret) || undefined}>
-            <FieldLabel htmlFor="wh-secret">{t("kofiToken")}</FieldLabel>
+            <FieldLabel htmlFor="wh-secret">{t(provider === "stripe" ? "stripeToken" : "kofiToken")}</FieldLabel>
             <Input id="wh-secret" type="password" autoComplete="off" maxLength={200} aria-invalid={Boolean(errors.secret) || undefined} {...form.register("secret")} />
-            <FieldDescription>{t("kofiTokenHelp")}</FieldDescription>
+            <FieldDescription>{t(provider === "stripe" ? "stripeTokenHelp" : "kofiTokenHelp")}</FieldDescription>
             {errors.secret && <FieldError>{te("needsToken")}</FieldError>}
           </Field>
         )}

@@ -1,7 +1,7 @@
 import "server-only";
 import { decryptToken } from "@aboutselphy/shared/token-cipher";
-import { githubPayload, kofiPayload } from "@aboutselphy/shared/webhook-presets";
-import { isFresh, safeEqual, verifyGithubSignature, verifySignature } from "@aboutselphy/shared/webhook-signature";
+import { githubPayload, kofiPayload, stripePayload } from "@aboutselphy/shared/webhook-presets";
+import { isFresh, safeEqual, verifyGithubSignature, verifySignature, verifyStripeSignature } from "@aboutselphy/shared/webhook-signature";
 import { inboundPayload, MAX_GITHUB_BODY, MAX_INBOUND_BODY, type InboundPayload } from "@aboutselphy/shared/webhooks";
 import { env } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
@@ -29,6 +29,8 @@ export type ReceiveInput = {
   githubSignature: string | null;
   githubEvent: string | null;
   deliveryId: string | null;
+  /** Stripe: Stripe-Signature. */
+  stripeSignature: string | null;
   ip: string;
 };
 
@@ -71,6 +73,20 @@ function authenticate(provider: string, secret: string, input: ReceiveInput, now
         return githubPayload(event, json) ?? "ignored";
       },
     };
+  }
+
+  if (provider === "stripe") {
+    if (!input.stripeSignature || !verifyStripeSignature(secret, input.rawBody, input.stripeSignature, now)) return null;
+    let json: unknown;
+    try {
+      json = JSON.parse(input.rawBody);
+    } catch {
+      return null;
+    }
+    const message = stripePayload(json);
+    // Authenticated but an event we don't post (Stripe sends many): the replay key is still the event id when there is one.
+    const eventId = typeof (json as { id?: unknown })?.id === "string" ? String((json as { id: string }).id).slice(0, 100) : input.stripeSignature.slice(0, 100);
+    return { replayKey: eventId, payload: () => message?.payload ?? "ignored" };
   }
 
   if (provider === "kofi") {

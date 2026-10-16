@@ -40,3 +40,15 @@ export function verifyGithubSignature(secret: string, rawBody: string, header: s
   const expected = SIGNATURE_PREFIX + createHmac("sha256", secret).update(rawBody).digest("hex");
   return safeEqual(header, expected);
 }
+
+/**
+ * Stripe's `Stripe-Signature`: "t=<unix seconds>,v1=<hex>[,v1=<hex>...]", where each v1 is the HMAC-SHA256 of "<t>.<raw body>" keyed with the
+ * endpoint's signing secret. The timestamp must be fresh (replay protection) and any one v1 may match (Stripe sends two while a secret rotates).
+ */
+export function verifyStripeSignature(secret: string, rawBody: string, header: string, nowMs: number): boolean {
+  const parts = header.split(",").map((p) => p.trim());
+  const t = parts.find((p) => p.startsWith("t="))?.slice(2) ?? "";
+  if (!isFresh(t, nowMs)) return false;
+  const expected = createHmac("sha256", secret).update(`${t}.${rawBody}`).digest("hex");
+  return parts.some((p) => p.startsWith("v1=") && safeEqual(p.slice(3), expected));
+}

@@ -1,7 +1,7 @@
 import "server-only";
 import { decryptToken, encryptToken } from "@aboutselphy/shared/token-cipher";
 import { newSecret } from "@aboutselphy/shared/webhook-signature";
-import { MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, type EndpointInput, type OutboundEvent, type OutboundInput } from "@aboutselphy/shared/webhooks";
+import { MAX_ENDPOINTS, MAX_OUTBOUND, OUTBOUND_EVENTS, pastesSecret, type EndpointInput, type OutboundEvent, type OutboundInput } from "@aboutselphy/shared/webhooks";
 import { env, siteUrl } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
 import { listChannels, testOutboundWebhookViaBot } from "@/modules/bot-api";
@@ -40,7 +40,7 @@ function hostOf(urlEnc: string): string {
 
 export async function getWebhooksPage() {
   const [endpoints, outbound, channels] = await Promise.all([listEndpoints(), listOutbound(), listChannels(["text"])]);
-  const endpointRows: EndpointRow[] = endpoints.map((e) => ({ id: e.id, name: e.name, provider: e.provider === "github" || e.provider === "kofi" ? e.provider : "generic", channelId: e.channelId, enabled: e.enabled, uses: e.uses, lastUsedAt: e.lastUsedAt?.toISOString() ?? null, url: endpointUrl(e.id) }));
+  const endpointRows: EndpointRow[] = endpoints.map((e) => ({ id: e.id, name: e.name, provider: e.provider === "github" || e.provider === "kofi" || e.provider === "stripe" ? e.provider : "generic", channelId: e.channelId, enabled: e.enabled, uses: e.uses, lastUsedAt: e.lastUsedAt?.toISOString() ?? null, url: endpointUrl(e.id) }));
   const outboundRows: OutboundRow[] = outbound.map((o) => ({
     id: o.id,
     name: o.name,
@@ -75,11 +75,11 @@ export async function saveEndpoint(input: EndpointInput, byName: string): Promis
       return { ok: true, id: existing.id, url: endpointUrl(existing.id), secret: null };
     }
     // Ko-fi decides its own verification token, so the admin pastes it; the other providers get a secret from us (shown once).
-    if (input.provider === "kofi" && !input.secret) return { ok: false, error: "needsToken" };
-    const secret = input.provider === "kofi" ? input.secret! : newSecret();
+    if (pastesSecret(input.provider) && !input.secret) return { ok: false, error: "needsToken" };
+    const secret = pastesSecret(input.provider) ? input.secret! : newSecret();
     const row = await createEndpoint({ name: input.name, channelId: input.channelId, enabled: input.enabled, provider: input.provider, secretEnc: encryptToken(secret, ENDPOINT_SECRET_PURPOSE, k), createdByName: byName.slice(0, 100) });
     console.info("[webhooks] endpoint created", { id: row.id, provider: input.provider, by: byName });
-    return { ok: true, id: row.id, url: endpointUrl(row.id), secret: input.provider === "kofi" ? null : secret };
+    return { ok: true, id: row.id, url: endpointUrl(row.id), secret: pastesSecret(input.provider) ? null : secret };
   } catch (error) {
     console.error("[webhooks] saving an endpoint failed", errorInfo(error));
     return { ok: false, error: "failed" };
@@ -94,7 +94,7 @@ export async function rotateEndpointSecret(id: string): Promise<SaveEndpointResu
     const found = await findEndpoint(id);
     if (!found) return { ok: false, error: "notFound" };
     // Ko-fi's token is Ko-fi's: to change it, remove the endpoint and make a new one.
-    if (found.provider === "kofi") return { ok: false, error: "invalid" };
+    if (found.provider === "kofi" || found.provider === "stripe") return { ok: false, error: "invalid" };
     const secret = newSecret();
     await updateEndpoint(id, { secretEnc: encryptToken(secret, ENDPOINT_SECRET_PURPOSE, k) });
     console.info("[webhooks] endpoint secret rotated", { id });

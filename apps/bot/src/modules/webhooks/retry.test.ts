@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ENDPOINT_PROVIDERS, endpointInput } from "@aboutselphy/shared/webhooks";
-import { githubPayload, kofiPayload } from "@aboutselphy/shared/webhook-presets";
-import { safeEqual, verifyGithubSignature } from "@aboutselphy/shared/webhook-signature";
+import { githubPayload, kofiPayload, stripePayload } from "@aboutselphy/shared/webhook-presets";
+import { safeEqual, verifyGithubSignature, verifyStripeSignature } from "@aboutselphy/shared/webhook-signature";
 import { createHmac } from "node:crypto";
 import { AUTO_DISABLE_AFTER, isRetryable, shouldAutoDisable } from "./rules";
 
@@ -100,5 +100,45 @@ describe("Ko-fi preset", () => {
     expect(kofiPayload({ ...donation, verification_token: "" })).toBeNull();
     expect(kofiPayload({ ...donation, message_id: "" })).toBeNull();
     expect(kofiPayload({ ...donation, url: "https://evil.example/" })?.payload.url).toBeUndefined();
+  });
+});
+
+describe("Stripe", () => {
+  const secret = "whsec_test_secret";
+  const now = 1_800_000_000_000;
+  const t = String(Math.floor(now / 1000));
+  const body = JSON.stringify({ id: "evt_1ABCdef23456", type: "checkout.session.completed", data: { object: { amount_total: 1250, currency: "eur", mode: "payment", customer_email: "secret@example.com" } } });
+  const v1 = createHmac("sha256", secret).update(`${t}.${body}`).digest("hex");
+
+  it("verifies the signature over the raw body with a fresh timestamp", () => {
+    expect(verifyStripeSignature(secret, body, `t=${t},v1=${v1}`, now)).toBe(true);
+    expect(verifyStripeSignature(secret, body, `t=${t},v1=${"0".repeat(64)},v1=${v1}`, now)).toBe(true);
+    expect(verifyStripeSignature("other", body, `t=${t},v1=${v1}`, now)).toBe(false);
+    expect(verifyStripeSignature(secret, body + " ", `t=${t},v1=${v1}`, now)).toBe(false);
+    expect(verifyStripeSignature(secret, body, `t=${t},v1=bad`, now)).toBe(false);
+    expect(verifyStripeSignature(secret, body, `v1=${v1}`, now)).toBe(false);
+    expect(verifyStripeSignature(secret, body, "", now)).toBe(false);
+  });
+  it("refuses an old timestamp even with a valid signature", () => {
+    const old = String(Math.floor(now / 1000) - 3600);
+    const sig = createHmac("sha256", secret).update(`${old}.${body}`).digest("hex");
+    expect(verifyStripeSignature(secret, body, `t=${old},v1=${sig}`, now)).toBe(false);
+  });
+  it("shows amounts only", () => {
+    const m = stripePayload(JSON.parse(body))!;
+    expect(m.eventId).toBe("evt_1ABCdef23456");
+    expect(m.payload.title).toBe("💳 New payment · 12.50 EUR");
+    expect(JSON.stringify(m.payload)).not.toContain("secret@example.com");
+    expect(m.payload.url).toBeUndefined();
+  });
+  it("handles zero-decimal currencies, refunds and unknown events", () => {
+    expect(stripePayload({ id: "evt_1ABCdef23456", type: "charge.refunded", data: { object: { amount_refunded: 500, currency: "jpy" } } })!.payload.title).toBe("↩️ Refund · 500 JPY");
+    expect(stripePayload({ id: "evt_1ABCdef23456", type: "customer.created", data: { object: {} } })).toBeNull();
+    expect(stripePayload({ id: "bad", type: "charge.refunded", data: { object: { amount_refunded: 1, currency: "eur" } } })).toBeNull();
+    expect(stripePayload({ id: "evt_1ABCdef23456", type: "payment_intent.succeeded", data: { object: { amount: 100, currency: "eur", invoice: "in_1" } } })).toBeNull();
+  });
+  it("stripe endpoints paste their secret", () => {
+    expect(endpointInput.safeParse({ name: "n", channelId: "123456789012345678", enabled: true, provider: "stripe" }).success).toBe(false);
+    expect(endpointInput.safeParse({ name: "n", channelId: "123456789012345678", enabled: true, provider: "stripe", secret: "whsec_abcdefgh" }).success).toBe(true);
   });
 });

@@ -2417,14 +2417,16 @@
     "providers": {
       "generic": "Custom (signed JSON)",
       "github": "GitHub",
-      "kofi": "Ko-fi"
+      "kofi": "Ko-fi",
+      "stripe": "Stripe"
     },
     "endpointForm": {
       "provider": "Sender",
       "providerHelp": {
         "generic": "Your own service, signed with the secret we show once (see the signing rules above).",
         "github": "GitHub repository webhooks (pushes, pull requests, issues, releases, stars). In GitHub add a webhook with this address, content type application/json, and the secret we show once.",
-        "kofi": "Ko-fi donations, subscriptions and shop orders. Paste Ko-fi's verification token below and put this address in Ko-fi's webhook settings. Private supporters stay anonymous."
+        "kofi": "Ko-fi donations, subscriptions and shop orders. Paste Ko-fi's verification token below and put this address in Ko-fi's webhook settings. Private supporters stay anonymous.",
+        "stripe": "Stripe payments, refunds and subscriptions. Create a webhook endpoint in Stripe with this address, pick the events (checkout.session.completed, payment_intent.succeeded, charge.refunded, customer.subscription.created, customer.subscription.deleted), then paste its signing secret below. Only amounts are shown, never customer details."
       },
       "kofiToken": "Ko-fi verification token",
       "kofiTokenHelp": "From Ko-fi: Settings, API, Webhooks. It is stored encrypted and never shown again. To change it, remove this endpoint and make a new one.",
@@ -2436,7 +2438,9 @@
       "cancel": "Cancel",
       "save": "Save",
       "saving": "Saving…",
-      "saved": "Saved"
+      "saved": "Saved",
+      "stripeToken": "Stripe signing secret",
+      "stripeTokenHelp": "From Stripe: Developers, Webhooks, your endpoint, Signing secret (starts with whsec_). It is stored encrypted and never shown again. To change it, remove this endpoint and make a new one."
     },
     "outboundForm": {
       "name": "Name",
