@@ -12,4 +12,4 @@ export const MAX_TWITCH_EVENTSUB_STREAMERS = 5;
  * Every channel after the first five is checked by polling Helix once a minute instead
  * (one request covers up to 100 channels), so an announcement can be up to a minute late.
  */
-export const MAX_TWITCH_STREAMERS = 30;
+export const MAX_TWITCH_STREAMERS = 100;

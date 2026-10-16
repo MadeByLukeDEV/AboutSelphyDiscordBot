@@ -708,8 +708,8 @@ Decided 2026-10-08:
   - Add/edit from the dashboard (dialog on `/twitch`): the login is looked up
     through the bot (`POST /internal/twitch/resolve`, the bot holds the Twitch
     token), roles come from `GET /internal/guild/roles`; the Discord channel and
-    role are validated against the server. Up to `MAX_TWITCH_STREAMERS = 30` channels
-    (2026-10-27): the first 5 (`MAX_TWITCH_EVENTSUB_STREAMERS`, one WebSocket allows a
+    role are validated against the server. Up to `MAX_TWITCH_STREAMERS = 100` channels
+    (2026-10-27, raised from 30 to 100 on 2026-11-11: one Helix `streams` call reads up to 100 ids, so the minute poll is still a single request): the first 5 (`MAX_TWITCH_EVENTSUB_STREAMERS`, one WebSocket allows a
     subscription cost of 10 and online + offline cost 1 each) get instant EventSub events;
     the rest are checked by `pollExtra` once a minute through Helix (`reconcile` limited to
     those channels, so an announcement can be up to a minute late and there is no race with
@@ -766,7 +766,7 @@ Decided 2026-10-08:
     pages are linked (`isTwitchClipUrl`), title and names escaped, nothing pings; Discord shows the player from the link.
     Dashboard `/twitch`: clips channel section and a per-channel "Post new clips" toggle.
   - **Minimum views for clips** (2026-11-11, `feature_clip-min-views`, migration `20261116300000_clip_min_views`; **not tried live yet**): `TwitchConfig.clipsMinViews` (0 = at once, CHECK 0-100000, a field in the clips card on `/twitch`). `planClips` posts a clip only when `viewCount >= min` (Helix `view_count`); a clip still below is neither posted nor remembered while it is under six hours old, and with a limit set every round asks Helix for the last six hours (not just since the last check), so a clip that climbs later is still posted once; older ones are remembered silently.
-  - [ ] Kick/TikTok, more than 30 channels.
+  - [ ] Kick/TikTok.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and
