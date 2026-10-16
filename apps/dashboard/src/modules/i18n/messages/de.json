@@ -548,7 +548,9 @@
       "none": "Kein Clip-Kanal (aus)",
       "help": "Wähle den Discord-Kanal für Clips. Der Bot muss dort Nachrichten senden und Links einbetten dürfen.",
       "botOffline": "Der Bot ist offline, daher ist die Kanalliste nicht verfügbar.",
-      "save": "Speichern"
+      "save": "Speichern",
+      "minViews": "Mindestaufrufe",
+      "minViewsHelp": "Ein Clip wird gepostet, sobald er so viele Aufrufe hat (0 = sofort). Clips darunter werden sechs Stunden lang erneut geprüft."
     },
     "liveRole": {
       "title": "Live-Rolle",

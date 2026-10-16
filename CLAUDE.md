@@ -765,7 +765,8 @@ Decided 2026-10-08:
     silently). Each clip is remembered (`TwitchClip`, unique `clipId`, pruned after 14 days) BEFORE it is posted. Only Twitch clip
     pages are linked (`isTwitchClipUrl`), title and names escaped, nothing pings; Discord shows the player from the link.
     Dashboard `/twitch`: clips channel section and a per-channel "Post new clips" toggle.
-  - [ ] Kick/TikTok, more than 30 channels, a minimum view count for clips.
+  - **Minimum views for clips** (2026-11-11, `feature_clip-min-views`, migration `20261116300000_clip_min_views`; **not tried live yet**): `TwitchConfig.clipsMinViews` (0 = at once, CHECK 0-100000, a field in the clips card on `/twitch`). `planClips` posts a clip only when `viewCount >= min` (Helix `view_count`); a clip still below is neither posted nor remembered while it is under six hours old, and with a limit set every round asks Helix for the last six hours (not just since the last check), so a clip that climbs later is still posted once; older ones are remembered silently.
+  - [ ] Kick/TikTok, more than 30 channels.
 - [~] Phase 4 — temporary voice channels
   - [x] Lifecycle (2026-10-10, `feature_tempvoice-lifecycle`, **tried live by
         the user**): `TempVoiceConfig` (singleton, switched off by default) and

@@ -188,10 +188,11 @@ const clipsResponse = z.object({
       title: z.string().default(""),
       creator_name: z.string().default(""),
       created_at: z.string(),
+      view_count: z.number().int().nonnegative().default(0),
     }),
   ),
 });
-export type TwitchClip = { id: string; url: string; title: string; creatorName: string; createdAt: Date };
+export type TwitchClip = { id: string; url: string; title: string; creatorName: string; createdAt: Date; viewCount: number };
 
 /** Clips of one channel made since `startedAt` (at most 20, the most viewed first). Works with the stored user token. */
 export async function getClips(credentials: Credentials, accessToken: string, broadcasterId: string, startedAt: Date): Promise<TwitchClip[]> {
@@ -199,6 +200,6 @@ export async function getClips(credentials: Credentials, accessToken: string, br
   const parsed = clipsResponse.safeParse(await (await helix(credentials, accessToken, query)).json().catch(() => undefined));
   if (!parsed.success) throw new TwitchError("failed");
   return parsed.data.data
-    .map((c) => ({ id: c.id, url: c.url, title: c.title, creatorName: c.creator_name, createdAt: new Date(c.created_at) }))
+    .map((c) => ({ id: c.id, url: c.url, title: c.title, creatorName: c.creator_name, createdAt: new Date(c.created_at), viewCount: c.view_count }))
     .filter((c) => !Number.isNaN(c.createdAt.getTime()));
 }

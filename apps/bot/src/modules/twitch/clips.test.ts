@@ -9,6 +9,7 @@ const clip = (id: string, minutesAgo: number, over: Partial<TwitchClip> = {}): T
   title: `Clip ${id}`,
   creatorName: "Fan",
   createdAt: new Date(now.getTime() - minutesAgo * 60_000),
+  viewCount: 0,
   ...over,
 });
 
@@ -23,6 +24,22 @@ describe("planClips", () => {
     const plan = planClips([clip("new2", 1), clip("new1", 3), clip("old", 120)], new Set(), checked, now);
     expect(plan.post.map((c) => c.id)).toEqual(["new1", "new2"]);
     expect(plan.remember).toEqual(["old"]);
+  });
+  it("waits for a clip to reach the view limit and posts it later", () => {
+    const checked = new Date(now.getTime() - 5 * 60_000);
+    const young = clip("young", 2, { viewCount: 1 });
+    const popular = clip("popular", 3, { viewCount: 9 });
+    const first = planClips([young, popular], new Set(), checked, now, 3, 5);
+    expect(first.post.map((c) => c.id)).toEqual(["popular"]);
+    expect(first.remember).toEqual([]);
+    const later = planClips([{ ...young, viewCount: 6 }], new Set(["popular"]), checked, now, 3, 5);
+    expect(later.post.map((c) => c.id)).toEqual(["young"]);
+  });
+  it("drops a clip that never got enough views once it is too old to post", () => {
+    const checked = new Date(now.getTime() - 5 * 60_000);
+    const plan = planClips([clip("stale", 600, { viewCount: 1 })], new Set(), checked, now, 3, 5);
+    expect(plan.post).toEqual([]);
+    expect(plan.remember).toEqual(["stale"]);
   });
   it("never posts a clip it has seen", () => {
     const checked = new Date(now.getTime() - 5 * 60_000);

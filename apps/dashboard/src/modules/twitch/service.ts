@@ -149,7 +149,7 @@ export async function getTwitchOverview(): Promise<TwitchOverview> {
           connectedAt: connection.connectedAt.toISOString(),
         }
       : null,
-    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId ?? "", clipsChannelId: config.clipsChannelId ?? "" },
+    settings: { enabled: config.enabled, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId ?? "", clipsChannelId: config.clipsChannelId ?? "", clipsMinViews: config.clipsMinViews },
     streamers: streamers.map(toView),
   };
 }
@@ -171,8 +171,8 @@ export async function saveTwitchSettings(input: TwitchSettings): Promise<SaveTwi
       if (!channels) return { ok: false, error: "botUnavailable" };
       if (!channels.some((c) => c.id === input.clipsChannelId)) return { ok: false, error: "channelNotFound" };
     }
-    const saved = await updateConfig({ enabled: input.enabled, markEndedOnOffline: input.markEndedOnOffline, liveRoleId: input.liveRoleId || null, clipsChannelId: input.clipsChannelId || null });
-    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline, liveRoleId: saved.liveRoleId ?? "", clipsChannelId: saved.clipsChannelId ?? "" }, botNotified: await reloadBotModule("twitch") };
+    const saved = await updateConfig({ enabled: input.enabled, markEndedOnOffline: input.markEndedOnOffline, liveRoleId: input.liveRoleId || null, clipsChannelId: input.clipsChannelId || null, clipsMinViews: input.clipsMinViews });
+    return { ok: true, settings: { enabled: saved.enabled, markEndedOnOffline: saved.markEndedOnOffline, liveRoleId: saved.liveRoleId ?? "", clipsChannelId: saved.clipsChannelId ?? "", clipsMinViews: saved.clipsMinViews }, botNotified: await reloadBotModule("twitch") };
   } catch (error) {
     console.error("[twitch] saving the settings failed", errorInfo(error));
     return { ok: false, error: "failed" };
@@ -275,7 +275,7 @@ export async function disconnectTwitch(): Promise<SimpleResult> {
     const connection = await readConnection();
     if (!connection) return { ok: false, error: "notConnected" };
     const config = await readConfig();
-    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId, clipsChannelId: config.clipsChannelId });
+    await updateConfig({ enabled: false, markEndedOnOffline: config.markEndedOnOffline, liveRoleId: config.liveRoleId, clipsChannelId: config.clipsChannelId, clipsMinViews: config.clipsMinViews });
     if (creds && !connection.needsReconnect) {
       try {
         const refresh = decryptToken(connection.refreshTokenEnc, TWITCH_REFRESH_TOKEN_PURPOSE, creds.key);

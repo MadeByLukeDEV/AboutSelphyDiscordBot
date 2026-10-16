@@ -548,7 +548,9 @@
       "none": "No clips channel (off)",
       "help": "Pick the Discord channel for clips. The bot needs to send messages and embed links there.",
       "botOffline": "The bot is offline, so the channel list isn't available.",
-      "save": "Save"
+      "save": "Save",
+      "minViews": "Minimum views",
+      "minViewsHelp": "A clip is posted once it has this many views (0 = post right away). Clips that are still below it are checked again for six hours."
     },
     "liveRole": {
       "title": "Live role",

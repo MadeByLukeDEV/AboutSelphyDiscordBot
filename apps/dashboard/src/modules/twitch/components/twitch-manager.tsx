@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { disconnectTwitchAction, removeStreamerAction, saveTwitchSettingsAction, setStreamerEnabledAction } from "../actions";
@@ -291,7 +292,7 @@ function LiveRoleForm({ settings, roles, pending, onSave }: { settings: TwitchSe
 /** Where new clips are posted (for channels that have "Post new clips" switched on). */
 function ClipsForm({ settings, channels, pending, onSave }: { settings: TwitchSettings; channels: GuildChannel[] | null; pending: boolean; onSave: (next: Partial<TwitchSettings>) => void }) {
   const t = useTranslations("Twitch.clips");
-  const form = useForm<{ clipsChannelId: string }>({ defaultValues: { clipsChannelId: settings.clipsChannelId } });
+  const form = useForm<{ clipsChannelId: string; clipsMinViews: number }>({ defaultValues: { clipsChannelId: settings.clipsChannelId, clipsMinViews: settings.clipsMinViews } });
   const options: SelectOption[] = [
     { value: "", label: t("none") },
     ...(channels ?? []).filter((c) => c.kind === "text").map((c) => ({ value: c.id, label: c.parent ? `#${c.name} (${c.parent})` : `#${c.name}`, text: `#${c.name}`, group: c.parent ?? undefined })),
@@ -303,11 +304,16 @@ function ClipsForm({ settings, channels, pending, onSave }: { settings: TwitchSe
         {t("title")}
       </h2>
       <p className="max-w-prose text-sm text-muted-foreground">{t("intro")}</p>
-      <form onSubmit={form.handleSubmit((values) => onSave({ clipsChannelId: values.clipsChannelId }))} className="flex flex-col gap-3" noValidate>
+      <form onSubmit={form.handleSubmit((values) => onSave({ clipsChannelId: values.clipsChannelId, clipsMinViews: Math.max(0, Math.min(100_000, Math.trunc(Number(values.clipsMinViews) || 0))) }))} className="flex flex-col gap-3" noValidate>
         <Field>
           <FieldLabel htmlFor="tw-clips-channel">{t("channel")}</FieldLabel>
           <FormSelect control={form.control} name="clipsChannelId" id="tw-clips-channel" options={options} placeholder={t("none")} disabled={channels === null} />
           <FieldDescription>{channels === null ? t("botOffline") : t("help")}</FieldDescription>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="tw-clips-views">{t("minViews")}</FieldLabel>
+          <Input id="tw-clips-views" type="number" inputMode="numeric" min={0} max={100000} className="max-w-[9rem]" {...form.register("clipsMinViews", { valueAsNumber: true })} />
+          <FieldDescription>{t("minViewsHelp")}</FieldDescription>
         </Field>
         <div>
           <Button type="submit" size="sm" disabled={pending || !form.formState.isDirty}>

@@ -13,6 +13,8 @@ export const twitchSettingsSchema = z.object({
   liveRoleId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
   /** "" = no clips are posted. */
   clipsChannelId: z.union([z.literal(""), z.string().regex(/^\d{17,20}$/)]),
+  /** A clip is posted once it has this many views (0 = at once). */
+  clipsMinViews: z.number().int().min(0).max(100_000),
 });
 export type TwitchSettings = z.infer<typeof twitchSettingsSchema>;
 

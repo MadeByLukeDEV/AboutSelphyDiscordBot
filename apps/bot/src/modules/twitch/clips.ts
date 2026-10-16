@@ -24,14 +24,18 @@ export type ClipPlan = { post: TwitchClip[]; remember: string[] };
  * made after the previous check (minus the overlap) and not older than six hours, oldest first, at most `max`; the rest of the
  * unseen ones are remembered silently so they don't come back as a late flood.
  */
-export function planClips(clips: readonly TwitchClip[], known: ReadonlySet<string>, checkedAt: Date | null, now: Date, max = MAX_CLIPS_PER_ROUND): ClipPlan {
+export function planClips(clips: readonly TwitchClip[], known: ReadonlySet<string>, checkedAt: Date | null, now: Date, max = MAX_CLIPS_PER_ROUND, minViews = 0): ClipPlan {
   const unseen = clips.filter((c) => !known.has(c.id));
   if (checkedAt === null) return { post: [], remember: unseen.map((c) => c.id) };
-  const since = Math.max(checkedAt.getTime() - OVERLAP_MS, now.getTime() - MAX_AGE_MS);
+  // With a view limit, a young clip may still be climbing: look at everything of the last six hours every round.
+  const since = minViews > 0 ? now.getTime() - MAX_AGE_MS : Math.max(checkedAt.getTime() - OVERLAP_MS, now.getTime() - MAX_AGE_MS);
   const fresh = unseen.filter((c) => c.createdAt.getTime() >= since).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-  const post = fresh.slice(0, max);
+  // A clip still below the view limit is neither posted nor remembered while it is young enough to catch up: a later round looks again.
+  const eligible = fresh.filter((c) => c.viewCount >= minViews);
+  const waiting = new Set(fresh.filter((c) => c.viewCount < minViews).map((c) => c.id));
+  const post = eligible.slice(0, max);
   const posted = new Set(post.map((c) => c.id));
-  return { post, remember: unseen.filter((c) => !posted.has(c.id)).map((c) => c.id) };
+  return { post, remember: unseen.filter((c) => !posted.has(c.id) && !waiting.has(c.id)).map((c) => c.id) };
 }
 
 /** Only a clip page on Twitch itself is ever linked. */
@@ -74,10 +78,10 @@ export async function clipsRound(client: Client): Promise<void> {
     for (const streamer of streamers) {
       const startedAt = new Date();
       try {
-        const since = streamer.clipsCheckedAt ? new Date(streamer.clipsCheckedAt.getTime() - OVERLAP_MS) : new Date(startedAt.getTime() - 24 * 3_600_000);
+        const since = streamer.clipsCheckedAt ? new Date(config.clipsMinViews > 0 ? startedAt.getTime() - MAX_AGE_MS : streamer.clipsCheckedAt.getTime() - OVERLAP_MS) : new Date(startedAt.getTime() - 24 * 3_600_000);
         const clips = await getClips(credentials, token, streamer.twitchUserId, since);
         const known = await knownClipIds(clips.map((c) => c.id));
-        const plan = planClips(clips, known, streamer.clipsCheckedAt, startedAt);
+        const plan = planClips(clips, known, streamer.clipsCheckedAt, startedAt, MAX_CLIPS_PER_ROUND, config.clipsMinViews);
         for (const id of plan.remember) await rememberClip(id, streamer.twitchUserId);
         for (const clip of plan.post) {
           if (!(await rememberClip(clip.id, streamer.twitchUserId))) continue; // someone else posted it

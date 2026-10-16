@@ -211,6 +211,8 @@ model TwitchConfig {
   liveRoleId         String?  @db.VarChar(20)
   /// New clips of channels with postClips are posted here; null = no clips.
   clipsChannelId     String?  @db.VarChar(20)
+  /// A clip is only posted once it has this many views (0 = post at once).
+  clipsMinViews      Int      @default(0)
   updatedAt          DateTime @updatedAt
 }
 

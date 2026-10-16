@@ -6,7 +6,7 @@ export function readConfig(): Promise<TwitchConfig> {
   return prisma.twitchConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
 }
 
-export function updateConfig(data: { enabled: boolean; markEndedOnOffline: boolean; liveRoleId: string | null; clipsChannelId: string | null }): Promise<TwitchConfig> {
+export function updateConfig(data: { enabled: boolean; markEndedOnOffline: boolean; liveRoleId: string | null; clipsChannelId: string | null; clipsMinViews: number }): Promise<TwitchConfig> {
   return prisma.twitchConfig.upsert({ where: { id: 1 }, update: data, create: { id: 1, ...data } });
 }
 
