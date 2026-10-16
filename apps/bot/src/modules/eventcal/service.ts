@@ -10,6 +10,7 @@ import { itemKey, reminderDefaultsSchema } from "@aboutselphy/shared/eventcal";
 import { dateRangeText, renderEventCard, renderMonthlyCard, tryDraw, weeklyText, type CardTheme, type MonthlyCardRow } from "./cards";
 import type { CalEvent } from "./ics";
 import { syncSource } from "./sync";
+import { checkPatchNotes } from "./patch-service";
 import { inferKind, toCalEvent } from "./store";
 import { claimMonth, clearSyncFlags, readBackground, readGameEvent, readItems, releaseMonth, setMonthly, claimPost, findPost, findPostById, updatePostMessage, pruneSummaries, readSummary, saveSummary, listStoredEvents, listRules, listSources, markSeeded, prunePosts, readSource, recordCheck, setOverview, setOverviewHash, setPostHash, setPostMessage, unclaimPost, type SourceState } from "./repository";
 import { parseSummary, summarizeEvent, summaryKey, type EventSummaryData } from "./summary";
@@ -114,6 +115,7 @@ export function checkCalendar(guild: Guild, opts: { force?: boolean; sourceId?: 
           });
           if (synced && synced.status !== "ok") log.warn({ source: src.name, status: synced.status }, "eventcal: the sync did not fully succeed");
         }
+        await checkPatchNotes(guild, src, Boolean(opts.force)).catch((err) => log.error({ err }, "patchnotes: unexpected failure"));
         return checkSource(guild, src);
       })().catch((err) => {
         log.error({ err }, "eventcal: a source failed");

@@ -3062,7 +3062,12 @@
       "reminderDefaultEmpty": "Default: 7 days before",
       "reminderDefaultClear": "Back to the default",
       "publicWidget": "Public widget and JSON",
-      "publicWidgetHelp": "Anyone with the link can see this game's upcoming events as a page (for OBS or an iframe) and as JSON. Shows titles, dates, items and the short summary only. Off by default."
+      "publicWidgetHelp": "Anyone with the link can see this game's upcoming events as a page (for OBS or an iframe) and as JSON. Shows titles, dates, items and the short summary only. Off by default.",
+      "patchListUrl": "Patch notes page",
+      "patchListUrlHelp": "The page that lists the game's patch notes. New ones are announced in the channel below with a short summary. The first look only remembers what is there.",
+      "patchChannel": "Patch notes channel",
+      "patchRole": "Ping role",
+      "patchStatus": "Patch notes checked {time}: {status}"
     },
     "posted": {
       "title": "Posted events",

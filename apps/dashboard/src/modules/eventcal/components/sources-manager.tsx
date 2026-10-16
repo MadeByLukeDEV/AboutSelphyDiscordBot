@@ -23,7 +23,7 @@ import { EventForm } from "./event-form";
 import { ReminderPicker } from "./reminder-picker";
 
 /** The games (sources): their settings, status, stored events, pasted articles, and the overview and monthly buttons. */
-export function SourcesManager({ sources, channelOptions, channelsReady }: { sources: SourceRow[]; channelOptions: SelectOption[]; channelsReady: boolean }) {
+export function SourcesManager({ sources, channelOptions, roleOptions, channelsReady }: { sources: SourceRow[]; channelOptions: SelectOption[]; roleOptions: SelectOption[]; channelsReady: boolean }) {
   const t = useTranslations("Events.games");
   const te = useTranslations("Events.errors");
   const ta = useTranslations("Events.article");
@@ -147,6 +147,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
                     <p className="text-sm text-muted-foreground">{t("syncStatus", { time: when(s.lastFetchedAt), status: s.lastFetchStatus ?? "-" })}</p>
                   )}
                   <p className="text-sm text-muted-foreground">{t("status", { time: when(s.lastCheckedAt), status: s.lastStatus ?? "-" })}</p>
+                  {s.patchListUrl && <p className="text-sm text-muted-foreground">{t("patchStatus", { time: when(s.patchCheckedAt), status: s.patchStatus ?? "-" })}</p>}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm" disabled={pending} onClick={() => setEditing({ source: s })}>
@@ -327,6 +328,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
               key={editing.source?.id ?? "new"}
               source={editing.source}
               channelOptions={channelOptions}
+              roleOptions={roleOptions}
               onDone={() => {
                 setEditing(null);
                 router.refresh();
@@ -393,16 +395,16 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
   );
 }
 
-type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean };
+type SourceValues = { name: string; enabled: boolean; icsUrl: string; pageUrlTemplate: string; contentSelector: string; fetchMode: string; overviewChannelId: string; overviewDays: number; summaryChannelId: string; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean; patchListUrl: string; patchChannelId: string; patchPingRoleId: string };
 
-function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; onDone: () => void }) {
+function SourceForm({ source, channelOptions, roleOptions, onDone }: { source: SourceRow | null; channelOptions: SelectOption[]; roleOptions: SelectOption[]; onDone: () => void }) {
   const t = useTranslations("Events.games");
   const te = useTranslations("Events.errors");
   const [pending, startTransition] = useTransition();
   const form = useForm<SourceValues>({
     defaultValues: source
-      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, reminderDefaults: source.reminderDefaults, accentColor: source.accentColor, summaryImage: source.summaryImage, publicWidget: source.publicWidget }
-      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, reminderDefaults: {}, accentColor: "#00ffa8", summaryImage: false, publicWidget: false },
+      ? { name: source.name, enabled: source.enabled, icsUrl: source.icsUrl, pageUrlTemplate: source.pageUrlTemplate, contentSelector: source.contentSelector, fetchMode: source.fetchMode, overviewChannelId: source.overviewChannelId, overviewDays: source.overviewDays, summaryChannelId: source.summaryChannelId, summaryAuto: source.summaryAuto, reminderDefaults: source.reminderDefaults, accentColor: source.accentColor, summaryImage: source.summaryImage, publicWidget: source.publicWidget, patchListUrl: source.patchListUrl, patchChannelId: source.patchChannelId, patchPingRoleId: source.patchPingRoleId }
+      : { name: "", enabled: true, icsUrl: "", pageUrlTemplate: "", contentSelector: "", fetchMode: "auto", overviewChannelId: "", overviewDays: 30, summaryChannelId: "", summaryAuto: false, reminderDefaults: {}, accentColor: "#00ffa8", summaryImage: false, publicWidget: false, patchListUrl: "", patchChannelId: "", patchPingRoleId: "" },
   });
   const { errors } = form.formState;
   const none: SelectOption[] = [{ value: "", label: t("none") }, ...channelOptions];
@@ -500,6 +502,22 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
             <FieldDescription id="gs-summary-image-help">{t("summaryImageHelp")}</FieldDescription>
           </div>
         </Field>
+        <Field data-invalid={Boolean(errors.patchListUrl) || undefined}>
+          <FieldLabel htmlFor="gs-patch-url">{t("patchListUrl")}</FieldLabel>
+          <Input id="gs-patch-url" type="url" maxLength={300} autoComplete="off" placeholder="https://" aria-invalid={Boolean(errors.patchListUrl) || undefined} {...form.register("patchListUrl")} />
+          <FieldDescription>{t("patchListUrlHelp")}</FieldDescription>
+          {errors.patchListUrl && <FieldError>{te("badUrl")}</FieldError>}
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field className="min-w-0">
+            <FieldLabel htmlFor="gs-patch-channel">{t("patchChannel")}</FieldLabel>
+            <FormSelect control={form.control} name="patchChannelId" id="gs-patch-channel" options={none} placeholder={t("none")} />
+          </Field>
+          <Field className="min-w-0">
+            <FieldLabel htmlFor="gs-patch-role">{t("patchRole")}</FieldLabel>
+            <FormSelect control={form.control} name="patchPingRoleId" id="gs-patch-role" options={[{ value: "", label: t("none") }, ...roleOptions]} placeholder={t("none")} />
+          </Field>
+        </div>
         <Field orientation="horizontal">
           <Controller control={form.control} name="publicWidget" render={({ field }) => <Switch id="gs-widget" checked={field.value} onCheckedChange={field.onChange} aria-describedby="gs-widget-help" />} />
           <div className="flex flex-col gap-1">

@@ -24,6 +24,11 @@ export type SourceState = {
   accentColor: string;
   summaryImage: boolean;
   baselined: boolean;
+  patchListUrl: string | null;
+  patchChannelId: string | null;
+  patchPingRoleId: string | null;
+  patchBaselined: boolean;
+  patchCheckedAt: Date | null;
 };
 
 const toState = (s: Awaited<ReturnType<typeof prisma.eventSource.findFirstOrThrow>>): SourceState => s;
@@ -52,6 +57,9 @@ type StateChange = Partial<{
   lastFetchedAt: Date;
   lastFetchStatus: string;
   syncStartedAt: Date | null;
+  patchBaselined: boolean;
+  patchCheckedAt: Date;
+  patchStatus: string;
 }>;
 
 export const saveState = (id: string, data: StateChange) => prisma.eventSource.updateMany({ where: { id }, data });
@@ -151,3 +159,16 @@ export const readBackground = (sourceId: string) => prisma.eventSourceImage.find
 
 export const readGameEvent = (sourceId: string, id: string) => prisma.gameEvent.findFirst({ where: { id, sourceId } });
 
+
+// ---- patch notes
+
+export const listPatchUrls = async (sourceId: string): Promise<Set<string>> => new Set((await prisma.patchNote.findMany({ where: { sourceId }, select: { url: true } })).map((p) => p.url));
+export const rememberPatches = (sourceId: string, links: Array<{ url: string; title: string }>) => prisma.patchNote.createMany({ data: links.map((l) => ({ sourceId, url: l.url, title: l.title })), skipDuplicates: true });
+/** Claims a patch note before it is posted: false when it already exists (someone else has it). */
+export async function claimPatch(sourceId: string, link: { url: string; title: string }): Promise<boolean> {
+  return (await prisma.patchNote.createMany({ data: [{ sourceId, url: link.url, title: link.title }], skipDuplicates: true })).count === 1;
+}
+export const setPatchMessage = (sourceId: string, url: string, messageId: string) => prisma.patchNote.updateMany({ where: { sourceId, url }, data: { messageId } });
+/** A failed post gives the claim back so the next look tries again. */
+export const unclaimPatch = (sourceId: string, url: string) => prisma.patchNote.deleteMany({ where: { sourceId, url, messageId: null } });
+export const savePatchState = (id: string, data: StateChange) => saveState(id, data);

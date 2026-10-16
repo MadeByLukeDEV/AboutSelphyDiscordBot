@@ -56,6 +56,11 @@ export type SourceRow = {
   accentColor: string;
   summaryImage: boolean;
   publicWidget: boolean;
+  patchListUrl: string;
+  patchChannelId: string;
+  patchPingRoleId: string;
+  patchCheckedAt: string | null;
+  patchStatus: string | null;
   hasBackground: boolean;
   items: ItemRow[];
   hasOverview: boolean;

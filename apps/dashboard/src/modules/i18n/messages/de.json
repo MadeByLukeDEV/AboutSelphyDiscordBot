@@ -3062,7 +3062,12 @@
       "reminderDefaultEmpty": "Standard: 7 Tage vorher",
       "reminderDefaultClear": "Zurück zum Standard",
       "publicWidget": "Öffentliches Widget und JSON",
-      "publicWidgetHelp": "Jeder mit dem Link sieht die kommenden Events dieses Spiels als Seite (für OBS oder einen iframe) und als JSON. Gezeigt werden nur Titel, Daten, Items und die Kurzfassung. Standardmäßig aus."
+      "publicWidgetHelp": "Jeder mit dem Link sieht die kommenden Events dieses Spiels als Seite (für OBS oder einen iframe) und als JSON. Gezeigt werden nur Titel, Daten, Items und die Kurzfassung. Standardmäßig aus.",
+      "patchListUrl": "Patchnotes-Seite",
+      "patchListUrlHelp": "Die Seite, die die Patchnotes des Spiels auflistet. Neue werden im Kanal unten mit einer Kurzfassung angekündigt. Der erste Blick merkt sich nur, was schon da ist.",
+      "patchChannel": "Patchnotes-Kanal",
+      "patchRole": "Rolle anpingen",
+      "patchStatus": "Patchnotes geprüft {time}: {status}"
     },
     "posted": {
       "title": "Geposte Events",

@@ -34,6 +34,11 @@ const toSourceRow = (s: SourceModel, articles: ArticleRow[], events: EventRow[],
   accentColor: s.accentColor,
   summaryImage: s.summaryImage,
   publicWidget: s.publicWidget,
+  patchListUrl: s.patchListUrl ?? "",
+  patchChannelId: s.patchChannelId ?? "",
+  patchPingRoleId: s.patchPingRoleId ?? "",
+  patchCheckedAt: s.patchCheckedAt?.toISOString() ?? null,
+  patchStatus: s.patchStatus,
   hasBackground,
   items,
   hasOverview: s.overviewMessageId !== null,
@@ -69,11 +74,16 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
     const existing = input.id ? await findSource(input.id) : null;
     if (input.id && !existing) return { ok: false, error: "notFound" };
     if (!existing && (await countSources()) >= MAX_EVENT_SOURCES) return { ok: false, error: "tooMany" };
-    const newChannels = [input.overviewChannelId !== (existing?.overviewChannelId ?? "") ? input.overviewChannelId : "", input.summaryChannelId !== (existing?.summaryChannelId ?? "") ? input.summaryChannelId : ""].filter(Boolean);
+    const newChannels = [input.overviewChannelId !== (existing?.overviewChannelId ?? "") ? input.overviewChannelId : "", input.summaryChannelId !== (existing?.summaryChannelId ?? "") ? input.summaryChannelId : "", input.patchChannelId !== (existing?.patchChannelId ?? "") ? input.patchChannelId : ""].filter(Boolean);
     if (newChannels.length > 0) {
       const channels = await listChannels(["text"]);
       if (!channels) return { ok: false, error: "botUnavailable" };
       if (newChannels.some((id) => !channels.some((c) => c.id === id))) return { ok: false, error: "channelNotFound" };
+    }
+    if (input.patchPingRoleId && input.patchPingRoleId !== (existing?.patchPingRoleId ?? "")) {
+      const roles = await listRoles();
+      if (!roles) return { ok: false, error: "botUnavailable" };
+      if (!roles.some((r) => r.id === input.patchPingRoleId)) return { ok: false, error: "roleNotFound" };
     }
     const data = {
       name: input.name,
@@ -90,11 +100,16 @@ export async function saveSource(input: EventSourceInput): Promise<SaveSourceRes
       accentColor: input.accentColor.toLowerCase(),
       summaryImage: input.summaryImage,
       publicWidget: input.publicWidget,
+      patchListUrl: input.patchListUrl || null,
+      patchChannelId: input.patchChannelId || null,
+      patchPingRoleId: input.patchPingRoleId || null,
     };
     if (existing) {
       // Another calendar or page address starts over: the first check of it only remembers what is there.
       const changed = (existing.icsUrl ?? "") !== (data.icsUrl ?? "") || (existing.pageUrlTemplate ?? "") !== (data.pageUrlTemplate ?? "");
-      await updateSource(existing.id, { ...data, ...(changed ? { baselined: false as const } : {}) });
+      // Another patch note list starts over too: its first look only remembers what is there.
+      const patchChanged = (existing.patchListUrl ?? "") !== (data.patchListUrl ?? "") || (existing.patchChannelId ?? "") !== (data.patchChannelId ?? "");
+      await updateSource(existing.id, { ...data, ...(changed ? { baselined: false as const } : {}), ...(patchChanged ? { patchBaselined: false as const } : {}) });
     } else {
       await createSource(data);
     }

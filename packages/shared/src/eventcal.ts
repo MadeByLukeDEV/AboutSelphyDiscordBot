@@ -67,6 +67,11 @@ export const eventSourceSchema = z.object({
   /** Put a drawn picture on the monthly summary. */
   summaryImage: z.boolean().default(false),
   publicWidget: z.boolean().default(false),
+  /** An https page that lists the game's patch notes. "" = no patch note announcements. */
+  patchListUrl: z.union([z.literal(""), z.string().trim().max(300).refine(isPublicHttpsUrl, "url")]).default(""),
+  /** Where new patch notes are announced, and an optional role to ping. */
+  patchChannelId: z.union([z.literal(""), snowflake]).default(""),
+  patchPingRoleId: z.union([z.literal(""), snowflake]).default(""),
   /** Announcement times per kind of event. */
   reminderDefaults: reminderDefaultsSchema.default({}),
 });

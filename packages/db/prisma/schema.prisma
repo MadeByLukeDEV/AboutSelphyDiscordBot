@@ -1481,6 +1481,15 @@ model EventSource {
   summaryImage      Boolean   @default(false)
   /// Anyone may read this game's upcoming events (public widget page and JSON); off by default.
   publicWidget      Boolean   @default(false)
+  /// A page listing the game's patch notes (optional); new ones are announced in patchChannelId.
+  patchListUrl      String?   @db.VarChar(300)
+  patchChannelId    String?   @db.VarChar(20)
+  patchPingRoleId   String?   @db.VarChar(20)
+  /// false until the first successful look at the list (which only remembers what is there).
+  patchBaselined    Boolean   @default(false)
+  patchCheckedAt    DateTime?
+  patchStatus       String?   @db.VarChar(40)
+  patchNotes        PatchNote[]
   background        EventSourceImage?
   items             EventItem[]
   rules             EventRule[]
@@ -1583,3 +1592,16 @@ model EventSourceImage {
   uploadedAt     DateTime    @default(now())
 }
 
+
+/// One patch note page the bot has seen at a game's list address (unique per address, so it is announced once).
+model PatchNote {
+  id        String      @id @default(cuid())
+  sourceId  String
+  source    EventSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  url       String      @db.VarChar(300)
+  title     String      @db.VarChar(200)
+  messageId String?     @db.VarChar(20)
+  createdAt DateTime    @default(now())
+
+  @@unique([sourceId, url])
+}

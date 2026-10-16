@@ -29,9 +29,9 @@ export const deleteRule = async (id: string) => (await prisma.eventRule.deleteMa
 export const listSources = () => prisma.eventSource.findMany({ orderBy: { createdAt: "asc" } });
 export const countSources = () => prisma.eventSource.count();
 export const findSource = (id: string) => prisma.eventSource.findUnique({ where: { id } });
-type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean };
+type SourceData = { name: string; enabled: boolean; icsUrl: string | null; pageUrlTemplate: string | null; contentSelector: string | null; fetchMode: string; overviewChannelId: string | null; overviewDays: number; summaryChannelId: string | null; summaryAuto: boolean; reminderDefaults: ReminderDefaults; accentColor: string; summaryImage: boolean; publicWidget: boolean; patchListUrl: string | null; patchChannelId: string | null; patchPingRoleId: string | null };
 export const createSource = (data: SourceData) => prisma.eventSource.create({ data });
-export const updateSource = (id: string, data: SourceData & { baselined?: false }) => prisma.eventSource.update({ where: { id }, data });
+export const updateSource = (id: string, data: SourceData & { baselined?: false; patchBaselined?: false }) => prisma.eventSource.update({ where: { id }, data });
 export const deleteSource = async (id: string) => (await prisma.eventSource.deleteMany({ where: { id } })).count;
 
 /** Events from a month ago on, up to 80 per source (the page shows them per source). */
