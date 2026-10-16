@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, useWatch } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { deleteGiveawayAction, giveawayControlAction, saveGiveawayAction } from "../actions";
@@ -37,6 +38,7 @@ type FormValues = {
   minAccountDays: number;
   minMemberDays: number;
   minLevel: number;
+  requireTwitch: boolean;
   repeatsLeft: number;
 };
 
@@ -205,8 +207,8 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
   const [minLocal] = useState(() => toLocalInput(new Date(Date.now() + MIN_SCHEDULE_AHEAD_MS)));
   const form = useForm<FormValues>({
     defaultValues: giveaway
-      ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, imageUrl: giveaway.imageUrl, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId }
-      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "", bonusRoleId: "", bonusEntries: 0, minAccountDays: 0, minMemberDays: 0, minLevel: 0, repeatsLeft: 0 },
+      ? { channelId: giveaway.channelId, prize: giveaway.prize, description: giveaway.description, imageUrl: giveaway.imageUrl, winnerCount: giveaway.winnerCount, endsLocal: toLocalInput(new Date(giveaway.endsAt)), requiredRoleId: giveaway.requiredRoleId, pingRoleId: giveaway.pingRoleId, bonusRoleId: giveaway.bonusRoleId, bonusEntries: giveaway.bonusEntries, minAccountDays: giveaway.minAccountDays, minMemberDays: giveaway.minMemberDays, minLevel: giveaway.minLevel, requireTwitch: giveaway.requireTwitch, repeatsLeft: giveaway.repeatsLeft }
+      : { channelId: "", prize: "", description: "", imageUrl: "", winnerCount: 1, endsLocal: "", requiredRoleId: "", pingRoleId: "", bonusRoleId: "", bonusEntries: 0, minAccountDays: 0, minMemberDays: 0, minLevel: 0, requireTwitch: false, repeatsLeft: 0 },
   });
   const { errors } = form.formState;
   const [description] = useWatch({ control: form.control, name: ["description"] });
@@ -233,6 +235,7 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
         minAccountDays: Number(values.minAccountDays) || 0,
         minMemberDays: Number(values.minMemberDays) || 0,
         minLevel: Number(values.minLevel) || 0,
+        requireTwitch: Boolean(values.requireTwitch),
         repeatsLeft: Number(values.repeatsLeft) || 0,
         start,
       });
@@ -317,6 +320,10 @@ function GiveawayForm({ giveaway, channels, roles, onDone }: { giveaway: Giveawa
             <Input id="gw-min-level" type="number" inputMode="numeric" min={0} max={MAX_REQUIRED_LEVEL} className="max-w-[8rem]" {...form.register("minLevel", { valueAsNumber: true })} />
           </Field>
         </div>
+        <Field orientation="horizontal">
+          <Controller control={form.control} name="requireTwitch" render={({ field }) => <Switch id="gw-twitch" checked={field.value} onCheckedChange={field.onChange} />} />
+          <FieldLabel htmlFor="gw-twitch">{t("requireTwitch")}</FieldLabel>
+        </Field>
         <FieldDescription>{t("requirementsHelp")}</FieldDescription>
         <Field>
           <FieldLabel htmlFor="gw-repeat">{t("repeat")}</FieldLabel>

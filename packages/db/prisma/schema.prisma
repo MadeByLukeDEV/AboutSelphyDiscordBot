@@ -662,6 +662,8 @@ model Giveaway {
   minAccountDays Int             @default(0)
   minMemberDays  Int             @default(0)
   minLevel       Int             @default(0)
+  /// The member must have a confirmed Twitch link (/vip link) to enter.
+  requireTwitch  Boolean         @default(false)
   /// When it was posted (the length of one round, for repeating).
   startedAt      DateTime?
   /// How many more rounds follow once this one ends: each new round copies the settings and lasts as long as this one did (0 = none).

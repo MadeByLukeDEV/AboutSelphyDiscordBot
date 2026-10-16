@@ -22,6 +22,7 @@ const toView = (g: GiveawayWithCount): GiveawayView => ({
   minAccountDays: g.minAccountDays,
   minMemberDays: g.minMemberDays,
   minLevel: g.minLevel,
+  requireTwitch: g.requireTwitch,
   repeatsLeft: g.repeatsLeft,
   hostName: g.hostName,
   winners: g.winners,
@@ -68,6 +69,7 @@ export async function saveGiveaway(input: GiveawayInput, by: StaffSession["user"
       minAccountDays: input.minAccountDays,
       minMemberDays: input.minMemberDays,
       minLevel: input.minLevel,
+      requireTwitch: input.requireTwitch,
       repeatsLeft: input.repeatsLeft,
     };
     let id: string;

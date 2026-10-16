@@ -6,7 +6,7 @@ import { env, integrationsActive } from "../../lib/env";
 import { log } from "../../lib/log";
 import { levelFromXp } from "@aboutselphy/shared/levels";
 import { buildGiveawayMessage, entryProblem, nextRoundEnd, pickWeightedWinners, ticketsFor, winnerAnnouncement, type Candidate } from "./rules";
-import { activate, cancel, claimEnd, countEntries, createNextRound, entryUserIds, find, listDue, setWinners, xpOf } from "./repository";
+import { activate, cancel, claimEnd, countEntries, createNextRound, entryUserIds, find, hasTwitchLink, listDue, setWinners, xpOf } from "./repository";
 
 // Giveaways. The dashboard creates one (a draft) and asks the bot to start it: the bot posts the
 // message with an Enter button. The bot ends giveaways when their time is up (a round every 30 s,
@@ -27,7 +27,7 @@ const view = (g: Giveaway, extra: { ended: boolean; winners: string[]; entryCoun
   requiredRoleId: g.requiredRoleId,
   bonusRoleId: g.bonusRoleId,
   bonusEntries: g.bonusEntries,
-  requirements: { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel },
+  requirements: { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel, requireTwitch: g.requireTwitch },
   ...extra,
 });
 
@@ -74,7 +74,8 @@ async function eligible(guild: Guild, g: Giveaway): Promise<Candidate[]> {
       if (g.requiredRoleId && !m.roles.cache.has(g.requiredRoleId)) continue;
       // The other requirements are checked again at the draw: someone who left the server and came back, or lost a level, no longer qualifies.
       const level = g.minLevel > 0 ? levelFromXp(await xpOf(m.id)) : 0;
-      if (entryProblem({ minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel }, { accountCreatedAt: m.user.createdAt, joinedAt: m.joinedAt, level }, new Date())) continue;
+      const twitchLinked = g.requireTwitch ? await hasTwitchLink(m.id) : false;
+      if (entryProblem({ minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel, requireTwitch: g.requireTwitch }, { accountCreatedAt: m.user.createdAt, joinedAt: m.joinedAt, level, twitchLinked }, new Date())) continue;
       ok.push({ id: m.id, weight: ticketsFor(Boolean(g.bonusRoleId && m.roles.cache.has(g.bonusRoleId)), g.bonusEntries) });
     }
   }

@@ -1421,7 +1421,8 @@
       "minLevel": "Level",
       "requirementsHelp": "Entry requirements beyond the role. 0 means no limit. They are checked when someone presses Enter and again at the draw. The level needs the leveling feature to be on.",
       "repeat": "Repeat (more rounds)",
-      "repeatHelp": "After the draw, the next round starts right away with the same settings and the same length. 0 = once, up to {max}. Cancel a running round to stop it."
+      "repeatHelp": "After the draw, the next round starts right away with the same settings and the same length. 0 = once, up to {max}. Cancel a running round to stop it.",
+      "requireTwitch": "Needs a confirmed Twitch link (/vip link)"
     },
     "confirm": {
       "cancel": {

@@ -1421,7 +1421,8 @@
       "minLevel": "Level",
       "requirementsHelp": "Teilnahmebedingungen zusätzlich zur Rolle. 0 heißt keine Grenze. Sie werden beim Drücken von Teilnehmen und noch einmal bei der Auslosung geprüft. Das Level braucht das eingeschaltete Level-System.",
       "repeat": "Wiederholen (weitere Runden)",
-      "repeatHelp": "Nach der Auslosung startet sofort die nächste Runde mit denselben Einstellungen und derselben Länge. 0 = einmal, bis zu {max}. Brich eine laufende Runde ab, um es zu stoppen."
+      "repeatHelp": "Nach der Auslosung startet sofort die nächste Runde mit denselben Einstellungen und derselben Länge. 0 = einmal, bis zu {max}. Brich eine laufende Runde ab, um es zu stoppen.",
+      "requireTwitch": "Braucht eine bestätigte Twitch-Verknüpfung (/vip link)"
     },
     "confirm": {
       "back": "Zurück",

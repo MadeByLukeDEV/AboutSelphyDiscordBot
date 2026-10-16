@@ -1,0 +1,1 @@
+ALTER TABLE "Giveaway" ADD COLUMN "requireTwitch" BOOLEAN NOT NULL DEFAULT false;

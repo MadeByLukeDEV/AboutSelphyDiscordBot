@@ -42,6 +42,8 @@ export const giveawayInput = z
     minMemberDays: z.number().int().min(0).max(MAX_REQUIRED_DAYS).default(0),
     /** At least this level in the leveling system (0 = no limit). */
     minLevel: z.number().int().min(0).max(MAX_REQUIRED_LEVEL).default(0),
+    /** Needs a confirmed Twitch link (the member linked their Twitch account with /vip link and staff or Discord confirmed it). */
+    requireTwitch: z.boolean().default(false),
     /** More rounds after this one ends (each lasts as long as this one; 0 = once). */
     repeatsLeft: z.number().int().min(0).max(MAX_REPEATS).default(0),
     /** Optional picture, https only. "" = none. */

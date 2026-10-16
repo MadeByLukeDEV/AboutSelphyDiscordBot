@@ -42,6 +42,7 @@ export function createNextRound(g: Awaited<ReturnType<typeof find>> & object, en
       minAccountDays: g.minAccountDays,
       minMemberDays: g.minMemberDays,
       minLevel: g.minLevel,
+      requireTwitch: g.requireTwitch,
       repeatsLeft: g.repeatsLeft - 1,
       hostName: g.hostName,
       hostUserId: g.hostUserId,
@@ -73,4 +74,9 @@ export const hasEntry = async (giveawayId: string, userId: string) => (await pri
 export const countEntries = (giveawayId: string) => prisma.giveawayEntry.count({ where: { giveawayId } });
 export async function entryUserIds(giveawayId: string): Promise<string[]> {
   return (await prisma.giveawayEntry.findMany({ where: { giveawayId }, select: { userId: true } })).map((e) => e.userId);
+}
+
+/** Does the member have a confirmed Twitch link (the VIP feature's table)? */
+export async function hasTwitchLink(userId: string): Promise<boolean> {
+  return (await prisma.twitchVipLink.count({ where: { discordUserId: userId, approved: true } })) > 0;
 }

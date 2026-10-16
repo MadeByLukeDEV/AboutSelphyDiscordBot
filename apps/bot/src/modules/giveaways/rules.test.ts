@@ -153,6 +153,12 @@ describe("entry requirements", () => {
   const now = new Date("2026-11-06T12:00:00Z");
   const days = (n: number) => new Date(now.getTime() - n * 86_400_000);
   const none = { minAccountDays: 0, minMemberDays: 0, minLevel: 0 };
+  it("needs a confirmed Twitch link when asked", () => {
+    const who = { accountCreatedAt: new Date("2020-01-01"), joinedAt: new Date("2020-01-01"), level: 0 };
+    expect(entryProblem({ ...none, requireTwitch: true }, who, new Date())).toEqual({ kind: "twitch", need: 1 });
+    expect(entryProblem({ ...none, requireTwitch: true }, { ...who, twitchLinked: true }, new Date())).toBeNull();
+    expect(entryProblem(none, who, new Date())).toBeNull();
+  });
 
   it("no requirements means everyone qualifies", () => {
     expect(entryProblem(none, { accountCreatedAt: days(0), joinedAt: null, level: 0 }, now)).toBeNull();

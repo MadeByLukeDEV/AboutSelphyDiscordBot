@@ -18,6 +18,7 @@ export type GiveawayView = {
   minAccountDays: number;
   minMemberDays: number;
   minLevel: number;
+  requireTwitch: boolean;
   repeatsLeft: number;
   hostName: string;
   winners: string[];

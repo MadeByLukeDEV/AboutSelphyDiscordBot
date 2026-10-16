@@ -24,6 +24,7 @@ export type GiveawayData = {
   minAccountDays: number;
   minMemberDays: number;
   minLevel: number;
+  requireTwitch: boolean;
   repeatsLeft: number;
 };
 

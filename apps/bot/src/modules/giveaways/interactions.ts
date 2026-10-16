@@ -4,7 +4,7 @@ import { env } from "../../lib/env";
 import { log } from "../../lib/log";
 import { levelFromXp } from "@aboutselphy/shared/levels";
 import { entryProblem, GIVEAWAY_PREFIX, parseEnterControl, problemText } from "./rules";
-import { countEntries, find, hasEntry, toggleEntry, xpOf } from "./repository";
+import { countEntries, find, hasEntry, hasTwitchLink, toggleEntry, xpOf } from "./repository";
 
 /**
  * The Enter button. Nothing is trusted from the interaction: the id is parsed strictly, the giveaway is
@@ -24,10 +24,10 @@ async function handle(i: ComponentInteraction): Promise<void> {
   if (g.requiredRoleId && !i.member.roles.cache.has(g.requiredRoleId)) return void (await say(`You need the <@&${g.requiredRoleId}> role to enter this giveaway.`));
 
   // Withdrawing is always allowed; entering needs the requirements beyond the role.
-  const req = { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel };
-  if (req.minAccountDays + req.minMemberDays + req.minLevel > 0) {
+  const req = { minAccountDays: g.minAccountDays, minMemberDays: g.minMemberDays, minLevel: g.minLevel, requireTwitch: g.requireTwitch };
+  if (req.minAccountDays + req.minMemberDays + req.minLevel > 0 || req.requireTwitch) {
     const level = req.minLevel > 0 ? levelFromXp(await xpOf(i.user.id)) : 0;
-    const problem = entryProblem(req, { accountCreatedAt: i.user.createdAt, joinedAt: i.member.joinedAt, level }, new Date());
+    const problem = entryProblem(req, { accountCreatedAt: i.user.createdAt, joinedAt: i.member.joinedAt, level, twitchLinked: req.requireTwitch ? await hasTwitchLink(i.user.id) : false }, new Date());
     if (problem && !(await hasEntry(g.id, i.user.id))) return void (await say(problemText(problem)));
   }
 

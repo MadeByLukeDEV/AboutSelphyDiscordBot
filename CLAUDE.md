@@ -1041,7 +1041,7 @@ Decided 2026-10-08:
         guide lists it under Community). **Repeating**: `repeatsLeft` (0-52, DB CHECK): when a round ends (not a re-roll) the bot
         creates the next one with the same settings, `repeatsLeft - 1` and the same length (`startedAt` is set on posting;
         `nextRoundEnd`, at least five minutes) and starts it at once; cancelling a running round stops the chain.
-  - [ ] Still open: other requirements (e.g. a linked Twitch account).
+  - [x] **Twitch-link requirement** (2026-11-10, `feature_giveaway-twitch-req`, migration `20261116180000_giveaway_twitch`; **not tried live yet**): `Giveaway.requireTwitch` (a switch on the form) needs a confirmed `TwitchVipLink` (`approved`) when someone presses Enter and again at the draw (`entryProblem` kind `twitch`, `hasTwitchLink`); the post lists it and the repeat chain copies it. Also fixed: editing a draft now keeps its bonus, requirement and repeat values (the form used to reset them).
 - [~] Suggestions (2026-10-19, `feature_suggestions`, migration
       `20261019100000_suggestions` applied; **not tried live yet**; Tier B)
   - Bot (`modules/suggestions/`): `/suggest` (cooldown, 5-1500 chars), post with up/down
