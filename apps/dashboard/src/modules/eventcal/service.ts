@@ -4,6 +4,7 @@ import type { EventRule } from "@aboutselphy/db";
 import { MAX_ARTICLE_CHARS, parseArticle } from "@aboutselphy/shared/eventcal-article";
 import { cardImageProblem, readImageInfo } from "@aboutselphy/shared/image-info";
 import { reminderDefaultsSchema } from "@aboutselphy/shared/eventcal";
+import { autoRuleName, type PostingInput } from "@aboutselphy/shared/eventcal";
 import { MAX_EVENT_RULES, MAX_EVENT_SOURCES, type EventRuleInput, type EventSourceInput, type GameEventInput } from "@aboutselphy/shared/eventcal";
 import { errorInfo } from "@/lib/log";
 import { getEventPreviewCard, checkEventCalendarViaBot, postEventMonthlyViaBot, repostEventViaBot, listChannels, listRoles, postEventOverviewViaBot, reloadBotModule } from "@/modules/bot-api";
@@ -400,4 +401,26 @@ export async function getPublicFeed(id: string): Promise<PublicFeed | null> {
     updatedAt: now.toISOString(),
     events: events.map((e) => ({ title: e.title, kind: e.kind, startsAt: e.startsAt.toISOString(), endsAt: e.endsAt?.toISOString() ?? null, allDay: e.allDay, summary: e.summary || e.blurb, items: e.items, recurrence: e.recurrence })),
   };
+}
+
+/** Saves the per-kind posting rows of a game: a row with a channel keeps one rule "Auto: <kind>", a row without one removes it. Stops at the first problem. */
+export async function savePosting(input: PostingInput): Promise<SimpleEventResult> {
+  try {
+    if (!(await findSource(input.sourceId))) return { ok: false, error: "notFound" };
+    const rules = (await listRules()).filter((r) => r.sourceId === input.sourceId);
+    for (const row of input.rows) {
+      const name = autoRuleName(row.kind);
+      const existing = rules.find((r) => r.name === name);
+      if (!row.channelId) {
+        if (existing) await deleteRule(existing.id);
+        continue;
+      }
+      const saved = await saveRule({ ...(existing ? { id: existing.id } : {}), name, words: [], categories: [], kinds: [row.kind], channelId: row.channelId, pingRoleId: row.pingRoleId, useCard: row.useCard, postSeries: existing?.postSeries ?? false, useAi: existing?.useAi ?? true, enabled: true, sourceId: input.sourceId });
+      if (!saved.ok) return saved;
+    }
+    return { ok: true };
+  } catch (error) {
+    console.error("[eventcal] saving the posting rows failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
 }

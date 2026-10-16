@@ -75,7 +75,7 @@ export function EventsManager({ sources, rules, channels, roles, posted }: { sou
 
   return (
     <div className="flex flex-col gap-fluid">
-      <SourcesManager sources={sources} channelOptions={channelOptions} roleOptions={(roles ?? []).map((r) => ({ value: r.id, label: r.name }))} channelsReady={channels !== null} />
+      <SourcesManager sources={sources} rules={rules} channelOptions={channelOptions} roleOptions={(roles ?? []).map((r) => ({ value: r.id, label: r.name }))} channelsReady={channels !== null} />
 
       {posted.length > 0 && (
         <section aria-labelledby="ev-posted" className="surface flex flex-col gap-3 p-5">

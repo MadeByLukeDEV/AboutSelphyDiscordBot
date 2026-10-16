@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
-import { CalendarRange, Eye, ImageIcon, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
+import { CalendarRange, Eye, Megaphone, ImageIcon, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { EVENT_KINDS, eventSourceSchema, FETCH_MODES, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS, type ReminderDefaults } from "@aboutselphy/shared/eventcal";
 import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
@@ -18,12 +18,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { checkEventCalendarAction, deleteEventArticleAction, deleteEventItemAction, deleteEventSourceAction, removeEventBackgroundAction, removeEventItemImageAction, uploadEventBackgroundAction, uploadEventItemImageAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction } from "../actions";
-import type { EventRow, ImageResult, ItemRow, SourceRow } from "../schema";
+import type { EventRow, EventRuleRow, ImageResult, ItemRow, SourceRow } from "../schema";
+import { PostingForm } from "./posting-form";
 import { EventForm } from "./event-form";
 import { ReminderPicker } from "./reminder-picker";
 
 /** The games (sources): their settings, status, stored events, pasted articles, and the overview and monthly buttons. */
-export function SourcesManager({ sources, channelOptions, roleOptions, channelsReady }: { sources: SourceRow[]; channelOptions: SelectOption[]; roleOptions: SelectOption[]; channelsReady: boolean }) {
+export function SourcesManager({ sources, rules, channelOptions, roleOptions, channelsReady }: { sources: SourceRow[]; rules: EventRuleRow[]; channelOptions: SelectOption[]; roleOptions: SelectOption[]; channelsReady: boolean }) {
   const t = useTranslations("Events.games");
   const te = useTranslations("Events.errors");
   const ta = useTranslations("Events.article");
@@ -31,6 +32,7 @@ export function SourcesManager({ sources, channelOptions, roleOptions, channelsR
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<{ source: SourceRow | null } | null>(null);
+  const [posting, setPosting] = useState<SourceRow | null>(null);
   const [removing, setRemoving] = useState<SourceRow | null>(null);
   const [eventEdit, setEventEdit] = useState<{ source: SourceRow; event: EventRow | null } | null>(null);
   const [texts, setTexts] = useState<Record<string, string>>({});
@@ -163,6 +165,10 @@ export function SourcesManager({ sources, channelOptions, roleOptions, channelsR
                 <Button type="button" size="sm" disabled={pending || s.syncing} onClick={() => fetchNow(s)}>
                   {s.syncing || fetchingId === s.id ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : <RefreshCw aria-hidden />}
                   {s.syncing || fetchingId === s.id ? t("fetching") : t("fetchNow")}
+                </Button>
+                <Button type="button" variant="outline" size="sm" disabled={pending || !channelsReady} onClick={() => setPosting(s)}>
+                  <Megaphone aria-hidden />
+                  {t("posting")}
                 </Button>
                 <Button type="button" variant="outline" size="sm" disabled={pending || !s.overviewChannelId} onClick={() => run(() => postEventOverviewAction({ sourceId: s.id }), t("overviewDone"))}>
                   <LayoutList aria-hidden />
@@ -331,6 +337,28 @@ export function SourcesManager({ sources, channelOptions, roleOptions, channelsR
               roleOptions={roleOptions}
               onDone={() => {
                 setEditing(null);
+                router.refresh();
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={posting !== null} onOpenChange={(open) => !open && setPosting(null)}>
+        <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{t("postingTitle", { name: posting?.name ?? "" })}</DialogTitle>
+            <DialogDescription>{t("postingIntro")}</DialogDescription>
+          </DialogHeader>
+          {posting && (
+            <PostingForm
+              key={posting.id}
+              source={posting}
+              rules={rules}
+              channelOptions={channelOptions}
+              roleOptions={roleOptions}
+              onDone={() => {
+                setPosting(null);
                 router.refresh();
               }}
             />

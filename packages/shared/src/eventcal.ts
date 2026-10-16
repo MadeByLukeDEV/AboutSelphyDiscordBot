@@ -100,6 +100,14 @@ export const gameEventSchema = z.object({
 });
 export type GameEventInput = z.infer<typeof gameEventSchema>;
 
+/** The simple way to announce events: per kind a channel, an optional role and a picture switch. The dashboard keeps one rule per kind behind the scenes ("Auto: <kind>"). */
+export const autoRuleName = (kind: string): string => `Auto: ${kind}`;
+export const postingSchema = z.object({
+  sourceId: z.string().min(1).max(64),
+  rows: z.array(z.object({ kind: z.enum(EVENT_KINDS), channelId: z.union([z.literal(""), snowflake]), pingRoleId: z.union([z.literal(""), snowflake]), useCard: z.boolean() })).max(EVENT_KINDS.length),
+});
+export type PostingInput = z.infer<typeof postingSchema>;
+
 export const eventRuleSchema = z
   .object({
     id: z.string().min(1).max(64).optional(),

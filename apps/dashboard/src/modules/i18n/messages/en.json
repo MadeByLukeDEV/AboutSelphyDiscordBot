@@ -3067,7 +3067,15 @@
       "patchListUrlHelp": "The page that lists the game's patch notes. New ones are announced in the channel below with a short summary. The first look only remembers what is there.",
       "patchChannel": "Patch notes channel",
       "patchRole": "Ping role",
-      "patchStatus": "Patch notes checked {time}: {status}"
+      "patchStatus": "Patch notes checked {time}: {status}",
+      "posting": "Posting",
+      "postingTitle": "Announce events of {name}",
+      "postingIntro": "Pick where each kind of event is announced. When it is announced (7 days before, 2 days before ...) comes from the reminders in the event and in this game's settings.",
+      "postingNone": "Don't post",
+      "postingChannel": "Channel",
+      "postingCard": "Attach a picture",
+      "postingSaved": "Posting saved.",
+      "postingHelp": "Each row you fill in keeps one rule behind the scenes, named \"Auto: <kind>\". Rules you made yourself stay untouched. Changing a channel starts that row over quietly: nothing old is announced."
     },
     "posted": {
       "title": "Posted events",

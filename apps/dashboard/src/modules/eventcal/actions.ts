@@ -1,13 +1,13 @@
 "use server";
 
 import { z } from "zod";
-import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventRuleSchema, eventSourceSchema, gameEventSchema } from "@aboutselphy/shared/eventcal";
+import { eventCheckBody, eventMonthlyBody, eventOverviewBody, eventRuleSchema, eventSourceSchema, gameEventSchema, postingSchema } from "@aboutselphy/shared/eventcal";
 import { MAX_ARTICLE_CHARS } from "@aboutselphy/shared/eventcal-article";
 import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
 import { AuthorizationError, requireAdmin } from "@/modules/auth";
 import { audited } from "@/modules/audit";
 import type { CheckEventsResult, ImageResult, ImportArticleResult, OverviewResult, RepostResult, SaveRuleResult, SaveSourceResult, SimpleEventResult } from "./schema";
-import { bringBackEvent, checkNow, clearBackgroundPicture, clearItemPicture, removeItem, setBackgroundPicture, setItemPicture, importArticle, postMonthlySummary, postOverview, removeArticle, removeEvent, removeRule, removeSource, repostEvent, saveEvent, saveRule, saveSource } from "./service";
+import { bringBackEvent, checkNow, clearBackgroundPicture, clearItemPicture, removeItem, setBackgroundPicture, setItemPicture, importArticle, postMonthlySummary, postOverview, removeArticle, removeEvent, removeRule, removeSource, repostEvent, saveEvent, savePosting, saveRule, saveSource } from "./service";
 
 // Public POST endpoints like every Server Action: each one checks the session and the role itself (admins only), validates its input, and returns codes.
 
@@ -28,6 +28,13 @@ async function saveEventRuleActionRun(input: unknown): Promise<SaveRuleResult> {
   const parsed = eventRuleSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   return saveRule(parsed.data);
+}
+
+async function savePostingActionRun(input: unknown): Promise<SimpleEventResult> {
+  if (!(await adminOnly())) return { ok: false, error: "forbidden" };
+  const parsed = postingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  return savePosting(parsed.data);
 }
 
 async function deleteEventRuleActionRun(input: unknown): Promise<SimpleEventResult> {
@@ -115,6 +122,10 @@ async function restoreGameEventActionRun(input: unknown): Promise<SimpleEventRes
 
 export async function saveEventRuleAction(...args: Parameters<typeof saveEventRuleActionRun>): ReturnType<typeof saveEventRuleActionRun> {
   return audited("eventcal.saveEventRule", saveEventRuleActionRun, args);
+}
+
+export async function savePostingAction(...args: Parameters<typeof savePostingActionRun>): ReturnType<typeof savePostingActionRun> {
+  return audited("eventcal.savePosting", savePostingActionRun, args);
 }
 
 export async function deleteEventRuleAction(...args: Parameters<typeof deleteEventRuleActionRun>): ReturnType<typeof deleteEventRuleActionRun> {

@@ -3067,7 +3067,15 @@
       "patchListUrlHelp": "Die Seite, die die Patchnotes des Spiels auflistet. Neue werden im Kanal unten mit einer Kurzfassung angekündigt. Der erste Blick merkt sich nur, was schon da ist.",
       "patchChannel": "Patchnotes-Kanal",
       "patchRole": "Rolle anpingen",
-      "patchStatus": "Patchnotes geprüft {time}: {status}"
+      "patchStatus": "Patchnotes geprüft {time}: {status}",
+      "posting": "Posten",
+      "postingTitle": "Events von {name} ankündigen",
+      "postingIntro": "Wähle, wo jede Art von Event angekündigt wird. Wann (7 Tage vorher, 2 Tage vorher ...) steht in den Erinnerungen des Events und in den Einstellungen dieses Spiels.",
+      "postingNone": "Nicht posten",
+      "postingChannel": "Kanal",
+      "postingCard": "Bild anhängen",
+      "postingSaved": "Posten gespeichert.",
+      "postingHelp": "Jede ausgefüllte Zeile hält im Hintergrund eine Regel namens \"Auto: <Art>\". Selbst erstellte Regeln bleiben unberührt. Ein anderer Kanal startet die Zeile still neu: Nichts Altes wird angekündigt."
     },
     "posted": {
       "title": "Geposte Events",
