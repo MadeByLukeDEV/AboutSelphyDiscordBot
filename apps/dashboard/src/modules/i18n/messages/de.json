@@ -1245,7 +1245,9 @@
       "autoClose": "Inaktive Tickets schließen nach (Stunden)",
       "autoCloseHelp": "Ein Ticket ohne Nachricht wird nach dieser Zeit automatisch geschlossen, das Transkript bleibt gespeichert. 0 = nie. Bis zu {max} (30 Tage).",
       "askRating": "Nach dem Schließen um eine Bewertung bitten",
-      "askRatingHelp": "Der Ersteller bekommt beim Schließen eine DM mit fünf Sterne-Knöpfen. Die Bewertung wird mit dem Ticket gespeichert."
+      "askRatingHelp": "Der Ersteller bekommt beim Schließen eine DM mit fünf Sterne-Knöpfen. Die Bewertung wird mit dem Ticket gespeichert.",
+      "maxClaims": "Claim-Limit pro Teammitglied",
+      "maxClaimsHelp": "Wie viele offene Tickets ein Teammitglied gleichzeitig übernehmen kann. 0 = kein Limit (bis {max})."
     },
     "panel": {
       "post": "Panel posten",

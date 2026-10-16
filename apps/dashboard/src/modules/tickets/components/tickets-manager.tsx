@@ -9,7 +9,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { colorToHex, hexToColor } from "@aboutselphy/shared/twitch-template";
-import { DEFAULT_TICKET_COLOR, MAX_AUTOCLOSE_HOURS, MAX_OPEN_PER_USER, MAX_STAFF_ROLES, MAX_TICKET_TEXT, ticketSettingsSchema, type TicketCategoryInput, type TicketSettings } from "@aboutselphy/shared/tickets";
+import { DEFAULT_TICKET_COLOR, MAX_AUTOCLOSE_HOURS, MAX_CLAIMS_PER_STAFF, MAX_OPEN_PER_USER, MAX_STAFF_ROLES, MAX_TICKET_TEXT, ticketSettingsSchema, type TicketCategoryInput, type TicketSettings } from "@aboutselphy/shared/tickets";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { MultiPicker } from "@/components/form/multi-picker";
 import { Badge } from "@/components/ui/badge";
@@ -161,6 +161,11 @@ export function TicketsManager({
               <FieldLabel htmlFor="tk-autoclose">{t("form.autoClose")}</FieldLabel>
               <Input id="tk-autoclose" type="number" inputMode="numeric" min={0} max={MAX_AUTOCLOSE_HOURS} className="max-w-[8rem]" {...form.register("autoCloseHours", { valueAsNumber: true })} />
               <FieldDescription>{t("form.autoCloseHelp", { max: MAX_AUTOCLOSE_HOURS })}</FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="tk-claims">{t("form.maxClaims")}</FieldLabel>
+              <Input id="tk-claims" type="number" inputMode="numeric" min={0} max={MAX_CLAIMS_PER_STAFF} className="max-w-[8rem]" {...form.register("maxClaimsPerStaff", { valueAsNumber: true })} />
+              <FieldDescription>{t("form.maxClaimsHelp", { max: MAX_CLAIMS_PER_STAFF })}</FieldDescription>
             </Field>
 
             <Field><FieldLabel htmlFor="tk-title">{t("form.panelTitle")}</FieldLabel><Input id="tk-title" maxLength={256} {...form.register("panelTitle")} /></Field>

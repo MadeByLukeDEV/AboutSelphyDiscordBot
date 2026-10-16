@@ -592,6 +592,8 @@ model TicketConfig {
   askRating        Boolean  @default(false)
   /// Close a ticket after this many hours without a message (0 = never; CHECK 0..720 in the migration).
   autoCloseHours   Int      @default(0)
+  /// How many open tickets one staff member can have claimed at once (0 = no limit; CHECK 0..50 in the migration).
+  maxClaimsPerStaff Int     @default(0)
   updatedAt        DateTime @updatedAt
 }
 

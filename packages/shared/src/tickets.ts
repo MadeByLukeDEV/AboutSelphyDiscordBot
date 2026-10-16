@@ -14,6 +14,7 @@ export const MAX_TICKET_TEXT = 1000;
 export const MAX_TICKET_REASON = 300;
 /** 30 days. */
 export const MAX_AUTOCLOSE_HOURS = 720;
+export const MAX_CLAIMS_PER_STAFF = 50;
 export const DEFAULT_TICKET_COLOR = 0x00ffa8;
 export const DEFAULT_PANEL_TITLE = "Need help?";
 export const DEFAULT_PANEL_DESCRIPTION = "Press the button to open a private ticket with the team.";
@@ -50,6 +51,8 @@ export const ticketSettingsSchema = z
     askRating: z.boolean(),
     /** Hours without a message before a ticket is closed automatically; 0 = never. */
     autoCloseHours: z.number().int().min(0).max(MAX_AUTOCLOSE_HOURS),
+    /** Open tickets one staff member can have claimed at once; 0 = no limit. */
+    maxClaimsPerStaff: z.number().int().min(0).max(MAX_CLAIMS_PER_STAFF),
     panelTitle: z.string().trim().min(1).max(256),
     panelDescription: z.string().trim().max(2000),
     panelColor: z.number().int().min(0).max(0xffffff),

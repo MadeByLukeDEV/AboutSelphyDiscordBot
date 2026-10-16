@@ -1245,7 +1245,9 @@
       "autoClose": "Close idle tickets after (hours)",
       "autoCloseHelp": "A ticket with no message for this long is closed automatically, with its transcript saved. 0 = never. Up to {max} (30 days).",
       "askRating": "Ask for a rating after closing",
-      "askRatingHelp": "The opener gets a DM with five star buttons when the ticket is closed. The rating is saved with the ticket."
+      "askRatingHelp": "The opener gets a DM with five star buttons when the ticket is closed. The rating is saved with the ticket.",
+      "maxClaims": "Claim limit per staff member",
+      "maxClaimsHelp": "How many open tickets one team member can have claimed at once. 0 = no limit (up to {max})."
     },
     "panel": {
       "post": "Post the panel",

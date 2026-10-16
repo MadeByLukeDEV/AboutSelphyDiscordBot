@@ -16,6 +16,7 @@ export type ConfigData = {
   askReason: boolean;
   askRating: boolean;
   autoCloseHours: number;
+  maxClaimsPerStaff: number;
   panelTitle: string;
   panelDescription: string;
   panelColor: number;

@@ -101,6 +101,7 @@ describe("helpers and settings", () => {
     askReason: false,
     askRating: false,
     autoCloseHours: 0,
+    maxClaimsPerStaff: 0,
     panelTitle: "Help",
     panelDescription: "",
     panelColor: 0,
@@ -124,6 +125,8 @@ describe("helpers and settings", () => {
     expect(parse({ maxOpenPerUser: 6 }).success).toBe(false);
     expect(parse({ autoCloseHours: 721 }).success).toBe(false);
     expect(parse({ autoCloseHours: -1 }).success).toBe(false);
+    expect(parse({ maxClaimsPerStaff: 51 }).success).toBe(false);
+    expect(parse({ maxClaimsPerStaff: 3 }).success).toBe(true);
     expect(parse({ autoCloseHours: 48, askReason: true }).success).toBe(true);
   });
 });

@@ -1011,7 +1011,7 @@ Decided 2026-10-08:
         changing types. `askRating`: closing DMs the opener five star buttons (`tk:rate:<ticketId>:<1-5>`, handled before the
         server check because it is pressed in a DM; one conditional UPDATE, only the opener, only a closed ticket, once; `Ticket.rating`
         with a DB CHECK 1-5); the list shows the average. Role manager knows the new roles columns.
-  - [ ] Still open: claiming limits.
+  - [x] **Claim limit** (2026-11-10, `feature_ticket-claim-limit`, migration `20261116240000_ticket_claim_limit`; **not tried live yet**): `TicketConfig.maxClaimsPerStaff` (0 = no limit, CHECK 0-50, a number field on `/tickets`): pressing Claim is refused with a short message when that staff member already has that many open tickets claimed (`claimedCountFor`); the claim itself is still the one conditional UPDATE.
 - [~] Giveaways (2026-10-18, `feature_giveaways`, migration `20261018100000_giveaways`
       applied; **not tried live yet**; Tier B)
   - Bot (`modules/giveaways/`): draft -> active (posts the message with an Enter button),

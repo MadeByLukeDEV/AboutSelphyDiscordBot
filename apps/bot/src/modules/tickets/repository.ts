@@ -42,6 +42,8 @@ export const listOpen = () => prisma.ticket.findMany({ where: { status: "open" }
 /** Closed tickets whose channel may still exist (the bot stopped before deleting it). */
 export const listRecentlyClosed = (since: Date) => prisma.ticket.findMany({ where: { status: "closed", closedAt: { gte: since } } });
 
+export const claimedCountFor = (staffId: string) => prisma.ticket.count({ where: { claimedById: staffId, status: "open" } });
+
 export async function claim(id: string, by: { id: string; name: string }): Promise<boolean> {
   const { count } = await prisma.ticket.updateMany({ where: { id, status: "open", claimedById: null }, data: { claimedById: by.id, claimedByName: by.name.slice(0, 100) } });
   return count > 0;

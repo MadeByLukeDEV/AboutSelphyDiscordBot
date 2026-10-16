@@ -26,7 +26,7 @@ import { staffLevel } from "../../lib/permissions";
 import { toComponentEmoji } from "../roles";
 import { getTicketConfig } from "./config";
 import { buildTranscript, cleanReason, idleCutoff, OPEN_CONTROL_ID, openCategoryControlId, parentFor, rateControlId, staffRolesFor, starsText, ticketControlId, ticketOverwrites, transcriptToText, type RawMessage } from "./plan";
-import { claim, createTicket, findByChannel, findCategory, listCategories, listIdle, listOpen, listRecentlyClosed, markClosed, openCountFor, reserveNumber, setPanelMessage, touchActivity } from "./repository";
+import { claim, createTicket, findByChannel, findCategory, listCategories, listIdle, listOpen, listRecentlyClosed, claimedCountFor, markClosed, openCountFor, reserveNumber, setPanelMessage, touchActivity } from "./repository";
 
 const NO_MENTIONS = { parse: [] as never[] };
 const openLocks = new KeyedMutex();
@@ -153,6 +153,8 @@ export function openTicket(i: ButtonInteraction<"cached"> | ModalSubmitInteracti
 
 export async function claimTicket(i: ButtonInteraction<"cached">, ticket: Ticket): Promise<string> {
   if (ticket.status !== "open") return "This ticket is closed.";
+  const limit = (await getTicketConfig()).maxClaimsPerStaff;
+  if (limit > 0 && !ticket.claimedById && (await claimedCountFor(i.user.id)) >= limit) return `You already have ${limit} ${limit === 1 ? "ticket" : "tickets"} claimed. Close one first.`;
   if (!(await claim(ticket.id, { id: i.user.id, name: i.member.displayName }))) return ticket.claimedById ? `This ticket is already claimed by <@${ticket.claimedById}>.` : "This ticket can't be claimed.";
   const channel = i.channel;
   if (channel && "send" in channel) await channel.send({ content: `🙋 <@${i.user.id}> is handling this ticket.`, allowedMentions: { parse: [], users: [i.user.id] } }).catch(() => undefined);
