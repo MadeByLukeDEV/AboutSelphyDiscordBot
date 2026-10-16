@@ -82,6 +82,8 @@ describe("messages", () => {
   });
 
   it("describes events without letting names or reasons through unescaped", () => {
+    expect(describeEvent("member.joined", { userId: "1", name: "Bob **x**", accountCreatedAt: "2026-01-01T00:00:00Z", memberCount: 42 }).description).toContain("Bob \\*\\*x\\*\\*");
+    expect(describeEvent("level.up", { userId: "1", name: "Ann", level: 7, source: "message" }).title).toBe("Ann reached level 7");
     const d = describeEvent("mod.case", { caseNumber: 7, type: "ban", targetId: "111111111111111111", targetName: "Bob **x**", moderatorName: "Mod", reason: "spam <@&99>", durationSeconds: null });
     expect(d.title).toBe("Case #7 · ban");
     expect(d.description).toContain("Bob \\*\\*x\\*\\*");

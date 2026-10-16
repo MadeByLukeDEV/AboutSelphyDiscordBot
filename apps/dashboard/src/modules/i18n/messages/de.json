@@ -2376,7 +2376,9 @@
     },
     "events": {
       "mod_case": "Ein Moderationsfall wird angelegt",
-      "twitch_live": "Ein Twitch-Kanal geht live"
+      "twitch_live": "Ein Twitch-Kanal geht live",
+      "member_joined": "Ein Mitglied tritt dem Server bei",
+      "level_up": "Ein Mitglied erreicht ein neues Level"
     },
     "incoming": {
       "title": "Eingehende Endpunkte",

@@ -4,7 +4,7 @@ import { z } from "zod";
 // endpoint) and the bot. Pure. Import it from "@aboutselphy/shared/webhooks" in client components.
 // The signing code is Node only and lives in "@aboutselphy/shared/webhook-signature".
 
-export const OUTBOUND_EVENTS = ["mod.case", "twitch.live"] as const;
+export const OUTBOUND_EVENTS = ["mod.case", "twitch.live", "member.joined", "level.up"] as const;
 export type OutboundEvent = (typeof OUTBOUND_EVENTS)[number];
 /** "test" is only ever sent by the "Send a test" button. */
 export type AnyWebhookEvent = OutboundEvent | "test";

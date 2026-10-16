@@ -2376,7 +2376,9 @@
     },
     "events": {
       "mod_case": "A moderation case is created",
-      "twitch_live": "A Twitch channel goes live"
+      "twitch_live": "A Twitch channel goes live",
+      "member_joined": "A member joins the server",
+      "level_up": "A member reaches a new level"
     },
     "incoming": {
       "title": "Incoming endpoints",

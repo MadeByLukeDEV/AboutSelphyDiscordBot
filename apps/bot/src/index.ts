@@ -20,6 +20,7 @@ import { loginWithRetry } from "./lib/login";
 import { startAntiBot } from "./modules/antibot";
 import { startTwitchVip, stopTwitchVip } from "./modules/twitchvip";
 import { startRetention, stopRetention } from "./modules/privacy";
+import { startMemberEvents } from "./modules/webhooks";
 import { startInvites } from "./modules/invites";
 import { registerReminderControls } from "./modules/reminders";
 import { registerScreeningControls, startScreening, stopScreening } from "./modules/screening";
@@ -78,6 +79,7 @@ async function main() {
   startAntiBot(client);
   startTwitchVip(client);
   startRetention(client);
+  startMemberEvents(client);
   startInvites(client);
   registerReminderControls();
   registerVerificationControls();

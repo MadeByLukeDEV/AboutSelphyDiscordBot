@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { Guild } from "discord.js";
+import { Events, type Client, type Guild } from "discord.js";
 import type { OutboundWebhook } from "@aboutselphy/db";
 import type { WebhookRelayStatus, WebhookTestStatus } from "@aboutselphy/shared";
 import { decryptToken } from "@aboutselphy/shared/token-cipher";
@@ -121,4 +121,12 @@ export async function sendTest(id: string): Promise<WebhookTestStatus> {
     log.error({ err }, "webhook test failed");
     return "failed";
   }
+}
+
+/** Sends "member joined" to the webhooks that want it. Humans only; the server is the configured one. Called once from the bot's start-up. */
+export function startMemberEvents(client: Client): void {
+  client.on(Events.GuildMemberAdd, (member) => {
+    if (member.guild.id !== env().DISCORD_GUILD_ID || member.user.bot || !integrationsActive()) return;
+    emitEvent("member.joined", { userId: member.id, name: member.user.username, accountCreatedAt: member.user.createdAt.toISOString(), memberCount: member.guild.memberCount });
+  });
 }

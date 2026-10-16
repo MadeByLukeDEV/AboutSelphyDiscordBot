@@ -17,6 +17,8 @@ export function buildRelayEmbed(m: { source: string; title?: string; content?: s
 }
 
 type CaseData = { caseNumber: number; type: string; targetId: string; targetName: string | null; moderatorName: string | null; reason: string | null; durationSeconds: number | null };
+type JoinedData = { userId: string; name: string; accountCreatedAt: string; memberCount: number };
+type LevelData = { userId: string; name: string; level: number; source: string };
 type LiveData = { login: string; displayName: string; title: string; game: string; url: string };
 
 /** The Discord-webhook message for an event, from the raw event data. */
@@ -31,6 +33,14 @@ export function describeEvent(event: AnyWebhookEvent, data: unknown): { title: s
   if (event === "twitch.live") {
     const d = data as LiveData;
     return { title: `${escapeText(d.displayName)} is live`, description: [escapeText(d.title), d.game ? `Playing ${escapeText(d.game)}` : "", d.url].filter(Boolean).join("\n"), color: 0x9146ff };
+  }
+  if (event === "member.joined") {
+    const d = data as JoinedData;
+    return { title: "Member joined", description: [`**Member:** ${escapeText(d.name)} (\`${d.userId}\`)`, `**Members now:** ${d.memberCount}`].join("\n"), color: 0x2ecc71 };
+  }
+  if (event === "level.up") {
+    const d = data as LevelData;
+    return { title: `${escapeText(d.name)} reached level ${d.level}`, description: `**Member:** ${escapeText(d.name)} (\`${d.userId}\`)`, color: 0xf1c40f };
   }
   return { title: "Test event", description: "This is a test message from the AboutSelphy bot.", color: 0x00ffa8 };
 }

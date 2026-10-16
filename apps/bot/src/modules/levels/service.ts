@@ -6,6 +6,7 @@ import { escapeText } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { moduleOn } from "../../lib/modules";
 import { checkRole } from "../roles";
+import { emitEvent } from "../webhooks";
 import { getLevelConfig } from "./config";
 import { addXp, claimReset, readConfig, wipeAllXp } from "./repository";
 import { cooldownPassed, earnsXp, planRewardRoles, resetDue, rollXp } from "./rules";
@@ -56,6 +57,7 @@ async function handleLevelUp(member: GuildMember, level: number, here: Message["
   }
   await announce(member, level, { channelId: null, here });
   log.info({ user: member.id, level }, "level up");
+  emitEvent("level.up", { userId: member.id, name: member.user.username, level, source: here ? "message" : "voice" });
 }
 
 async function onMessage(message: Message): Promise<void> {

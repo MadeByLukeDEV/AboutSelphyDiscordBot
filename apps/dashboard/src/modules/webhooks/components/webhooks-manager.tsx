@@ -19,7 +19,7 @@ import { deleteEndpointAction, deleteOutboundAction, rotateEndpointSecretAction,
 import type { EndpointRow, OutboundRow } from "../schema";
 
 /** Message keys can't contain dots, so "mod.case" is looked up as "mod_case". */
-const EVENT_KEYS = { "mod.case": "mod_case", "twitch.live": "twitch_live" } as const satisfies Record<OutboundEvent, string>;
+const EVENT_KEYS = { "mod.case": "mod_case", "twitch.live": "twitch_live", "member.joined": "member_joined", "level.up": "level_up" } as const satisfies Record<OutboundEvent, string>;
 const eventKey = (ev: OutboundEvent) => EVENT_KEYS[ev];
 
 type Reveal = { title: string; url?: string; secret: string } | null;

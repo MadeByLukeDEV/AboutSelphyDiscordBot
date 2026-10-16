@@ -1590,4 +1590,5 @@ Decided 2026-10-08:
     apart, same body and event id; only network errors, timeouts, 5xx, 408 and 429 are retried; the test button does not retry), and
     `OutboundWebhook.failStreak` counts failed deliveries in a row: at 10 one conditional UPDATE switches it off
     (`autoDisabledAt`, a red badge on `/webhooks`); switching it on again resets the count.
-  - [ ] Stripe-style signatures, more events (member joined, level up), more providers.
+  - [x] **More outgoing events** (2026-11-10, `feature_webhook-events`, no migration; **not tried live yet**): `member.joined` (humans only: user id, username, account creation time, member count; sent from a `GuildMemberAdd` listener, `startMemberEvents`) and `level.up` (user id, username, level, source message|voice; sent from `handleLevelUp`) join `mod.case` and `twitch.live` in `OUTBOUND_EVENTS`; a Discord-address webhook gets an escaped embed (`describeEvent`). Both only fire in production or with `BOT_INTEGRATIONS_IN_DEV`.
+  - [ ] Stripe-style signatures, more providers.
