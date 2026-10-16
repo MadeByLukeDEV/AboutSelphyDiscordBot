@@ -26,6 +26,8 @@ export type ConfigData = {
   publicLeaderboard: boolean;
   voiceRequiresUnmuted: boolean;
   resetEvery: "off" | "weekly" | "monthly";
+  eventBoostPercent: number;
+  eventBoostUntil: Date | null;
   /** Set to null when the reset mode changes, so a new schedule never wipes at once. */
   lastResetAt?: null;
 };

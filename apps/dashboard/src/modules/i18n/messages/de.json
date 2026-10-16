@@ -1202,6 +1202,11 @@
     "public": {
       "label": "Öffentliche Ranglisten-Seite",
       "help": "Zeigt die Top 100 Mitglieder (Anzeigename, Level und XP) auf einer Webseite unter /leaderboard auf der Adresse des Dashboards, ohne Anmeldung lesbar. Mitglieder können sich mit /mydata hide ausblenden. Standardmäßig aus."
+    },
+    "eventBoost": {
+      "label": "Server-weiter XP-Boost (Prozent, bis)",
+      "help": "Zum Beispiel 200 bis Sonntagabend = doppelte XP für alle. 100 = aus. Die Endzeit ist in UTC. Er addiert sich nicht zu Rollen-Boosts: Der höhere zählt.",
+      "needsEnd": "Wähle, wann der Boost endet."
     }
   },
   "Tickets": {

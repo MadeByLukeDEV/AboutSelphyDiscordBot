@@ -974,7 +974,8 @@ Decided 2026-10-08:
     taken back; changing the mode clears `lastResetAt` so a new schedule never wipes at once. (3) XP import on `/levels`
     (`@aboutselphy/shared/levels-import`, tested): MEE6 leaderboard JSON or `id xp name` lines, <= 5000 rows, **only
     ever raises XP** (the curve is identical to MEE6's); reward roles follow at the next level-up or `/xp set`.
-  - [ ] XP boosts per event, importing from other bots' formats.
+  - [x] **Server-wide boost** (2026-11-11, `feature_xp-event-boost`, migration `20261116320000_xp_event_boost`; **not tried live yet**): `LevelConfig.eventBoostPercent` (100-500, 100 = none) + `eventBoostUntil` (UTC, a date picker on `/levels`; a boost above 100 needs an end, also a DB CHECK): message and voice XP use the higher of the member's role boost and the server-wide one while it runs (`eventBoost`, pure and tested), e.g. a double-XP weekend. Nothing to switch off afterwards: it simply ends.
+  - [ ] Importing from other bots' formats (only MEE6's leaderboard JSON and plain `id xp name` lines so far).
 - [~] Tickets (2026-10-17, `feature_tickets`, migration `20261017100000_tickets` applied;
       **not tried live yet**; Tier B)
   - Bot (`modules/tickets/`): panel message with an "Open a ticket" button; opening

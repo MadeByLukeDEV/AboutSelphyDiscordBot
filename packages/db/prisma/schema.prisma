@@ -528,6 +528,9 @@ model LevelConfig {
   voiceRequiresUnmuted Boolean @default(false)
   /// "off" | "weekly" | "monthly": everyone's XP is wiped at the start of each period (UTC).
   resetEvery        String   @default("off") @db.VarChar(8)
+  /// A server-wide XP boost (for example double XP weekend): 100 = none, applies until eventBoostUntil.
+  eventBoostPercent Int      @default(100)
+  eventBoostUntil   DateTime?
   /// When the last period reset (or its first recording) happened.
   lastResetAt       DateTime?
   updatedAt         DateTime @updatedAt

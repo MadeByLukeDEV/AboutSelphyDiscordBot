@@ -56,6 +56,11 @@ export function boostPercent(memberRoleIds: ReadonlySet<string>, boosts: readonl
   return boosts.reduce((best, b) => (memberRoleIds.has(b.roleId) && b.percent > best ? b.percent : best), 100);
 }
 
+/** A server-wide boost (double XP weekend) is on only until its end time. 100 = none. */
+export function eventBoost(percent: number, until: Date | null, now: Date): number {
+  return until !== null && until.getTime() > now.getTime() && percent > 100 ? percent : 100;
+}
+
 /** `amount` XP made `percent` % as big, rounded, and never smaller than before. */
 export function applyBoost(amount: number, percent: number): number {
   return percent <= 100 ? amount : Math.max(amount, Math.round((amount * percent) / 100));
@@ -92,6 +97,9 @@ export const levelSettingsSchema = z
     voiceRequiresUnmuted: z.boolean(),
     /** Wipe everyone's XP at the start of each week or month (UTC). */
     resetEvery: z.enum(RESET_MODES),
+    /** Server-wide XP boost in percent (100 = none) until the given time (UTC, "YYYY-MM-DDTHH:mm"; "" = none). */
+    eventBoostPercent: z.number().int().min(100).max(MAX_BOOST_PERCENT),
+    eventBoostUntil: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)]),
     rewards: z
       .array(z.object({ level: z.number().int().min(1).max(MAX_LEVEL), roleId: snowflake }))
       .max(MAX_REWARDS),
@@ -100,6 +108,7 @@ export const levelSettingsSchema = z
   .superRefine((v, ctx) => {
     const issue = (path: string, message: string) => ctx.addIssue({ code: "custom", path: [path], message });
     if (v.xpMax < v.xpMin) issue("xpMax", "range");
+    if (v.eventBoostPercent > 100 && v.eventBoostUntil === "") issue("eventBoostUntil", "needsEnd");
     if (v.announce === "channel" && !v.announceChannelId) issue("announceChannelId", "needsChannel");
     const levels = new Set<string | number>();
     if (new Set(v.boosts.map((b) => b.roleId)).size !== v.boosts.length) issue("boosts", "duplicateRole");

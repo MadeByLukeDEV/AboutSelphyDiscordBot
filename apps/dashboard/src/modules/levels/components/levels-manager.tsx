@@ -9,6 +9,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
 import { ANNOUNCE_MODES, RESET_MODES, DEFAULT_ANNOUNCE_TEMPLATE, MAX_ANNOUNCE_TEMPLATE, MAX_BOOST_PERCENT, MAX_BOOSTS, MAX_LEVEL, MAX_NO_XP, MAX_REWARDS, MIN_BOOST_PERCENT, levelSettingsSchema, type LevelSettings } from "@aboutselphy/shared/levels";
+import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -185,6 +186,17 @@ export function LevelsManager({
               <FieldLabel htmlFor="lv-reset">{t("reset.label")}</FieldLabel>
               <FormSelect control={form.control} name="resetEvery" id="lv-reset" options={resetOptions} placeholder={t("reset.label")} />
               <FieldDescription>{t("reset.help")}</FieldDescription>
+            </Field>
+            <Field data-invalid={Boolean(form.formState.errors.eventBoostUntil) || undefined}>
+              <FieldLabel htmlFor="lv-event-boost">{t("eventBoost.label")}</FieldLabel>
+              <div className="flex flex-wrap items-end gap-3">
+                <Input id="lv-event-boost" type="number" inputMode="numeric" min={100} max={MAX_BOOST_PERCENT} className="max-w-[8rem]" {...form.register("eventBoostPercent", { valueAsNumber: true })} />
+                <div className="min-w-[14rem] flex-1">
+                  <FormDateTime control={form.control} name="eventBoostUntil" id="lv-event-boost-until" invalid={Boolean(form.formState.errors.eventBoostUntil)} />
+                </div>
+              </div>
+              <FieldDescription>{t("eventBoost.help")}</FieldDescription>
+              {form.formState.errors.eventBoostUntil && <FieldError>{t("eventBoost.needsEnd")}</FieldError>}
             </Field>
             <Field orientation="horizontal">
               <Controller control={form.control} name="publicLeaderboard" render={({ field }) => <Switch id="lv-public" checked={field.value} onCheckedChange={field.onChange} aria-describedby="lv-public-help" />} />

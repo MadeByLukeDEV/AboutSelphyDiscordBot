@@ -1,5 +1,5 @@
 import { Events, type Client, type Guild, type GuildMember, type Message } from "discord.js";
-import { applyBoost, boostPercent, fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
+import { applyBoost, boostPercent, eventBoost, fillLevelTemplate, levelFromXp } from "@aboutselphy/shared/levels";
 import { withEmotes } from "../../lib/emotes";
 import { env, integrationsActive } from "../../lib/env";
 import { escapeText } from "../../lib/escape";
@@ -73,7 +73,7 @@ async function onMessage(message: Message): Promise<void> {
   if (!cooldownPassed(lastMessageXp.get(message.author.id), now, config.cooldownSeconds)) return;
   lastMessageXp.set(message.author.id, now);
 
-  const amount = applyBoost(rollXp(config.xpMin, config.xpMax), boostPercent(roleIds, boosts));
+  const amount = applyBoost(rollXp(config.xpMin, config.xpMax), Math.max(boostPercent(roleIds, boosts), eventBoost(config.eventBoostPercent, config.eventBoostUntil, new Date())));
   const { before, after } = await addXp(message.author.id, amount, message.member.displayName, { messages: 1 });
   if (levelFromXp(after) > levelFromXp(before)) await handleLevelUp(message.member, levelFromXp(after), message.channel);
 }
@@ -100,7 +100,7 @@ async function voiceTick(guild: Guild): Promise<void> {
       const roleIds = new Set(member.roles.cache.keys());
       if (!earnsXp({ channelId, parentId: channel?.parentId ?? null, memberRoleIds: roleIds, noXpChannelIds: config.noXpChannelIds, noXpRoleIds: config.noXpRoleIds })) continue;
       try {
-        const { before, after } = await addXp(member.id, applyBoost(config.voiceXpPerMinute, boostPercent(roleIds, boosts)), member.displayName, { voiceMinutes: 1 });
+        const { before, after } = await addXp(member.id, applyBoost(config.voiceXpPerMinute, Math.max(boostPercent(roleIds, boosts), eventBoost(config.eventBoostPercent, config.eventBoostUntil, new Date()))), member.displayName, { voiceMinutes: 1 });
         if (levelFromXp(after) > levelFromXp(before)) await handleLevelUp(member, levelFromXp(after), null);
       } catch (err) {
         log.error({ err, user: member.id }, "voice XP failed");

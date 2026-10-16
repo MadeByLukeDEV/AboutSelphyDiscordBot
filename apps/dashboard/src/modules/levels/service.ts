@@ -23,6 +23,8 @@ async function readSettings(): Promise<LevelSettings> {
     publicLeaderboard: c.publicLeaderboard,
     voiceRequiresUnmuted: c.voiceRequiresUnmuted,
     resetEvery: c.resetEvery === "weekly" || c.resetEvery === "monthly" ? c.resetEvery : "off",
+    eventBoostPercent: c.eventBoostPercent,
+    eventBoostUntil: c.eventBoostUntil ? c.eventBoostUntil.toISOString().slice(0, 16) : "",
     rewards: rewards.map((r) => ({ level: r.level, roleId: r.roleId })),
     boosts,
   };
@@ -79,6 +81,8 @@ export async function saveLevels(input: LevelSettings): Promise<SaveLevelsResult
         publicLeaderboard: input.publicLeaderboard,
         voiceRequiresUnmuted: input.voiceRequiresUnmuted,
         resetEvery: input.resetEvery,
+        eventBoostPercent: input.eventBoostPercent,
+        eventBoostUntil: input.eventBoostPercent > 100 && input.eventBoostUntil ? new Date(`${input.eventBoostUntil}:00Z`) : null,
         ...(input.resetEvery !== current.resetEvery ? { lastResetAt: null } : {}),
       },
       input.rewards,

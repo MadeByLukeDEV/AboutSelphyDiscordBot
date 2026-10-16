@@ -1202,6 +1202,11 @@
     "public": {
       "label": "Public leaderboard page",
       "help": "Shows the top 100 members (display name, level and XP) on a web page at /leaderboard on the dashboard's address, readable without signing in. Members can hide themselves with /mydata hide. Off by default."
+    },
+    "eventBoost": {
+      "label": "Server-wide XP boost (percent, until)",
+      "help": "For example 200 until Sunday evening = double XP for everyone. 100 = off. The end time is in UTC. It does not stack with role boosts: the higher one counts.",
+      "needsEnd": "Pick when the boost ends."
     }
   },
   "Tickets": {

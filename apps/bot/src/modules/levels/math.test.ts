@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyBoost, boostPercent, fillLevelTemplate, levelFromXp, levelSettingsSchema, MAX_LEVEL, progressOf, totalXpForLevel, xpToNext } from "@aboutselphy/shared/levels";
+import { applyBoost, boostPercent, eventBoost, fillLevelTemplate, levelFromXp, levelSettingsSchema, MAX_LEVEL, progressOf, totalXpForLevel, xpToNext } from "@aboutselphy/shared/levels";
 
 describe("the level curve", () => {
   it("matches the MEE6 formula", () => {
@@ -63,10 +63,18 @@ describe("levelSettingsSchema", () => {
     publicLeaderboard: false,
     voiceRequiresUnmuted: false,
     resetEvery: "off",
+    eventBoostPercent: 100,
+    eventBoostUntil: "",
     rewards: [],
     boosts: [],
   };
   const parse = (over: Record<string, unknown>) => levelSettingsSchema.safeParse({ ...base, ...over });
+  it("a server-wide boost needs an end time", () => {
+    expect(parse({ eventBoostPercent: 200, eventBoostUntil: "2026-11-12T00:00" }).success).toBe(true);
+    expect(parse({ eventBoostPercent: 200, eventBoostUntil: "" }).success).toBe(false);
+    expect(parse({ eventBoostPercent: 99 }).success).toBe(false);
+    expect(parse({ eventBoostPercent: 501, eventBoostUntil: "2026-11-12T00:00" }).success).toBe(false);
+  });
   const role = (i: number) => `1000000000000000${String(i).padStart(2, "0")}`;
 
   it("accepts the defaults", () => {
@@ -114,5 +122,15 @@ describe("XP boosts", () => {
     expect(applyBoost(5, 101)).toBe(5);
     expect(applyBoost(20, 100)).toBe(20);
     expect(applyBoost(20, 50)).toBe(20);
+  });
+});
+
+describe("server-wide XP boost", () => {
+  const now = new Date("2026-11-11T12:00:00Z");
+  it("is on only before its end and above 100", () => {
+    expect(eventBoost(200, new Date("2026-11-12T00:00:00Z"), now)).toBe(200);
+    expect(eventBoost(200, new Date("2026-11-11T11:59:00Z"), now)).toBe(100);
+    expect(eventBoost(200, null, now)).toBe(100);
+    expect(eventBoost(100, new Date("2026-11-12T00:00:00Z"), now)).toBe(100);
   });
 });
