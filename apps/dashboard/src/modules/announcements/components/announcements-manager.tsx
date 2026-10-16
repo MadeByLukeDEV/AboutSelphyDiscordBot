@@ -1,5 +1,6 @@
 "use client";
 
+import { FilterChips } from "@/components/page/filter-chips";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useTranslations } from "next-intl";
@@ -46,6 +47,9 @@ export function AnnouncementsManager({
   const [editing, setEditing] = useState<Editing>(null);
   const [removing, setRemoving] = useState<AnnouncementView | null>(null);
   const [pending, startTransition] = useTransition();
+  const [filter, setFilter] = useState<string>("all");
+  const visible = filter === "all" ? announcements : announcements.filter((x) => x.status === filter);
+
 
   const channelName = (id: string) => {
     const c = channels?.find((x) => x.id === id);
@@ -90,6 +94,15 @@ export function AnnouncementsManager({
       </div>
       {channels === null && <p className="text-sm text-muted-foreground">{t("botOffline")}</p>}
 
+      {announcements.length > 1 && (
+        <FilterChips
+          label={t("filter.label")}
+          value={filter}
+          onChange={setFilter}
+          options={[{ id: "all", label: t("filter.all"), count: announcements.length }, ...(["draft", "scheduled", "sending", "sent", "failed"] as const).map((st) => ({ id: st, label: t(`status.${st}` as never), count: announcements.filter((x) => x.status === st).length }))].filter((o) => o.id === "all" || o.count > 0)}
+        />
+      )}
+
       {announcements.length === 0 ? (
         <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
           <h3 className="font-semibold">{t("empty.title")}</h3>
@@ -97,7 +110,7 @@ export function AnnouncementsManager({
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {announcements.map((a) => (
+          {visible.map((a) => (
             <li key={a.id} className="surface flex overflow-hidden">
               <span className={cn("w-1.5 shrink-0", BAR[a.status])} aria-hidden />
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">

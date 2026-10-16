@@ -1,5 +1,6 @@
 "use client";
 
+import { FilterChips } from "@/components/page/filter-chips";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -56,6 +57,9 @@ export function GiveawaysManager({ giveaways, channels, roles }: { giveaways: Gi
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<{ giveaway: GiveawayView | null } | null>(null);
   const [confirm, setConfirm] = useState<{ giveaway: GiveawayView; kind: "end" | "cancel" | "delete" } | null>(null);
+  const [filter, setFilter] = useState<string>("all");
+  const visible = filter === "all" ? giveaways : giveaways.filter((x) => x.status === filter);
+
 
   const channelName = (id: string) => channels?.find((c) => c.id === id)?.name ? `#${channels.find((c) => c.id === id)!.name}` : id;
   const roleName = (id: string) => roles?.find((r) => r.id === id)?.name ?? id;
@@ -87,6 +91,15 @@ export function GiveawaysManager({ giveaways, channels, roles }: { giveaways: Gi
       </div>
       {channels === null && <p className="text-sm text-muted-foreground">{t("botOffline")}</p>}
 
+      {giveaways.length > 1 && (
+        <FilterChips
+          label={t("filter.label")}
+          value={filter}
+          onChange={setFilter}
+          options={[{ id: "all", label: t("filter.all"), count: giveaways.length }, ...(["draft", "active", "ended", "cancelled"] as const).map((st) => ({ id: st, label: t(`status.${st}` as never), count: giveaways.filter((x) => x.status === st).length }))].filter((o) => o.id === "all" || o.count > 0)}
+        />
+      )}
+
       {giveaways.length === 0 ? (
         <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
           <h3 className="font-semibold">{t("empty.title")}</h3>
@@ -94,7 +107,7 @@ export function GiveawaysManager({ giveaways, channels, roles }: { giveaways: Gi
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {giveaways.map((g) => (
+          {visible.map((g) => (
             <li key={g.id} className="surface flex overflow-hidden">
               <span className={cn("w-1.5 shrink-0", BAR[g.status])} aria-hidden />
               <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">

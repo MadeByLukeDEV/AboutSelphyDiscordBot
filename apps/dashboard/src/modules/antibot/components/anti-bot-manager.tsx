@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -9,7 +10,6 @@ import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { ANTIBOT_TIMEOUT_CHOICES, antiBotSettingsSchema, type AntiBotSettings } from "@aboutselphy/shared/antibot";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { saveAntiBotAction } from "../actions";
@@ -104,11 +104,7 @@ export function AntiBotManager({ initial, stats, channels }: { initial: AntiBotS
             {t("form.live")}
           </p>
         )}
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
 
       <section className="surface flex flex-col gap-2 p-5" aria-labelledby="ab-how">

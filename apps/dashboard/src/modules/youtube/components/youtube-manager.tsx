@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -194,11 +195,7 @@ export function YoutubeManager({
           </div>
         </figure>
 
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
 
       {/* What the bot has seen */}

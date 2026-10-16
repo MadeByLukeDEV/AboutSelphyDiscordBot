@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { PageTabs } from "@/components/page/page-tabs";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -186,11 +187,7 @@ export function ScreeningManager({ initial, entries, channels, roles, canEdit, i
                       {errors.autoRejectDays && <FieldError>{te("badDays", { max: MAX_AUTO_REJECT_DAYS })}</FieldError>}
                     </Field>
                   </FieldGroup>
-                  <div>
-                    <Button type="submit" disabled={pending || !isDirty}>
-                      {pending ? t("form.saving") : t("form.save")}
-                    </Button>
-                  </div>
+                  <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
                 </form>
               )}
               </>

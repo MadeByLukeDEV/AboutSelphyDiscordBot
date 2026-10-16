@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -114,11 +115,7 @@ export function SuggestionsManager({
               <FieldDescription>{t("form.cooldownHelp")}</FieldDescription>
             </Field>
           </FieldGroup>
-          <div>
-            <Button type="submit" disabled={pending || !isDirty}>
-              {pending ? t("form.saving") : t("form.save")}
-            </Button>
-          </div>
+          <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
         </form>
       )}
 

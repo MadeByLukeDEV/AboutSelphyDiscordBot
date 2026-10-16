@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -185,11 +185,7 @@ export function SettingsForm({
       </section>
 
       {canEdit ? (
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("saving") : t("save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("save")} savingLabel={t("saving")} />
       ) : (
         <p className="text-sm text-muted-foreground">{t("adminOnly")}</p>
       )}

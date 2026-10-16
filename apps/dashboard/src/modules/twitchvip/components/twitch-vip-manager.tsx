@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,11 +100,7 @@ export function TwitchVipManager({ initial, state, links, roles }: { initial: Vi
             <FieldLabel htmlFor="vip-enabled">{t("form.enabled")}</FieldLabel>
           </Field>
         </FieldGroup>
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
 
       <section className="flex flex-col gap-3" aria-labelledby="vip-waiting">

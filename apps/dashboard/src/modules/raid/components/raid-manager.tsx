@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -8,7 +9,6 @@ import { TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { RAID_ACTIONS, raidSettingsSchema, type RaidSettings } from "@aboutselphy/shared/entry";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -99,11 +99,7 @@ export function RaidManager({ initial, state }: { initial: RaidSettings; state: 
             {t("form.warning")}
           </p>
         )}
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
     </div>
   );

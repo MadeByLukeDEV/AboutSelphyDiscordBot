@@ -1,12 +1,12 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -80,11 +80,7 @@ export function GeneralSettingsForm({
         </Field>
       </FieldGroup>
 
-      <div>
-        <Button type="submit" disabled={pending || !isDirty}>
-          {pending ? t("saving") : t("save")}
-        </Button>
-      </div>
+      <SaveRow dirty={isDirty} pending={pending} label={t("save")} savingLabel={t("saving")} />
     </form>
   );
 }

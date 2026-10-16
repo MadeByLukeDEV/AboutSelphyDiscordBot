@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { PageTabs } from "@/components/page/page-tabs";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -175,11 +176,7 @@ export function BirthdaysManager({ initial, birthdays, total, channels, roles, c
                   </Field>
                 </FieldGroup>
                 <MemberCardSettings kind="birthday" form={form} cardImage={cardImage} withSubtitle />
-                <div>
-                  <Button type="submit" disabled={pending || !isDirty}>
-                    {pending ? t("form.saving") : t("form.save")}
-                  </Button>
-                </div>
+                <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
               </form>
               </>
             ),

@@ -1,5 +1,6 @@
 "use client";
 
+import { FilterChips } from "@/components/page/filter-chips";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -41,6 +42,9 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
   // null = closed, "new" = a blank form, a poll = editing that draft
   const [editing, setEditing] = useState<PollView | "new" | null>(null);
   const [confirm, setConfirm] = useState<{ poll: PollView; kind: "end" | "delete" } | null>(null);
+  const [filter, setFilter] = useState<string>("all");
+  const visible = filter === "all" ? polls : polls.filter((x) => x.status === filter);
+
 
   const channelName = (id: string) => (channels?.find((c) => c.id === id) ? `#${channels.find((c) => c.id === id)!.name}` : id);
   const when = (iso: string) => format.dateTime(new Date(iso), { dateStyle: "medium", timeStyle: "short" });
@@ -71,6 +75,15 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
       </div>
       {channels === null && <p className="text-sm text-muted-foreground">{t("botOffline")}</p>}
 
+      {polls.length > 1 && (
+        <FilterChips
+          label={t("filter.label")}
+          value={filter}
+          onChange={setFilter}
+          options={[{ id: "all", label: t("filter.all"), count: polls.length }, ...(["draft", "active", "ended"] as const).map((st) => ({ id: st, label: t(`status.${st}` as never), count: polls.filter((x) => x.status === st).length }))].filter((o) => o.id === "all" || o.count > 0)}
+        />
+      )}
+
       {polls.length === 0 ? (
         <div className="flex flex-col items-center gap-1 rounded-2xl border border-dashed px-6 py-10 text-center">
           <h3 className="font-semibold">{t("empty.title")}</h3>
@@ -78,7 +91,7 @@ export function PollsManager({ polls, channels }: { polls: PollView[]; channels:
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
-          {polls.map((p) => {
+          {visible.map((p) => {
             const total = p.counts.reduce((a, b) => a + b, 0);
             return (
               <li key={p.id} className="surface flex overflow-hidden">

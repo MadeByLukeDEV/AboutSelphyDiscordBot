@@ -77,6 +77,9 @@
       "placeholder": "Seiten suchen",
       "empty": "Keine Seite passt dazu.",
       "open": "Seiten suchen (Strg K)"
+    },
+    "save": {
+      "unsaved": "Du hast ungespeicherte Änderungen"
     }
   },
   "ThemeToggle": {
@@ -748,6 +751,10 @@
         "past": "Wähle eine Zeit, die mindestens eine Minute in der Zukunft liegt.",
         "tooFar": "Wähle eine Zeit innerhalb des nächsten Jahres."
       }
+    },
+    "filter": {
+      "label": "Nach Status filtern",
+      "all": "Alle"
     }
   },
   "Youtube": {
@@ -1537,6 +1544,10 @@
         "invalid": "Ungültig."
       },
       "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten."
+    },
+    "filter": {
+      "label": "Nach Status filtern",
+      "all": "Alle"
     }
   },
   "Suggestions": {
@@ -1722,6 +1733,10 @@
         "invalid": "Ungültig."
       },
       "imageInvalid": "Die Bildadresse muss mit https:// beginnen und darf keine Leerzeichen enthalten."
+    },
+    "filter": {
+      "label": "Nach Status filtern",
+      "all": "Alle"
     }
   },
   "Starboard": {

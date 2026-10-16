@@ -77,6 +77,9 @@
       "placeholder": "Search pages",
       "empty": "No page matches that.",
       "open": "Search pages (Ctrl K)"
+    },
+    "save": {
+      "unsaved": "You have unsaved changes"
     }
   },
   "ThemeToggle": {
@@ -748,6 +751,10 @@
         "past": "Pick a time at least a minute from now.",
         "tooFar": "Pick a time within the next year."
       }
+    },
+    "filter": {
+      "label": "Filter by status",
+      "all": "All"
     }
   },
   "Youtube": {
@@ -1537,6 +1544,10 @@
         "invalid": "Invalid."
       },
       "imageInvalid": "The picture address must start with https:// and contain no spaces."
+    },
+    "filter": {
+      "label": "Filter by status",
+      "all": "All"
     }
   },
   "Suggestions": {
@@ -1722,6 +1733,10 @@
         "invalid": "Invalid."
       },
       "imageInvalid": "The picture address must start with https:// and contain no spaces."
+    },
+    "filter": {
+      "label": "Filter by status",
+      "all": "All"
     }
   },
   "Starboard": {

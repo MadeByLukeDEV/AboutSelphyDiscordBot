@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -9,7 +10,6 @@ import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { MAX_PER_USER, MIN_PER_USER, reminderSettingsSchema, type ReminderSettings } from "@aboutselphy/shared/reminders";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -81,11 +81,7 @@ export function RemindersManager({ initial, stats, cardImage, channels }: { init
           </Field>
         </FieldGroup>
         <MemberCardSettings kind="reminder" form={form} cardImage={cardImage} withSubtitle={false} />
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
     </div>
   );

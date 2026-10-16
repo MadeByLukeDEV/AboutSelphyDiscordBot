@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -11,7 +12,6 @@ import type { GuildChannel } from "@aboutselphy/shared";
 import { MAX_IGNORED, MAX_THRESHOLD, MIN_THRESHOLD, starboardSettingsSchema, type StarboardSettings } from "@aboutselphy/shared/starboard";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { EmoteInsert } from "@/components/form/emote-insert";
 import { Input } from "@/components/ui/input";
@@ -106,11 +106,7 @@ export function StarboardManager({ initial, posts, channels }: { initial: Starbo
             <FieldDescription>{t("form.ignoredHelp")}</FieldDescription>
           </Field>
         </FieldGroup>
-        <div>
-          <Button type="submit" disabled={pending || !isDirty}>
-            {pending ? t("form.saving") : t("form.save")}
-          </Button>
-        </div>
+        <SaveRow dirty={isDirty} pending={pending} label={t("form.save")} savingLabel={t("form.saving")} />
       </form>
 
       <section aria-labelledby="sb-list" className="flex flex-col gap-3">

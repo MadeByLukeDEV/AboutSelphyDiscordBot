@@ -1,5 +1,6 @@
 "use client";
 
+import { SaveRow } from "@/components/page/save-row";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -9,7 +10,6 @@ import { toast } from "sonner";
 import type { GuildChannel } from "@aboutselphy/shared";
 import { LOG_CATEGORIES, logSettingsSchema, type LogSettings } from "@aboutselphy/shared/logs";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
-import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { saveLogSettingsAction } from "../actions";
@@ -79,11 +79,7 @@ export function LogsForm({ initial, channels }: { initial: LogSettings; channels
           </Field>
         </section>
       ))}
-      <div>
-        <Button type="submit" disabled={pending || !isDirty}>
-          {pending ? t("saving") : t("save")}
-        </Button>
-      </div>
+      <SaveRow dirty={isDirty} pending={pending} label={t("save")} savingLabel={t("saving")} />
     </form>
   );
 }
