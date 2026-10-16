@@ -6,10 +6,9 @@ import { Controller, useForm } from "react-hook-form";
 import { useFormatter, useTranslations } from "next-intl";
 import { CalendarRange, Eye, ImageIcon, LayoutList, Loader2, Pencil, Plus, RefreshCw, RotateCcw, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { EVENT_KINDS, eventSourceSchema, FETCH_MODES, gameEventSchema, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS } from "@aboutselphy/shared/eventcal";
+import { eventSourceSchema, FETCH_MODES, MAX_EVENT_SOURCES, MAX_OVERVIEW_DAYS, MIN_OVERVIEW_DAYS } from "@aboutselphy/shared/eventcal";
 import { MAX_CARD_IMAGE_BYTES } from "@aboutselphy/shared/image-info";
 import { ColorPicker } from "@/components/form/color-picker";
-import { FormDateTime } from "@/components/form/date-time-picker";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,25 +17,9 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/c
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { checkEventCalendarAction, deleteEventArticleAction, deleteEventItemAction, deleteEventSourceAction, removeEventBackgroundAction, removeEventItemImageAction, uploadEventBackgroundAction, uploadEventItemImageAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction, saveGameEventAction } from "../actions";
+import { checkEventCalendarAction, deleteEventArticleAction, deleteEventItemAction, deleteEventSourceAction, removeEventBackgroundAction, removeEventItemImageAction, uploadEventBackgroundAction, uploadEventItemImageAction, importEventArticleAction, postEventMonthlyAction, postEventOverviewAction, removeGameEventAction, restoreGameEventAction, saveEventSourceAction } from "../actions";
 import type { EventRow, ImageResult, ItemRow, SourceRow } from "../schema";
-
-/** One item per line -> clean list, no duplicates. */
-const parseLines = (text: string): string[] => {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of text.split("\n")) {
-    const line = raw.trim().replace(/\s+/g, " ");
-    if (line && !seen.has(line.toLowerCase())) {
-      seen.add(line.toLowerCase());
-      out.push(line);
-    }
-  }
-  return out;
-};
-
-/** "YYYY-MM-DDTHH:mm" in UTC, the value the date picker and the schema use. */
-const toLocalValue = (iso: string | null): string => (iso ? iso.slice(0, 16) : "");
+import { EventForm } from "./event-form";
 
 /** The games (sources): their settings, status, stored events, pasted articles, and the overview and monthly buttons. */
 export function SourcesManager({ sources, channelOptions, channelsReady }: { sources: SourceRow[]; channelOptions: SelectOption[]; channelsReady: boolean }) {
@@ -353,7 +336,7 @@ export function SourcesManager({ sources, channelOptions, channelsReady }: { sou
       </Dialog>
 
       <Dialog open={eventEdit !== null} onOpenChange={(open) => !open && setEventEdit(null)}>
-        <DialogContent className="max-h-[92dvh] overflow-y-auto">
+        <DialogContent className="max-h-[92dvh] max-w-[min(42rem,95vw)] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{eventEdit?.event ? t("eventEditTitle") : t("eventNewTitle")}</DialogTitle>
             <DialogDescription>{t("eventFormIntro")}</DialogDescription>
@@ -508,122 +491,6 @@ function SourceForm({ source, channelOptions, onDone }: { source: SourceRow | nu
         <Field orientation="horizontal">
           <Controller control={form.control} name="enabled" render={({ field }) => <Switch id="gs-enabled" checked={field.value} onCheckedChange={field.onChange} />} />
           <FieldLabel htmlFor="gs-enabled">{t("enabled")}</FieldLabel>
-        </Field>
-      </FieldGroup>
-      <DialogFooter>
-        <DialogClose render={<Button type="button" variant="outline" />}>{t("cancel")}</DialogClose>
-        <Button type="submit" disabled={pending}>
-          {pending ? t("saving") : t("save")}
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
-
-type EventValues = { title: string; kind: string; allDay: boolean; start: string; end: string; description: string; summary: string; itemsText: string; imageUrl: string; videoUrl: string; reminderText: string };
-
-function EventForm({ source, event, onDone }: { source: SourceRow; event: EventRow | null; onDone: () => void }) {
-  const t = useTranslations("Events.games");
-  const te = useTranslations("Events.errors");
-  const [pending, startTransition] = useTransition();
-  const form = useForm<EventValues>({
-    defaultValues: event
-      ? { title: event.title, kind: event.kind, allDay: event.allDay, start: toLocalValue(event.startsAt), end: toLocalValue(event.endsAt), description: event.description, summary: event.summary, itemsText: event.items.join("\n"), imageUrl: event.imageUrl, videoUrl: event.videoUrl, reminderText: event.reminderDays.join(", ") }
-      : { title: "", kind: "event", allDay: true, start: "", end: "", description: "", summary: "", itemsText: "", imageUrl: "", videoUrl: "", reminderText: "" },
-  });
-  const { errors } = form.formState;
-  const kindOptions: SelectOption[] = EVENT_KINDS.map((k) => ({ value: k, label: t(`kind.${k}` as never) }));
-
-  const submit = form.handleSubmit((values) => {
-    const checked = gameEventSchema.safeParse({
-      ...(event ? { id: event.id } : {}),
-      sourceId: source.id,
-      title: values.title,
-      kind: values.kind,
-      allDay: values.allDay,
-      start: values.start,
-      end: values.end,
-      description: values.description,
-      summary: values.summary,
-      items: parseLines(values.itemsText),
-      imageUrl: values.imageUrl,
-      videoUrl: values.videoUrl,
-      reminderDays: values.reminderText.split(/[\s,;+]+/).filter(Boolean).map(Number),
-    });
-    if (!checked.success) {
-      form.clearErrors();
-      for (const issue of checked.error.issues) {
-        const k = issue.path[0];
-        if (k === "title" || k === "start" || k === "end" || k === "imageUrl" || k === "videoUrl") form.setError(k, { type: "custom", message: issue.message });
-        else if (k === "reminderDays") form.setError("reminderText", { type: "custom", message: issue.message });
-      }
-      return;
-    }
-    startTransition(async () => {
-      const result = await saveGameEventAction(checked.data);
-      if (!result.ok) return void toast.error(te(result.error));
-      toast.success(t("eventSaved"));
-      onDone();
-    });
-  });
-
-  return (
-    <form onSubmit={(e) => void submit(e)} className="flex flex-col gap-5" noValidate>
-      <FieldGroup>
-        <Field data-invalid={Boolean(errors.title) || undefined}>
-          <FieldLabel htmlFor="ge-title">{t("eventTitle")}</FieldLabel>
-          <Input id="ge-title" maxLength={120} aria-invalid={Boolean(errors.title) || undefined} {...form.register("title")} />
-          {errors.title && <FieldError>{te("needsName")}</FieldError>}
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="ge-kind">{t("eventKind")}</FieldLabel>
-          <FormSelect control={form.control} name="kind" id="ge-kind" options={kindOptions} placeholder={t("kind.event")} />
-        </Field>
-        <Field orientation="horizontal">
-          <Controller control={form.control} name="allDay" render={({ field }) => <Switch id="ge-allday" checked={field.value} onCheckedChange={field.onChange} />} />
-          <FieldLabel htmlFor="ge-allday">{t("allDay")}</FieldLabel>
-        </Field>
-        <Field data-invalid={Boolean(errors.start) || undefined}>
-          <FieldLabel htmlFor="ge-start">{t("start")}</FieldLabel>
-          <FormDateTime control={form.control} name="start" id="ge-start" invalid={Boolean(errors.start)} />
-          {errors.start && <FieldError>{te("badDate")}</FieldError>}
-          <FieldDescription>{t("utcHelp")}</FieldDescription>
-        </Field>
-        <Field data-invalid={Boolean(errors.end) || undefined}>
-          <FieldLabel htmlFor="ge-end">{t("end")}</FieldLabel>
-          <FormDateTime control={form.control} name="end" id="ge-end" invalid={Boolean(errors.end)} />
-          {errors.end && <FieldError>{te("badDate")}</FieldError>}
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="ge-desc">{t("description")}</FieldLabel>
-          <Textarea id="ge-desc" rows={5} maxLength={4000} {...form.register("description")} />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="ge-summary">{t("summary")}</FieldLabel>
-          <Textarea id="ge-summary" rows={2} maxLength={600} {...form.register("summary")} />
-          <FieldDescription>{t("summaryHelp")}</FieldDescription>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="ge-items">{t("items")}</FieldLabel>
-          <Textarea id="ge-items" rows={4} {...form.register("itemsText")} />
-          <FieldDescription>{t("itemsHelp")}</FieldDescription>
-        </Field>
-        <Field data-invalid={Boolean(errors.imageUrl) || undefined}>
-          <FieldLabel htmlFor="ge-image">{t("imageUrl")}</FieldLabel>
-          <Input id="ge-image" type="url" maxLength={500} autoComplete="off" aria-invalid={Boolean(errors.imageUrl) || undefined} {...form.register("imageUrl")} />
-          {errors.imageUrl && <FieldError>{te("badImage")}</FieldError>}
-        </Field>
-        <Field data-invalid={Boolean(errors.videoUrl) || undefined}>
-          <FieldLabel htmlFor="ge-video">{t("videoUrl")}</FieldLabel>
-          <Input id="ge-video" type="url" maxLength={500} autoComplete="off" aria-invalid={Boolean(errors.videoUrl) || undefined} {...form.register("videoUrl")} />
-          <FieldDescription>{t("videoHelp")}</FieldDescription>
-          {errors.videoUrl && <FieldError>{te("badVideo")}</FieldError>}
-        </Field>
-        <Field data-invalid={Boolean(errors.reminderText) || undefined}>
-          <FieldLabel htmlFor="ge-reminders">{t("reminders")}</FieldLabel>
-          <Input id="ge-reminders" inputMode="numeric" autoComplete="off" placeholder="7, 2" className="max-w-[12rem]" aria-invalid={Boolean(errors.reminderText) || undefined} {...form.register("reminderText")} />
-          <FieldDescription>{t("remindersHelp")}</FieldDescription>
-          {errors.reminderText && <FieldError>{te("badLeadDays", { max: 4, limit: 60 })}</FieldError>}
         </Field>
       </FieldGroup>
       <DialogFooter>
