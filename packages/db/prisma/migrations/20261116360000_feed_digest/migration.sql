@@ -1,0 +1,1 @@
+ALTER TABLE "FeedSource" ADD COLUMN "digest" BOOLEAN NOT NULL DEFAULT false;

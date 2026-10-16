@@ -63,6 +63,8 @@ export const feedInput = z
     useEmbed: z.boolean().default(false),
     /** The keyword filters also look at the item's description. */
     filterDescription: z.boolean().default(false),
+    /** Several new items of one check go into one message. */
+    digest: z.boolean().default(false),
     enabled: z.boolean(),
   })
   .superRefine((v, ctx) => {

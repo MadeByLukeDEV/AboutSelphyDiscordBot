@@ -61,3 +61,22 @@ export function feedEmbedData(feedName: string, item: { title: string; link: str
   const link = safeLink(item.link);
   return { title: truncate(escapeText(item.title), 256) || "New item", url: link === "" ? undefined : link, footer: truncate(escapeText(feedName), 60), at: item.publishedAt };
 }
+
+/** One message for several new items: a heading and a bullet per item (escaped title, link only if http(s)); cut to Discord's limit. */
+export function renderDigest(feedName: string, items: ReadonlyArray<{ title: string; link: string }>, ping: string): string {
+  const head = `${ping}**${escapeText(truncate(feedName, 60))}**: ${items.length} new ${items.length === 1 ? "item" : "items"}`;
+  const lines: string[] = [];
+  let used = head.length;
+  for (const [i, item] of items.entries()) {
+    const link = safeLink(item.link);
+    const line = `• ${escapeText(truncate(item.title, 150)) || "New item"}${link ? ` ${link}` : ""}`;
+    // Keep room for the "and N more" line.
+    if (used + line.length + 40 > 1900) {
+      lines.push(`… and ${items.length - i} more`);
+      break;
+    }
+    lines.push(line);
+    used += line.length + 1;
+  }
+  return [head, ...lines].join("\n");
+}

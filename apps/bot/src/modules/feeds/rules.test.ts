@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { feedInput, isFeedUrlSyntax } from "@aboutselphy/shared/feeds";
 import { parseFeed, type FeedItemData } from "./parse";
-import { feedEmbedData, passesFilter, isDue, MAX_POSTS_PER_CHECK, renderFeedMessage, safeLink, selectNew } from "./rules";
+import { feedEmbedData, passesFilter, renderDigest, isDue, MAX_POSTS_PER_CHECK, renderFeedMessage, safeLink, selectNew } from "./rules";
 
 const RSS = `<?xml version="1.0"?><rss version="2.0"><channel><title>x</title>
 <item><title>Second video</title><link>https://example.com/v/2</link><guid isPermaLink="false">id-2</guid><pubDate>Mon, 05 Oct 2026 12:00:00 GMT</pubDate></item>
@@ -143,5 +143,21 @@ describe("keyword filters and embeds", () => {
     expect(e.url).toBeUndefined();
     expect(e.title).not.toContain("[x](");
     expect(feedEmbedData("S", { title: "T", link: "https://a.example/x", publishedAt: null }).url).toBe("https://a.example/x");
+  });
+});
+
+describe("digest message", () => {
+  it("lists items with escaped titles and safe links", () => {
+    const text = renderDigest("News *feed*", [{ title: "A **bold** claim", link: "https://example.com/a" }, { title: "B", link: "javascript:alert(1)" }], "<@&1> ");
+    expect(text.startsWith("<@&1> **News \\*feed\\***: 2 new items")).toBe(true);
+    expect(text).toContain("• A \\*\\*bold\\*\\* claim https://example.com/a");
+    expect(text).toContain("• B");
+    expect(text).not.toContain("javascript:");
+  });
+  it("stays under Discord's limit with a note for the rest", () => {
+    const items = Array.from({ length: 40 }, (_, i) => ({ title: `Item ${i} ${"x".repeat(100)}`, link: `https://example.com/${i}` }));
+    const text = renderDigest("Big", items, "");
+    expect(text.length).toBeLessThan(2000);
+    expect(text).toMatch(/… and \d+ more$/);
   });
 });

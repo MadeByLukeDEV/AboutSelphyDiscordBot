@@ -34,6 +34,7 @@ export async function getFeedsPage() {
     excludeWords: f.excludeWords,
     useEmbed: f.useEmbed,
     filterDescription: f.filterDescription,
+    digest: f.digest,
     enabled: f.enabled,
     baselined: f.baselined,
     lastCheckedAt: f.lastCheckedAt?.toISOString() ?? null,
@@ -63,7 +64,7 @@ export async function saveFeed(input: FeedInput, byName: string): Promise<SaveFe
       if (!roles.some((r) => r.id === roleId)) return { ok: false, error: "roleNotFound" };
     }
 
-    const data = { name: input.name, channelId: input.channelId, pingRoleId: roleId, messageTemplate: input.messageTemplate, intervalMinutes: input.intervalMinutes, includeWords: input.includeWords, excludeWords: input.excludeWords, useEmbed: input.useEmbed, filterDescription: input.filterDescription, enabled: input.enabled };
+    const data = { name: input.name, channelId: input.channelId, pingRoleId: roleId, messageTemplate: input.messageTemplate, intervalMinutes: input.intervalMinutes, includeWords: input.includeWords, excludeWords: input.excludeWords, useEmbed: input.useEmbed, filterDescription: input.filterDescription, digest: input.digest, enabled: input.enabled };
     if (existing) await updateFeed(existing.id, { ...data, ...(input.url ? { urlEnc: encryptToken(input.url, URL_PURPOSE, k) } : {}) });
     else await createFeed({ ...data, urlEnc: encryptToken(input.url, URL_PURPOSE, k), createdByName: byName.slice(0, 100) });
     return { ok: true, botNotified: await reloadBotModule("feeds") };

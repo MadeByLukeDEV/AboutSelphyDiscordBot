@@ -2,7 +2,7 @@ import "server-only";
 // Private to the feeds module: only service.ts imports this.
 import { prisma } from "@aboutselphy/db";
 
-type Data = { name: string; channelId: string; pingRoleId: string | null; messageTemplate: string; intervalMinutes: number; includeWords: string[]; excludeWords: string[]; useEmbed: boolean; filterDescription: boolean; enabled: boolean };
+type Data = { name: string; channelId: string; pingRoleId: string | null; messageTemplate: string; intervalMinutes: number; includeWords: string[]; excludeWords: string[]; useEmbed: boolean; filterDescription: boolean; digest: boolean; enabled: boolean };
 
 export const listFeeds = () => prisma.feedSource.findMany({ orderBy: { createdAt: "asc" } });
 export const findFeed = (id: string) => prisma.feedSource.findUnique({ where: { id } });

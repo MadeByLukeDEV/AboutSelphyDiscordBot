@@ -621,8 +621,7 @@ Decided 2026-10-08:
         `/modlog escalation_off`, and a section on `/settings` (admin). A CHECK in the
         database keeps the settings consistent. Duration helpers live in
         `@aboutselphy/shared/duration` (bot and dashboard parse identically).
-  - [ ] Roles re-applied when a member rejoins (needs the GuildMembers intent),
-        warn/timeout/ban from the dashboard, case notes editing
+  - [x] Roles re-applied when a member rejoins: done under Welcome (`restoreRoles`, 90-day snapshot); warn/timeout/ban from the dashboard: done (member page); case notes editing: reasons can be corrected (`reasonEditedAt`).
   - [x] Server logs (2026-10-16, `feature_logs`, migration `20261016100000_logs` applied;
         **not tried live yet**): four kinds, each with its own channel and switch
         (`LogRoute`, dashboard `/logs`, admins): **members** (joins with account age and a
@@ -1472,7 +1471,7 @@ Decided 2026-10-08:
     `useEmbed` posts a link embed (`feedEmbedData`: escaped title as the link text, http(s)-only link, source name, time) with only the
     role ping as text. Words are typed one per line on `/feeds`.
   - [x] **Description filters** (2026-11-10, `feature_feed-description-filter`, migration `20261116220000_feed_description_filter`; **not tried live yet**): `FeedSource.filterDescription` (default off, so existing filters keep their meaning) makes the include/exclude words also match the item's description (`parseFeed` adds `description`: RSS description/content:encoded or Atom summary/content, tags removed, cut to 2000, only compared, never shown).
-  - [ ] Several items in one message.
+  - [x] **Digest** (2026-11-11, `feature_feed-digest`, migration `20261116360000_feed_digest`; **not tried live yet**): `FeedSource.digest` (default off): when one check finds more than one new item they go into one plain message (`renderDigest`: a heading, a bullet per item with the escaped title and an http(s)-only link, cut to Discord's limit with an "... and N more" line; the role ping at the top; boxes are not used for a digest). Each item is still remembered before posting.
 - [~] Event calendar (2026-11-13, `feature_event-calendar`, migrations `20261113100000_event_calendar` and `20261113110000_event_rule_seeded`; **not tried
       live yet**; asked for by the user: Sea of Thieves Twitch Drops and other events, filtered, one message per event plus an overview)
   - The source is a **public iCalendar feed**, not the news page (seaofthieves.com sits behind an Azure WAF challenge that blocks plain fetches). Default:

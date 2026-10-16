@@ -2566,7 +2566,9 @@
       "saving": "Speichern…",
       "saved": "Gespeichert",
       "filterDescription": "Filter lesen auch die Beschreibung",
-      "filterDescriptionHelp": "Die Wörter zum Einschließen und Ausschließen werden auch in der Beschreibung des Eintrags gesucht, nicht nur im Titel."
+      "filterDescriptionHelp": "Die Wörter zum Einschließen und Ausschließen werden auch in der Beschreibung des Eintrags gesucht, nicht nur im Titel.",
+      "digest": "Eine Nachricht für mehrere neue Einträge",
+      "digestHelp": "Findet eine Prüfung mehr als einen neuen Eintrag, kommen sie zusammen in eine einfache Nachricht (ohne Box) statt je eine Nachricht."
     },
     "errors": {
       "forbidden": "Du hast darauf keinen Zugriff.",

@@ -10,7 +10,7 @@ import { moduleOn } from "../../lib/modules";
 import { getText } from "../../lib/safe-http";
 import { parseFeed } from "./parse";
 import { findFeed, listEnabled, markChecked, pruneItems, remember, rememberMany, seenGuids } from "./repository";
-import { feedEmbedData, isDue, passesFilter, renderFeedMessage, selectNew } from "./rules";
+import { feedEmbedData, isDue, passesFilter, renderDigest, renderFeedMessage, selectNew } from "./rules";
 
 // The feed announcer. A round every minute checks the feeds that are due (each has its own interval).
 // A feed's first successful check only remembers what is there: nothing old is ever announced. After
@@ -67,6 +67,25 @@ export function checkFeed(guild: Guild, feed: FeedSource): Promise<FeedCheckResp
       if (toRemember.length > 0) await rememberMany(feed.id, toRemember.map((i) => i.guid));
       const channel = toPost.length > 0 ? await guild.channels.fetch(feed.channelId).catch(() => null) : null;
       let announced = 0;
+      // Digest: several new items of this check go out as one message (plain text, even for a feed that normally uses boxes).
+      if (feed.digest && toPost.length > 1) {
+        if (!channel || channel.isDMBased() || !channel.isTextBased() || !("send" in channel)) {
+          log.warn({ feed: feed.id, channelId: feed.channelId }, "feeds: the channel is missing or the bot can't post in it");
+          return await done("channel", 0);
+        }
+        const claimed = [];
+        for (const item of toPost) if (await remember(feed.id, item.guid)) claimed.push(item);
+        if (claimed.length > 0) {
+          await channel
+            .send({ content: renderDigest(feed.name, claimed, feed.pingRoleId ? `<@&${feed.pingRoleId}> ` : ""), allowedMentions: { parse: [], roles: feed.pingRoleId ? [feed.pingRoleId] : [] } })
+            .then(() => {
+              announced = claimed.length;
+              log.info({ feed: feed.id, items: claimed.length }, "feeds: announced a digest");
+            })
+            .catch((err) => log.warn({ err, feed: feed.id }, "feeds: could not post the digest"));
+        }
+        return await done("ok", announced);
+      }
       for (const item of toPost) {
         if (!(await remember(feed.id, item.guid))) continue; // another check got it first
         if (!channel || channel.isDMBased() || !channel.isTextBased() || !("send" in channel)) {

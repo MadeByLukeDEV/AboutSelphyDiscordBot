@@ -2566,7 +2566,9 @@
       "saving": "Saving…",
       "saved": "Saved",
       "filterDescription": "Filters also read the description",
-      "filterDescriptionHelp": "The include and exclude words are also looked for in the item's description, not only its title."
+      "filterDescriptionHelp": "The include and exclude words are also looked for in the item's description, not only its title.",
+      "digest": "One message for several new items",
+      "digestHelp": "When a check finds more than one new item they are posted together in one plain message (no box) instead of one message each."
     },
     "errors": {
       "forbidden": "You don't have access to this.",
