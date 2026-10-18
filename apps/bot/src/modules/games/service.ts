@@ -44,18 +44,19 @@ async function config(): Promise<GameConfig> {
   cached = { value: await readConfig(), at: Date.now() };
   return cached.value;
 }
+export const readGameConfig = (): Promise<GameConfig> => config();
 onReload("games", () => {
   cached = undefined;
 });
 
 // ---- helpers --------------------------------------------------------------------------------------------
 
-const playerOf = (u: { id: string; displayName: string }): Player => ({ id: u.id, name: u.displayName });
+export const playerOf = (u: { id: string; displayName: string }): Player => ({ id: u.id, name: u.displayName });
 
 const openGamesOf = (userId: string): number => [...games.values()].filter((g) => g.kind !== "q" && g.players.some((p) => p.id === userId)).length;
 
 /** Every start goes through here: the game must be switched on, the channel allowed, the member not spamming. Replies and returns null when not. */
-async function gate(i: ChatInputCommandInteraction, flag: "triviaOn" | "rpsOn" | "tictactoeOn" | "connect4On"): Promise<GameConfig | null> {
+export async function gate(i: ChatInputCommandInteraction, flag: "triviaOn" | "rpsOn" | "tictactoeOn" | "connect4On" | "wordOn"): Promise<GameConfig | null> {
   const c = await config();
   const refuse = (text: string) => i.reply({ content: text, flags: MessageFlags.Ephemeral, allowedMentions: NO_MENTIONS }).then(() => null);
   if (!c[flag]) return refuse("That game is switched off right now.");
@@ -75,7 +76,7 @@ async function gate(i: ChatInputCommandInteraction, flag: "triviaOn" | "rpsOn" |
   return c;
 }
 
-async function giveXp(guild: Guild, player: Player, c: GameConfig): Promise<number> {
+export async function giveXp(guild: Guild, player: Player, c: GameConfig): Promise<number> {
   if (c.winXp <= 0) return 0;
   const day = dayKey(new Date());
   const grant = grantableXp(c.winXp, await xpUsed(player.id, day), c.dailyXpCap);
@@ -87,7 +88,7 @@ async function giveXp(guild: Guild, player: Player, c: GameConfig): Promise<numb
   return given;
 }
 
-async function record(game: StatGame, results: Array<{ player: Player; result: Result }>): Promise<void> {
+export async function record(game: StatGame, results: Array<{ player: Player; result: Result }>): Promise<void> {
   await recordResults(game, results.map((r) => ({ userId: r.player.id, name: r.player.name, result: r.result })));
 }
 

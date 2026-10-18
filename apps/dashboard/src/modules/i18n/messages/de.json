@@ -3514,7 +3514,9 @@
       "connect4On": "Vier gewinnt",
       "connect4OnHelp": "Zwei Mitglieder, gespielt mit Knöpfen.",
       "funOn": "Münze, Würfel und 8-Ball",
-      "funOnHelp": "Schnelle Spaßbefehle ohne Aufzeichnung."
+      "funOnHelp": "Schnelle Spaßbefehle ohne Aufzeichnung.",
+      "wordOn": "Wort- und Chat-Spiele",
+      "wordOnHelp": "Galgenmännchen, Wörter entwirren und Zahlenraten, gespielt durch Tippen im Kanal (braucht den Message-Content-Intent)."
     },
     "xp": {
       "title": "XP und Limits",
@@ -3543,7 +3545,10 @@
         "trivia": "Quiz",
         "rps": "Schere, Stein, Papier",
         "tictactoe": "Tic-Tac-Toe",
-        "connect4": "Vier gewinnt"
+        "connect4": "Vier gewinnt",
+        "hangman": "Galgenmännchen",
+        "scramble": "Wörter entwirren",
+        "guess": "Zahlenraten"
       },
       "emptyTitle": "Noch keine Sieger",
       "emptyBody": "Die besten Spieler erscheinen hier, sobald gespielt wurde.",

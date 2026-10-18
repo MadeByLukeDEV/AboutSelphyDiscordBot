@@ -3514,7 +3514,9 @@
       "connect4On": "Connect four",
       "connect4OnHelp": "Two members, played with buttons.",
       "funOn": "Coin, dice and 8-ball",
-      "funOnHelp": "Instant fun commands that keep no record."
+      "funOnHelp": "Instant fun commands that keep no record.",
+      "wordOn": "Word and chat games",
+      "wordOnHelp": "Hangman, word scramble and guess the number, played by typing in the channel (needs the Message Content intent)."
     },
     "xp": {
       "title": "XP and limits",
@@ -3543,7 +3545,10 @@
         "trivia": "Trivia",
         "rps": "Rock paper scissors",
         "tictactoe": "Tic-tac-toe",
-        "connect4": "Connect four"
+        "connect4": "Connect four",
+        "hangman": "Hangman",
+        "scramble": "Word scramble",
+        "guess": "Guess the number"
       },
       "emptyTitle": "No winners yet",
       "emptyBody": "The best players show up here once games have been played.",

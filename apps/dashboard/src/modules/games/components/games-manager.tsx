@@ -20,7 +20,7 @@ import { saveGamesAction } from "../actions";
 import type { TopByGame } from "../schema";
 import { Trophy } from "lucide-react";
 
-const SWITCHES = ["triviaOn", "rpsOn", "tictactoeOn", "connect4On", "funOn"] as const;
+const SWITCHES = ["triviaOn", "rpsOn", "tictactoeOn", "connect4On", "wordOn", "funOn"] as const;
 
 /** The minigames' settings (XP, limits, which games, where) and the best players. One form for all settings, saved from the bar at the bottom. */
 export function GamesManager({ initial, channels, top, initialTab }: { initial: GameSettings; channels: GuildChannel[] | null; top: TopByGame; initialTab?: string }) {

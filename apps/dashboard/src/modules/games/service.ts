@@ -16,6 +16,7 @@ const toSettings = (c: GameConfig): GameSettings => ({
   tictactoeOn: c.tictactoeOn,
   connect4On: c.connect4On,
   funOn: c.funOn,
+  wordOn: c.wordOn,
 });
 
 /** The settings, the best players of each game, and the channels to pick from (null = the bot can't be reached). */

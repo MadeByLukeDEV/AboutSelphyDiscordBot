@@ -3,10 +3,10 @@ import { z } from "zod";
 // The minigames' settings and constants. One definition for the dashboard and the bot. Pure.
 // Import it from "@aboutselphy/shared/games" in client components.
 
-export const GAME_KEYS = ["trivia", "rps", "tictactoe", "connect4", "fun"] as const;
+export const GAME_KEYS = ["trivia", "rps", "tictactoe", "connect4", "fun", "word"] as const;
 export type GameKey = (typeof GAME_KEYS)[number];
-/** What the stats are kept under: the four real games (the instant "fun" commands keep no record). */
-export const STAT_GAMES = ["trivia", "rps", "tictactoe", "connect4"] as const;
+/** What the stats are kept under: the real games (the instant "fun" commands keep no record). */
+export const STAT_GAMES = ["trivia", "rps", "tictactoe", "connect4", "hangman", "scramble", "guess"] as const;
 export type StatGame = (typeof STAT_GAMES)[number];
 export const isStatGame = (v: unknown): v is StatGame => STAT_GAMES.includes(v as StatGame);
 
@@ -27,5 +27,6 @@ export const gameSettingsSchema = z.object({
   tictactoeOn: z.boolean(),
   connect4On: z.boolean(),
   funOn: z.boolean(),
+  wordOn: z.boolean(),
 });
 export type GameSettings = z.infer<typeof gameSettingsSchema>;

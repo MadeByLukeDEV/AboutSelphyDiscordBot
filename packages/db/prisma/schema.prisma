@@ -1617,6 +1617,7 @@ model GameConfig {
   tictactoeOn     Boolean  @default(true)
   connect4On      Boolean  @default(true)
   funOn           Boolean  @default(true)
+  wordOn          Boolean  @default(true)
   updatedAt       DateTime @updatedAt
 }
 

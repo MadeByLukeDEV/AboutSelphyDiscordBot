@@ -5,9 +5,10 @@ import { escapeText, truncate } from "../../lib/escape";
 import { coinflip, eightBall, rollDie } from "./logic";
 import { readConfig, statsOf, topPlayers } from "./repository";
 import { startDuel, startRps, startTrivia } from "./service";
+import { startGuess, startHangman, startScramble } from "./word-games";
 
 const NO_MENTIONS = { parse: [] as never[] };
-const TITLES: Record<StatGame, string> = { trivia: "🧠 Trivia", rps: "✊ Rock paper scissors", tictactoe: "❌ Tic-tac-toe", connect4: "🔴 Connect four" };
+const TITLES: Record<StatGame, string> = { trivia: "🧠 Trivia", rps: "✊ Rock paper scissors", tictactoe: "❌ Tic-tac-toe", connect4: "🔴 Connect four", hangman: "🪢 Hangman", scramble: "🔤 Word scramble", guess: "🔢 Guess the number" };
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 const game: Command = {
@@ -34,6 +35,9 @@ const game: Command = {
         .setDescription("Connect four against another member")
         .addUserOption((o) => o.setName("opponent").setDescription("Who to play").setRequired(true)),
     )
+    .addSubcommand((s) => s.setName("hangman").setDescription("Hangman: everyone in the channel guesses letters"))
+    .addSubcommand((s) => s.setName("scramble").setDescription("Unscramble a word: the first to type it wins"))
+    .addSubcommand((s) => s.setName("guess").setDescription("Guess the number from 1 to 100"))
     .addSubcommand((s) => s.setName("coinflip").setDescription("Flip a coin"))
     .addSubcommand((s) =>
       s
@@ -68,6 +72,9 @@ const game: Command = {
     if (sub === "rps") return startRps(i);
     if (sub === "tictactoe") return startDuel(i, "t");
     if (sub === "connect4") return startDuel(i, "c");
+    if (sub === "hangman") return startHangman(i);
+    if (sub === "scramble") return startScramble(i);
+    if (sub === "guess") return startGuess(i);
 
     if (sub === "coinflip" || sub === "dice" || sub === "8ball") {
       if (!(await readConfig()).funOn) return void (await i.reply({ content: "Those games are switched off right now.", flags: MessageFlags.Ephemeral }));
