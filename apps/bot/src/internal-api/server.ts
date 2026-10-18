@@ -12,6 +12,7 @@ import {
   webhookTestBody,
   stickyClearBody,
   moderationActBody,
+  memberOverviewPayload,
   twitchVipUnlinkBody,
   eraseMemberBody,
   twitchVipLinkedBody,
@@ -44,6 +45,7 @@ import { renderMemberCardPreview } from "../modules/membercards";
 import { checkFeedNow } from "../modules/feeds";
 import { clearSticky } from "../modules/sticky";
 import { guidePreview, postGuide } from "../modules/modguide";
+import { postMemberOverview } from "../modules/memberoverview";
 import { linkVerified, unlinkVip } from "../modules/twitchvip";
 import { decideEntry } from "../modules/screening";
 import { screeningDecideBody } from "@aboutselphy/shared/screening";
@@ -381,6 +383,15 @@ async function route(req: IncomingMessage, res: ServerResponse) {
     const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
     if (!guild) return json(res, 503, { error: "guild not available" });
     return json(res, 200, await postGuide(guild));
+  }
+
+  if (req.method === "POST" && url.pathname === "/internal/memberoverview/post") {
+    // The overview text is bigger than the usual tiny payloads (up to about 40 KB).
+    const body = memberOverviewPayload.safeParse(await readJsonBody(req, 64 * 1024));
+    if (!body.success) return json(res, 400, { error: "invalid body" });
+    const guild = getClient().guilds.cache.get(env().DISCORD_GUILD_ID);
+    if (!guild) return json(res, 503, { error: "guild not available" });
+    return json(res, 200, await postMemberOverview(guild, body.data));
   }
 
   if (req.method === "POST" && url.pathname === "/internal/sticky/clear") {

@@ -36,6 +36,7 @@ export type {
   ScreeningConfig,
   EventRule,
   GameConfig,
+  MemberOverview,
   EventPost,
   EventArticle,
   EventSummary,

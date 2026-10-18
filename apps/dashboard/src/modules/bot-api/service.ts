@@ -1,5 +1,6 @@
 import { eventCheckResponse, eventOverviewStatus, eventRepostStatus, type EventCheckResponse, type EventOverviewStatus, type EventRepostStatus, eventPreviewResponse } from "@aboutselphy/shared/eventcal";
 import { eraseMemberResponse, type EraseMemberResponse } from "@aboutselphy/shared/retention";
+import { memberOverviewPostResponse, type MemberOverviewPayload, type MemberOverviewPostResponse } from "@aboutselphy/shared/memberoverview";
 import { screeningDecideStatus, type ScreeningDecideStatus } from "@aboutselphy/shared/screening";
 import "server-only";
 import {
@@ -242,6 +243,14 @@ export async function postModGuideViaBot(): Promise<ModGuidePostResponse | null>
   const res = await botFetch("/internal/modguide/post", { method: "POST", timeoutMs: 20_000 });
   if (!res?.ok) return null;
   const parsed = modGuidePostResponse.safeParse(await res.json().catch(() => null));
+  return parsed.success ? parsed.data : null;
+}
+
+/** Asks the bot to post (or update) the member overview with this text. Null if the bot can't be reached. */
+export async function postMemberOverviewViaBot(payload: MemberOverviewPayload): Promise<MemberOverviewPostResponse | null> {
+  const res = await botFetch("/internal/memberoverview/post", { method: "POST", body: payload, timeoutMs: 30_000 });
+  if (!res?.ok) return null;
+  const parsed = memberOverviewPostResponse.safeParse(await res.json().catch(() => null));
   return parsed.success ? parsed.data : null;
 }
 

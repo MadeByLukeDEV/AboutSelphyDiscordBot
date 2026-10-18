@@ -53,6 +53,7 @@
     "./counting": "./src/counting.ts",
     "./games": "./src/games.ts",
     "./features": "./src/features.ts",
+    "./memberoverview": "./src/memberoverview.ts",
     "./modules": "./src/modules.ts",
     "./webhooks": "./src/webhooks.ts",
     "./feeds": "./src/feeds.ts",

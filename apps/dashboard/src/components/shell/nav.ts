@@ -1,7 +1,7 @@
 import type { StaffRole } from "@/modules/auth/roles";
 
 /** Keys under Shell.nav.items in the message catalogs. */
-export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "games" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot" | "twitchVip" | "retention" | "memberLookup" | "verification" | "raid" | "audit" | "invites" | "screening" | "events";
+export type NavLabel = "overview" | "cases" | "settings" | "voiceRooms" | "twitch" | "youtube" | "announcements" | "roles" | "welcome" | "logs" | "levels" | "tickets" | "giveaways" | "suggestions" | "polls" | "starboard" | "birthdays" | "reminders" | "roleManager" | "statChannels" | "sticky" | "autoPublish" | "customCommands" | "counting" | "games" | "memberOverview" | "autoResponders" | "modules" | "webhooks" | "feeds" | "modGuide" | "antiBot" | "twitchVip" | "retention" | "memberLookup" | "verification" | "raid" | "audit" | "invites" | "screening" | "events";
 /** Keys under Shell.nav.groups; null = no heading. */
 export type NavGroupLabel = "moderation" | "joining" | "members" | "engagement" | "voice" | "content" | "streams" | "system";
 
@@ -71,6 +71,7 @@ const NAV: NavGroupSpec[] = [
     label: "content",
     items: [
       { href: "/announcements", label: "announcements" },
+      { href: "/member-overview", label: "memberOverview", requires: "admin" },
       { href: "/sticky", label: "sticky", requires: "admin" },
       { href: "/auto-publish", label: "autoPublish", requires: "admin" },
       { href: "/custom-commands", label: "customCommands", requires: "admin" },

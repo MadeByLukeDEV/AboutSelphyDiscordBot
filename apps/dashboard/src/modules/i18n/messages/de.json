@@ -53,7 +53,8 @@
         "raid": "Raid-Schutz",
         "audit": "Änderungsprotokoll",
         "invites": "Einladungen",
-        "games": "Minispiele"
+        "games": "Minispiele",
+        "memberOverview": "Mitglieder-Überblick"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -3674,6 +3675,44 @@
         "title": "Willkommen und Rollen",
         "body": "Neue Mitglieder werden begrüßt und können sich ihre Rollen aus Rollen-Panels mit Knöpfen, Menüs oder Reaktionen wählen. Manche Server verlangen zuerst eine Bestätigung."
       }
+    }
+  },
+  "MemberOverview": {
+    "title": "Mitglieder-Überblick",
+    "intro": "Postet 'Was kann der Bot?' für deine Mitglieder in einen Discord-Kanal, als ein paar Embed-Nachrichten im Stil der öffentlichen Übersichtsseite. Drücke nach einer neuen Funktion auf Aktualisieren, um ihn an Ort und Stelle zu erneuern.",
+    "noChannel": "Noch kein Kanal",
+    "languages": {
+      "en": "Englisch",
+      "de": "Deutsch"
+    },
+    "form": {
+      "title": "Wo und wie",
+      "intro": "Der Text kommt von der öffentlichen Übersichtsseite und passt deshalb immer zu dem, was der Bot wirklich kann.",
+      "channel": "Kanal",
+      "channelHelp": "Wo der Überblick gepostet wird. Der Bot braucht dort das Recht, Nachrichten und Embeds zu senden.",
+      "botOffline": "Der Bot ist offline, die Kanalliste ist nicht verfügbar.",
+      "language": "Sprache",
+      "languageHelp": "Die Sprache, in der der Überblick geschrieben ist.",
+      "color": "Farbe",
+      "save": "Speichern",
+      "saving": "Speichert...",
+      "saved": "Gespeichert."
+    },
+    "post": "In Discord posten",
+    "update": "In Discord aktualisieren",
+    "posted": "{count, plural, one {Gepostet: 1 Nachricht.} other {Gepostet: # Nachrichten.}}",
+    "saveFirst": "Speichere zuerst deine Änderungen.",
+    "lastPosted": "Zuletzt gepostet {when}.",
+    "neverPosted": "Noch nicht gepostet.",
+    "preview": "Öffentliche Übersichtsseite öffnen",
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Prüfe die Einstellungen und versuche es erneut.",
+      "needsChannel": "Wähle zuerst einen Kanal.",
+      "botUnavailable": "Der Bot ist gerade nicht erreichbar.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder der Bot sieht ihn nicht.",
+      "channelNotUsable": "Der Bot kann in diesen Kanal nicht posten. Prüfe seine Rechte dort.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
     }
   }
 }

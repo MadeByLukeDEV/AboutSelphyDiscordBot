@@ -1644,3 +1644,16 @@ model GameXpDay {
 
   @@id([userId, day])
 }
+
+/// The member overview post in Discord ("what can the bot do", like the public /features page). Singleton (id 1).
+model MemberOverview {
+  id         Int       @id @default(1)
+  channelId  String?   @db.VarChar(20)
+  /// en | de: the language the text is posted in.
+  language   String    @default("en") @db.VarChar(2)
+  color      String    @default("#00FFA8") @db.VarChar(7)
+  /// The posted messages in order, so an update edits them instead of posting again.
+  messageIds String[]
+  postedAt   DateTime?
+  updatedAt  DateTime  @updatedAt
+}

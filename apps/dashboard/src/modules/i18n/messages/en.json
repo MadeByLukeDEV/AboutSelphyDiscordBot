@@ -53,7 +53,8 @@
         "raid": "Raid protection",
         "audit": "Audit trail",
         "invites": "Invites",
-        "games": "Minigames"
+        "games": "Minigames",
+        "memberOverview": "Member overview"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -3674,6 +3675,44 @@
         "title": "Welcome and roles",
         "body": "New members are greeted and can pick their roles from role panels with buttons, menus or reactions. Some servers ask you to verify first."
       }
+    }
+  },
+  "MemberOverview": {
+    "title": "Member overview",
+    "intro": "Posts 'What can the bot do?' for your members into a Discord channel, as a few embedded messages in the same style as the public overview page. Press Update after the bot gains a feature to refresh it in place.",
+    "noChannel": "No channel yet",
+    "languages": {
+      "en": "English",
+      "de": "German"
+    },
+    "form": {
+      "title": "Where and how",
+      "intro": "The text comes from the public overview page, so it always matches what the bot can really do.",
+      "channel": "Channel",
+      "channelHelp": "Where the overview is posted. The bot needs to send messages and embed links there.",
+      "botOffline": "The bot is offline, so the channel list isn't available.",
+      "language": "Language",
+      "languageHelp": "The language the overview is written in.",
+      "color": "Colour",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Saved."
+    },
+    "post": "Post to Discord",
+    "update": "Update in Discord",
+    "posted": "{count, plural, one {Posted: 1 message.} other {Posted: # messages.}}",
+    "saveFirst": "Save your changes first.",
+    "lastPosted": "Last posted {when}.",
+    "neverPosted": "Not posted yet.",
+    "preview": "Open the public overview page",
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Check the settings and try again.",
+      "needsChannel": "Pick a channel first.",
+      "botUnavailable": "The bot can't be reached right now.",
+      "channelNotFound": "That channel doesn't exist or the bot can't see it.",
+      "channelNotUsable": "The bot can't post in that channel. Check its permissions there.",
+      "failed": "That didn't work. Try again."
     }
   }
 }
