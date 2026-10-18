@@ -56,6 +56,7 @@ export async function setLeaderboardHidden(userId: string, hidden: boolean): Pro
 /** Everything the bot holds about one member, shaped for a JSON file they can read. Moderators' names are left out. */
 export async function exportMember(userId: string) {
   const afkRow = await prisma.afkStatus.findUnique({ where: { userId } });
+  const gameRecords = await prisma.gameStat.findMany({ where: { userId }, select: { game: true, played: true, wins: true, draws: true } });
   const [birthday, reminders, xp, snapshot, suggestions, suggestionVotes, pollVotes, giveawayEntries, tickets, starboard, vip, cases, room, joins, invited] = await Promise.all([
     prisma.birthday.findUnique({ where: { userId } }),
     prisma.reminder.findMany({ where: { userId, deliveredAt: null }, take: 100 }),
@@ -80,6 +81,7 @@ export async function exportMember(userId: string) {
     birthday: birthday ? { month: birthday.month, day: birthday.day, year: birthday.year } : null,
     afk: afkRow ? { reason: afkRow.reason, since: afkRow.since.toISOString() } : null,
     pendingReminders: reminders.map((r) => ({ remindAt: r.remindAt.toISOString(), message: clip(r.message) })),
+    minigames: gameRecords,
     levels: xp ? { xp: xp.xp, messages: xp.messages, voiceMinutes: xp.voiceMinutes, hiddenFromPublicPage: xp.hidden } : null,
     rememberedRoles: snapshot ? { roleIds: snapshot.roleIds, savedAt: snapshot.savedAt.toISOString() } : null,
     suggestions: suggestions.map((s) => ({ number: s.number, text: clip(s.content, 1500), status: s.status, createdAt: s.createdAt.toISOString() })),
@@ -117,6 +119,9 @@ export async function deleteMember(userId: string): Promise<DeleteCounts> {
     prisma.afkStatus.deleteMany({ where: { userId } }),
   ]);
   await prisma.memberInvite.updateMany({ where: { inviterId: userId }, data: { inviterId: null, inviterName: null } });
+  // Minigame records and the day's game XP total (not counted in the summary: small).
+  await prisma.gameStat.deleteMany({ where: { userId } });
+  await prisma.gameXpDay.deleteMany({ where: { userId } });
   return { invites: inv.count, voiceRoom: voice.count, birthday: birthday.count, reminders: reminders.count, levels: levels.count, rememberedRoles: snapshot.count, votes: sv.count + pv.count, entries: entries.count, suggestionsAnonymised: suggestions.count, starboardAnonymised: starboard.count };
 }
 

@@ -1598,3 +1598,48 @@ model PatchNote {
 
   @@unique([sourceId, url])
 }
+
+// ---- minigames -------------------------------------------------------------------------------
+
+/// Settings of the minigames (singleton, id 1).
+model GameConfig {
+  id              Int      @id @default(1)
+  /// XP a win gives in the leveling system (0 = none). Needs leveling to be on.
+  winXp           Int      @default(20)
+  /// Most game XP one member can earn per day (UTC).
+  dailyXpCap      Int      @default(200)
+  /// Seconds a member must wait between starting two games.
+  cooldownSeconds Int      @default(10)
+  /// Games only start in these channels or categories; empty = anywhere.
+  allowedChannelIds String[] @default([])
+  triviaOn        Boolean  @default(true)
+  rpsOn           Boolean  @default(true)
+  tictactoeOn     Boolean  @default(true)
+  connect4On      Boolean  @default(true)
+  funOn           Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+}
+
+/// A member's record in one game (for /game stats and /game top).
+model GameStat {
+  id        String   @id @default(cuid())
+  userId    String   @db.VarChar(20)
+  game      String   @db.VarChar(12)
+  name      String   @default("") @db.VarChar(100)
+  played    Int      @default(0)
+  wins      Int      @default(0)
+  draws     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, game])
+  @@index([game, wins])
+}
+
+/// Game XP a member already earned on one day (UTC "YYYY-MM-DD"), for the daily cap.
+model GameXpDay {
+  userId String @db.VarChar(20)
+  day    String @db.VarChar(10)
+  xp     Int    @default(0)
+
+  @@id([userId, day])
+}

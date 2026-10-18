@@ -52,7 +52,8 @@
         "screening": "Prüfliste",
         "raid": "Raid-Schutz",
         "audit": "Änderungsprotokoll",
-        "invites": "Einladungen"
+        "invites": "Einladungen",
+        "games": "Minispiele"
       },
       "more": "Mehr",
       "moreTitle": "Alle Seiten",
@@ -2440,6 +2441,10 @@
       "invites": {
         "name": "Einladungs-Tracking",
         "description": "Wer wen eingeladen hat, im Beitritts-Log, mit /invites und im Dashboard."
+      },
+      "games": {
+        "name": "Minispiele",
+        "description": "/game: Quiz, Duelle, Münze, Würfel und 8-Ball."
       }
     },
     "errors": {
@@ -3481,5 +3486,75 @@
     "level": "Level {level}",
     "xp": "{xp} XP",
     "note": "Mitglieder können sich in Discord mit /mydata hide von dieser Seite ausblenden."
+  },
+  "Games": {
+    "title": "Minispiele",
+    "intro": "Quiz, Schere-Stein-Papier, Tic-Tac-Toe und Vier gewinnt, gespielt mit /game. Gewinner bekommen Level-XP, mit Tageslimit, damit niemand farmt.",
+    "tabs": {
+      "settings": "Einstellungen",
+      "top": "Beste Spieler"
+    },
+    "form": {
+      "save": "Speichern",
+      "saving": "Speichert...",
+      "saved": "Gespeichert.",
+      "savedBotLater": "Gespeichert. Der Bot war nicht erreichbar und übernimmt es innerhalb einer Minute.",
+      "unsaved": "Du hast ungespeicherte Änderungen",
+      "discard": "Verwerfen"
+    },
+    "games": {
+      "title": "Welche Spiele",
+      "intro": "Einzelne Spiele ein- oder ausschalten. Die ganze Funktion lässt sich auch auf der Module-Seite abschalten.",
+      "triviaOn": "Quiz",
+      "triviaOnHelp": "Eine Frage mit vier Antworten; alle im Kanal können 20 Sekunden lang antworten.",
+      "rpsOn": "Schere, Stein, Papier",
+      "rpsOnHelp": "Gegen ein Mitglied (beide wählen geheim) oder gegen den Bot.",
+      "tictactoeOn": "Tic-Tac-Toe",
+      "tictactoeOnHelp": "Zwei Mitglieder, gespielt mit Knöpfen.",
+      "connect4On": "Vier gewinnt",
+      "connect4OnHelp": "Zwei Mitglieder, gespielt mit Knöpfen.",
+      "funOn": "Münze, Würfel und 8-Ball",
+      "funOnHelp": "Schnelle Spaßbefehle ohne Aufzeichnung."
+    },
+    "xp": {
+      "title": "XP und Limits",
+      "intro": "Siege geben Level-XP über die Level-Funktion (nichts passiert, solange Level aus ist). Spiele gegen den Bot geben nie XP.",
+      "winXp": "XP pro Sieg",
+      "winXpHelp": "0 = keine XP. Jede richtige Quiz-Antwort und jeder Duell-Sieg gibt so viel.",
+      "dailyXpCap": "Tageslimit an XP pro Mitglied",
+      "dailyXpCapHelp": "Die meisten Spiel-XP, die ein Mitglied pro Tag (UTC) verdienen kann. Verhindert Farmen mit einem Zweitkonto.",
+      "cooldownSeconds": "Sekunden zwischen Spielen",
+      "cooldownSecondsHelp": "Wie lange ein Mitglied warten muss, bevor es ein weiteres Spiel startet. Das Team ist ausgenommen."
+    },
+    "channels": {
+      "title": "Wo Spiele starten dürfen",
+      "intro": "Leer lassen, um Spiele überall zu erlauben. Wähle Kanäle oder ganze Kategorien, um Spiele aus dem Rest herauszuhalten. Das Team darf immer Spiele starten.",
+      "label": "Kanäle und Kategorien",
+      "selected": "Gewählte Kanäle",
+      "none": "Überall",
+      "search": "Kanäle suchen",
+      "noMatch": "Nichts gefunden.",
+      "full": "Mehr kannst du nicht hinzufügen ({max}).",
+      "offline": "Der Bot ist offline, die Liste ist nicht verfügbar.",
+      "remove": "{name} entfernen"
+    },
+    "top": {
+      "games": {
+        "trivia": "Quiz",
+        "rps": "Schere, Stein, Papier",
+        "tictactoe": "Tic-Tac-Toe",
+        "connect4": "Vier gewinnt"
+      },
+      "emptyTitle": "Noch keine Sieger",
+      "emptyBody": "Die besten Spieler erscheinen hier, sobald gespielt wurde.",
+      "record": "{wins} Siege · {played} gespielt"
+    },
+    "errors": {
+      "forbidden": "Du hast darauf keinen Zugriff.",
+      "invalid": "Prüfe die Zahlen und versuche es erneut.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, die Kanäle konnten nicht geprüft werden.",
+      "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot sieht ihn nicht.",
+      "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
+    }
   }
 }

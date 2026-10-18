@@ -27,6 +27,7 @@ import { registerScreeningControls, startScreening, stopScreening } from "./modu
 import { registerVerificationControls, startVerification, stopVerification } from "./modules/verification";
 import { startRaidProtection, stopRaidProtection } from "./modules/raid";
 import { registerStarboard } from "./modules/starboard";
+import { registerGameControls, startGames, stopGames } from "./modules/games";
 import { startStatChannels, stopStatChannels } from "./modules/statchannels";
 import { registerSuggestionControls } from "./modules/suggestions";
 import { registerTicketControls, registerTicketEvents } from "./modules/tickets";
@@ -70,6 +71,8 @@ async function main() {
   startGiveaways(client);
   registerTicketControls();
   registerSuggestionControls();
+  registerGameControls();
+  startGames();
   registerPollControls();
   registerStarboard(client);
   startBirthdays(client);
@@ -119,6 +122,7 @@ async function main() {
     stopTwitchVip();
     stopRetention();
     stopScreening();
+    stopGames();
     stopVerification();
     stopEventCalendar();
     stopRaidProtection();

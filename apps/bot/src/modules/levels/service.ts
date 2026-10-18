@@ -60,6 +60,19 @@ async function handleLevelUp(member: GuildMember, level: number, here: Message["
   emitEvent("level.up", { userId: member.id, name: member.user.username, level, source: here ? "message" : "voice" });
 }
 
+/**
+ * XP from outside the chat and voice rounds (the minigames): added like any other XP, with the same level-up handling (reward roles,
+ * announcement). Nothing happens while leveling or its module switch is off. Returns the XP actually added.
+ */
+export async function awardXp(member: GuildMember, amount: number): Promise<number> {
+  if (amount <= 0 || member.user.bot || !(await moduleOn("levels"))) return 0;
+  const { config } = await getLevelConfig();
+  if (!config.enabled) return 0;
+  const { before, after } = await addXp(member.id, amount, member.displayName);
+  if (levelFromXp(after) > levelFromXp(before)) await handleLevelUp(member, levelFromXp(after), null);
+  return amount;
+}
+
 async function onMessage(message: Message): Promise<void> {
   if (!message.inGuild() || message.guildId !== env().DISCORD_GUILD_ID || message.author.bot || message.webhookId || message.system || !message.member) return;
   if (!(await moduleOn("levels"))) return;

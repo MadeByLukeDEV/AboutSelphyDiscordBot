@@ -7,6 +7,7 @@ import { customCommandCommands } from "../modules/customcommands";
 import { pollCommands } from "../modules/polls";
 import { reminderCommands } from "../modules/reminders";
 import { suggestionCommands } from "../modules/suggestions";
+import { gameCommands } from "../modules/games";
 import { ticketCommands } from "../modules/tickets";
 import { twitchCommands } from "../modules/twitch";
 import { twitchVipCommands } from "../modules/twitchvip";
@@ -20,6 +21,6 @@ import { ping } from "./ping";
 import { utilityCommands } from "../modules/utility";
 
 /** Each module contributes its own command list; add new modules here. */
-export const COMMANDS: Command[] = [ping, help, ...utilityCommands, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...twitchVipCommands, ...privacyCommands, ...raidCommands, ...inviteCommands, ...giveawayCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands, ...pollCommands, ...birthdayCommands, ...starboardCommands, ...reminderCommands, ...customCommandCommands];
+export const COMMANDS: Command[] = [ping, help, ...utilityCommands, ...moderationCommands, ...tempVoiceCommands, ...voiceCommands, ...twitchCommands, ...twitchVipCommands, ...privacyCommands, ...raidCommands, ...inviteCommands, ...giveawayCommands, ...levelCommands, ...ticketCommands, ...suggestionCommands, ...gameCommands, ...pollCommands, ...birthdayCommands, ...starboardCommands, ...reminderCommands, ...customCommandCommands];
 
 export const COMMANDS_BY_NAME = new Map(COMMANDS.map((c) => [c.data.name, c]));

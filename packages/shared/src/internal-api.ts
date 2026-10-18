@@ -29,6 +29,7 @@ export const RELOADABLE_MODULES = [
   "autopublish",
   "customcommands",
   "counting",
+  "games",
   "modules",
   "feeds",
   "eventcal",

@@ -52,7 +52,8 @@
         "screening": "Screening queue",
         "raid": "Raid protection",
         "audit": "Audit trail",
-        "invites": "Invites"
+        "invites": "Invites",
+        "games": "Minigames"
       },
       "more": "More",
       "moreTitle": "All pages",
@@ -2440,6 +2441,10 @@
       "invites": {
         "name": "Invite tracking",
         "description": "Who invited whom, in the join log, /invites and the dashboard."
+      },
+      "games": {
+        "name": "Minigames",
+        "description": "/game: trivia, duels, coin, dice and 8-ball."
       }
     },
     "errors": {
@@ -3481,5 +3486,75 @@
     "level": "Level {level}",
     "xp": "{xp} XP",
     "note": "Members can hide themselves from this page with /mydata hide in Discord."
+  },
+  "Games": {
+    "title": "Minigames",
+    "intro": "Trivia, rock paper scissors, tic-tac-toe and connect four, played with /game. Winners earn level XP, with a daily limit so nobody farms it.",
+    "tabs": {
+      "settings": "Settings",
+      "top": "Top players"
+    },
+    "form": {
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Saved.",
+      "savedBotLater": "Saved. The bot wasn't reachable, so it picks this up within a minute.",
+      "unsaved": "You have unsaved changes",
+      "discard": "Discard"
+    },
+    "games": {
+      "title": "Which games",
+      "intro": "Switch single games on or off. The whole feature can also be switched off on the Modules page.",
+      "triviaOn": "Trivia",
+      "triviaOnHelp": "A question with four answers; everyone in the channel can answer for 20 seconds.",
+      "rpsOn": "Rock paper scissors",
+      "rpsOnHelp": "Against a member (both choose in secret) or against the bot.",
+      "tictactoeOn": "Tic-tac-toe",
+      "tictactoeOnHelp": "Two members, played with buttons.",
+      "connect4On": "Connect four",
+      "connect4OnHelp": "Two members, played with buttons.",
+      "funOn": "Coin, dice and 8-ball",
+      "funOnHelp": "Instant fun commands that keep no record."
+    },
+    "xp": {
+      "title": "XP and limits",
+      "intro": "Winning gives level XP through the leveling feature (nothing happens while leveling is off). Games against the bot never give XP.",
+      "winXp": "XP per win",
+      "winXpHelp": "0 = no XP. Every correct trivia answer and every duel win gives this much.",
+      "dailyXpCap": "Daily XP limit per member",
+      "dailyXpCapHelp": "The most game XP one member can earn per day (UTC). Stops farming with a second account.",
+      "cooldownSeconds": "Seconds between games",
+      "cooldownSecondsHelp": "How long a member waits before starting another game. Staff are exempt."
+    },
+    "channels": {
+      "title": "Where games can start",
+      "intro": "Leave empty to allow games everywhere. Pick channels or whole categories to keep games out of the rest. Staff can always start games.",
+      "label": "Channels and categories",
+      "selected": "Selected channels",
+      "none": "Anywhere",
+      "search": "Search channels",
+      "noMatch": "Nothing found.",
+      "full": "That's the most you can add ({max}).",
+      "offline": "The bot is offline, so the list isn't available.",
+      "remove": "Remove {name}"
+    },
+    "top": {
+      "games": {
+        "trivia": "Trivia",
+        "rps": "Rock paper scissors",
+        "tictactoe": "Tic-tac-toe",
+        "connect4": "Connect four"
+      },
+      "emptyTitle": "No winners yet",
+      "emptyBody": "The best players show up here once games have been played.",
+      "record": "{wins} wins · {played} played"
+    },
+    "errors": {
+      "forbidden": "You don't have access to this.",
+      "invalid": "Check the numbers and try again.",
+      "botUnavailable": "The bot can't be reached, so the channels couldn't be checked.",
+      "channelNotFound": "One of those channels doesn't exist or the bot can't see it.",
+      "failed": "Couldn't save the settings. Try again."
+    }
   }
 }
