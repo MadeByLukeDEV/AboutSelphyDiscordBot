@@ -3561,5 +3561,119 @@
       "channelNotFound": "One of those channels doesn't exist or the bot can't see it.",
       "failed": "Couldn't save the settings. Try again."
     }
+  },
+  "Features": {
+    "title": "What can the bot do?",
+    "intro": "Everything the bot offers to members of the server. In Discord, type a slash to see the commands, or use /help.",
+    "footer": "Moderators have more tools that aren't shown here.",
+    "privacy": "How your data is handled",
+    "groups": {
+      "chat": {
+        "title": "Chat, level up and play",
+        "intro": "Things that happen while you hang out."
+      },
+      "join": {
+        "title": "Join in",
+        "intro": "Take part in what the community is doing."
+      },
+      "voice": {
+        "title": "Voice",
+        "intro": "Your own voice room, whenever you want one."
+      },
+      "help": {
+        "title": "Get help",
+        "intro": "Questions, problems and answers."
+      },
+      "personal": {
+        "title": "Just for you",
+        "intro": "Small helpers and control over your own data."
+      },
+      "info": {
+        "title": "Find out more",
+        "intro": "Look things up about the server and its members."
+      },
+      "streams": {
+        "title": "Streams and getting started",
+        "intro": "Stay in the loop and feel at home."
+      }
+    },
+    "items": {
+      "levels": {
+        "title": "Levels and ranks",
+        "body": "You earn XP by chatting and by spending time in voice channels. Level up to unlock reward roles, check your rank card, and see who leads the leaderboard."
+      },
+      "games": {
+        "title": "Minigames",
+        "body": "Trivia everyone can answer, rock paper scissors, tic-tac-toe and connect four against another member, hangman, word scramble and guess the number in a channel, plus coin, dice and 8-ball. Wins earn XP and a place on the top lists."
+      },
+      "starboard": {
+        "title": "Starboard",
+        "body": "Messages that collect enough star reactions are shown in the showcase channel. Find random favourites and the most starred authors."
+      },
+      "counting": {
+        "title": "Counting channel",
+        "body": "Count up together, one number at a time. Take turns: you can't count twice in a row. A mistake can reset the streak."
+      },
+      "giveaways": {
+        "title": "Giveaways",
+        "body": "Press the button on a giveaway post to enter, and press again to withdraw. Winners are drawn fairly when it ends. Some giveaways ask for a role, a level or a linked Twitch account."
+      },
+      "polls": {
+        "title": "Polls",
+        "body": "Vote with the buttons under a poll. Votes are anonymous and you can usually change your mind until it ends."
+      },
+      "suggestions": {
+        "title": "Suggestions",
+        "body": "Share an idea and let everyone vote on it with the up and down buttons. The team approves, denies or marks ideas as done, and you get a message about yours. See the best-liked ideas any time."
+      },
+      "voice": {
+        "title": "Your own voice room",
+        "body": "Join the 'create a room' channel and you get a room of your own. Rename it, set a member limit, lock it, let friends in or kick people out, with a panel in the room's chat or with commands."
+      },
+      "tickets": {
+        "title": "Tickets",
+        "body": "Need to talk to the team privately? Press the button on the ticket panel. A private channel opens just for you and the team, and you can close it when it's solved."
+      },
+      "tags": {
+        "title": "Saved answers",
+        "body": "Quick answers to common questions, like the rules or an FAQ. List them and show one in the chat."
+      },
+      "help": {
+        "title": "Help",
+        "body": "Shows the commands you can use right now."
+      },
+      "birthday": {
+        "title": "Birthdays",
+        "body": "Add your birthday (day and month, the year is optional) and the server will greet you on the day. See whose birthday is coming up."
+      },
+      "remind": {
+        "title": "Reminders",
+        "body": "Ask the bot to remind you of something in a few minutes, hours or days, once or repeating. It sends a private message, with snooze buttons."
+      },
+      "afk": {
+        "title": "Away status",
+        "body": "Mark yourself as away. If someone mentions you, the bot tells them you are away and why. It ends when you write again."
+      },
+      "mydata": {
+        "title": "Your data",
+        "body": "See everything the bot stores about you as a file, delete it, or hide yourself from the public leaderboard page. Moderation records are kept to protect the community."
+      },
+      "lookup": {
+        "title": "Look things up",
+        "body": "Information about a member, a role or the server, and a big view of anyone's profile picture."
+      },
+      "invites": {
+        "title": "Your invites",
+        "body": "See how many members joined through your invite links, and how many of them are still here."
+      },
+      "twitch": {
+        "title": "Twitch",
+        "body": "Link your Twitch account to get the VIP role if you are a VIP on the streamer's channel. Go-live announcements and clips are posted in the server."
+      },
+      "welcome": {
+        "title": "Welcome and roles",
+        "body": "New members are greeted and can pick their roles from role panels with buttons, menus or reactions. Some servers ask you to verify first."
+      }
+    }
   }
 }

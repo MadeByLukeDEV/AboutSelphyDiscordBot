@@ -3561,5 +3561,119 @@
       "channelNotFound": "Einer dieser Kanäle existiert nicht oder der Bot sieht ihn nicht.",
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
+  },
+  "Features": {
+    "title": "Was kann der Bot?",
+    "intro": "Alles, was der Bot den Mitgliedern des Servers bietet. Tippe in Discord einen Schrägstrich, um die Befehle zu sehen, oder nutze /help.",
+    "footer": "Moderatoren haben weitere Werkzeuge, die hier nicht gezeigt werden.",
+    "privacy": "Wie mit deinen Daten umgegangen wird",
+    "groups": {
+      "chat": {
+        "title": "Chatten, Level aufsteigen und spielen",
+        "intro": "Was passiert, während du dabei bist."
+      },
+      "join": {
+        "title": "Mitmachen",
+        "intro": "Nimm an dem teil, was die Community tut."
+      },
+      "voice": {
+        "title": "Sprachkanäle",
+        "intro": "Dein eigener Sprachraum, wann immer du einen willst."
+      },
+      "help": {
+        "title": "Hilfe",
+        "intro": "Fragen, Probleme und Antworten."
+      },
+      "personal": {
+        "title": "Nur für dich",
+        "intro": "Kleine Helfer und Kontrolle über deine eigenen Daten."
+      },
+      "info": {
+        "title": "Mehr erfahren",
+        "intro": "Schlage Dinge über den Server und seine Mitglieder nach."
+      },
+      "streams": {
+        "title": "Streams und Ankommen",
+        "intro": "Bleib auf dem Laufenden und fühl dich wohl."
+      }
+    },
+    "items": {
+      "levels": {
+        "title": "Level und Ränge",
+        "body": "Du sammelst XP durchs Chatten und durch Zeit in Sprachkanälen. Steige auf, um Belohnungsrollen zu bekommen, sieh dir deine Rangkarte an und schau, wer die Rangliste anführt."
+      },
+      "games": {
+        "title": "Minispiele",
+        "body": "Quiz, das alle beantworten können, Schere-Stein-Papier, Tic-Tac-Toe und Vier gewinnt gegen ein anderes Mitglied, Galgenmännchen, Wörter entwirren und Zahlenraten im Kanal, dazu Münze, Würfel und 8-Ball. Siege bringen XP und einen Platz in den Bestenlisten."
+      },
+      "starboard": {
+        "title": "Starboard",
+        "body": "Nachrichten mit genug Stern-Reaktionen werden im Schaufenster-Kanal gezeigt. Finde zufällige Favoriten und die meistgesternten Autoren."
+      },
+      "counting": {
+        "title": "Zählkanal",
+        "body": "Zählt gemeinsam hoch, eine Zahl nach der anderen. Wechselt euch ab: Du darfst nicht zweimal hintereinander zählen. Ein Fehler kann die Serie zurücksetzen."
+      },
+      "giveaways": {
+        "title": "Gewinnspiele",
+        "body": "Drücke den Knopf unter einem Gewinnspiel, um teilzunehmen, und nochmal, um zurückzutreten. Die Gewinner werden am Ende fair gezogen. Manche Gewinnspiele verlangen eine Rolle, ein Level oder einen verknüpften Twitch-Account."
+      },
+      "polls": {
+        "title": "Umfragen",
+        "body": "Stimme mit den Knöpfen unter einer Umfrage ab. Stimmen sind anonym und du kannst es dir meist bis zum Ende anders überlegen."
+      },
+      "suggestions": {
+        "title": "Vorschläge",
+        "body": "Teile eine Idee und lass alle mit den Hoch- und Runter-Knöpfen abstimmen. Das Team genehmigt, lehnt ab oder markiert Ideen als erledigt, und du bekommst eine Nachricht zu deiner. Sieh dir jederzeit die beliebtesten Ideen an."
+      },
+      "voice": {
+        "title": "Dein eigener Sprachraum",
+        "body": "Betritt den Kanal 'Raum erstellen' und du bekommst einen eigenen Raum. Benenne ihn um, setze ein Mitgliederlimit, sperre ihn, lass Freunde rein oder wirf Leute raus, mit einem Panel im Chat des Raums oder mit Befehlen."
+      },
+      "tickets": {
+        "title": "Tickets",
+        "body": "Du willst privat mit dem Team sprechen? Drücke den Knopf im Ticket-Panel. Ein privater Kanal öffnet sich nur für dich und das Team, und du kannst ihn schließen, wenn es gelöst ist."
+      },
+      "tags": {
+        "title": "Gespeicherte Antworten",
+        "body": "Schnelle Antworten auf häufige Fragen, etwa die Regeln oder ein FAQ. Liste sie auf und zeige eine im Chat."
+      },
+      "help": {
+        "title": "Hilfe",
+        "body": "Zeigt die Befehle, die du gerade nutzen kannst."
+      },
+      "birthday": {
+        "title": "Geburtstage",
+        "body": "Trage deinen Geburtstag ein (Tag und Monat, das Jahr ist freiwillig) und der Server gratuliert dir am Tag. Sieh, wessen Geburtstag bald ist."
+      },
+      "remind": {
+        "title": "Erinnerungen",
+        "body": "Lass dich vom Bot in ein paar Minuten, Stunden oder Tagen erinnern, einmal oder wiederholt. Er schickt eine private Nachricht, mit Schlummer-Knöpfen."
+      },
+      "afk": {
+        "title": "Abwesenheit",
+        "body": "Markiere dich als abwesend. Wenn dich jemand erwähnt, sagt der Bot, dass du weg bist und warum. Es endet, sobald du wieder schreibst."
+      },
+      "mydata": {
+        "title": "Deine Daten",
+        "body": "Sieh alles, was der Bot über dich speichert, als Datei, lösche es oder blende dich von der öffentlichen Ranglistenseite aus. Moderationseinträge bleiben zum Schutz der Community."
+      },
+      "lookup": {
+        "title": "Nachschlagen",
+        "body": "Informationen zu einem Mitglied, einer Rolle oder dem Server und eine große Ansicht des Profilbilds von jedem."
+      },
+      "invites": {
+        "title": "Deine Einladungen",
+        "body": "Sieh, wie viele Mitglieder über deine Einladungslinks beigetreten sind und wie viele davon noch da sind."
+      },
+      "twitch": {
+        "title": "Twitch",
+        "body": "Verknüpfe deinen Twitch-Account, um die VIP-Rolle zu bekommen, wenn du VIP im Kanal des Streamers bist. Live-Ankündigungen und Clips werden im Server gepostet."
+      },
+      "welcome": {
+        "title": "Willkommen und Rollen",
+        "body": "Neue Mitglieder werden begrüßt und können sich ihre Rollen aus Rollen-Panels mit Knöpfen, Menüs oder Reaktionen wählen. Manche Server verlangen zuerst eine Bestätigung."
+      }
+    }
   }
 }

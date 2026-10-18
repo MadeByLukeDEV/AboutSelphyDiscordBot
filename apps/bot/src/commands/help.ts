@@ -1,4 +1,5 @@
 import { EmbedBuilder, InteractionContextType, MessageFlags, SlashCommandBuilder } from "discord.js";
+import { env } from "../lib/env";
 import { staffLevel } from "../lib/permissions";
 import { chunkLines, helpLines, toEntry, visibleTo } from "../modules/utility/rules";
 import type { Command } from "./types";
@@ -20,6 +21,9 @@ export const help: Command = {
     const embed = new EmbedBuilder().setColor(0x00ffa8).setTitle("What I can do").setDescription("Type a slash to see every command with its options.");
     chunkLines(helpLines(members)).forEach((chunk, n) => embed.addFields({ name: n === 0 ? "For everyone" : "For everyone (continued)", value: chunk }));
     chunkLines(helpLines(staff)).forEach((chunk, n) => embed.addFields({ name: n === 0 ? "For the team" : "For the team (continued)", value: chunk }));
+    // The public overview page, when the bot knows the dashboard's address.
+    const base = env().DASHBOARD_URL;
+    if (base) embed.addFields({ name: "More", value: `A full overview with explanations: ${new URL("/features", base).toString()}` });
     await i.reply({ embeds: [embed], flags: MessageFlags.Ephemeral, allowedMentions: { parse: [] } });
   },
 };
