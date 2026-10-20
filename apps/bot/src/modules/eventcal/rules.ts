@@ -26,7 +26,9 @@ const DAY = 86_400_000;
 export function isPostable(event: Pick<CalEvent, "start" | "allDay">, now: Date, daysAhead: number): boolean {
   // A date-only event starts at midnight UTC; it stays postable for that whole day.
   const from = event.allDay ? Math.floor(now.getTime() / DAY) * DAY : now.getTime() + 1;
-  return event.start.getTime() >= from && event.start.getTime() <= now.getTime() + (daysAhead + 1) * DAY - 1;
+  // "N days before" counts calendar days (UTC): 0 opens at midnight of the event's day, not 24 hours before the start.
+  const opens = Math.floor(event.start.getTime() / DAY) * DAY - daysAhead * DAY;
+  return event.start.getTime() >= from && now.getTime() >= opens;
 }
 
 /** Lead times in days: whole numbers 0-60, no duplicates, largest first. Falls back to one week when there are none. */

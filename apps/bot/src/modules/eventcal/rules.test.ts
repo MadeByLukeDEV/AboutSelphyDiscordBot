@@ -54,6 +54,12 @@ describe("isPostable", () => {
     expect(isPostable(ev({ start: new Date("2026-09-15T20:00:00Z") }), now, 0)).toBe(true);
     expect(isPostable(ev({ start: new Date("2026-09-17T20:00:00Z") }), now, 0)).toBe(false);
   });
+  it("0 days ahead waits for the event's own day, not 24 hours before", () => {
+    const start = ev({ start: new Date("2026-10-21T12:00:00Z") });
+    expect(isPostable(start, new Date("2026-10-20T17:00:00Z"), 0)).toBe(false);
+    expect(isPostable(start, new Date("2026-10-21T00:00:00Z"), 0)).toBe(true);
+    expect(isPostable(start, new Date("2026-10-20T00:00:00Z"), 1)).toBe(true);
+  });
 });
 
 describe("hash and messages", () => {
