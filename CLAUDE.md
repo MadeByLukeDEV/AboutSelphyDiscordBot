@@ -672,6 +672,7 @@ Decided 2026-10-08:
     (`KeyedMutex`). **Dry run** only logs and posts a note to the mod log. Needs Manage Messages in the channel,
     Moderate Members and Kick Members. Only runs in production or with `BOT_INTEGRATIONS_IN_DEV` (it kicks people).
     Config singleton `AntiBotConfig` (CHECKs: timeout range, a channel when on) + a catch counter; reload key `antibot`.
+  - **Catch summary** (2026-10-27, `fix_antibot-log`): every caught member also gets one summary embed in the mod log (who, the message, account age, and for the timeout and the kick either the case number or why it failed), so a kicked member stays visible and a refused action is no longer only in the bot's log. Found while checking: `AntiBotConfig.hits` was 0 and no `automod` case existed, i.e. the trap had not acted yet.
   - Dashboard `/anti-bot` (admins, Moderation group): channel, timeout, dry run, on/off, a red warning when it is live.
 - [x] Phase 3 — went live (2026-10-12, `feature_twitch-went-live`; migrations
       `20261012120000_twitch` and `20261012180000_twitch_message_options` applied;

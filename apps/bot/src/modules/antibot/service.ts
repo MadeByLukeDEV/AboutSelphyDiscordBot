@@ -1,6 +1,7 @@
 import { EmbedBuilder, Events, PermissionFlagsBits, type Client, type Message } from "discord.js";
 import { env, integrationsActive } from "../../lib/env";
 import { KeyedMutex } from "../../lib/keyed-mutex";
+import { escapeText, truncate } from "../../lib/escape";
 import { log } from "../../lib/log";
 import { staffLevel } from "../../lib/permissions";
 import { performAction, postModNote } from "../moderation";
@@ -59,6 +60,27 @@ async function handle(message: Message): Promise<void> {
     const kick = await performAction({ ...base, type: "kick" });
     log.info({ author: present.id, ok: kick.ok, message: kick.ok ? kick.caseNumber : kick.message }, "antibot: kick");
     if (timeout.ok || kick.ok) void recordHit().catch((err) => log.warn({ err }, "antibot: could not count the hit"));
+
+    // One summary in the mod log, also when an action was refused: after a kick the member can't be looked at any more,
+    // so this is where staff see who it was, what they wrote and what the bot managed to do.
+    const outcome = (r: typeof timeout) => (r.ok ? `Done, case #${r.caseNumber}` : `Failed: ${escapeText(r.message)}`);
+    const text = message.content ? truncate(escapeText(message.content), 300) : "(no text, or the bot can't read message text)";
+    const created = Math.floor(present.user.createdTimestamp / 1000);
+    const joined = present.joinedTimestamp ? Math.floor(present.joinedTimestamp / 1000) : null;
+    await postModNote(
+      guild,
+      new EmbedBuilder()
+        .setColor(timeout.ok && kick.ok ? 0xef4444 : 0xf59e0b)
+        .setTitle("Anti-bot channel: member caught")
+        .setDescription(`<@${present.id}> (${present.id}) wrote in <#${message.channelId}>.`)
+        .addFields(
+          { name: "Message", value: text },
+          { name: "Timeout", value: outcome(timeout), inline: true },
+          { name: "Kick", value: outcome(kick), inline: true },
+          { name: "Account", value: `created <t:${created}:R>${joined ? `, joined <t:${joined}:R>` : ""}` },
+        )
+        .setTimestamp(new Date()),
+    );
   });
 }
 
