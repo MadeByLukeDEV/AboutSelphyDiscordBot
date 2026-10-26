@@ -34,6 +34,7 @@ export type ClientLog = (level: "info" | "warn" | "error", message: string, data
 
 const BACKOFF_START_MS = 1_000;
 const BACKOFF_MAX_MS = 60_000;
+const RATE_LIMIT_BACKOFF_MS = 30_000;
 /** Slack on top of Twitch's keepalive timeout, for scheduling jitter. */
 const KEEPALIVE_SLACK_MS = 5_000;
 const SESSION_SETUP_BUDGET_MS = 9_000;
@@ -176,6 +177,9 @@ export class EventSubClient {
       this.log("info", "session ready", {});
     } catch (err) {
       this.log("error", "subscribing failed, reconnecting", { err });
+      // A 429 is Twitch's cost or rate limit: the half-made subscriptions of this session (or of a still-closing old
+      // process) must be gone before the next try, so a quick retry only feeds the loop. Wait at least 30 s.
+      if ((err as { code?: string } | null)?.code === "rateLimited") this.backoff = Math.max(this.backoff, RATE_LIMIT_BACKOFF_MS);
       if (socket === this.current) this.dropConnection("subscribe failed");
     }
   }
