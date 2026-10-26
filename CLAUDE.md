@@ -363,6 +363,7 @@ tokens, webhooks, pattern matching, or message output.
 | Unfamiliar code in sibling repos | `claude-mem:smart-explore` |
 | Prisma schema, client, migrations, adapter | `.claude/skills/prisma-cli`, `prisma-client-api`, `prisma-database-setup`, `prisma-driver-adapter-implementation`, `prisma-upgrade-v7` |
 | Any new dashboard page or visual direction | `frontend-design:frontend-design` |
+| Making a page look designed, not generic (dashboards, settings, public pages) | `design-taste-frontend` (project skill in `.agents/skills/`, from Leonxlnx/taste-skill; needs a new session after install to show up) |
 | Layout, UX, palette, component review | `ui-ux-pro-max:ui-ux-pro-max` |
 | shadcn / Tailwind components, dark mode | `ui-ux-pro-max:ui-styling` |
 | Tokens, fluid scale in `globals.css` | `ui-ux-pro-max:design-system` |
