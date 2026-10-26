@@ -10,6 +10,7 @@ import { startBirthdays, stopBirthdays } from "./modules/birthdays";
 import { startReminders, stopReminders } from "./modules/reminders";
 import { startAutoPublish } from "./modules/autopublish";
 import { startFeeds, stopFeeds } from "./modules/feeds";
+import { startProductWatch, stopProductWatch } from "./modules/productwatch";
 import { startAutoResponders } from "./modules/autoresponders";
 import { startAfk } from "./modules/utility";
 import { startEventCalendar, stopEventCalendar } from "./modules/eventcal";
@@ -93,6 +94,7 @@ async function main() {
   startRaidProtection(client);
   startAutoPublish(client);
   startFeeds(client);
+  startProductWatch(client);
   startCounting(client);
   startAutoResponders(client);
   startAfk(client);
@@ -129,6 +131,7 @@ async function main() {
     stopEventCalendar();
     stopRaidProtection();
     stopFeeds();
+    stopProductWatch();
     stopYoutube();
     stopModerationJobs();
     await client.destroy();

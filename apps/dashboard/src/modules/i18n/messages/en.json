@@ -3432,6 +3432,63 @@
       "failed": "Couldn't save the settings. Try again."
     }
   },
+  "ProductWatch": {
+    "title": "Product watch",
+    "intro": "Watch single shop products (Shopify shops) and get a message when the price, the availability, the name or the options change. Every product is looked at every {minutes} minutes. The first look only remembers what the product looks like.",
+    "add": "Watch a product",
+    "checkNow": "Look now",
+    "checking": "Looking now. The result shows in a few seconds.",
+    "checkLater": "The bot can't be reached. It looks again by itself.",
+    "on": "On",
+    "paused": "Paused",
+    "never": "never",
+    "price": "Price {price} (shop currency)",
+    "available": "Available",
+    "soldOut": "Sold out",
+    "notLookedYet": "Not looked at yet.",
+    "meta": "Posts in {channel} · last look {checked} · last change {changed}",
+    "edit": "Edit",
+    "remove": "Remove",
+    "removeConfirm": "Stop watching this product?",
+    "removed": "Removed.",
+    "saved": "Saved.",
+    "savedBotLater": "Saved. The bot picks it up within a minute.",
+    "noRole": "No ping",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "empty": {
+      "title": "No products watched yet",
+      "body": "Add a product page of a shop to get a message when its price or availability changes."
+    },
+    "dialog": {
+      "newTitle": "Watch a product",
+      "editTitle": "Edit watched product",
+      "intro": "Paste the product page address. Tracking parts of the link are removed."
+    },
+    "form": {
+      "name": "Name",
+      "url": "Product page address",
+      "urlHelp": "A link like https://shop.com/products/the-product (a language part such as /en-at is kept). The shop must be a Shopify shop.",
+      "channel": "Channel",
+      "channelPlaceholder": "Pick a channel",
+      "role": "Role to ping",
+      "roleHelp": "Optional. Only this role can be pinged.",
+      "enabled": "Watching is on"
+    },
+    "errors": {
+      "forbidden": "Only admins can change this.",
+      "invalid": "Some of these values aren't valid.",
+      "badUrl": "That isn't a product page address (https, with /products/ in it).",
+      "needsChannel": "Pick a channel.",
+      "botUnavailable": "Can't reach the bot to check the channel. Try again in a moment.",
+      "channelNotFound": "That channel doesn't exist, or isn't a text channel.",
+      "roleNotFound": "That role doesn't exist any more.",
+      "tooMany": "That is the maximum number of watched products.",
+      "notFound": "That product isn't in the list any more.",
+      "failed": "That didn't work. Try again."
+    }
+  },
   "EmoteInsert": {
     "button": "Emote",
     "loading": "Loading the server's emotes…",

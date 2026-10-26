@@ -57,6 +57,7 @@
     "./modules": "./src/modules.ts",
     "./webhooks": "./src/webhooks.ts",
     "./feeds": "./src/feeds.ts",
+    "./productwatch": "./src/productwatch.ts",
     "./webhook-signature": "./src/webhook-signature.ts",
     "./auto-responders": "./src/auto-responders.ts"
   }

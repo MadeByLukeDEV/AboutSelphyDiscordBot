@@ -74,6 +74,7 @@ export type {
   MemberRoleSnapshot,
   YoutubeConfig,
   YoutubeChannel,
+  ProductWatch,
   YoutubeVideo,
 } from "./generated/prisma/client";
 export type { PollStatus, SuggestionStatus, GiveawayStatus, TicketStatus, RolePanelStyle, AnnouncementStatus, ModCaseType, ModCaseSource, ModEscalationAction } from "./generated/prisma/enums";

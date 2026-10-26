@@ -372,6 +372,25 @@ model YoutubeChannel {
   createdAt DateTime  @default(now())
 }
 
+/// A Shopify product page whose public data the bot checks for changes. snapshot = what was seen last (parsed again on read).
+model ProductWatch {
+  id            String    @id @default(cuid())
+  name          String    @db.VarChar(100)
+  /// The clean product page address (https, no tracking parameters).
+  url           String    @db.VarChar(600)
+  channelId     String    @db.VarChar(20)
+  pingRoleId    String?   @db.VarChar(20)
+  enabled       Boolean   @default(true)
+  snapshot      Json?
+  /// False until the first successful look: that one only remembers, nothing is announced.
+  baselined     Boolean   @default(false)
+  lastCheckedAt DateTime?
+  lastStatus    String?   @db.VarChar(24)
+  lastChangedAt DateTime?
+  createdByName String    @db.VarChar(100)
+  createdAt     DateTime  @default(now())
+}
+
 /// Every upload the bot has seen. Unique on the video id, so a video is announced once.
 model YoutubeVideo {
   id          String    @id @default(cuid())

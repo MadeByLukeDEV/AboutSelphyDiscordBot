@@ -32,6 +32,7 @@ export const RELOADABLE_MODULES = [
   "games",
   "modules",
   "feeds",
+  "productwatch",
   "eventcal",
   "autoresponders",
   "webhooks",

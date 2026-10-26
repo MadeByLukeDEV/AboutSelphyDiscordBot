@@ -3432,6 +3432,63 @@
       "failed": "Die Einstellungen konnten nicht gespeichert werden. Versuche es erneut."
     }
   },
+  "ProductWatch": {
+    "title": "Produktüberwachung",
+    "intro": "Beobachte einzelne Shop-Produkte (Shopify-Shops) und bekomme eine Nachricht, wenn sich Preis, Verfügbarkeit, Name oder Optionen ändern. Jedes Produkt wird alle {minutes} Minuten angesehen. Beim ersten Blick merkt sich der Bot nur, wie das Produkt aussieht.",
+    "add": "Produkt beobachten",
+    "checkNow": "Jetzt ansehen",
+    "checking": "Der Bot sieht jetzt nach. Das Ergebnis erscheint in ein paar Sekunden.",
+    "checkLater": "Der Bot ist nicht erreichbar. Er sieht von selbst wieder nach.",
+    "on": "An",
+    "paused": "Pausiert",
+    "never": "nie",
+    "price": "Preis {price} (Shop-Währung)",
+    "available": "Verfügbar",
+    "soldOut": "Ausverkauft",
+    "notLookedYet": "Noch nicht angesehen.",
+    "meta": "Postet in {channel} · letzter Blick {checked} · letzte Änderung {changed}",
+    "edit": "Bearbeiten",
+    "remove": "Entfernen",
+    "removeConfirm": "Dieses Produkt nicht mehr beobachten?",
+    "removed": "Entfernt.",
+    "saved": "Gespeichert.",
+    "savedBotLater": "Gespeichert. Der Bot übernimmt es innerhalb einer Minute.",
+    "noRole": "Kein Ping",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "saving": "Speichert…",
+    "empty": {
+      "title": "Noch keine Produkte beobachtet",
+      "body": "Füge die Produktseite eines Shops hinzu, um eine Nachricht zu bekommen, wenn sich Preis oder Verfügbarkeit ändern."
+    },
+    "dialog": {
+      "newTitle": "Produkt beobachten",
+      "editTitle": "Beobachtetes Produkt bearbeiten",
+      "intro": "Füge die Adresse der Produktseite ein. Tracking-Teile des Links werden entfernt."
+    },
+    "form": {
+      "name": "Name",
+      "url": "Adresse der Produktseite",
+      "urlHelp": "Ein Link wie https://shop.com/products/das-produkt (ein Sprachteil wie /en-at bleibt erhalten). Der Shop muss ein Shopify-Shop sein.",
+      "channel": "Kanal",
+      "channelPlaceholder": "Kanal wählen",
+      "role": "Rolle zum Pingen",
+      "roleHelp": "Optional. Nur diese Rolle kann gepingt werden.",
+      "enabled": "Beobachtung ist an"
+    },
+    "errors": {
+      "forbidden": "Nur Admins können das ändern.",
+      "invalid": "Einige dieser Werte sind nicht gültig.",
+      "badUrl": "Das ist keine Adresse einer Produktseite (https, mit /products/ darin).",
+      "needsChannel": "Wähle einen Kanal.",
+      "botUnavailable": "Der Bot ist nicht erreichbar, um den Kanal zu prüfen. Versuche es gleich noch einmal.",
+      "channelNotFound": "Dieser Kanal existiert nicht oder ist kein Textkanal.",
+      "roleNotFound": "Diese Rolle existiert nicht mehr.",
+      "tooMany": "Das ist die maximale Anzahl beobachteter Produkte.",
+      "notFound": "Dieses Produkt ist nicht mehr in der Liste.",
+      "failed": "Das hat nicht geklappt. Versuche es erneut."
+    }
+  },
   "EmoteInsert": {
     "button": "Emote",
     "loading": "Emotes des Servers werden geladen…",
