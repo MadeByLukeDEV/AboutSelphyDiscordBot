@@ -21,7 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const locale = await getLocale();
   // Add a namespace here whenever a client component uses useTranslations("X").
-  const messages = await clientMessages(["Shell", "ThemeToggle","LocaleSwitcher", "BotStatus", "Moderation", "TempVoice", "Twitch", "Youtube", "Announcements", "Roles", "Welcome", "Logs", "Levels", "Tickets", "Giveaways", "Suggestions", "Polls", "Starboard", "Birthdays", "Reminders", "RoleManager", "StatChannels", "MemberCards", "Sticky", "AutoPublish", "CustomCommands", "Counting", "Games", "MemberOverview", "AutoResponders", "Modules", "Webhooks", "Feeds", "ModGuide", "AntiBot", "TwitchVip", "Retention", "Members", "Verification", "Screening", "Events", "Raid", "EmoteInsert", "DateTimePicker", "ColorPicker", "Errors"]);
+  const messages = await clientMessages(["Shell", "ThemeToggle","LocaleSwitcher", "BotStatus", "Moderation", "TempVoice", "Twitch", "Youtube", "Announcements", "Roles", "Welcome", "Logs", "Levels", "Tickets", "Giveaways", "Suggestions", "Polls", "Starboard", "Birthdays", "Reminders", "RoleManager", "StatChannels", "MemberCards", "Sticky", "AutoPublish", "CustomCommands", "Counting", "Games", "MemberOverview", "AutoResponders", "Modules", "Webhooks", "Feeds", "ProductWatch", "ModGuide", "AntiBot", "TwitchVip", "Retention", "Members", "Verification", "Screening", "Events", "Raid", "EmoteInsert", "DateTimePicker", "ColorPicker", "Errors"]);
 
   return (
     <html lang={locale} className={fontSans.variable} suppressHydrationWarning>
