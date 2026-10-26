@@ -2,8 +2,8 @@ import "server-only";
 import type { YoutubeConfig } from "@aboutselphy/db";
 import { errorInfo } from "@/lib/log";
 import { listChannels, listRoles, reloadBotModule } from "@/modules/bot-api";
-import { readConfig, recentVideos, updateConfig } from "./repository";
-import type { SaveYoutubeResult, YoutubeOverview, YoutubeSettings } from "./schema";
+import { countYoutubeChannels, createYoutubeChannel, deleteYoutubeChannel, listYoutubeChannels, readConfig, recentVideos, setYoutubeChannelEnabled, updateConfig } from "./repository";
+import { MAX_YOUTUBE_CHANNELS, parseYoutubeChannelId, type SaveYoutubeResult, type YoutubeChannelResult, type YoutubeChannelView, type YoutubeOverview, type YoutubeSettings } from "./schema";
 
 const toSettings = (c: YoutubeConfig): YoutubeSettings => ({
   enabled: c.enabled,
@@ -17,13 +17,42 @@ const toSettings = (c: YoutubeConfig): YoutubeSettings => ({
   embedColor: c.embedColor,
 });
 
+const channelViews = async (): Promise<YoutubeChannelView[]> =>
+  (await listYoutubeChannels()).map((c) => ({ id: c.id, ytChannelId: c.ytChannelId, name: c.name, enabled: c.enabled }));
+
+/** Adds a watched channel from a typed ID or channel link, switches one on or off, or removes one; then asks the bot to poll. */
+export async function changeYoutubeChannels(change: { add: string } | { toggle: string; enabled: boolean } | { remove: string }): Promise<YoutubeChannelResult> {
+  try {
+    if ("add" in change) {
+      const ytChannelId = parseYoutubeChannelId(change.add);
+      if (!ytChannelId) return { ok: false, error: "invalidChannel" };
+      if ((await countYoutubeChannels()) >= MAX_YOUTUBE_CHANNELS) return { ok: false, error: "tooMany" };
+      try {
+        await createYoutubeChannel(ytChannelId);
+      } catch (error) {
+        if ((error as { code?: unknown } | null)?.code === "P2002") return { ok: false, error: "alreadyAdded" };
+        throw error;
+      }
+    } else if ("toggle" in change) {
+      await setYoutubeChannelEnabled(change.toggle, change.enabled);
+    } else {
+      await deleteYoutubeChannel(change.remove);
+    }
+    return { ok: true, channels: await channelViews(), botNotified: await reloadBotModule("youtube") };
+  } catch (error) {
+    console.error("[youtube] changing the channels failed", errorInfo(error));
+    return { ok: false, error: "failed" };
+  }
+}
+
 /** The settings, the poller's last result, the latest videos, and the lists to pick from (null = bot unreachable). */
 export async function getYoutubePage() {
-  const [config, videos, channels, roles] = await Promise.all([readConfig(), recentVideos(), listChannels(["text"]), listRoles()]);
+  const [config, videos, channels, roles, watched] = await Promise.all([readConfig(), recentVideos(), listChannels(["text"]), listRoles(), channelViews()]);
   const overview: YoutubeOverview = {
     settings: toSettings(config),
     lastCheckedAt: config.lastCheckedAt?.toISOString() ?? null,
     lastError: config.lastError,
+    channels: watched,
     videos: videos.map((v) => ({
       videoId: v.videoId,
       title: v.title,

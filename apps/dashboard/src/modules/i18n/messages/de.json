@@ -776,6 +776,19 @@
         "failed": "YouTube hat nicht wie erwartet geantwortet. Der Bot versucht es in ein paar Minuten erneut."
       }
     },
+    "channels": {
+      "title": "Überwachte Kanäle",
+      "help": "Uploads aller eingeschalteten Kanäle werden mit den Einstellungen unten angekündigt. Ein neu hinzugefügter Kanal merkt sich zuerst nur seine aktuellen Videos.",
+      "add": "Hinzufügen",
+      "placeholder": "Kanal-ID (UC...) oder ein youtube.com/channel/...-Link",
+      "idHelp": "Öffne den Kanal auf YouTube, Info, Teilen, Kanal-ID kopieren. Bis zu {max} Kanäle.",
+      "unnamed": "Wartet auf die erste Prüfung",
+      "on": "An",
+      "off": "Pausiert",
+      "remove": "Entfernen",
+      "removeConfirm": "Diesen Kanal entfernen? Bisherige Ankündigungen bleiben.",
+      "empty": "Noch keine Kanäle. Füge einen hinzu, um zu starten."
+    },
     "form": {
       "watch": "Einen „Ansehen“-Button zeigen",
       "watchHelp": "Ein Button unter der Ankündigung, der das Video auf YouTube öffnet.",
@@ -824,6 +837,9 @@
       "notAnnounced": "Nicht angekündigt"
     },
     "errors": {
+      "invalidChannel": "Das ist keine Kanal-ID. Sie beginnt mit UC und hat 24 Zeichen.",
+      "tooMany": "Das ist die maximale Anzahl an Kanälen.",
+      "alreadyAdded": "Dieser Kanal ist schon in der Liste.",
       "forbidden": "Nur Admins können diese Einstellungen ändern.",
       "invalid": "Diese Einstellungen sind nicht gültig.",
       "needsChannel": "Wähle einen Kanal, bevor du Ankündigungen einschaltest.",

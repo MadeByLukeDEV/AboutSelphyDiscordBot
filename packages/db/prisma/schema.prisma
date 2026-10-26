@@ -352,10 +352,24 @@ model YoutubeConfig {
   /// {title} {channel} {url} {time} (the start, as a relative Discord time).
   premiereTemplate String   @default("Premiere {time}: {title}") @db.VarChar(300)
   embedColor      Int       @default(16711680)
+  /// The channel from YOUTUBE_CHANNEL_ID is copied into YoutubeChannel once; after that the table is the only list.
+  envAdopted      Boolean   @default(false)
   /// When the poller last got an answer from YouTube, and a short code if it failed.
   lastCheckedAt   DateTime?
   lastError       String    @default("") @db.VarChar(40)
   updatedAt       DateTime  @updatedAt
+}
+
+/// A YouTube channel whose uploads are announced (up to 10). seededAt null = not looked at yet: the first poll only remembers.
+model YoutubeChannel {
+  id        String    @id @default(cuid())
+  /// "UC" + 22 characters (a CHECK keeps it that way).
+  ytChannelId String  @unique @db.VarChar(24)
+  /// Shown in the dashboard; filled from YouTube when empty.
+  name      String    @default("") @db.VarChar(100)
+  enabled   Boolean   @default(true)
+  seededAt  DateTime?
+  createdAt DateTime  @default(now())
 }
 
 /// Every upload the bot has seen. Unique on the video id, so a video is announced once.

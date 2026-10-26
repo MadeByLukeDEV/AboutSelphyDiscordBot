@@ -1,5 +1,5 @@
 // Private to the youtube module: only service.ts and config.ts import this.
-import { prisma, type YoutubeConfig, type YoutubeVideo } from "@aboutselphy/db";
+import { prisma, type YoutubeChannel, type YoutubeConfig, type YoutubeVideo } from "@aboutselphy/db";
 
 export function readConfig(): Promise<YoutubeConfig> {
   return prisma.youtubeConfig.upsert({ where: { id: 1 }, update: {}, create: { id: 1 } });
@@ -22,6 +22,28 @@ export async function knownVideoIds(ids: string[]): Promise<Set<string>> {
 
 export function hasAnyVideo(): Promise<boolean> {
   return prisma.youtubeVideo.count().then((n) => n > 0);
+}
+
+/**
+ * Copies the channel from YOUTUBE_CHANNEL_ID into the table once, so the dashboard's list is the only list afterwards (removing it there is
+ * permanent). Videos already remembered mean it was polled before: it counts as seeded, so nothing old is announced.
+ */
+export async function adoptEnvChannel(config: YoutubeConfig, ytChannelId: string | undefined): Promise<void> {
+  if (config.envAdopted) return;
+  if (ytChannelId) {
+    const seeded = await hasAnyVideo();
+    await prisma.youtubeChannel.upsert({ where: { ytChannelId }, update: {}, create: { ytChannelId, seededAt: seeded ? new Date() : null } });
+  }
+  await prisma.youtubeConfig.update({ where: { id: 1 }, data: { envAdopted: true } });
+}
+
+export function enabledChannels(): Promise<YoutubeChannel[]> {
+  return prisma.youtubeChannel.findMany({ where: { enabled: true }, orderBy: { createdAt: "asc" } });
+}
+
+/** After a successful look: the channel is seeded (later polls may announce) and gets its name from YouTube when it had none. */
+export function markChannelPolled(id: string, name: string | null, hadName: boolean): Promise<unknown> {
+  return prisma.youtubeChannel.update({ where: { id }, data: { seededAt: new Date(), ...(!hadName && name ? { name: name.slice(0, 100) } : {}) } });
 }
 
 export type NewVideo = {

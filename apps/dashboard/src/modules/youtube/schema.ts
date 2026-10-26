@@ -31,6 +31,19 @@ export const youtubeSettingsSchema = z
   });
 export type YoutubeSettings = z.infer<typeof youtubeSettingsSchema>;
 
+/** How many channels can be watched (each costs about 300 free quota units a day). */
+export const MAX_YOUTUBE_CHANNELS = 10;
+
+/** A channel address or ID as typed: the "UC..." ID is taken out of it (a youtube.com/channel/UC... link works too). */
+export function parseYoutubeChannelId(input: string): string | null {
+  return /(?:^|[/=\s])(UC[A-Za-z0-9_-]{22})(?![A-Za-z0-9_-])/.exec(input.trim())?.[1] ?? null;
+}
+
+export const addYoutubeChannelSchema = z.object({ input: z.string().trim().min(1).max(200) });
+
+export type YoutubeChannelView = { id: string; ytChannelId: string; name: string; enabled: boolean };
+export type YoutubeChannelResult = { ok: true; channels: YoutubeChannelView[]; botNotified: boolean } | { ok: false; error: YoutubeError };
+
 export type YoutubeVideoView = { videoId: string; title: string; publishedAt: string; isShort: boolean; announced: boolean };
 
 export type YoutubeOverview = {
@@ -40,7 +53,8 @@ export type YoutubeOverview = {
   /** A short code when the last poll failed, "" when it worked. */
   lastError: string;
   videos: YoutubeVideoView[];
+  channels: YoutubeChannelView[];
 };
 
-export type YoutubeError = "forbidden" | "invalid" | "needsChannel" | "botUnavailable" | "channelNotFound" | "roleNotFound" | "failed";
+export type YoutubeError = "forbidden" | "invalid" | "needsChannel" | "botUnavailable" | "channelNotFound" | "roleNotFound" | "invalidChannel" | "tooMany" | "alreadyAdded" | "failed";
 export type SaveYoutubeResult = { ok: true; settings: YoutubeSettings; botNotified: boolean } | { ok: false; error: YoutubeError };

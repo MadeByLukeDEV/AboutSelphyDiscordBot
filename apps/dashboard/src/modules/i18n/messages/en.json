@@ -776,6 +776,19 @@
         "failed": "YouTube didn't answer as expected. The bot tries again in a few minutes."
       }
     },
+    "channels": {
+      "title": "Channels to watch",
+      "help": "Uploads from every switched-on channel are announced with the settings below. A newly added channel only remembers its current videos.",
+      "add": "Add",
+      "placeholder": "Channel ID (UC...) or a youtube.com/channel/... link",
+      "idHelp": "Open the channel on YouTube, About, Share, Copy channel ID. Up to {max} channels.",
+      "unnamed": "Waiting for the first check",
+      "on": "On",
+      "off": "Paused",
+      "remove": "Remove",
+      "removeConfirm": "Remove this channel? Its past announcements stay.",
+      "empty": "No channels yet. Add one to start."
+    },
     "form": {
       "watch": "Show a \"Watch\" button",
       "watchHelp": "A button under the announcement that opens the video on YouTube.",
@@ -824,6 +837,9 @@
       "notAnnounced": "Not announced"
     },
     "errors": {
+      "invalidChannel": "That isn't a channel ID. It starts with UC and has 24 characters.",
+      "tooMany": "That is the maximum number of channels.",
+      "alreadyAdded": "That channel is already in the list.",
       "forbidden": "Only admins can change these settings.",
       "invalid": "Those settings aren't valid.",
       "needsChannel": "Pick a channel before switching announcements on.",

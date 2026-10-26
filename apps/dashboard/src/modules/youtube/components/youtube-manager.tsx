@@ -20,6 +20,7 @@ import { saveYoutubeSettingsAction } from "../actions";
 import { DEFAULT_COLOR, MAX_TEMPLATE_LENGTH, youtubeSettingsSchema, type YoutubeOverview, type YoutubeSettings } from "../schema";
 import { ColorPicker } from "@/components/form/color-picker";
 import { EmoteInsert } from "@/components/form/emote-insert";
+import { YoutubeChannels } from "./youtube-channels";
 
 /** Status of the poller, the settings form with a preview, and the latest videos the bot has seen. */
 export function YoutubeManager({
@@ -85,6 +86,8 @@ export function YoutubeManager({
         </p>
         {lastError && <p className="text-sm text-destructive">{t(`status.errors.${lastError === "quota" || lastError === "keyRejected" || lastError === "notFound" ? lastError : "failed"}`)}</p>}
       </section>
+
+      <YoutubeChannels initial={overview.channels} />
 
       {/* Settings */}
       <form onSubmit={onSubmit} className="surface flex flex-col gap-5 p-5" noValidate>

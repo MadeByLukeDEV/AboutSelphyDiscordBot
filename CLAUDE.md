@@ -1449,7 +1449,8 @@ Decided 2026-10-08:
     within 14 days (or up to an hour past) gets a `premiere` decision in `decideUploads` (never on the first run) and is announced
     once with the start on the embed. It is remembered like any video, so it is **not announced again** when it goes live or becomes
     a normal video. Upcoming live broadcasts count too (the API does not tell them apart). Live and private videos still wait.
-  - [ ] Several channels, members-only videos.
+  - [x] **Several channels** (2026-10-26, `feature_youtube-channels`, migration `20261120100000_youtube_channels`; **not tried live yet**): `YoutubeChannel` rows (YouTube channel ID with a CHECK `UC` + 22 characters, name filled from YouTube, on/off, `seededAt`), up to 10 (`MAX_YOUTUBE_CHANNELS`), managed on `/youtube` (add by ID or a `youtube.com/channel/UC...` link, pause, remove; each change saves at once; @handles are not resolved). All channels share the one set of settings (Discord channel, ping, templates, Shorts, premieres). The poll loops over the enabled channels (one failing channel doesn't stop the others; the first error code is shown); a channel with `seededAt` null only remembers its videos on its first successful look, so a new channel never announces a back catalogue. `YOUTUBE_CHANNEL_ID` is copied into the table **once** (`YoutubeConfig.envAdopted`); after that the dashboard list is the only list and removing it there is permanent. Cost: about 300 free quota units a day per channel. Members-only videos stay unbuilt. Ideas that were dropped for now are in `docs/future-ideas.md`.
+
 - [~] Feed announcer (2026-10-27, `feature_feeds`, migration `20261027100000_feeds`; **not tried with a real
       feed yet**; asked for by the user: TikTok upload notifications through RSSHub)
   - Bot (`modules/feeds/`): `FeedSource` rows (name, address, channel, optional ping role, message template
