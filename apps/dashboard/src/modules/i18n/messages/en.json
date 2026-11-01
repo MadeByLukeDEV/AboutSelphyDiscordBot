@@ -506,6 +506,7 @@
         "title": "No channels yet",
         "body": "Use Add channel to announce the first one."
       },
+      "instant": "Instant",
       "paused": "Paused",
       "pings": "pings {role}",
       "pause": "Pause",
@@ -536,6 +537,7 @@
       "twitchNotFound": "Twitch has no channel with that name.",
       "channelNotFound": "That Discord channel doesn't exist, or the bot can't see it.",
       "roleNotFound": "That role doesn't exist any more.",
+      "websocketFull": "The websocket is full. Only 5 channels can be instant; switch one of the others off first, or leave this one on the one-minute check.",
       "tooManyStreamers": "That is the most channels supported. Remove one first.",
       "alreadyAdded": "That channel is already on the list.",
       "memberNotFound": "That member isn't in the server.",
@@ -543,6 +545,8 @@
     },
     "form": {
       "postClips": "Post new clips",
+      "useWebsocket": "Instant announcements (websocket)",
+      "useWebsocketHelp": "Instant, but only {max} channels can share the websocket. Every channel is also checked once a minute, so without this switch the announcement can be up to a minute late.",
       "postClipsHelp": "New clips of this channel are posted in the clips channel (set below). The first check only remembers existing clips.",
       "addTitle": "Add a channel",
       "editTitle": "Edit channel",

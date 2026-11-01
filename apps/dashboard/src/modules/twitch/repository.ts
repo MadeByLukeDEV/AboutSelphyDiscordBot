@@ -44,6 +44,7 @@ export type StreamerData = {
   showThumbnail: boolean;
   showGame: boolean;
   postClips: boolean;
+  useWebsocket: boolean;
   enabled: boolean;
 };
 
@@ -53,6 +54,11 @@ export function findStreamer(id: string): Promise<TwitchStreamer | null> {
 
 export function findStreamerByTwitchId(twitchUserId: string): Promise<TwitchStreamer | null> {
   return prisma.twitchStreamer.findUnique({ where: { twitchUserId } });
+}
+
+/** Channels (other than `exceptId`) that are enabled and use the WebSocket. */
+export function countWebsocketStreamers(exceptId?: string): Promise<number> {
+  return prisma.twitchStreamer.count({ where: { enabled: true, useWebsocket: true, ...(exceptId ? { id: { not: exceptId } } : {}) } });
 }
 
 export function countStreamers(): Promise<number> {

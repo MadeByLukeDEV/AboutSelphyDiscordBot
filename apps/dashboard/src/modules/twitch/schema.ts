@@ -30,6 +30,7 @@ export type TwitchStreamerView = {
   showThumbnail: boolean;
   showGame: boolean;
   postClips: boolean;
+  useWebsocket: boolean;
   enabled: boolean;
 };
 
@@ -55,6 +56,7 @@ export const streamerSchema = z.object({
   showThumbnail: z.boolean(),
   showGame: z.boolean(),
   postClips: z.boolean(),
+  useWebsocket: z.boolean(),
   enabled: z.boolean(),
 });
 export type StreamerInput = z.infer<typeof streamerSchema>;
@@ -70,6 +72,7 @@ export const streamerFormSchema = z.object({
   showThumbnail: z.boolean(),
   showGame: z.boolean(),
   postClips: z.boolean(),
+  useWebsocket: z.boolean(),
   enabled: z.boolean(),
 });
 
@@ -83,6 +86,7 @@ export type StreamerFormValues = {
   showThumbnail: boolean;
   showGame: boolean;
   postClips: boolean;
+  useWebsocket: boolean;
   enabled: boolean;
 };
 
@@ -96,6 +100,7 @@ export const DEFAULT_STREAMER_FORM: StreamerFormValues = {
   showThumbnail: true,
   showGame: true,
   postClips: false,
+  useWebsocket: false,
   enabled: true,
 };
 
@@ -110,6 +115,7 @@ export type TwitchError =
   | "roleNotFound"
   | "memberNotFound"
   | "tooManyStreamers"
+  | "websocketFull"
   | "alreadyAdded"
   | "failed";
 

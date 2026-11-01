@@ -1,6 +1,6 @@
 import "server-only";
 import { randomBytes, timingSafeEqual } from "node:crypto";
-import { MAX_TWITCH_STREAMERS, TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy/shared";
+import { MAX_TWITCH_EVENTSUB_STREAMERS, MAX_TWITCH_STREAMERS, TWITCH_REFRESH_TOKEN_PURPOSE } from "@aboutselphy/shared";
 import { decryptToken, encryptToken } from "@aboutselphy/shared/token-cipher";
 import { env, siteUrl } from "@/lib/env";
 import { errorInfo } from "@/lib/log";
@@ -8,6 +8,7 @@ import { getGuildMemberName, listChannels, listRoles, reloadBotModule, resolveTw
 import { buildAuthorizationUrl, exchangeCode, refreshAccessToken, revokeToken, TwitchOAuthError, validateToken } from "./oauth";
 import {
   countStreamers,
+  countWebsocketStreamers,
   createStreamer,
   deleteConnection,
   deleteStreamer,
@@ -119,6 +120,7 @@ const toView = (s: {
   showThumbnail: boolean;
   showGame: boolean;
   postClips: boolean;
+  useWebsocket: boolean;
   enabled: boolean;
 }): TwitchStreamerView => ({
   id: s.id,
@@ -132,6 +134,7 @@ const toView = (s: {
   showThumbnail: s.showThumbnail,
   showGame: s.showGame,
   postClips: s.postClips,
+  useWebsocket: s.useWebsocket,
   enabled: s.enabled,
 });
 
@@ -215,6 +218,9 @@ export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerRe
       if (member === null) return fail("memberNotFound");
     }
 
+    // One WebSocket carries at most five channels (Twitch's subscription cost limit); the others are polled every minute.
+    if (input.useWebsocket && input.enabled && (await countWebsocketStreamers(existing?.id)) >= MAX_TWITCH_EVENTSUB_STREAMERS) return fail("websocketFull");
+
     const data = {
       channelId: input.channelId,
       pingRoleId: roleId,
@@ -224,6 +230,7 @@ export async function saveStreamer(input: StreamerInput): Promise<SaveStreamerRe
       showThumbnail: input.showThumbnail,
       showGame: input.showGame,
       postClips: input.postClips,
+      useWebsocket: input.useWebsocket,
       enabled: input.enabled,
     };
 

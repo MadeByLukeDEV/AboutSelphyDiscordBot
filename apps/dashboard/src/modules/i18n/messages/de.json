@@ -506,6 +506,7 @@
         "title": "Noch keine Kanäle",
         "body": "Mit Kanal hinzufügen kündigst du den ersten an."
       },
+      "instant": "Sofort",
       "paused": "Pausiert",
       "pings": "pingt {role}",
       "pause": "Pausieren",
@@ -536,6 +537,7 @@
       "twitchNotFound": "Twitch kennt keinen Kanal mit diesem Namen.",
       "channelNotFound": "Dieser Discord-Kanal existiert nicht oder der Bot kann ihn nicht sehen.",
       "roleNotFound": "Diese Rolle existiert nicht mehr.",
+      "websocketFull": "Der Websocket ist voll. Nur 5 Kanäle können sofort sein; schalte zuerst bei einem anderen ab oder lass diesen bei der Minutenprüfung.",
       "tooManyStreamers": "Mehr Kanäle werden nicht unterstützt. Entferne zuerst einen.",
       "alreadyAdded": "Dieser Kanal steht schon auf der Liste.",
       "memberNotFound": "Dieses Mitglied ist nicht auf dem Server.",
@@ -543,6 +545,8 @@
     },
     "form": {
       "postClips": "Neue Clips posten",
+      "useWebsocket": "Sofortige Ankündigungen (Websocket)",
+      "useWebsocketHelp": "Sofort, aber nur {max} Kanäle können sich den Websocket teilen. Jeder Kanal wird zusätzlich einmal pro Minute geprüft, ohne diesen Schalter kann die Ankündigung bis zu eine Minute später kommen.",
       "postClipsHelp": "Neue Clips dieses Kanals werden im Clip-Kanal gepostet (unten einstellen). Die erste Prüfung merkt sich nur vorhandene Clips.",
       "addTitle": "Kanal hinzufügen",
       "editTitle": "Kanal bearbeiten",

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import type { GuildChannel, GuildRole } from "@aboutselphy/shared";
+import { MAX_TWITCH_EVENTSUB_STREAMERS } from "@aboutselphy/shared/twitch";
 import { colorToHex, DEFAULT_EMBED_COLOR, hexToColor, TEMPLATE_PLACEHOLDERS } from "@aboutselphy/shared/twitch-template";
 import { FormSelect, type SelectOption } from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ export function StreamerForm({
           showThumbnail: streamer.showThumbnail,
           showGame: streamer.showGame,
           postClips: streamer.postClips,
+          useWebsocket: streamer.useWebsocket,
           enabled: streamer.enabled,
         }
       : DEFAULT_STREAMER_FORM,
@@ -115,7 +117,7 @@ export function StreamerForm({
     }),
   );
 
-  const toggle = (name: "showThumbnail" | "showGame" | "postClips" | "enabled", label: string, help?: string) => (
+  const toggle = (name: "showThumbnail" | "showGame" | "postClips" | "useWebsocket" | "enabled", label: string, help?: string) => (
     <Field orientation="horizontal">
       <Controller
         control={form.control}
@@ -221,6 +223,7 @@ export function StreamerForm({
         {toggle("showGame", t("showGame"))}
         {toggle("showThumbnail", t("showThumbnail"), t("showThumbnailHelp"))}
         {toggle("postClips", t("postClips"), t("postClipsHelp"))}
+        {toggle("useWebsocket", t("useWebsocket"), t("useWebsocketHelp", { max: MAX_TWITCH_EVENTSUB_STREAMERS }))}
         {toggle("enabled", t("enabled"))}
       </FieldGroup>
 

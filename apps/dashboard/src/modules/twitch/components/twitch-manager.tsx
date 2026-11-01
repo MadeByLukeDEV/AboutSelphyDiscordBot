@@ -130,6 +130,7 @@ export function TwitchManager({
                             <div className="flex flex-wrap items-center gap-2">
                               <h3 className="min-w-0 truncate font-semibold">{s.displayName}</h3>
                               {!s.enabled && <Badge variant="secondary">{t("streamers.paused")}</Badge>}
+                              {s.enabled && s.useWebsocket && <Badge variant="outline">{t("streamers.instant")}</Badge>}
                             </div>
                             <p className="truncate text-sm text-muted-foreground">
                               twitch.tv/{s.login} → {channelName(s.channelId)}

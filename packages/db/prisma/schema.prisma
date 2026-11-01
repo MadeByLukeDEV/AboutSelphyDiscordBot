@@ -237,6 +237,8 @@ model TwitchStreamer {
   /// Show the game field.
   showGame        Boolean  @default(true)
   enabled         Boolean  @default(true)
+  /// Instant events over the WebSocket (at most 5 channels share it). Every channel is also checked by polling, so a missed event is caught within a minute.
+  useWebsocket    Boolean  @default(false)
   /// Post this channel's new clips in TwitchConfig.clipsChannelId.
   postClips       Boolean  @default(false)
   /// When its clips were last checked (null = never: the first check only remembers).

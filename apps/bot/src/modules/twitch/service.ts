@@ -27,10 +27,11 @@ import {
 } from "./repository";
 import { forgetAccessToken, getAccessToken, NoTwitchToken, twitchCredentials } from "./tokens";
 
-// Went Live. One EventSub WebSocket for the first five channels (instant), a Helix poll once a minute for
-// the rest (up to MAX_TWITCH_STREAMERS); the announcements are
-// idempotent (unique Twitch stream id), serialised per stream, and repaired on
-// every (re)connect from Helix, so a missed event only delays an announcement.
+// Went Live. One EventSub WebSocket for the channels marked "use websocket" (at most five, instant), and a
+// Helix poll once a minute for EVERY enabled channel (up to MAX_TWITCH_STREAMERS, one request): the poll is
+// the only way for channels without the flag and the safety net for the others, so a missed or late
+// WebSocket event only delays an announcement by a minute. The announcements are idempotent (unique
+// Twitch stream id), serialised per stream, and repaired on every (re)connect from Helix.
 
 let discord: Client | undefined;
 let socket: EventSubClient | undefined;
@@ -82,12 +83,12 @@ export function startTwitch(client: Client): void {
   // The dashboard changed streamers or switches: a new session resubscribes to exactly the current set.
   onReload("twitch", () => {
     socket?.restart();
-    void pollExtra();
+    void pollChannels();
   });
   client.once(Events.ClientReady, () => {
     socket?.start();
     pollTimer = setInterval(() => {
-      void pollExtra();
+      void pollChannels();
       void clipsRound(client);
     }, POLL_EVERY_MS);
     pollTimer.unref();
@@ -122,9 +123,10 @@ async function subscribeAll(sessionId: string): Promise<void> {
   if (enabledStreamers.length > MAX_TWITCH_STREAMERS) {
     log.warn({ configured: enabledStreamers.length, max: MAX_TWITCH_STREAMERS }, "twitch: more channels than allowed, the rest are ignored");
   }
-  const streamers = enabledStreamers.slice(0, MAX_TWITCH_STREAMERS).slice(0, MAX_TWITCH_EVENTSUB_STREAMERS);
+  // Only channels marked for the WebSocket get instant events (the cost limit allows five); all others are polled.
+  const streamers = enabledStreamers.slice(0, MAX_TWITCH_STREAMERS).filter((s) => s.useWebsocket).slice(0, MAX_TWITCH_EVENTSUB_STREAMERS);
   if (streamers.length === 0) {
-    log.info({}, "twitch: no streamers configured");
+    log.info({ enabled: enabledStreamers.length }, "twitch: no channel uses the websocket, all are polled");
     return;
   }
 
@@ -152,25 +154,24 @@ async function subscribeAll(sessionId: string): Promise<void> {
   void reconcile(streamers).catch((err) => log.error({ err }, "twitch: reconcile failed"));
 }
 
-/** Channels past the first five have no events: a minute-by-minute Helix check announces and closes for them. */
-async function pollExtra(): Promise<void> {
+/** Every enabled channel is checked by Helix once a minute: it announces and closes for channels without the WebSocket and repairs the others. */
+async function pollChannels(): Promise<void> {
   if (polling || !twitchRuntime().active) return;
   polling = true;
   try {
     const config = await readConfig();
     if (!config.enabled) return;
     const enabled = (await listStreamers()).filter((s) => s.enabled).slice(0, MAX_TWITCH_STREAMERS);
-    const extra = enabled.slice(MAX_TWITCH_EVENTSUB_STREAMERS);
-    if (extra.length === 0) return;
+    if (enabled.length === 0) return;
     try {
       await getAccessToken();
     } catch (err) {
       if (err instanceof NoTwitchToken) return; // nothing changes until someone connects
       throw err;
     }
-    await reconcile(extra, true);
+    await reconcile(enabled, true);
   } catch (err) {
-    log.error({ err }, "twitch: polling the extra channels failed");
+    log.error({ err }, "twitch: polling the channels failed");
   } finally {
     polling = false;
   }
