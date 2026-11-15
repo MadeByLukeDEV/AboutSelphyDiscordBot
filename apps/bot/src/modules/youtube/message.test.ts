@@ -62,3 +62,18 @@ describe("watch button and premieres", () => {
     expect(message.allowedMentions).toEqual({ parse: [], roles: ["123456789012345678"] });
   });
 });
+
+describe("Shorts links", () => {
+  const video: VideoView = { videoId: "i7yJFPWH3ew", title: "A short", channelTitle: "Channel", publishedAt: new Date("2026-11-01T10:00:00Z"), thumbnailUrl: null };
+  it("sends a Short to the shorts address, in the link, the title and the Watch button", () => {
+    const m = videoMessage({ ...video, isShort: true }, "New: {url}", null, 0xff0000, true);
+    expect(m.content).toContain("https://youtube.com/shorts/i7yJFPWH3ew");
+    expect(m.embeds[0]!.toJSON().url).toBe("https://youtube.com/shorts/i7yJFPWH3ew");
+    expect(JSON.stringify(m.components[0]!.toJSON())).toContain("https://youtube.com/shorts/i7yJFPWH3ew");
+  });
+  it("keeps the watch address for ordinary videos", () => {
+    const m = videoMessage(video, "New: {url}", null, 0xff0000, true);
+    expect(m.content).toContain("https://www.youtube.com/watch?v=i7yJFPWH3ew");
+    expect(JSON.stringify(m.components[0]!.toJSON())).toContain("https://www.youtube.com/watch?v=i7yJFPWH3ew");
+  });
+});

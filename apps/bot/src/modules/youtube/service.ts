@@ -107,7 +107,7 @@ async function pollChannel(apiKey: string, config: YoutubeConfig, channel: Youtu
           const message = await target.send(
             decision.action === "premiere"
               ? premiereMessage(video, config.premiereTemplate, config.pingRoleId, config.embedColor, config.showWatchButton)
-              : videoMessage(video, config.messageTemplate, config.pingRoleId, config.embedColor, config.showWatchButton),
+              : videoMessage({ ...video, isShort: decision.isShort }, config.messageTemplate, config.pingRoleId, config.embedColor, config.showWatchButton),
           );
           messageId = message.id;
           announcedAt = new Date();
